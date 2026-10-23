@@ -7,8 +7,17 @@ import useSWR from 'swr';
 import HeadlessAdminAddress from '~/services/headless/HeadlessAdminAddress';
 
 const useCommerceRegions = () =>
-	useSWR('/admin-address-countries', () =>
-		HeadlessAdminAddress.getCountries()
-	);
+	useSWR('/admin-address-countries', async () => {
+		const response = await HeadlessAdminAddress.getCountries();
+
+		return {
+			...response,
+			items: response.items?.sort((countryA, countryB) =>
+				(countryA.title_i18n?.en_US || countryA.name).localeCompare(
+					countryB.title_i18n?.en_US || countryB.name
+				)
+			),
+		};
+	});
 
 export default useCommerceRegions;
