@@ -8,6 +8,7 @@ import {useProject} from '~/context/ProjectContext';
 import {useProductEnvironmentEntitlements} from '~/hooks/useProductEnvironmentEntitlements';
 import {useProjectContacts} from '~/hooks/useProjectContacts';
 import {SECURITY_INCIDENT_CONTACT_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
+import {useOrderDate} from '~/pages/MyAccount/Projects/hooks/useOrderDate';
 import {buildDetailsSections} from '~/pages/MyAccount/Projects/utils/buildDetailsSections';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
@@ -50,7 +51,11 @@ export default function DetailsTab({
 		SECURITY_INCIDENT_CONTACT_ERC
 	);
 
-	if (loading) {
+	const {loading: orderDateLoading, orderDate} = useOrderDate(
+		orderInfo.orderId
+	);
+
+	if (loading || orderDateLoading) {
 		return <Loading.Page />;
 	}
 
@@ -58,6 +63,7 @@ export default function DetailsTab({
 		accountName: Liferay.CommerceContext.account?.accountName ?? '',
 		contract,
 		environmentEntitlements,
+		orderDate,
 		orderInfo,
 		productName,
 		securityIncidentContacts,
