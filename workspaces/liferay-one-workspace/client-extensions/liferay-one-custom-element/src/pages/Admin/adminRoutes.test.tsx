@@ -19,6 +19,15 @@ import {adminRoutes} from './adminRoutes';
 import type {UserAccountModel} from '~/services/models/UserAccountModel';
 import type {AppRoute} from '~/utils/routeUtils';
 
+vi.mock('./AccountInspector/AccountInspector', () => ({
+	default: () => 'AccountInspector page',
+}));
+vi.mock(
+	'./AccountInspector/AccountInspectorDetail/AccountInspectorDetail',
+	() => ({
+		default: () => 'AccountInspectorDetail page',
+	})
+);
 vi.mock('./Apps/AppDetail/AppDetail', () => ({
 	default: () => 'AppDetail page',
 }));
@@ -106,6 +115,14 @@ function usersAllowed(path: string) {
 }
 
 const navRoutes = [
+	{
+		icon: 'search',
+		id: 'ROUTE-ADMIN-ACCOUNT-INSPECTOR',
+		label: 'account-inspector',
+		page: 'AccountInspector page',
+		path: 'account-inspector',
+		users: ['adminUser'],
+	},
 	{
 		icon: 'password-policies',
 		id: 'ROUTE-ADMIN-ACTIVATION-KEY-UPLOADS',
@@ -221,6 +238,13 @@ const navRoutes = [
 ] as const;
 
 const detailRoutes = [
+	{
+		id: 'ROUTE-ADMIN-ACCOUNT-INSPECTOR-ACCOUNTID',
+		page: 'AccountInspectorDetail page',
+		path: 'account-inspector/:accountId',
+		url: '/account-inspector/42',
+		users: ['adminUser'],
+	},
 	{
 		id: 'ROUTE-ADMIN-DETAILS-ORDERID',
 		page: 'TrialDetails page',
