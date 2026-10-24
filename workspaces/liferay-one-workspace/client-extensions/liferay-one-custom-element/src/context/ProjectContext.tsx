@@ -25,7 +25,7 @@ import {
 	ONE_TIME_PURCHASES,
 	UserProject,
 	resolveDefaultProject,
-	useUserProjects,
+	useProjectsWithOrders,
 } from '~/pages/MyAccount/Projects/projects';
 import {
 	toProductsByProductId,
@@ -53,8 +53,8 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 
 	const {loading: accountLoading} = useAccount();
 
-	const {loading: projectsLoading, projects: userProjects} =
-		useUserProjects();
+	const {loading: projectsLoading, projects: projectsWithOrders} =
+		useProjectsWithOrders();
 
 	const {hasUnassignedEntitlements, loading: unassignedLoading} =
 		useUnassignedCommerce();
@@ -78,11 +78,11 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 
 	const projects = useMemo<UserProject[]>(() => {
 		if (!hasUnassignedItems && !hasUnassignedEntitlements) {
-			return userProjects;
+			return projectsWithOrders;
 		}
 
 		return [
-			...userProjects,
+			...projectsWithOrders,
 			{
 				externalReferenceCode: ONE_TIME_PURCHASES,
 				id: -1,
@@ -90,7 +90,7 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 				unassigned: true,
 			},
 		];
-	}, [hasUnassignedEntitlements, hasUnassignedItems, userProjects]);
+	}, [hasUnassignedEntitlements, hasUnassignedItems, projectsWithOrders]);
 
 	const loading =
 		accountLoading ||

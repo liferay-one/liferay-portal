@@ -10,7 +10,7 @@ import {
 	PROJECT_SECTION_PATHS,
 	isUnassignedProject,
 	resolveDefaultProject,
-	useUserProjects,
+	useProjectsWithOrders,
 } from '~/pages/MyAccount/Projects/projects';
 import {Liferay} from '~/services/liferay/liferay';
 
@@ -21,7 +21,7 @@ export default function ProjectRedirect() {
 
 	const {data: account, isLoading: accountLoading} = useCurrentAccount();
 
-	const {loading: projectsLoading, projects} = useUserProjects();
+	const {loading: projectsLoading, projects} = useProjectsWithOrders();
 
 	if (account && !projectsLoading) {
 		const accountERC = account.externalReferenceCode;

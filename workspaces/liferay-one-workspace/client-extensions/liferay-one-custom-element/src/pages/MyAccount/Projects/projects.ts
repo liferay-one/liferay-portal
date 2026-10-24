@@ -4,6 +4,7 @@
  */
 
 export {useHasProject} from './hooks/useHasProject';
+export {useProjectsWithOrders} from './hooks/useProjectsWithOrders';
 export {useSelectedProject} from './hooks/useSelectedProject';
 export {useUserProjects} from './hooks/useUserProjects';
 export type {ProjectItemType, ProjectTabKey, UserProject} from './types';
