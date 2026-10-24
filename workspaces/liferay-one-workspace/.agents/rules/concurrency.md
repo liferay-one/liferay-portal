@@ -94,6 +94,19 @@ A field is not single-threaded just because only one REST endpoint writes it. In
 
 A warm-up that populates a cache at startup while the first request reads it is a real race — that is exactly why the cached ID fields above are `volatile`.
 
+## Deferred Work Runs at the Same Time as Its Caller
+
+When a method moves a sync to an executor or an `@Async` method, every caller of that method changes too. Before the change, a caller ran the sync, then its own next steps, in that order. After the change, the sync runs at the same time as those next steps.
+
+Read each caller before you defer the work. Look for a caller that writes the same record or syncs the same JSM asset after the call returns. `UserAssignmentService.unassignAccount` is an example: it calls `unassignProjectRole` for each membership, then removes the user from the account and syncs the account to JSM. When the project sync runs on an executor, it can read the account before the removal and write after the account sync, so JSM keeps the removed user.
+
+Use one of these corrections:
+
+- Put the caller's later syncs on the same single thread executor, so that they run after the deferred work.
+- Give the caller a variant that writes the record and does not queue the sync. Use this when the caller already syncs a wider scope itself.
+
+A deferred task also outlives the request. Stop the executor so that queued tasks finish before the beans they call are destroyed: wait for termination in `@PreDestroy`, or use a Spring `ThreadPoolTaskExecutor` with `waitForTasksToCompleteOnShutdown`.
+
 ## Date and Number Formatters Are Locals
 
 `SimpleDateFormat`, `DateFormat`, and `NumberFormat` carry mutable parse state and are not thread-safe. Declare them inside the method that uses them, or use `java.time.format.DateTimeFormatter`, which is immutable and safe to hold in a `static final` field.
