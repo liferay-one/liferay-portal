@@ -8,6 +8,7 @@ import useSWR from 'swr';
 import {EXPERIENCE_OFFERING_PRODUCT_EXTERNAL_REFERENCE_CODES} from '~/enums/Product';
 import {useCurrentAccount} from '~/hooks/useAccounts';
 import {useDataQuery} from '~/hooks/useDataQuery';
+import {useProjectOrders} from '~/hooks/useProjectOrders';
 import i18n from '~/i18n';
 import {getProductContactRoleExternalReferenceCodes} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {useUserProjects} from '~/pages/MyAccount/Projects/hooks/useUserProjects';
@@ -20,6 +21,7 @@ import fetcher from '~/services/fetcher/fetcher';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 import {Liferay} from '~/services/liferay/liferay';
 import Accounts from '~/services/spring-boot/Accounts';
+import {OrderCustomFields} from '~/utils/orderUtils';
 import {getProductSpecificationValue} from '~/utils/productUtils';
 
 import type {APIResponse, DataQuery} from '~/types/api';
@@ -314,8 +316,49 @@ export function useProjectCommerce(
 		loading: entitlementsLoading,
 	} = useProjectEntitlements(projectExternalReferenceCode);
 
+	const {
+		error: ordersError,
+		loading: ordersLoading,
+		placedOrders,
+	} = useProjectOrders(project);
+
 	const {data: productsData, isLoading: productsLoading} =
 		useProjectProducts();
+
+	const listedContractNodes = useMemo(() => {
+		if (!project || entitlementsError || ordersError) {
+			return contractNodes;
+		}
+
+		const contractIds = new Set<number>();
+
+		entitlements.forEach((entitlement) => {
+			if (entitlement.r_contractToEntitlement_c_contractId) {
+				contractIds.add(
+					entitlement.r_contractToEntitlement_c_contractId
+				);
+			}
+		});
+
+		placedOrders.forEach((placedOrder) => {
+			const contractId = Number(
+				placedOrder.customFields?.[OrderCustomFields.CONTRACT_ID]
+			);
+
+			if (contractId) {
+				contractIds.add(contractId);
+			}
+		});
+
+		return contractNodes.filter((node) => contractIds.has(node.id));
+	}, [
+		contractNodes,
+		entitlements,
+		entitlementsError,
+		ordersError,
+		placedOrders,
+		project,
+	]);
 
 	const projectContractIds = useMemo(
 		() => new Set(projectContractNodes.map((node) => node.id)),
@@ -333,7 +376,7 @@ export function useProjectCommerce(
 
 	const contracts = useMemo<ProjectContract[]>(
 		() => [
-			...contractNodes.map(toProjectContract),
+			...listedContractNodes.map(toProjectContract),
 			...(hasOneTimeEntitlements
 				? [
 						{
@@ -343,7 +386,7 @@ export function useProjectCommerce(
 					]
 				: []),
 		],
-		[contractNodes, hasOneTimeEntitlements]
+		[hasOneTimeEntitlements, listedContractNodes]
 	);
 
 	const productsByEntitledExternalReferenceCode = useMemo(
@@ -434,6 +477,7 @@ export function useProjectCommerce(
 		loading:
 			accountLoading ||
 			entitlementsLoading ||
+			ordersLoading ||
 			productsLoading ||
 			projectContractsLoading ||
 			projectsLoading,

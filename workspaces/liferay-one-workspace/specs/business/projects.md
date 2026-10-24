@@ -26,6 +26,8 @@ License keys and activation keys on the Activation page belong to [Licensing and
 | REQ-PROJECTS-004 | When a project does not exist or has no account, only an Administrator or Liferay Staff passes a project permission check. | P0 | — | `PERM-PROJECTPERMISSION` |
 | REQ-PROJECTS-005 | In My Account, the Account Administrator and an Administrator see every project of the account. Every other user sees only the projects where the user holds a project role. | P0 | LPD-92707, LPD-95398 | `HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS`, `FLOW-ROLE-NULL-PROJECT-ACCESS` |
 | REQ-PROJECTS-006 | The project list shows the projects of the account by name, at most 200. | P1 | — | `HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS` |
+| REQ-PROJECTS-070 | The project selector in My Account shows only the projects that have at least one placed order. When the orders cannot be read, the selector shows every project of the user. | P1 | LPD-92145 | `HOOK-MYACCOUNT-PROJECTS-USEPROJECTSWITHORDERS` |
+| REQ-PROJECTS-071 | The contract selector of a project shows only the contracts that hold at least one placed order or one entitlement of the project. When the orders or the entitlements cannot be read, the selector shows every contract. | P1 | LPD-92145 | `HOOK-USEPROJECTCOMMERCE` |
 | REQ-PROJECTS-007 | A page that needs a project shows a restricted message when the account has no project. This check counts every project of the account, not only the projects of the user. | P1 | LPD-92707, LPD-92706 | `HOOK-MYACCOUNT-PROJECTS-USEHASPROJECT`, `FLOW-RESTRICTED-PAGE`, `ROUTE-MY-ACCOUNT-PROJECT-MEMBERS` |
 
 ## Project Membership
