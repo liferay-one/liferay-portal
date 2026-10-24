@@ -30,10 +30,18 @@ import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PreDestroy;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -192,10 +200,31 @@ public class UserAssignmentService {
 			projectExternalReferenceCode, projectRoleExternalReferenceCode,
 			userId);
 
-		_syncProjectMembershipToJSM(
-			true, project, projectRoleExternalReferenceCode, userId);
+		_executeSync(
+			() -> {
+				_syncProjectMembershipToJSM(
+					true, project, projectRoleExternalReferenceCode, userId);
 
-		_syncUserGroups(userId);
+				_syncUserGroups(userId);
+			});
+	}
+
+	@PreDestroy
+	public void destroy() throws InterruptedException {
+		_executorService.shutdown();
+
+		if (_executorService.awaitTermination(
+				_SHUTDOWN_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+
+			return;
+		}
+
+		List<Runnable> runnables = _executorService.shutdownNow();
+
+		_log.error(
+			StringBundler.concat(
+				"Unable to finish ", runnables.size(),
+				" queued user assignment syncs before shutdown"));
 	}
 
 	public void syncOktaGroupOrganizations(long userId) throws Exception {
@@ -255,6 +284,8 @@ public class UserAssignmentService {
 			return;
 		}
 
+		List<Runnable> runnables = new ArrayList<>();
+
 		for (ProjectMembership projectMembership :
 				_projectMembershipService.getProjectMemberships(
 					account.getId(), userId)) {
@@ -266,9 +297,17 @@ public class UserAssignmentService {
 				continue;
 			}
 
-			unassignProjectRole(
-				project, projectMembership.getRoleExternalReferenceCode(),
-				userId);
+			String roleExternalReferenceCode =
+				projectMembership.getRoleExternalReferenceCode();
+
+			if (_projectMembershipService.deleteProjectMembership(
+					project.getExternalReferenceCode(),
+					roleExternalReferenceCode, userId)) {
+
+				runnables.add(
+					() -> _syncProjectMembershipToJSM(
+						false, project, roleExternalReferenceCode, userId));
+			}
 		}
 
 		_accountService.removeAccountUserAccount(account.getId(), userId);
@@ -277,8 +316,10 @@ public class UserAssignmentService {
 
 		if (roleBriefs != null) {
 			for (RoleBrief roleBrief : roleBriefs) {
-				_syncAccountRoleUnassignmentToJSM(
-					account, roleBrief.getExternalReferenceCode(), userAccount);
+				runnables.add(
+					() -> _syncAccountRoleUnassignmentToJSM(
+						account, roleBrief.getExternalReferenceCode(),
+						userAccount));
 
 				_sendPartnerAccountRoleEmail(
 					account, roleBrief.getName(), false, userAccount);
@@ -291,9 +332,10 @@ public class UserAssignmentService {
 		_subscriptionEntryService.deleteAccountActivationKeySubscriptionEntries(
 			account.getId(), userId);
 
-		_syncAccountMembershipToJSM(account, userId);
+		runnables.add(() -> _syncAccountMembershipToJSM(account, userId));
+		runnables.add(() -> _syncUserGroups(userId));
 
-		_syncUserGroups(userId);
+		_executeSync(() -> runnables.forEach(Runnable::run));
 	}
 
 	public void unassignAccountRole(
@@ -369,10 +411,24 @@ public class UserAssignmentService {
 			return;
 		}
 
-		_syncProjectMembershipToJSM(
-			false, project, projectRoleExternalReferenceCode, userId);
+		_executeSync(
+			() -> {
+				_syncProjectMembershipToJSM(
+					false, project, projectRoleExternalReferenceCode, userId);
 
-		_syncUserGroups(userId);
+				_syncUserGroups(userId);
+			});
+	}
+
+	private void _executeSync(Runnable runnable) {
+		try {
+			_executorService.execute(runnable);
+		}
+		catch (RejectedExecutionException rejectedExecutionException) {
+			_log.error(
+				"Unable to queue user assignment sync",
+				rejectedExecutionException);
+		}
 	}
 
 	private boolean _hasOrganization(
@@ -641,6 +697,8 @@ public class UserAssignmentService {
 
 	private static final String _ROLE_ACTION_UNASSIGNED = "Unassigned";
 
+	private static final long _SHUTDOWN_TIMEOUT_SECONDS = 20;
+
 	private static final Log _log = LogFactory.getLog(
 		UserAssignmentService.class);
 
@@ -656,6 +714,10 @@ public class UserAssignmentService {
 
 	@Autowired
 	private AccountUserAccountSynchronizer _accountUserAccountSynchronizer;
+
+	private final ExecutorService _executorService =
+		Executors.newSingleThreadExecutor(
+			runnable -> new Thread(runnable, "User Assignment Sync"));
 
 	@Autowired
 	private OktaService _oktaService;
