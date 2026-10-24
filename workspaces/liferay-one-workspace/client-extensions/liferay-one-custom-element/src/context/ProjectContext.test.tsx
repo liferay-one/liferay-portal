@@ -20,10 +20,10 @@ import {
 	useUnassignedCommerce,
 } from '~/hooks/useProjectCommerce';
 import {useProjectOrders} from '~/hooks/useProjectOrders';
+import {useUserProjects} from '~/pages/MyAccount/Projects/hooks/useUserProjects';
 import {
 	LAST_PROJECT_STORAGE_KEY,
 	ONE_TIME_PURCHASES,
-	useUserProjects,
 } from '~/pages/MyAccount/Projects/projects';
 
 import {ProjectProvider, useProject} from './ProjectContext';
@@ -42,15 +42,18 @@ vi.mock('~/hooks/useProjectOrders', async (importOriginal) => ({
 	useProjectOrders: vi.fn(),
 }));
 
-vi.mock('~/pages/MyAccount/Projects/projects', async (importOriginal) => ({
-	...(await importOriginal<
-		typeof import('~/pages/MyAccount/Projects/projects')
-	>()),
+vi.mock('~/pages/MyAccount/Projects/hooks/useUserProjects', () => ({
 	useUserProjects: vi.fn(),
 }));
 
 const alpha = {externalReferenceCode: 'PRJCT-ALPHA', id: 1, name: 'Alpha'};
 const beta = {externalReferenceCode: 'PRJCT-BETA', id: 2, name: 'Beta'};
+
+const alphaOrder = {customFields: {projectName: 'Alpha'}, placedOrderItems: []};
+const betaOrder = {
+	customFields: {salesforceProjectId: 'PRJCT-BETA'},
+	placedOrderItems: [],
+};
 
 const applicationProduct = {
 	externalReferenceCode: 'PRDCT-APP',
@@ -79,7 +82,8 @@ function ProjectConsumer() {
 function mockState({
 	accountLoading = false,
 	hasUnassignedEntitlements = false,
-	placedOrders = [] as unknown[],
+	ordersError = undefined as unknown,
+	placedOrders = [alphaOrder, betaOrder] as unknown[],
 	projects = [alpha, beta] as unknown[],
 	projectsLoading = false,
 	unassignedLoading = false,
@@ -90,6 +94,7 @@ function mockState({
 		isLoading: false,
 	} as unknown as ReturnType<typeof useProjectProducts>);
 	vi.mocked(useProjectOrders).mockReturnValue({
+		error: ordersError,
 		loading: false,
 		placedOrders,
 	} as unknown as ReturnType<typeof useProjectOrders>);
@@ -155,6 +160,7 @@ describe('[CTX-PROJECTCONTEXT] ProjectProvider', () => {
 					customFields: {projectName: 'Alpha'},
 					placedOrderItems: [{productId: 50}],
 				},
+				betaOrder,
 			],
 		});
 
@@ -174,6 +180,7 @@ describe('[CTX-PROJECTCONTEXT] ProjectProvider', () => {
 					customFields: {salesforceProjectId: 'PRJCT-ALPHA'},
 					placedOrderItems: [{productId: 50}],
 				},
+				betaOrder,
 			],
 		});
 
@@ -185,6 +192,8 @@ describe('[CTX-PROJECTCONTEXT] ProjectProvider', () => {
 	it('appends One Time Purchases when an order with no project holds a project item', () => {
 		mockState({
 			placedOrders: [
+				alphaOrder,
+				betaOrder,
 				{customFields: {}, placedOrderItems: [{productId: 50}]},
 			],
 		});
@@ -197,6 +206,53 @@ describe('[CTX-PROJECTCONTEXT] ProjectProvider', () => {
 			id: -1,
 			unassigned: true,
 		});
+	});
+
+	it('hides a project that has no orders', () => {
+		mockState({placedOrders: [alphaOrder]});
+
+		renderProvider('/ACCNT-1/project/PRJCT-ALPHA');
+
+		expect(projectValue.projects).toEqual([alpha]);
+	});
+
+	it('keeps every project when the orders cannot be read', () => {
+		mockState({
+			ordersError: new Error('Unable to read orders'),
+			placedOrders: [],
+		});
+
+		renderProvider('/ACCNT-1/project/PRJCT-ALPHA');
+
+		expect(projectValue.projects).toEqual([alpha, beta]);
+	});
+
+	it('matches an order to a project by its Salesforce project ID before its name', () => {
+		mockState({
+			placedOrders: [
+				{
+					customFields: {
+						projectName: 'Alpha',
+						salesforceProjectId: 'PRJCT-BETA',
+					},
+					placedOrderItems: [],
+				},
+			],
+		});
+
+		renderProvider('/ACCNT-1/project/PRJCT-BETA');
+
+		expect(projectValue.projects).toEqual([beta]);
+	});
+
+	it('redirects a project that has no orders to a project that has orders', () => {
+		mockState({placedOrders: [betaOrder]});
+
+		renderProvider('/ACCNT-1/project/PRJCT-ALPHA');
+
+		expect(screen.getByTestId('location')).toHaveTextContent(
+			'/ACCNT-1/project/PRJCT-BETA'
+		);
 	});
 
 	it('appends One Time Purchases when unassigned entitlements exist', () => {

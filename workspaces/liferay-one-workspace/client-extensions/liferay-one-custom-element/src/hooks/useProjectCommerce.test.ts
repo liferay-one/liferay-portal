@@ -7,6 +7,7 @@ import {renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useCurrentAccount} from '~/hooks/useAccounts';
 import {useDataQuery} from '~/hooks/useDataQuery';
+import {useProjectOrders} from '~/hooks/useProjectOrders';
 import {useUserProjects} from '~/pages/MyAccount/Projects/hooks/useUserProjects';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
 import Accounts from '~/services/spring-boot/Accounts';
@@ -30,6 +31,10 @@ vi.mock('~/hooks/useDataQuery', () => ({
 	useDataQuery: vi.fn(),
 }));
 
+vi.mock('~/hooks/useProjectOrders', () => ({
+	useProjectOrders: vi.fn(),
+}));
+
 vi.mock('~/pages/MyAccount/Projects/hooks/useUserProjects', () => ({
 	useUserProjects: vi.fn(),
 }));
@@ -49,6 +54,8 @@ const LONG_AGO = new Date(Date.now() - 400 * DAY).toISOString();
 type QueryData = {
 	accountContracts?: unknown[];
 	entitlements?: unknown[];
+	ordersError?: unknown;
+	placedOrders?: unknown[];
 	products?: unknown[];
 	projectContracts?: unknown[];
 };
@@ -56,9 +63,23 @@ type QueryData = {
 function mockQueries({
 	accountContracts = [],
 	entitlements = [],
+	ordersError,
+	placedOrders,
 	products = [],
 	projectContracts = [],
 }: QueryData) {
+	vi.mocked(useProjectOrders).mockReturnValue({
+		error: ordersError,
+		loading: false,
+		placedOrders:
+			placedOrders ??
+			[...accountContracts, ...projectContracts].map((contract) => ({
+				customFields: {
+					contractId: String((contract as {id: number}).id),
+				},
+			})),
+	} as unknown as ReturnType<typeof useProjectOrders>);
+
 	vi.mocked(useDataQuery).mockImplementation((({
 		key,
 	}: {
@@ -433,6 +454,89 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 			name: 'C_FUTURE',
 			termMonths: 12,
 		});
+	});
+});
+
+describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce contract list', () => {
+	const contractA = {externalReferenceCode: 'C_A', id: 1, spendLimit: 5};
+	const contractB = {externalReferenceCode: 'C_B', id: 2, spendLimit: 5};
+	const contractC = {externalReferenceCode: 'C_C', id: 3, spendLimit: 5};
+
+	beforeEach(() => {
+		(
+			window.Liferay as unknown as {
+				CommerceContext: {account?: {accountId: number}};
+			}
+		).CommerceContext.account = {accountId: 7};
+
+		vi.mocked(useCurrentAccount).mockReturnValue({
+			data: {externalReferenceCode: 'ACCNT-1'},
+			error: undefined,
+			isLoading: false,
+		} as unknown as ReturnType<typeof useCurrentAccount>);
+
+		vi.mocked(useUserProjects).mockReturnValue({
+			loading: false,
+			projects: [{externalReferenceCode: 'PRJCT-1', name: 'Project One'}],
+		} as unknown as ReturnType<typeof useUserProjects>);
+	});
+
+	it('hides a contract that has no orders and no entitlements', () => {
+		mockQueries({
+			entitlements: [{r_contractToEntitlement_c_contractId: 1}],
+			placedOrders: [{customFields: {contractId: '2'}}],
+			projectContracts: [contractA, contractB, contractC],
+		});
+
+		expect(
+			renderProjectCommerce().contracts.map(
+				(contract) => contract.externalReferenceCode
+			)
+		).toEqual(['C_A', 'C_B']);
+	});
+
+	it('keeps every contract when the orders cannot be read', () => {
+		mockQueries({
+			ordersError: new Error('Unable to read orders'),
+			placedOrders: [],
+			projectContracts: [contractA, contractB],
+		});
+
+		expect(
+			renderProjectCommerce().contracts.map(
+				(contract) => contract.externalReferenceCode
+			)
+		).toEqual(['C_A', 'C_B']);
+	});
+
+	it('keeps every contract when the project is not in the user projects', () => {
+		vi.mocked(useUserProjects).mockReturnValue({
+			loading: false,
+			projects: [],
+		} as unknown as ReturnType<typeof useUserProjects>);
+
+		mockQueries({
+			placedOrders: [],
+			projectContracts: [contractA, contractB],
+		});
+
+		expect(
+			renderProjectCommerce().contracts.map(
+				(contract) => contract.externalReferenceCode
+			)
+		).toEqual(['C_A', 'C_B']);
+	});
+
+	it('is loading while the orders load', () => {
+		mockQueries({projectContracts: [contractA]});
+
+		vi.mocked(useProjectOrders).mockReturnValue({
+			error: undefined,
+			loading: true,
+			placedOrders: [],
+		} as unknown as ReturnType<typeof useProjectOrders>);
+
+		expect(renderProjectCommerce().loading).toBe(true);
 	});
 });
 

@@ -9,7 +9,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useCurrentAccount} from '~/hooks/useAccounts';
 import {
 	resolveDefaultProject,
-	useUserProjects,
+	useProjectsWithOrders,
 } from '~/pages/MyAccount/Projects/projects';
 
 import ProjectRedirect from './ProjectRedirect';
@@ -21,7 +21,7 @@ vi.mock('~/pages/MyAccount/Projects/projects', async (importOriginal) => ({
 		typeof import('~/pages/MyAccount/Projects/projects')
 	>()),
 	resolveDefaultProject: vi.fn(),
-	useUserProjects: vi.fn(),
+	useProjectsWithOrders: vi.fn(),
 }));
 
 const alpha = {externalReferenceCode: 'PRJCT-ALPHA', id: 1, name: 'Alpha'};
@@ -52,10 +52,10 @@ describe('[ROUTE-MY-ACCOUNT-PROJECT] ProjectRedirect', () => {
 			data: {externalReferenceCode: 'ACCNT-1'},
 			isLoading: false,
 		} as unknown as ReturnType<typeof useCurrentAccount>);
-		vi.mocked(useUserProjects).mockReturnValue({
+		vi.mocked(useProjectsWithOrders).mockReturnValue({
 			loading: false,
 			projects: [alpha, beta],
-		} as unknown as ReturnType<typeof useUserProjects>);
+		} as unknown as ReturnType<typeof useProjectsWithOrders>);
 		vi.mocked(resolveDefaultProject).mockReturnValue(alpha);
 	});
 
