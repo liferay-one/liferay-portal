@@ -7,6 +7,7 @@ import ClayButton from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
 import {useRef, useState} from 'react';
+import Button from '~/components/Button/Button';
 import {translate} from '~/i18n';
 import PermissionsSelect from '~/pages/MyAccount/ProjectMembers/components/PermissionsSelect/PermissionsSelect';
 import {getContactRoleChanges} from '~/pages/MyAccount/ProjectMembers/projectRoles';
@@ -107,6 +108,7 @@ const EditProjectPermissionsModal = ({
 		}))
 	);
 	const [error, setError] = useState('');
+	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const submittingRef = useRef(false);
 
@@ -174,6 +176,8 @@ const EditProjectPermissionsModal = ({
 		}
 
 		submittingRef.current = true;
+
+		setIsSubmitting(true);
 
 		try {
 			await Promise.all(
@@ -245,6 +249,8 @@ const EditProjectPermissionsModal = ({
 		}
 		finally {
 			submittingRef.current = false;
+
+			setIsSubmitting(false);
 		}
 	};
 
@@ -354,6 +360,26 @@ const EditProjectPermissionsModal = ({
 			</ClayButton>
 
 			{error && <div className="mt-2 text-danger">{error}</div>}
+
+			<div className="d-flex justify-content-end mt-4">
+				<Button
+					className="mr-3"
+					disabled={isSubmitting}
+					displayType="secondary"
+					onClick={onClose}
+					type="button"
+				>
+					{translate('cancel')}
+				</Button>
+
+				<Button
+					disabled={isSubmitting}
+					isLoading={isSubmitting}
+					type="submit"
+				>
+					{translate('save-changes')}
+				</Button>
+			</div>
 		</form>
 	);
 };

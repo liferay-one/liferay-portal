@@ -72,17 +72,6 @@ export function useProjectMemberActions({
 					project={project}
 				/>
 			),
-			footer: [
-				cancelButton,
-				null,
-				<Button
-					form="edit-project-permissions"
-					key="confirm"
-					type="submit"
-				>
-					{translate('save-changes')}
-				</Button>,
-			],
 			header: translate('project-permissions'),
 		});
 	};
