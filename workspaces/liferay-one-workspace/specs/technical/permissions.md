@@ -85,7 +85,7 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 | Account Supplier | `L_ACCOUNT_SUPPLIER` | account | 238 | Manual. No code reads it. |
 | Analytics Cloud Owner | `C_ANALYTICS_CLOUD_OWNER` | account | 23 | Manual |
 | Article Administrator | `C_ARTICLE_ADMIN` | site | 28 | Manual |
-| Cloud Native Contact | `C_CLOUD_NATIVE_CONTACT` | account | 33 | A project contact designation (`ProjectRestController.java:298`). Its holders get the Okta Cloud Native app (`UserAssignmentService.java:112`). |
+| Cloud Native Contact | `C_CLOUD_NATIVE_CONTACT` | account | 33 | A project contact designation (`ProjectRestController.java:298`). Its holders get the Okta Cloud Native app (`UserAssignmentService.java:119`). |
 | Critical Incident Contact | `C_CRITICAL_INCIDENT_CONTACT` | account | 38 | A project contact designation (`ProjectRestController.java:298`) or an invitation |
 | Customer | `C_CUSTOMER` | regular | 43 | Membership in the Customers user group (`16-user-group.batch-engine-data.json:13`). No code adds users to the group. |
 | Customer Experience Manager | `C_CUSTOMER_EXPERIENCE_MANAGER` | account | 48 | A Salesforce contact role (`ProvisioningContactService.java:118`) |
@@ -530,7 +530,7 @@ Each finding names the file and line. The findings are ordered by risk.
 
 1. **Provisioning Member has no self `VIEW` grant, so its checks never pass.** `LicenseKeyPermission.java:106` and the ticket attachment bypass (`TicketAttachmentsRestController.java:546`, `TicketsTicketAttachmentsRestController.java:99`) look for Provisioning Member in `roleBriefs`, which omits a role that the user cannot view. Add a scope 4 `VIEW` grant on `[$ROLE_ID:Provisioning Member$]` beside `L1111`.
 
-1. **The project role grants are inert.** The 4 scope 3 grants to Project Admin and Project Requester (`L1000`, `L1009`, `L1036`, `L1045`) and the account grant to Project Admin (`L391`) apply only to a user who holds the role as a Liferay account role. The code stores project roles on `ProjectMembership` and never assigns them as account roles (`UserAssignmentService.java:187`). So a Project Admin or a Project Requester with no account role cannot record a DXP authorization (`Congratulations.tsx:47`), against REQ-ACCESS-027.
+1. **The project role grants are inert.** The 4 scope 3 grants to Project Admin and Project Requester (`L1000`, `L1009`, `L1036`, `L1045`) and the account grant to Project Admin (`L391`) apply only to a user who holds the role as a Liferay account role. The code stores project roles on `ProjectMembership` and never assigns them as account roles (`UserAssignmentService.java:194`). So a Project Admin or a Project Requester with no account role cannot record a DXP authorization (`Congratulations.tsx:47`), against REQ-ACCESS-027.
 
 1. **Pages write to objects that the user cannot add to.** `POST /o/c/trialextensionrequests` (`ExtendSSATrialModal.tsx:106`) and its `PATCH` (`ExtendRequestModal.tsx:239`) have no `ADD_OBJECT_ENTRY` or `UPDATE` grant for the SSA roles. `POST /o/c/publisheraccountrequests` (`RequestAccount.tsx:84`) has no grant for Guest or User. `POST /o/c/getappinformations` (`GetAppInformations.ts:20`) has no grant. Each call works only for an administrator.
 
