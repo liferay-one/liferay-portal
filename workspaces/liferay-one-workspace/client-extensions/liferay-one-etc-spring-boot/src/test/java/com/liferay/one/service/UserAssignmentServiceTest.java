@@ -28,6 +28,9 @@ import com.liferay.one.okta.service.OktaService;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.TimeUnit;
 
 import org.json.JSONObject;
 
@@ -62,6 +65,23 @@ public class UserAssignmentServiceTest {
 		ReflectionTestUtils.setField(
 			_userAssignmentService, "_accountUserAccountSynchronizer",
 			_accountUserAccountSynchronizer);
+
+		Mockito.doAnswer(
+			invocation -> {
+				Runnable runnable = invocation.getArgument(0);
+
+				runnable.run();
+
+				return null;
+			}
+		).when(
+			_executorService
+		).execute(
+			Mockito.any(Runnable.class)
+		);
+
+		ReflectionTestUtils.setField(
+			_userAssignmentService, "_executorService", _executorService);
 		ReflectionTestUtils.setField(
 			_userAssignmentService, "_oktaService", _oktaService);
 		ReflectionTestUtils.setField(
@@ -611,6 +631,56 @@ public class UserAssignmentServiceTest {
 	}
 
 	@Test
+	public void testAssignProjectRoleKeepsMembershipWhenSyncIsRejected()
+		throws Exception {
+
+		Mockito.doThrow(
+			new RejectedExecutionException()
+		).when(
+			_executorService
+		).execute(
+			Mockito.any(Runnable.class)
+		);
+
+		_userAssignmentService.assignProjectRole(
+			_project, RoleConstants.ERC_PROJECT_ADMIN, _USER_ID);
+
+		Mockito.verify(
+			_projectMembershipService
+		).addProjectMembership(
+			_PROJECT_EXTERNAL_REFERENCE_CODE, RoleConstants.ERC_PROJECT_ADMIN,
+			_USER_ID
+		);
+
+		Mockito.verifyNoInteractions(_accountSynchronizer, _userGroupService);
+	}
+
+	@Test
+	public void testAssignProjectRoleReturnsBeforeSyncing() throws Exception {
+		Mockito.reset(_executorService);
+
+		_userAssignmentService.assignProjectRole(
+			_project, RoleConstants.ERC_PROJECT_ADMIN, _USER_ID);
+
+		Mockito.verify(
+			_projectMembershipService
+		).addProjectMembership(
+			_PROJECT_EXTERNAL_REFERENCE_CODE, RoleConstants.ERC_PROJECT_ADMIN,
+			_USER_ID
+		);
+
+		Mockito.verify(
+			_executorService
+		).execute(
+			Mockito.any(Runnable.class)
+		);
+
+		Mockito.verifyNoInteractions(
+			_accountSynchronizer, _accountUserAccountRoleSynchronizer,
+			_userAccountSynchronizer, _userGroupService);
+	}
+
+	@Test
 	public void testAssignProjectRoleSkipsActivationForAccountMember()
 		throws Exception {
 
@@ -678,6 +748,44 @@ public class UserAssignmentServiceTest {
 	}
 
 	@Test
+	public void testDestroyStopsQueuedSyncsAfterTimeout() throws Exception {
+		Mockito.when(
+			_executorService.awaitTermination(
+				Mockito.anyLong(), Mockito.any(TimeUnit.class))
+		).thenReturn(
+			false
+		);
+
+		_userAssignmentService.destroy();
+
+		InOrder inOrder = Mockito.inOrder(_executorService);
+
+		inOrder.verify(
+			_executorService
+		).shutdown();
+
+		inOrder.verify(
+			_executorService
+		).shutdownNow();
+	}
+
+	@Test
+	public void testDestroyWaitsForQueuedSyncs() throws Exception {
+		Mockito.when(
+			_executorService.awaitTermination(
+				Mockito.anyLong(), Mockito.any(TimeUnit.class))
+		).thenReturn(
+			true
+		);
+
+		_userAssignmentService.destroy();
+
+		Mockito.verify(
+			_executorService, Mockito.never()
+		).shutdownNow();
+	}
+
+	@Test
 	public void testSyncOktaGroupOrganizationsReconcilesLinkedOrganizations()
 		throws Exception {
 
@@ -730,6 +838,55 @@ public class UserAssignmentServiceTest {
 	}
 
 	@Test
+	public void testUnassignAccountQueuesSyncsAfterRemovingTheUser()
+		throws Exception {
+
+		_addAccountBrief(RoleConstants.namesPartnerAccountRoles.get(0));
+
+		Mockito.when(
+			_projectMembershipService.getProjectMemberships(
+				_ACCOUNT_ID, _USER_ID)
+		).thenReturn(
+			List.of(_createProjectMembership(RoleConstants.ERC_PROJECT_USER))
+		);
+
+		Mockito.when(
+			_projectMembershipService.deleteProjectMembership(
+				_PROJECT_EXTERNAL_REFERENCE_CODE,
+				RoleConstants.ERC_PROJECT_USER, _USER_ID)
+		).thenReturn(
+			true
+		);
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_project
+		);
+
+		Mockito.reset(_executorService);
+
+		_userAssignmentService.unassignAccount(_account, _USER_ID);
+
+		Mockito.verify(
+			_accountService
+		).removeAccountUserAccount(
+			_ACCOUNT_ID, _USER_ID
+		);
+
+		Mockito.verify(
+			_executorService
+		).execute(
+			Mockito.any(Runnable.class)
+		);
+
+		Mockito.verifyNoInteractions(
+			_accountSynchronizer, _accountUserAccountRoleSynchronizer,
+			_accountUserAccountSynchronizer, _userAccountSynchronizer,
+			_userGroupService);
+	}
+
+	@Test
 	public void testUnassignAccountRemovesProjectMembershipsAndAccountRoles()
 		throws Exception {
 
@@ -767,7 +924,8 @@ public class UserAssignmentServiceTest {
 		_userAssignmentService.unassignAccount(_account, _USER_ID);
 
 		InOrder inOrder = Mockito.inOrder(
-			_accountService, _accountUserAccountRoleSynchronizer,
+			_accountService, _accountSynchronizer,
+			_accountUserAccountRoleSynchronizer,
 			_accountUserAccountSynchronizer, _projectMembershipService,
 			_subscriptionEntryService);
 
@@ -785,16 +943,22 @@ public class UserAssignmentServiceTest {
 		);
 
 		inOrder.verify(
+			_subscriptionEntryService
+		).deleteAccountActivationKeySubscriptionEntries(
+			_ACCOUNT_ID, _USER_ID
+		);
+
+		inOrder.verify(
+			_accountSynchronizer
+		).syncProjectUserAccounts(
+			_project
+		);
+
+		inOrder.verify(
 			_accountUserAccountRoleSynchronizer
 		).syncUnassignRole(
 			_ACCOUNT_ROLE_EXTERNAL_REFERENCE_CODE,
 			_USER_EXTERNAL_REFERENCE_CODE, _ACCOUNT_EXTERNAL_REFERENCE_CODE
-		);
-
-		inOrder.verify(
-			_subscriptionEntryService
-		).deleteAccountActivationKeySubscriptionEntries(
-			_ACCOUNT_ID, _USER_ID
 		);
 
 		inOrder.verify(
@@ -960,6 +1124,32 @@ public class UserAssignmentServiceTest {
 		).syncOrganizationUserAccounts(
 			_organization
 		);
+	}
+
+	@Test
+	public void testUnassignProjectRoleReturnsBeforeSyncing() throws Exception {
+		Mockito.when(
+			_projectMembershipService.deleteProjectMembership(
+				_PROJECT_EXTERNAL_REFERENCE_CODE,
+				RoleConstants.ERC_PROJECT_ADMIN, _USER_ID)
+		).thenReturn(
+			true
+		);
+
+		Mockito.reset(_executorService);
+
+		_userAssignmentService.unassignProjectRole(
+			_project, RoleConstants.ERC_PROJECT_ADMIN, _USER_ID);
+
+		Mockito.verify(
+			_executorService
+		).execute(
+			Mockito.any(Runnable.class)
+		);
+
+		Mockito.verifyNoInteractions(
+			_accountSynchronizer, _accountUserAccountRoleSynchronizer,
+			_userAccountSynchronizer, _userGroupService);
 	}
 
 	@Test
@@ -1214,6 +1404,8 @@ public class UserAssignmentServiceTest {
 	private final AccountUserAccountSynchronizer
 		_accountUserAccountSynchronizer = Mockito.mock(
 			AccountUserAccountSynchronizer.class);
+	private final ExecutorService _executorService = Mockito.mock(
+		ExecutorService.class);
 	private final OktaService _oktaService = Mockito.mock(OktaService.class);
 	private Organization _organization;
 	private final OrganizationService _organizationService = Mockito.mock(
