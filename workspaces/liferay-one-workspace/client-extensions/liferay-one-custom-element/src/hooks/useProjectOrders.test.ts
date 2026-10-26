@@ -11,6 +11,7 @@ import {getOrderStatusToken} from '~/utils/orderUtils';
 
 import {usePlacedOrders} from './usePlacedOrder';
 import {
+	getProductEnvironmentOrderItems,
 	getProductOrderInfo,
 	getProductVirtualItems,
 	getProjectExternalReferenceCode,
@@ -397,6 +398,44 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		expect(getProductOrderInfo('product', [order], 7).itemName).toBe(
 			'Global 24/7 Support, Support Plans'
 		);
+	});
+
+	it('names the tier of each environment order item after its SKU option value', () => {
+		const order = placedOrder({
+			id: 13,
+			placedOrderItems: [
+				{
+					id: 21,
+					name: 'Liferay Portal EE',
+					options: JSON.stringify([
+						{
+							key: 'liferay-portal-ee',
+							skuOptionValueNames: [
+								'Subscription Portal EE - Platinum (Production)',
+							],
+						},
+					]),
+					productId: 7,
+				},
+				{
+					id: 22,
+					name: 'Liferay Portal EE',
+					options: JSON.stringify([
+						{key: 'machinetype', skuOptionValueNames: ['High']},
+					]),
+					productId: 7,
+				},
+			],
+		});
+
+		expect(
+			getProductEnvironmentOrderItems([order], 7).map(
+				({id, tierName}) => [id, tierName]
+			)
+		).toEqual([
+			[21, 'Subscription Portal EE - Platinum (Production)'],
+			[22, 'Liferay Portal EE'],
+		]);
 	});
 
 	it('returns blank product order info when no order matches', () => {
