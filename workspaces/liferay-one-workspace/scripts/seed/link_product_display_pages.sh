@@ -22,6 +22,7 @@ source ../_common.sh
 PRODUCT_DISPLAY_PAGES=(
 	"AI Hub Product Details|PRDCT-AI-HUB"
 	"CMP Product Details|PRDCT-CONTENT-MARKETING"
+	"CMS Product Details|PRDCT-CMS"
 	"DSR Product Details|PRDCT-DSR"
 	"DXP Free Tier Product Details|PRDCT-DXP"
 	"LDP Product Details|PRDCT-DATA-PLATFORM"

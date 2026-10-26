@@ -536,6 +536,156 @@
 				}
 			],
 			"description": {
+				"en_US": "Deliver content to every channel through APIs, and control who can edit it and who can see it."
+			},
+			"externalReferenceCode": "PRDCT-CMS",
+			"images": [
+				{
+					"attachment": "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",
+					"contentType": "image/png",
+					"neverExpire": true,
+					"title": {
+						"en_US": "Liferay CMS"
+					}
+				}
+			],
+			"name": {
+				"en_US": "Liferay CMS"
+			},
+			"productConfiguration": {
+				"allowBackOrder": true,
+				"displayAvailability": true,
+				"displayStockQuantity": true
+			},
+			"productSpecifications": [
+				{
+					"specificationKey": "app-documentation-url",
+					"value": {
+						"en_US": "https://learn.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "app-usage-terms-url",
+					"value": {
+						"en_US": "https://www.liferay.com/legal/customer-agreements"
+					}
+				},
+				{
+					"specificationKey": "developer-name",
+					"value": {
+						"en_US": "Liferay"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-capabilities",
+					"value": {
+						"en_US": "Control who can edit and who can see content"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-capabilities",
+					"value": {
+						"en_US": "Organize content and assets by team, brand, or region"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-capabilities",
+					"value": {
+						"en_US": "Structure content once, deliver it everywhere"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-capabilities",
+					"value": {
+						"en_US": "Translate into 50+ languages"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-categories",
+					"value": {
+						"en_US": "Content Management"
+					}
+				},
+				{
+					"specificationKey": "liferay-products-categories",
+					"value": {
+						"en_US": "Primary"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "publisher-web-site-url",
+					"value": {
+						"en_US": "https://www.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "solution-type",
+					"value": {
+						"en_US": "cms"
+					}
+				},
+				{
+					"specificationKey": "support-email-address",
+					"value": {
+						"en_US": "support@liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-phone",
+					"value": {
+						"en_US": "+1 877 437 3329"
+					}
+				},
+				{
+					"specificationKey": "support-url",
+					"value": {
+						"en_US": "https://www.liferay.com/support"
+					}
+				}
+			],
+			"productType": "virtual",
+			"productVirtualSettings": {
+				"activationStatus": 0,
+				"duration": 0,
+				"maxUsages": 0,
+				"termsOfUseRequired": false,
+				"useSample": false
+			},
+			"skus": [
+				{
+					"externalReferenceCode": "PRDCT-CMS-STANDARD",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "standard"
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"categories": [
+				{
+					"externalReferenceCode": "MARKETPLACE_LISTING_LISTED"
+				},
+				{
+					"externalReferenceCode": "MARKETPLACE_PRODUCT_TYPE_LIFERAY_PRODUCT"
+				}
+			],
+			"description": {
 				"en_US": "Run smarter campaigns from one place: plan, manage, and deliver personalized marketing at scale."
 			},
 			"externalReferenceCode": "PRDCT-CONTENT-MARKETING",
