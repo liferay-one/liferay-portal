@@ -225,13 +225,21 @@ export function useProjectActivationKeys() {
 
 	const enabled = Boolean(projectExternalReferenceCode || accountId);
 
-	const scope = (projectField: string, accountField: string) =>
+	const scope = (
+		accountField: string,
+		projectField: string,
+		projectIdField: string
+	) =>
 		projectExternalReferenceCode
 			? SearchBuilder.eq(
 					projectField,
 					escapeODataString(projectExternalReferenceCode)
 				)
-			: SearchBuilder.eq(accountField, String(accountId));
+			: new SearchBuilder()
+					.eq(accountField, String(accountId))
+					.and()
+					.eq(projectIdField, '0')
+					.build();
 
 	const {
 		error,
@@ -243,8 +251,9 @@ export function useProjectActivationKeys() {
 		{
 			fields: ACTIVATION_KEY_FIELDS,
 			filter: scope(
+				'r_accountEntryToActivationKey_accountEntryId',
 				'r_projectToActivationKey_c_projectERC',
-				'r_accountEntryToActivationKey_accountEntryId'
+				'r_projectToActivationKey_c_projectId'
 			),
 			sort: 'startDate:desc',
 		}
@@ -254,8 +263,9 @@ export function useProjectActivationKeys() {
 		useObjectItems<LicenseKeyNode>(enabled ? '/o/c/licensekeys' : null, {
 			fields: PROJECT_LICENSE_KEY_FIELDS,
 			filter: scope(
+				'r_accountEntryToLicenseKey_accountEntryId',
 				'r_projectToLicenseKey_c_projectERC',
-				'r_accountEntryToLicenseKey_accountEntryId'
+				'r_projectToLicenseKey_c_projectId'
 			),
 		});
 
