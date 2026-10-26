@@ -26,6 +26,7 @@ const orderInfo = {
 	purchaseNumber: 'PO-1',
 	purchasedBy: 'Jane Doe',
 	quantity: '5',
+	skuProductNames: ['Liferay Analytics Cloud Subscription - Business'],
 };
 
 function getRows(
@@ -65,9 +66,9 @@ const environmentEntitlement = {
 	instanceSize: '',
 	provisionedCount: 1,
 	quantity: 2,
+	skuProductName: '',
 	startDate: '2026-08-09T12:00:00Z',
 	terminationStatus: '',
-	tierName: '',
 };
 
 const environmentRows = [
@@ -509,17 +510,23 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		]);
 	});
 
-	it('leaves out the SKU product name when it repeats the product name', () => {
+	it('leaves out the SKU product names that repeat the product name', () => {
 		expect(
 			getRows('basic', {
 				itemType: 'product',
-				orderInfo: {...orderInfo, itemName: 'Liferay Analytics Cloud'},
-			})
-		).toEqual(orderRows);
+				orderInfo: {
+					...orderInfo,
+					skuProductNames: ['Liferay Analytics Cloud', '', 'Gold'],
+				},
+			})[0]
+		).toEqual(['Product', 'Gold']);
 		expect(
 			getRows('basic', {
 				itemType: 'product',
-				orderInfo: {...orderInfo, itemName: ''},
+				orderInfo: {
+					...orderInfo,
+					skuProductNames: ['Liferay Analytics Cloud', ''],
+				},
 			})
 		).toEqual(orderRows);
 	});
@@ -534,28 +541,30 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 				environmentEntitlements: [
 					{
 						...environmentEntitlement,
-						tierName:
+						skuProductName:
 							'Subscription Portal EE - Platinum (Production)',
 					},
 					{
 						...environmentEntitlement,
-						tierName:
+						skuProductName:
 							'Subscription Portal EE - Platinum (Production)',
 					},
 					{
 						...environmentEntitlement,
-						tierName: 'Subscription Portal EE - Gold (Production)',
+						skuProductName:
+							'Subscription Portal EE - Gold (Production)',
 					},
 					{
 						...environmentEntitlement,
 						endDate: '2025-08-09T12:00:00Z',
+						skuProductName:
+							'Subscription Portal EE - Basic (Production)',
 						startDate: '2024-08-09T12:00:00Z',
-						tierName: 'Subscription Portal EE - Basic (Production)',
 					},
 					{
 						...environmentEntitlement,
 						environment: 'non-production',
-						tierName:
+						skuProductName:
 							'Subscription Portal EE - Platinum (Non-Production)',
 					},
 				],
