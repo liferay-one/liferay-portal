@@ -21,7 +21,7 @@ vi.mock('~/services/graphql/GraphQL', () => ({
 	toGraphQLString: JSON.stringify,
 }));
 
-const orderItems = [{id: 7, optionValueNames: [], tierName: ''}];
+const orderItems = [{id: 7, optionValueNames: [], skuProductName: ''}];
 
 const entitlementNodes = [
 	{
@@ -75,8 +75,8 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		const {result} = renderHook(() =>
 			useProductEnvironmentEntitlements(
 				[
-					{id: 7, optionValueNames: [], tierName: ''},
-					{id: 8, optionValueNames: [], tierName: ''},
+					{id: 7, optionValueNames: [], skuProductName: ''},
+					{id: 8, optionValueNames: [], skuProductName: ''},
 				],
 				true
 			)
@@ -215,9 +215,9 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 				instanceSize: '',
 				provisionedCount: 1,
 				quantity: 2,
+				skuProductName: '',
 				startDate: '2026-08-09T00:00:00.000Z',
 				terminationStatus: '',
-				tierName: '',
 			},
 			{
 				endDate: '',
@@ -225,9 +225,9 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 				instanceSize: '',
 				provisionedCount: 0,
 				quantity: 0,
+				skuProductName: '',
 				startDate: '',
 				terminationStatus: 'terminated',
-				tierName: '',
 			},
 		]);
 	});
@@ -260,7 +260,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 						optionValueNames: [
 							'Liferay Commerce Subscription - Prod Sizing 1',
 						],
-						tierName:
+						skuProductName:
 							'Liferay Commerce Subscription - Prod Sizing 1',
 					},
 					{
@@ -268,7 +268,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 						optionValueNames: [
 							'Liferay Commerce Subscription - Non-Prod Sizing 2',
 						],
-						tierName:
+						skuProductName:
 							'Liferay Commerce Subscription - Non-Prod Sizing 2',
 					},
 				],
@@ -286,7 +286,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		]);
 	});
 
-	it('takes the tier name of each entitlement from its order item', () => {
+	it('takes the SKU product name of each entitlement from its order item', () => {
 		useDataQueryMock.mockReturnValue({data: undefined, isLoading: false});
 		useFetchMock.mockReturnValue({
 			data: {
@@ -312,7 +312,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 					{
 						id: 7,
 						optionValueNames: [],
-						tierName:
+						skuProductName:
 							'Subscription Portal EE - Platinum (Production)',
 					},
 				],
@@ -321,7 +321,9 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		);
 
 		expect(
-			result.current.environmentEntitlements.map(({tierName}) => tierName)
+			result.current.environmentEntitlements.map(
+				({skuProductName}) => skuProductName
+			)
 		).toEqual(['Subscription Portal EE - Platinum (Production)', '']);
 	});
 
@@ -351,7 +353,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 						optionValueNames: [
 							'Liferay Self-Hosted Subscription - Gold Prod Sizing 3',
 						],
-						tierName:
+						skuProductName:
 							'Liferay Self-Hosted Subscription - Gold Prod Sizing 3',
 					},
 				],

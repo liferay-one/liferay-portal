@@ -287,6 +287,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			purchaseNumber: 'PO-1',
 			purchasedBy: 'Jane Doe',
 			quantity: '3',
+			skuProductNames: [''],
 			status: 'active',
 		});
 	});
@@ -400,7 +401,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		);
 	});
 
-	it('names the tier of each environment order item after its SKU option value', () => {
+	it('names the SKU product of each order item after its product option value', () => {
 		const order = placedOrder({
 			id: 13,
 			placedOrderItems: [
@@ -419,6 +420,21 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 				},
 				{
 					id: 22,
+					name: 'Liferay Data Platform',
+					options: JSON.stringify([
+						{
+							key: 'consumption-role',
+							skuOptionValueNames: ['Base Allotment'],
+						},
+						{
+							key: 'salesforce-product',
+							skuOptionValueNames: ['Liferay Data Platform'],
+						},
+					]),
+					productId: 7,
+				},
+				{
+					id: 23,
 					name: 'Liferay Portal EE',
 					options: JSON.stringify([
 						{key: 'machinetype', skuOptionValueNames: ['High']},
@@ -428,14 +444,20 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			],
 		});
 
+		const skuProductNames = [
+			'Subscription Portal EE - Platinum (Production)',
+			'Liferay Data Platform',
+			'',
+		];
+
 		expect(
 			getProductEnvironmentOrderItems([order], 7).map(
-				({id, tierName}) => [id, tierName]
+				({skuProductName}) => skuProductName
 			)
-		).toEqual([
-			[21, 'Subscription Portal EE - Platinum (Production)'],
-			[22, 'Liferay Portal EE'],
-		]);
+		).toEqual(skuProductNames);
+		expect(
+			getProductOrderInfo('product', [order], 7).skuProductNames
+		).toEqual(skuProductNames);
 	});
 
 	it('returns blank product order info when no order matches', () => {
@@ -464,6 +486,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			purchaseNumber: '',
 			purchasedBy: '',
 			quantity: '',
+			skuProductNames: [],
 			status: '',
 		});
 	});
