@@ -27,6 +27,8 @@ import type {PlacedOrder, PlacedOrderItems, VirtualItem} from '~/types/orders';
 
 const MACHINE_TYPE_OPTION_KEY = 'machinetype';
 
+const SALESFORCE_PRODUCT_OPTION_KEY = 'salesforce-product';
+
 const PAGE_SIZE = 200;
 
 const RESTRICTED_ORDER_FIELDS = [
@@ -103,13 +105,14 @@ export type ProductOrderInfo = {
 	purchaseNumber: string;
 	purchasedBy: string;
 	quantity: string;
+	skuProductNames: string[];
 	status: string;
 };
 
 export type ProductOrderItem = {
 	id: number;
 	optionValueNames: string[];
-	tierName: string;
+	skuProductName: string;
 };
 
 export type ProductEnvironmentInfo = {
@@ -193,18 +196,34 @@ function getOrderTotal(order: PlacedOrder): string {
 	return summary?.totalFormatted ?? totalFormatted ?? '$0.00';
 }
 
-function getTierName(placedOrderItem: PlacedOrderItems): string {
+function getSKUOptions(placedOrderItem: PlacedOrderItems) {
 	const options = safeJSONParse<
 		{key?: string; skuOptionValueNames?: string[]}[]
 	>(placedOrderItem.options || null, []);
 
-	const skuOption = (Array.isArray(options) ? options : []).find(
+	return (Array.isArray(options) ? options : []).filter(
 		(option) =>
 			option.key !== MACHINE_TYPE_OPTION_KEY &&
 			option.skuOptionValueNames?.length
 	);
+}
 
-	return skuOption?.skuOptionValueNames?.[0] ?? placedOrderItem.name;
+function getSKUProductName(placedOrderItem: PlacedOrderItems): string {
+	const skuOptions = getSKUOptions(placedOrderItem);
+
+	const skuOption =
+		skuOptions.find(
+			(option) => option.key === SALESFORCE_PRODUCT_OPTION_KEY
+		) ?? skuOptions[0];
+
+	return skuOption?.skuOptionValueNames?.[0] ?? '';
+}
+
+function getTierName(placedOrderItem: PlacedOrderItems): string {
+	return (
+		getSKUOptions(placedOrderItem)[0]?.skuOptionValueNames?.[0] ??
+		placedOrderItem.name
+	);
 }
 
 function formatDate(value?: string): string {
@@ -301,7 +320,7 @@ export function getProductEnvironmentOrderItems(
 	return getProductOrderItems(placedOrders, productId).map((item) => ({
 		id: item.id,
 		optionValueNames: getOptionValueNames(item.options),
-		tierName: getTierName(item),
+		skuProductName: getSKUProductName(item),
 	}));
 }
 
@@ -326,6 +345,7 @@ export function getProductOrderInfo(
 			purchaseNumber: '',
 			purchasedBy: '',
 			quantity: '',
+			skuProductNames: [],
 			status: '',
 		};
 	}
@@ -364,6 +384,7 @@ export function getProductOrderInfo(
 				? ''
 				: order.author ?? '',
 		quantity: quantity ? String(quantity) : '',
+		skuProductNames: placedOrderItems.map(getSKUProductName),
 		status: getProjectItemStatusToken(
 			itemType,
 			order,
