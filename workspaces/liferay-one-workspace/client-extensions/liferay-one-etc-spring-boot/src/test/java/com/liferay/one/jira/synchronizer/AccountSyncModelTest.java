@@ -6,6 +6,7 @@
 package com.liferay.one.jira.synchronizer;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.service.JiraBusinessEventService;
 import com.liferay.one.service.CommerceOrderService;
@@ -15,6 +16,8 @@ import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.PropertyService;
 import com.liferay.one.service.RoleService;
 import com.liferay.one.service.UserAccountService;
+
+import java.util.Collections;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -177,12 +180,79 @@ public class AccountSyncModelTest {
 		);
 	}
 
+	@Test
+	public void testIsSupportedWhenAccountHasUnassignedSupportEntitlement()
+		throws Exception {
+
+		_whenPartner(false);
+
+		Mockito.when(
+			_entitlementService.hasUnterminatedActiveUnassignedEntitlement(
+				1L, EntitlementConstants.namesJSMProjects)
+		).thenReturn(
+			true
+		);
+
+		Assertions.assertTrue(_accountSyncModel.isSupported());
+	}
+
+	@Test
+	public void testIsSupportedWhenAccountIsPartner() throws Exception {
+		_whenPartner(true);
+
+		Assertions.assertTrue(_accountSyncModel.isSupported());
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).hasUnterminatedActiveUnassignedEntitlement(
+			Mockito.anyLong(), Mockito.anyList()
+		);
+	}
+
+	@Test
+	public void testIsSupportedWhenAccountIsUnsupported() throws Exception {
+		_whenPartner(false);
+
+		Assertions.assertFalse(_accountSyncModel.isSupported());
+	}
+
+	@Test
+	public void testIsSupportedWhenEntitlementFails() throws Exception {
+		Mockito.when(
+			_entitlementService.hasUnterminatedActiveEntitlement(
+				Mockito.anyCollection(), Mockito.anyList(),
+				Mockito.anyCollection())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		Assertions.assertNull(_accountSyncModel.isSupported());
+		Assertions.assertNull(_accountSyncModel.isSupported());
+
+		Mockito.verify(
+			_entitlementService
+		).hasUnterminatedActiveEntitlement(
+			Mockito.anyCollection(), Mockito.anyList(), Mockito.anyCollection()
+		);
+	}
+
 	private void _whenCommerceOrderFails() throws Exception {
 		Mockito.when(
 			_commerceOrderService.getAccountSupportInfo(
 				Mockito.anyLong(), Mockito.any())
 		).thenThrow(
 			new RuntimeException()
+		);
+	}
+
+	private void _whenPartner(boolean partner) throws Exception {
+		Mockito.when(
+			_entitlementService.hasUnterminatedActiveEntitlement(
+				Collections.singletonList(1L),
+				Collections.singletonList(EntitlementConstants.NAME_PARTNER),
+				Collections.emptyList())
+		).thenReturn(
+			partner
 		);
 	}
 

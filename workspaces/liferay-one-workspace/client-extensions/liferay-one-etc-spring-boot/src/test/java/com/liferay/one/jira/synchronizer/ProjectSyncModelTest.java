@@ -5,12 +5,15 @@
 
 package com.liferay.one.jira.synchronizer;
 
+import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.UserAccountService;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 import org.json.JSONObject;
@@ -51,14 +54,38 @@ public class ProjectSyncModelTest {
 		throws Exception {
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlementDefinitions(
-				Mockito.anyString())
+			_entitlementService.getActiveEntitlements(Mockito.anyString())
 		).thenThrow(
 			new RuntimeException()
 		);
 
 		Assertions.assertNull(
 			_projectSyncModel.getActiveEntitlementDefinitions());
+	}
+
+	@Test
+	public void testGetActiveEntitlementDefinitionsWhenSupportIsRead()
+		throws Exception {
+
+		_whenEntitlements(
+			_createEntitlement(
+				EntitlementConstants.NAME_ACTIVE_SUBSCRIPTION, null));
+
+		Assertions.assertTrue(_projectSyncModel.isSupported());
+
+		_projectSyncModel.getActiveEntitlementDefinitions();
+
+		Mockito.verify(
+			_entitlementService
+		).getActiveEntitlements(
+			_PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).getEntitlementDefinitions(
+			Mockito.anyList()
+		);
 	}
 
 	@Test
@@ -121,12 +148,135 @@ public class ProjectSyncModelTest {
 		Assertions.assertNull(_projectSyncModel.getWorkerUserAccounts());
 	}
 
+	@Test
+	public void testIsSupportedWhenAccountIsSupported() throws Exception {
+		_whenEntitlements();
+
+		Mockito.when(
+			_accountSyncModel.isSupported()
+		).thenReturn(
+			true
+		);
+
+		Assertions.assertTrue(_projectSyncModel.isSupported());
+	}
+
+	@Test
+	public void testIsSupportedWhenAccountSupportFails() throws Exception {
+		_whenEntitlements();
+
+		Mockito.when(
+			_accountSyncModel.isSupported()
+		).thenReturn(
+			null
+		);
+
+		Assertions.assertNull(_projectSyncModel.isSupported());
+	}
+
+	@Test
+	public void testIsSupportedWhenEntitlementFails() throws Exception {
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(Mockito.anyString())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		Assertions.assertNull(_projectSyncModel.isSupported());
+
+		Mockito.verify(
+			_accountSyncModel, Mockito.never()
+		).isSupported();
+	}
+
+	@Test
+	public void testIsSupportedWhenProjectHasEPSEntitlement() throws Exception {
+		_whenEntitlements(
+			_createEntitlement(EntitlementConstants.NAME_EPS_7_3, null));
+
+		Assertions.assertTrue(_projectSyncModel.isSupported());
+
+		Mockito.verify(
+			_accountSyncModel, Mockito.never()
+		).isSupported();
+	}
+
+	@Test
+	public void testIsSupportedWhenProjectHasOtherEntitlement()
+		throws Exception {
+
+		_whenEntitlements(_createEntitlement("dxp", null));
+
+		Mockito.when(
+			_accountSyncModel.isSupported()
+		).thenReturn(
+			false
+		);
+
+		Assertions.assertFalse(_projectSyncModel.isSupported());
+	}
+
+	@Test
+	public void testIsSupportedWhenProjectHasSuspendedEntitlement()
+		throws Exception {
+
+		_whenEntitlements(
+			_createEntitlement(
+				EntitlementConstants.NAME_ACTIVE_SUBSCRIPTION,
+				EntitlementConstants.TERMINATION_STATUS_SUSPENDED));
+
+		Assertions.assertTrue(_projectSyncModel.isSupported());
+	}
+
+	@Test
+	public void testIsSupportedWhenProjectHasTerminatedEntitlement()
+		throws Exception {
+
+		_whenEntitlements(
+			_createEntitlement(
+				EntitlementConstants.NAME_ACTIVE_SUBSCRIPTION,
+				EntitlementConstants.TERMINATION_STATUS_TERMINATED));
+
+		Mockito.when(
+			_accountSyncModel.isSupported()
+		).thenReturn(
+			false
+		);
+
+		Assertions.assertFalse(_projectSyncModel.isSupported());
+	}
+
 	private void _assertUserAccountsAreNull() {
 		Assertions.assertNull(_projectSyncModel.getProjectMembers());
 		Assertions.assertNull(_projectSyncModel.getCustomerUserAccounts());
 		Assertions.assertNull(
 			_projectSyncModel.getRoleExternalKeysByUserAccountExternalKey());
 		Assertions.assertNull(_projectSyncModel.getWorkerUserAccounts());
+	}
+
+	private Entitlement _createEntitlement(
+		String name, String terminationStatus) {
+
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"id", 1L
+			).put(
+				"name", name
+			).put(
+				"terminationStatus", terminationStatus
+			));
+	}
+
+	private void _whenEntitlements(Entitlement... entitlements)
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			Arrays.asList(entitlements)
+		);
 	}
 
 	private void _whenProjectMembership() throws Exception {

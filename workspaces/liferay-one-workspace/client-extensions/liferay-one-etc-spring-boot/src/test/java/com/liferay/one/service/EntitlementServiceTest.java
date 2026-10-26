@@ -1148,6 +1148,86 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testHasUnterminatedActiveEntitlementWithSuspendedEntitlement()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEntitlementWithContract(
+				_CONTRACT_ID,
+				EntitlementConstants.TERMINATION_STATUS_SUSPENDED));
+
+		Assertions.assertTrue(
+			_entitlementService.hasUnterminatedActiveEntitlement(
+				Collections.singletonList(_ACCOUNT_ID),
+				Collections.singletonList(EntitlementConstants.NAME_PARTNER),
+				Collections.emptyList()));
+	}
+
+	@Test
+	public void testHasUnterminatedActiveEntitlementWithTerminatedEntitlement()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEntitlementWithContract(
+				_CONTRACT_ID,
+				EntitlementConstants.TERMINATION_STATUS_TERMINATED));
+
+		Assertions.assertFalse(
+			_entitlementService.hasUnterminatedActiveEntitlement(
+				Collections.singletonList(_ACCOUNT_ID),
+				Collections.singletonList(EntitlementConstants.NAME_PARTNER),
+				Collections.emptyList()));
+	}
+
+	@Test
+	public void testHasUnterminatedActiveUnassignedEntitlementFiltersUnassignedEntitlements()
+		throws Exception {
+
+		ArgumentCaptor<String> filterCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.doReturn(
+			Collections.singletonList(
+				_createEntitlementWithContract(_CONTRACT_ID, null))
+		).when(
+			_entitlementService
+		).getEntitlements(
+			filterCaptor.capture()
+		);
+
+		Assertions.assertTrue(
+			_entitlementService.hasUnterminatedActiveUnassignedEntitlement(
+				_ACCOUNT_ID, EntitlementConstants.namesJSMProjects));
+
+		String filterString = filterCaptor.getValue();
+
+		Assertions.assertTrue(
+			filterString.contains(
+				"r_accountEntryToEntitlement_accountEntryId eq '" +
+					_ACCOUNT_ID + "'"));
+		Assertions.assertTrue(
+			filterString.contains(
+				"name eq '" + EntitlementConstants.NAME_ACTIVE_SUBSCRIPTION +
+					"'"));
+		Assertions.assertTrue(
+			filterString.contains("r_projectToEntitlement_c_projectId eq '0'"));
+	}
+
+	@Test
+	public void testHasUnterminatedActiveUnassignedEntitlementWithTerminatedEntitlement()
+		throws Exception {
+
+		_setUpEntitlements(
+			_createEntitlementWithContract(
+				_CONTRACT_ID,
+				EntitlementConstants.TERMINATION_STATUS_TERMINATED));
+
+		Assertions.assertFalse(
+			_entitlementService.hasUnterminatedActiveUnassignedEntitlement(
+				_ACCOUNT_ID, EntitlementConstants.namesJSMProjects));
+	}
+
+	@Test
 	public void testIsCustomerFiltersActiveAccountEntitlements()
 		throws Exception {
 

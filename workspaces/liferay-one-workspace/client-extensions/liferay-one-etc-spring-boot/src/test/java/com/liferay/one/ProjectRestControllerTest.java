@@ -1413,6 +1413,24 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
+	public void testPostSyncToJSMReturnsConflictWhenProjectIsSkipped()
+		throws Exception {
+
+		Mockito.when(
+			_projectService.getProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createProject()
+		);
+
+		ResponseEntity<Void> responseEntity =
+			_projectRestController.postSyncToJSM(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(
+			HttpStatus.CONFLICT, responseEntity.getStatusCode());
+	}
+
+	@Test
 	public void testPostSyncToJSMSyncsTheProject() throws Exception {
 		Project project = _createProject();
 
@@ -1420,6 +1438,12 @@ public class ProjectRestControllerTest {
 			_projectService.getProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			project
+		);
+
+		Mockito.when(
+			_accountSynchronizer.syncProject(project)
+		).thenReturn(
+			true
 		);
 
 		ResponseEntity<Void> responseEntity =

@@ -54,6 +54,12 @@ public class UserAssignmentServiceTest {
 	public void setUp() throws Exception {
 		_userAssignmentService = new UserAssignmentService();
 
+		Mockito.when(
+			_accountSynchronizer.syncProjectUserAccounts(Mockito.any())
+		).thenReturn(
+			true
+		);
+
 		ReflectionTestUtils.setField(
 			_userAssignmentService, "_accountService", _accountService);
 		ReflectionTestUtils.setField(
@@ -733,6 +739,38 @@ public class UserAssignmentServiceTest {
 		Mockito.verifyNoInteractions(
 			_accountService, _accountSynchronizer, _oktaService,
 			_userGroupService);
+	}
+
+	@Test
+	public void testAssignProjectRoleSkipsRoleSyncWhenProjectIsNotInJSM()
+		throws Exception {
+
+		Mockito.when(
+			_accountService.getAccount(_ACCOUNT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_account
+		);
+
+		Mockito.when(
+			_accountSynchronizer.syncProjectUserAccounts(_project)
+		).thenReturn(
+			false
+		);
+
+		_userAssignmentService.assignProjectRole(
+			_project, RoleConstants.ERC_PROJECT_ADMIN, _USER_ID);
+
+		Mockito.verify(
+			_accountSynchronizer
+		).syncAccountUserAccounts(
+			_account
+		);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer, Mockito.never()
+		).syncAssignRole(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
 	}
 
 	@Test

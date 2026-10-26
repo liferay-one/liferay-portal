@@ -10,6 +10,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.jira.constants.AccountConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
@@ -21,6 +22,7 @@ import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.service.JiraBusinessEventService;
 import com.liferay.one.model.AccountSupportInfo;
+import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.service.AccountService;
@@ -38,11 +40,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.json.JSONObject;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -141,6 +145,8 @@ public class AccountSynchronizerTest {
 
 		_accountService = Mockito.mock(AccountService.class);
 		_entitlementService = Mockito.mock(EntitlementService.class);
+
+		_whenSupported(true);
 
 		_accountOrganizationSynchronizer = Mockito.mock(
 			AccountOrganizationSynchronizer.class);
@@ -297,6 +303,51 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncAccountClosesUnsupportedProjectInJSM()
+		throws Exception {
+
+		Project project = _mockProjectMemberships();
+
+		Mockito.when(
+			_projectService.getProjects(Mockito.anyLong())
+		).thenReturn(
+			Collections.singletonList(project)
+		);
+
+		_whenSupported(false);
+
+		Mockito.when(
+			_jiraAssetService.fetchReferenceObjectId(
+				Mockito.any(), Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE))
+		).thenReturn(
+			"project-object-id"
+		);
+
+		_accountSynchronizer.syncAccount(_createAccount());
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_STATUS,
+			AccountConstants.STATUS_CLOSED
+		);
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.never()
+		).delete(
+			Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer
+		).syncRoles(
+			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(_getExpectedRoleExternalKeysByUserAccountExternalKey()),
+			Mockito.any(Date.class)
+		);
+	}
+
+	@Test
 	public void testSyncAccountSkipsEntitlementsWhenEntitlementFails()
 		throws Exception {
 
@@ -360,6 +411,37 @@ public class AccountSynchronizerTest {
 			_accountUserAccountRoleSynchronizer, Mockito.never()
 		).syncRoles(
 			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testSyncAccountSkipsUnsupportedProjectOutsideJSM()
+		throws Exception {
+
+		Project project = _mockProjectMemberships();
+
+		Mockito.when(
+			_projectService.getProjects(Mockito.anyLong())
+		).thenReturn(
+			Collections.singletonList(project)
+		);
+
+		_whenSupported(false);
+
+		_accountSynchronizer.syncAccount(_createAccount());
+
+		Mockito.verify(
+			_accountUserAccountRoleSynchronizer, Mockito.never()
+		).syncRoles(
+			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE), Mockito.any(),
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetObject, Mockito.never()
+		).setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_STATUS,
+			AccountConstants.STATUS_CLOSED
 		);
 	}
 
@@ -585,6 +667,101 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncProjectSkipsProjectWhenEntitlementFails()
+		throws Exception {
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createAccount()
+		);
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(Mockito.anyString())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		Assertions.assertFalse(
+			_accountSynchronizer.syncProject(_createProject()));
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.never()
+		).fetchReferenceObjectId(
+			Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.never()
+		).upsert(
+			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testSyncProjectStatusesSyncsProjectsOfChangedEntitlements()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getChangedEntitlements(
+				Mockito.any(),
+				Mockito.eq(EntitlementConstants.namesJSMProjects),
+				Mockito.any())
+		).thenReturn(
+			Arrays.asList(
+				new Entitlement(
+					new JSONObject(
+					).put(
+						"id", 1L
+					).put(
+						"r_accountEntryToEntitlement_accountEntryId", 1L
+					).put(
+						"r_projectToEntitlement_c_projectERC",
+						_PROJECT_EXTERNAL_REFERENCE_CODE
+					)),
+				new Entitlement(
+					new JSONObject(
+					).put(
+						"id", 2L
+					).put(
+						"r_accountEntryToEntitlement_accountEntryId", 1L
+					)))
+		);
+
+		Project project = new Project(
+			new JSONObject(
+			).put(
+				"externalReferenceCode", "other-project-external-reference-code"
+			));
+
+		Mockito.when(
+			_projectService.getProjects(1L)
+		).thenReturn(
+			Arrays.asList(_createProject(), project)
+		);
+
+		Mockito.when(
+			_projectService.getProject(Mockito.anyString())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		_accountSynchronizer.syncProjectStatuses();
+
+		Mockito.verify(
+			_projectService
+		).getProject(
+			_PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+
+		Mockito.verify(
+			_projectService
+		).getProject(
+			"other-project-external-reference-code"
+		);
+	}
+
+	@Test
 	public void testSyncProjectSyncsProjectRoles() throws Exception {
 		Project project = _mockProjectMemberships();
 
@@ -594,7 +771,14 @@ public class AccountSynchronizerTest {
 			_createAccount()
 		);
 
-		_accountSynchronizer.syncProject(project);
+		Assertions.assertTrue(_accountSynchronizer.syncProject(project));
+
+		Mockito.verify(
+			_jiraAssetObject, Mockito.never()
+		).setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_STATUS,
+			AccountConstants.STATUS_CLOSED
+		);
 
 		Mockito.verify(
 			_accountUserAccountRoleSynchronizer
@@ -602,6 +786,58 @@ public class AccountSynchronizerTest {
 			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
 			Mockito.eq(_getExpectedRoleExternalKeysByUserAccountExternalKey()),
 			Mockito.any(Date.class)
+		);
+	}
+
+	@Test
+	public void testSyncProjectUserAccountsClosesUnsupportedProjectInJSM()
+		throws Exception {
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createAccount()
+		);
+
+		_whenSupported(false);
+
+		Mockito.when(
+			_jiraAssetService.fetchReferenceObjectId(
+				Mockito.any(), Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE))
+		).thenReturn(
+			"project-object-id"
+		);
+
+		Assertions.assertTrue(
+			_accountSynchronizer.syncProjectUserAccounts(_createProject()));
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_STATUS,
+			AccountConstants.STATUS_CLOSED
+		);
+	}
+
+	@Test
+	public void testSyncProjectUserAccountsSkipsUnsupportedProjectOutsideJSM()
+		throws Exception {
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createAccount()
+		);
+
+		_whenSupported(false);
+
+		Assertions.assertFalse(
+			_accountSynchronizer.syncProjectUserAccounts(_createProject()));
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.never()
+		).upsert(
+			Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -707,6 +943,27 @@ public class AccountSynchronizerTest {
 		);
 
 		return _createProject();
+	}
+
+	private void _whenSupported(boolean supported) throws Exception {
+		List<Entitlement> entitlements = Collections.emptyList();
+
+		if (supported) {
+			entitlements = Collections.singletonList(
+				new Entitlement(
+					new JSONObject(
+					).put(
+						"id", 1L
+					).put(
+						"name", EntitlementConstants.NAME_ACTIVE_SUBSCRIPTION
+					)));
+		}
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(Mockito.anyString())
+		).thenReturn(
+			entitlements
+		);
 	}
 
 	private static final String _EXTERNAL_REFERENCE_CODE =
