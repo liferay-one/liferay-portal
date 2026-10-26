@@ -585,6 +585,29 @@ public class CommerceProductService extends OneBaseService {
 		return null;
 	}
 
+	private String _formatDate(Date date) {
+		if (date == null) {
+			return "";
+		}
+
+		return date.toInstant(
+		).atZone(
+			ZoneId.of("UTC")
+		).format(
+			DateTimeFormatter.ofPattern("MMMM d, yyyy")
+		);
+	}
+
+	private String _getCatalogName(Product product) {
+		Catalog catalog = product.getCatalog();
+
+		if (catalog == null) {
+			return "";
+		}
+
+		return GetterUtil.getString(catalog.getName());
+	}
+
 	private Object _getProductGroupLock(String productGroup) {
 		return _productGroupLocks.computeIfAbsent(
 			productGroup, key -> new Object());
@@ -592,6 +615,32 @@ public class CommerceProductService extends OneBaseService {
 
 	private Object _getProductLock(long productId) {
 		return _productLocks.computeIfAbsent(productId, key -> new Object());
+	}
+
+	private String _getPublisherEmailAddress(Product product) {
+		Catalog catalog = product.getCatalog();
+
+		if ((catalog != null) && (catalog.getAccountId() != null)) {
+			try {
+				List<UserAccount> userAccounts =
+					_userAccountService.getAccountUserAccounts(
+						catalog.getAccountId());
+
+				if ((userAccounts != null) && !userAccounts.isEmpty()) {
+					return userAccounts.get(
+						0
+					).getEmailAddress();
+				}
+			}
+			catch (Exception exception) {
+				_log.error(
+					"Unable to get publisher user accounts for account ID " +
+						catalog.getAccountId(),
+					exception);
+			}
+		}
+
+		return "";
 	}
 
 	private boolean _hasProductOptionValue(String key, long productOptionId)
@@ -763,55 +812,6 @@ public class CommerceProductService extends OneBaseService {
 		return _commerceSkuService.patchSku(salesforceProductId, sku);
 	}
 
-	private String _formatDate(Date date) {
-		if (date == null) {
-			return "";
-		}
-
-		return date.toInstant(
-		).atZone(
-			ZoneId.of("UTC")
-		).format(
-			DateTimeFormatter.ofPattern("MMMM d, yyyy")
-		);
-	}
-
-	private String _getCatalogName(Product product) {
-		Catalog catalog = product.getCatalog();
-
-		if (catalog == null) {
-			return "";
-		}
-
-		return GetterUtil.getString(catalog.getName());
-	}
-
-	private String _getPublisherEmailAddress(Product product) {
-		Catalog catalog = product.getCatalog();
-
-		if ((catalog != null) && (catalog.getAccountId() != null)) {
-			try {
-				List<UserAccount> userAccounts =
-					_userAccountService.getAccountUserAccounts(
-						catalog.getAccountId());
-
-				if ((userAccounts != null) && !userAccounts.isEmpty()) {
-					return userAccounts.get(
-						0
-					).getEmailAddress();
-				}
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Unable to get publisher user accounts for account ID " +
-						catalog.getAccountId(),
-					exception);
-			}
-		}
-
-		return "";
-	}
-
 	private static final String _FIELD_TYPE_SELECT = "select";
 
 	private static final int _FILTER_CLAUSES_MAX = 20;
@@ -842,11 +842,11 @@ public class CommerceProductService extends OneBaseService {
 	@Autowired
 	private NotificationTemplateService _notificationTemplateService;
 
-	@Autowired
-	private UserAccountService _userAccountService;
-
 	private final Map<String, Object> _productGroupLocks =
 		new ConcurrentHashMap<>();
 	private final Map<Long, Object> _productLocks = new ConcurrentHashMap<>();
+
+	@Autowired
+	private UserAccountService _userAccountService;
 
 }

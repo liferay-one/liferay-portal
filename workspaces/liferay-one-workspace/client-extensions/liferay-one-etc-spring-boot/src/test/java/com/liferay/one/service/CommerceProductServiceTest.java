@@ -225,6 +225,203 @@ public class CommerceProductServiceTest {
 	}
 
 	@Test
+	public void testSendNewAppApprovedNotification() throws Exception {
+		Product product = new Product();
+
+		Catalog catalog = new Catalog();
+
+		catalog.setAccountId(() -> _ACCOUNT_ID);
+		catalog.setName(() -> "Test Catalog");
+
+		product.setCatalog(() -> catalog);
+
+		product.setId(() -> _PRODUCT_ID);
+		product.setName(() -> Map.of("en_US", "Test App"));
+		product.setProductId(() -> _PRODUCT_ID);
+		product.setThumbnail(() -> "/documents/thumb.png");
+
+		Mockito.doReturn(
+			product
+		).when(
+			_commerceProductService
+		).fetchProduct(
+			_PRODUCT_ID
+		);
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setEmailAddress(() -> "publisher@example.com");
+
+		Mockito.doReturn(
+			List.of(userAccount)
+		).when(
+			_userAccountService
+		).getAccountUserAccounts(
+			_ACCOUNT_ID
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"body", "Test Approved Body"
+		).put(
+			"from", "do-not-reply@liferay.com"
+		).put(
+			"fromName", "One Liferay"
+		).put(
+			"subject", "One Liferay - New App Approved and Published"
+		);
+
+		Mockito.doReturn(
+			jsonObject
+		).when(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("MARKETPLACE-NEW-APP-APPROVED-AND-PUBLISHED"),
+			Mockito.eq("en_US"), Mockito.anyMap()
+		);
+
+		_commerceProductService.sendNewAppApprovedNotification(_PRODUCT_ID);
+
+		Mockito.verify(
+			_notificationQueueEntryService
+		).addNotificationQueueEntry(
+			"do-not-reply@liferay.com", "One Liferay", "publisher@example.com",
+			"One Liferay - New App Approved and Published", "Test Approved Body"
+		);
+	}
+
+	@Test
+	public void testSendNewAppApprovedNotificationProductNotFound()
+		throws Exception {
+
+		Mockito.doReturn(
+			null
+		).when(
+			_commerceProductService
+		).fetchProduct(
+			999L
+		);
+
+		_commerceProductService.sendNewAppApprovedNotification(999L);
+
+		Mockito.verifyNoInteractions(_notificationQueueEntryService);
+	}
+
+	@Test
+	public void testSendNewAppSubmittedNotification() throws Exception {
+		Product product = new Product();
+
+		Catalog catalog = new Catalog();
+
+		catalog.setAccountId(() -> _ACCOUNT_ID);
+		catalog.setName(() -> "Test Catalog");
+
+		product.setCatalog(() -> catalog);
+
+		product.setCreateDate(() -> new Date());
+		product.setId(() -> _PRODUCT_ID);
+		product.setName(() -> Map.of("en_US", "Test App"));
+		product.setProductId(() -> _PRODUCT_ID);
+		product.setThumbnail(() -> "/documents/thumb.png");
+
+		Mockito.doReturn(
+			product
+		).when(
+			_commerceProductService
+		).fetchProduct(
+			_PRODUCT_ID
+		);
+
+		UserAccount userAccount = new UserAccount();
+
+		userAccount.setEmailAddress(() -> "publisher@example.com");
+
+		Mockito.doReturn(
+			List.of(userAccount)
+		).when(
+			_userAccountService
+		).getAccountUserAccounts(
+			_ACCOUNT_ID
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"body", "Test Body"
+		).put(
+			"from", "do-not-reply@liferay.com"
+		).put(
+			"fromName", "One Liferay"
+		).put(
+			"subject", "One Liferay - New App Submitted"
+		).put(
+			"to", "marketplace-admin@liferay.com"
+		);
+
+		Mockito.doReturn(
+			jsonObject
+		).when(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("MARKETPLACE-PRODUCT-SUBMIT-TEMPLATE"),
+			Mockito.eq("en_US"), Mockito.anyMap()
+		);
+
+		JSONObject publisherJSONObject = new JSONObject(
+		).put(
+			"body", "Test Publisher Body"
+		).put(
+			"from", "do-not-reply@liferay.com"
+		).put(
+			"fromName", "One Liferay"
+		).put(
+			"subject", "One Liferay - New App Submitted Publisher"
+		);
+
+		Mockito.doReturn(
+			publisherJSONObject
+		).when(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("MARKETPLACE-NEW-APP-SUBMITTED-PUBLISHER"),
+			Mockito.eq("en_US"), Mockito.anyMap()
+		);
+
+		_commerceProductService.sendNewAppSubmittedNotification(_PRODUCT_ID);
+
+		Mockito.verify(
+			_notificationQueueEntryService
+		).addNotificationQueueEntry(
+			"do-not-reply@liferay.com", "One Liferay",
+			"marketplace-admin@liferay.com", "One Liferay - New App Submitted",
+			"Test Body"
+		);
+
+		Mockito.verify(
+			_notificationQueueEntryService
+		).addNotificationQueueEntry(
+			"do-not-reply@liferay.com", "One Liferay", "publisher@example.com",
+			"One Liferay - New App Submitted Publisher", "Test Publisher Body"
+		);
+	}
+
+	@Test
+	public void testSendNewAppSubmittedNotificationProductNotFound()
+		throws Exception {
+
+		Mockito.doReturn(
+			null
+		).when(
+			_commerceProductService
+		).fetchProduct(
+			999L
+		);
+
+		_commerceProductService.sendNewAppSubmittedNotification(999L);
+
+		Mockito.verifyNoInteractions(_notificationQueueEntryService);
+	}
+
+	@Test
 	public void testUpdateProductAddsProductAndSkuForUnknownProductGroup()
 		throws Exception {
 
@@ -819,203 +1016,6 @@ public class CommerceProductServiceTest {
 		page.setTotalCount(items.length);
 
 		return page;
-	}
-
-	@Test
-	public void testSendNewAppSubmittedNotification() throws Exception {
-		Product product = new Product();
-
-		Catalog catalog = new Catalog();
-
-		catalog.setAccountId(() -> _ACCOUNT_ID);
-		catalog.setName(() -> "Test Catalog");
-
-		product.setCatalog(() -> catalog);
-
-		product.setCreateDate(() -> new Date());
-		product.setId(() -> _PRODUCT_ID);
-		product.setName(() -> Map.of("en_US", "Test App"));
-		product.setProductId(() -> _PRODUCT_ID);
-		product.setThumbnail(() -> "/documents/thumb.png");
-
-		Mockito.doReturn(
-			product
-		).when(
-			_commerceProductService
-		).fetchProduct(
-			_PRODUCT_ID
-		);
-
-		UserAccount userAccount = new UserAccount();
-
-		userAccount.setEmailAddress(() -> "publisher@example.com");
-
-		Mockito.doReturn(
-			List.of(userAccount)
-		).when(
-			_userAccountService
-		).getAccountUserAccounts(
-			_ACCOUNT_ID
-		);
-
-		JSONObject jsonObject = new JSONObject(
-		).put(
-			"body", "Test Body"
-		).put(
-			"from", "do-not-reply@liferay.com"
-		).put(
-			"fromName", "One Liferay"
-		).put(
-			"subject", "One Liferay - New App Submitted"
-		).put(
-			"to", "marketplace-admin@liferay.com"
-		);
-
-		Mockito.doReturn(
-			jsonObject
-		).when(
-			_notificationTemplateService
-		).getAndProcessTemplateJSONObject(
-			Mockito.eq("MARKETPLACE-PRODUCT-SUBMIT-TEMPLATE"),
-			Mockito.eq("en_US"), Mockito.anyMap()
-		);
-
-		JSONObject publisherJSONObject = new JSONObject(
-		).put(
-			"body", "Test Publisher Body"
-		).put(
-			"from", "do-not-reply@liferay.com"
-		).put(
-			"fromName", "One Liferay"
-		).put(
-			"subject", "One Liferay - New App Submitted Publisher"
-		);
-
-		Mockito.doReturn(
-			publisherJSONObject
-		).when(
-			_notificationTemplateService
-		).getAndProcessTemplateJSONObject(
-			Mockito.eq("MARKETPLACE-NEW-APP-SUBMITTED-PUBLISHER"),
-			Mockito.eq("en_US"), Mockito.anyMap()
-		);
-
-		_commerceProductService.sendNewAppSubmittedNotification(_PRODUCT_ID);
-
-		Mockito.verify(
-			_notificationQueueEntryService
-		).addNotificationQueueEntry(
-			"do-not-reply@liferay.com", "One Liferay",
-			"marketplace-admin@liferay.com", "One Liferay - New App Submitted",
-			"Test Body"
-		);
-
-		Mockito.verify(
-			_notificationQueueEntryService
-		).addNotificationQueueEntry(
-			"do-not-reply@liferay.com", "One Liferay", "publisher@example.com",
-			"One Liferay - New App Submitted Publisher", "Test Publisher Body"
-		);
-	}
-
-	@Test
-	public void testSendNewAppApprovedNotification() throws Exception {
-		Product product = new Product();
-
-		Catalog catalog = new Catalog();
-
-		catalog.setAccountId(() -> _ACCOUNT_ID);
-		catalog.setName(() -> "Test Catalog");
-
-		product.setCatalog(() -> catalog);
-
-		product.setId(() -> _PRODUCT_ID);
-		product.setName(() -> Map.of("en_US", "Test App"));
-		product.setProductId(() -> _PRODUCT_ID);
-		product.setThumbnail(() -> "/documents/thumb.png");
-
-		Mockito.doReturn(
-			product
-		).when(
-			_commerceProductService
-		).fetchProduct(
-			_PRODUCT_ID
-		);
-
-		UserAccount userAccount = new UserAccount();
-
-		userAccount.setEmailAddress(() -> "publisher@example.com");
-
-		Mockito.doReturn(
-			List.of(userAccount)
-		).when(
-			_userAccountService
-		).getAccountUserAccounts(
-			_ACCOUNT_ID
-		);
-
-		JSONObject jsonObject = new JSONObject(
-		).put(
-			"body", "Test Approved Body"
-		).put(
-			"from", "do-not-reply@liferay.com"
-		).put(
-			"fromName", "One Liferay"
-		).put(
-			"subject", "One Liferay - New App Approved and Published"
-		);
-
-		Mockito.doReturn(
-			jsonObject
-		).when(
-			_notificationTemplateService
-		).getAndProcessTemplateJSONObject(
-			Mockito.eq("MARKETPLACE-NEW-APP-APPROVED-AND-PUBLISHED"),
-			Mockito.eq("en_US"), Mockito.anyMap()
-		);
-
-		_commerceProductService.sendNewAppApprovedNotification(_PRODUCT_ID);
-
-		Mockito.verify(
-			_notificationQueueEntryService
-		).addNotificationQueueEntry(
-			"do-not-reply@liferay.com", "One Liferay", "publisher@example.com",
-			"One Liferay - New App Approved and Published", "Test Approved Body"
-		);
-	}
-
-	@Test
-	public void testSendNewAppApprovedNotificationProductNotFound()
-		throws Exception {
-
-		Mockito.doReturn(
-			null
-		).when(
-			_commerceProductService
-		).fetchProduct(
-			999L
-		);
-
-		_commerceProductService.sendNewAppApprovedNotification(999L);
-
-		Mockito.verifyNoInteractions(_notificationQueueEntryService);
-	}
-
-	@Test
-	public void testSendNewAppSubmittedNotificationProductNotFound()
-		throws Exception {
-
-		Mockito.doReturn(
-			null
-		).when(
-			_commerceProductService
-		).fetchProduct(
-			999L
-		);
-
-		_commerceProductService.sendNewAppSubmittedNotification(999L);
-
-		Mockito.verifyNoInteractions(_notificationQueueEntryService);
 	}
 
 	private static final long _ACCOUNT_ID = 123L;

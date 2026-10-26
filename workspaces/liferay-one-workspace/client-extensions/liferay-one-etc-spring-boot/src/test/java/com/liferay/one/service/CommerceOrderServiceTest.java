@@ -2134,6 +2134,153 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testDispatchOrderUpdateSendsInvoiceNotificationForMoneyOrderPending()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING, "OTHER",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_PENDING);
+
+		order.setPaymentMethod("money-order");
+
+		Mockito.doReturn(
+			order
+		).when(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			_ORDER_ID
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).completeSettledOrder(
+			Mockito.any(Order.class)
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			Mockito.anyLong(), Mockito.anyMap()
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"body", "Test Invoice Body"
+		).put(
+			"from", "do-not-reply@liferay.com"
+		).put(
+			"fromName", "One Liferay"
+		).put(
+			"subject", "One Liferay - Invoice Order"
+		).put(
+			"to", "accounts-receivables-intl@liferay.com"
+		);
+
+		Mockito.doReturn(
+			jsonObject
+		).when(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("MARKETPLACE-INVOICE-ORDER-SUBMIT-TEMPLATE"),
+			Mockito.eq("en_US"), Mockito.anyMap()
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_notificationQueueEntryService
+		).addNotificationQueueEntry(
+			"do-not-reply@liferay.com", "One Liferay",
+			"accounts-receivables-intl@liferay.com",
+			"One Liferay - Invoice Order", "Test Invoice Body"
+		);
+
+		ArgumentCaptor<Map<String, ?>> customFieldsCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			Mockito.eq(_ORDER_ID), customFieldsCaptor.capture()
+		);
+
+		Map<String, ?> captured = customFieldsCaptor.getValue();
+
+		JSONObject metadataJSONObject = new JSONObject(
+			(String)captured.get("order-metadata"));
+
+		Assertions.assertTrue(
+			metadataJSONObject.getBoolean("invoiceNotificationSent"));
+	}
+
+	@Test
+	public void testDispatchOrderUpdateSendsInvoiceNotificationForPayPalCompleted()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_COMPLETED, "OTHER",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
+
+		order.setPaymentMethod("paypal");
+
+		Mockito.doReturn(
+			order
+		).when(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			_ORDER_ID
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).completeSettledOrder(
+			Mockito.any(Order.class)
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			Mockito.anyLong(), Mockito.anyMap()
+		);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"body", "Test Invoice Body"
+		).put(
+			"from", "do-not-reply@liferay.com"
+		).put(
+			"fromName", "One Liferay"
+		).put(
+			"subject", "One Liferay - Invoice Order"
+		).put(
+			"to", "accounts-receivables-intl@liferay.com"
+		);
+
+		Mockito.doReturn(
+			jsonObject
+		).when(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("MARKETPLACE-INVOICE-ORDER-SUBMIT-TEMPLATE"),
+			Mockito.eq("en_US"), Mockito.anyMap()
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verify(
+			_notificationQueueEntryService
+		).addNotificationQueueEntry(
+			"do-not-reply@liferay.com", "One Liferay",
+			"accounts-receivables-intl@liferay.com",
+			"One Liferay - Invoice Order", "Test Invoice Body"
+		);
+	}
+
+	@Test
 	public void testDispatchOrderUpdateSkipsCompletedSEOStudioOrder()
 		throws Exception {
 
@@ -2156,6 +2303,44 @@ public class CommerceOrderServiceTest {
 		).completeOrder(
 			ArgumentMatchers.anyLong(), ArgumentMatchers.anyInt()
 		);
+	}
+
+	@Test
+	public void testDispatchOrderUpdateSkipsInvoiceNotificationWhenAlreadySent()
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_PENDING, "OTHER",
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_PENDING);
+
+		order.setPaymentMethod("money-order");
+		order.setCustomFields(
+			HashMapBuilder.put(
+				"order-metadata",
+				new JSONObject(
+				).put(
+					"invoiceNotificationSent", true
+				).toString()
+			).build());
+
+		Mockito.doReturn(
+			order
+		).when(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			_ORDER_ID
+		);
+
+		Mockito.doNothing(
+		).when(
+			_commerceOrderService
+		).completeSettledOrder(
+			Mockito.any(Order.class)
+		);
+
+		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
+
+		Mockito.verifyNoInteractions(_notificationQueueEntryService);
 	}
 
 	@Test
@@ -2857,191 +3042,6 @@ public class CommerceOrderServiceTest {
 
 		Assertions.assertEquals(
 			"006-PURCHASING", customFields.get("salesforceOpportunityId"));
-	}
-
-	@Test
-	public void testDispatchOrderUpdateSendsInvoiceNotificationForMoneyOrderPending()
-		throws Exception {
-
-		Order order = _createOrder(
-			CommerceOrderConstants.ORDER_STATUS_PENDING, "OTHER",
-			CommerceOrderConstants.ORDER_PAYMENT_STATUS_PENDING);
-
-		order.setPaymentMethod("money-order");
-
-		Mockito.doReturn(
-			order
-		).when(
-			_commerceOrderService
-		).fetchCommerceOrder(
-			_ORDER_ID
-		);
-
-		Mockito.doNothing(
-		).when(
-			_commerceOrderService
-		).completeSettledOrder(
-			Mockito.any(Order.class)
-		);
-
-		Mockito.doNothing(
-		).when(
-			_commerceOrderService
-		).patchOrderCustomFields(
-			Mockito.anyLong(), Mockito.anyMap()
-		);
-
-		JSONObject jsonObject = new JSONObject(
-		).put(
-			"body", "Test Invoice Body"
-		).put(
-			"from", "do-not-reply@liferay.com"
-		).put(
-			"fromName", "One Liferay"
-		).put(
-			"subject", "One Liferay - Invoice Order"
-		).put(
-			"to", "accounts-receivables-intl@liferay.com"
-		);
-
-		Mockito.doReturn(
-			jsonObject
-		).when(
-			_notificationTemplateService
-		).getAndProcessTemplateJSONObject(
-			Mockito.eq("MARKETPLACE-INVOICE-ORDER-SUBMIT-TEMPLATE"),
-			Mockito.eq("en_US"), Mockito.anyMap()
-		);
-
-		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
-
-		Mockito.verify(
-			_notificationQueueEntryService
-		).addNotificationQueueEntry(
-			"do-not-reply@liferay.com", "One Liferay",
-			"accounts-receivables-intl@liferay.com",
-			"One Liferay - Invoice Order", "Test Invoice Body"
-		);
-
-		ArgumentCaptor<Map<String, ?>> customFieldsCaptor =
-			ArgumentCaptor.forClass(Map.class);
-
-		Mockito.verify(
-			_commerceOrderService
-		).patchOrderCustomFields(
-			Mockito.eq(_ORDER_ID), customFieldsCaptor.capture()
-		);
-
-		Map<String, ?> captured = customFieldsCaptor.getValue();
-
-		JSONObject metadataJSONObject = new JSONObject(
-			(String)captured.get("order-metadata"));
-
-		Assertions.assertTrue(
-			metadataJSONObject.getBoolean("invoiceNotificationSent"));
-	}
-
-	@Test
-	public void testDispatchOrderUpdateSendsInvoiceNotificationForPayPalCompleted()
-		throws Exception {
-
-		Order order = _createOrder(
-			CommerceOrderConstants.ORDER_STATUS_COMPLETED, "OTHER",
-			CommerceOrderConstants.ORDER_PAYMENT_STATUS_COMPLETED);
-
-		order.setPaymentMethod("paypal");
-
-		Mockito.doReturn(
-			order
-		).when(
-			_commerceOrderService
-		).fetchCommerceOrder(
-			_ORDER_ID
-		);
-
-		Mockito.doNothing(
-		).when(
-			_commerceOrderService
-		).completeSettledOrder(
-			Mockito.any(Order.class)
-		);
-
-		Mockito.doNothing(
-		).when(
-			_commerceOrderService
-		).patchOrderCustomFields(
-			Mockito.anyLong(), Mockito.anyMap()
-		);
-
-		JSONObject jsonObject = new JSONObject(
-		).put(
-			"body", "Test Invoice Body"
-		).put(
-			"from", "do-not-reply@liferay.com"
-		).put(
-			"fromName", "One Liferay"
-		).put(
-			"subject", "One Liferay - Invoice Order"
-		).put(
-			"to", "accounts-receivables-intl@liferay.com"
-		);
-
-		Mockito.doReturn(
-			jsonObject
-		).when(
-			_notificationTemplateService
-		).getAndProcessTemplateJSONObject(
-			Mockito.eq("MARKETPLACE-INVOICE-ORDER-SUBMIT-TEMPLATE"),
-			Mockito.eq("en_US"), Mockito.anyMap()
-		);
-
-		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
-
-		Mockito.verify(
-			_notificationQueueEntryService
-		).addNotificationQueueEntry(
-			"do-not-reply@liferay.com", "One Liferay",
-			"accounts-receivables-intl@liferay.com",
-			"One Liferay - Invoice Order", "Test Invoice Body"
-		);
-	}
-
-	@Test
-	public void testDispatchOrderUpdateSkipsInvoiceNotificationWhenAlreadySent()
-		throws Exception {
-
-		Order order = _createOrder(
-			CommerceOrderConstants.ORDER_STATUS_PENDING, "OTHER",
-			CommerceOrderConstants.ORDER_PAYMENT_STATUS_PENDING);
-
-		order.setPaymentMethod("money-order");
-		order.setCustomFields(
-			HashMapBuilder.put(
-				"order-metadata",
-				new JSONObject(
-				).put(
-					"invoiceNotificationSent", true
-				).toString()
-			).build());
-
-		Mockito.doReturn(
-			order
-		).when(
-			_commerceOrderService
-		).fetchCommerceOrder(
-			_ORDER_ID
-		);
-
-		Mockito.doNothing(
-		).when(
-			_commerceOrderService
-		).completeSettledOrder(
-			Mockito.any(Order.class)
-		);
-
-		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
-
-		Mockito.verifyNoInteractions(_notificationQueueEntryService);
 	}
 
 	private OrderResource _calculateTax(Order order) throws Exception {

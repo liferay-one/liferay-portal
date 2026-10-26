@@ -1008,6 +1008,45 @@ public class CommerceOrderService extends OneBaseService {
 		return true;
 	}
 
+	private String _formatBillingAddress(BillingAddress billingAddress) {
+		if (billingAddress == null) {
+			return "";
+		}
+
+		List<String> addressParts = new ArrayList<>();
+
+		if (Validator.isNotNull(billingAddress.getStreet1())) {
+			addressParts.add(billingAddress.getStreet1());
+		}
+
+		if (Validator.isNotNull(billingAddress.getCity())) {
+			addressParts.add(billingAddress.getCity());
+		}
+
+		if (Validator.isNotNull(billingAddress.getRegionISOCode())) {
+			addressParts.add(billingAddress.getRegionISOCode());
+		}
+
+		if (Validator.isNotNull(billingAddress.getCountryISOCode())) {
+			addressParts.add(billingAddress.getCountryISOCode());
+		}
+
+		return String.join(", ", addressParts);
+	}
+
+	private String _formatDate(Date date) {
+		if (date == null) {
+			return "";
+		}
+
+		return date.toInstant(
+		).atZone(
+			ZoneId.of("UTC")
+		).format(
+			DateTimeFormatter.ofPattern("MMMM d, yyyy")
+		);
+	}
+
 	private long _getAIHubAccountEntryId(
 			Order order, String salesforceProjectId)
 		throws Exception {
@@ -1200,6 +1239,47 @@ public class CommerceOrderService extends OneBaseService {
 				StringUtil.merge(statements, " or "), ")"));
 	}
 
+	private Map<String, String> _getAccountPlaceholders(Order order) {
+		String accountId = "";
+		String accountName = "";
+		String taxId = "";
+
+		Account account = order.getAccount();
+
+		if (account != null) {
+			accountId = GetterUtil.getString(account.getId());
+			accountName = GetterUtil.getString(account.getName());
+			taxId = GetterUtil.getString(account.getTaxId());
+		}
+
+		String billingAddressName = "";
+		String billingAddressPhone = "";
+
+		BillingAddress billingAddress = order.getBillingAddress();
+
+		if (billingAddress != null) {
+			billingAddressName = GetterUtil.getString(billingAddress.getName());
+			billingAddressPhone = GetterUtil.getString(
+				billingAddress.getPhoneNumber());
+		}
+
+		return HashMapBuilder.put(
+			"ACCOUNT_ID", accountId
+		).put(
+			"ACCOUNT_NAME", accountName
+		).put(
+			"BILLING_ADDRESS_FORMATTED", _formatBillingAddress(billingAddress)
+		).put(
+			"BILLING_ADDRESS_NAME", billingAddressName
+		).put(
+			"BILLING_ADDRESS_PHONE", billingAddressPhone
+		).put(
+			"TAX_ID", taxId
+		).put(
+			"VAT_NUMBER", taxId
+		).build();
+	}
+
 	private String _getAddressCountry(Long defaultBillingAddressId)
 		throws Exception {
 
@@ -1211,6 +1291,20 @@ public class CommerceOrderService extends OneBaseService {
 			defaultBillingAddressId);
 
 		return postalAddress.getAddressCountry();
+	}
+
+	private String _getCatalogName(Product product) {
+		if (product == null) {
+			return "";
+		}
+
+		Catalog catalog = product.getCatalog();
+
+		if (catalog == null) {
+			return "";
+		}
+
+		return GetterUtil.getString(catalog.getName());
 	}
 
 	private Map<String, Object> _getCustomFields(
@@ -1337,6 +1431,24 @@ public class CommerceOrderService extends OneBaseService {
 		return customFields;
 	}
 
+	private Map<String, String> _getInvoiceOrderPlaceholders(
+			Order order, JSONObject orderMetadataJSONObject)
+		throws Exception {
+
+		Map<String, String> productPlaceholders = _getProductPlaceholders(
+			order.getOrderItems());
+
+		return HashMapBuilder.putAll(
+			_getAccountPlaceholders(order)
+		).putAll(
+			_getOrderPaymentPlaceholders(
+				productPlaceholders.getOrDefault("LICENSE_TYPE", ""), order,
+				orderMetadataJSONObject)
+		).putAll(
+			productPlaceholders
+		).build();
+	}
+
 	private String _getOpportunitySoldBy(long accountId) throws Exception {
 		OrderResource orderResource = _buildOrderResource();
 
@@ -1359,6 +1471,80 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return null;
+	}
+
+	private Map<String, String> _getOrderPaymentPlaceholders(
+		String licenseType, Order order, JSONObject orderMetadataJSONObject) {
+
+		String exchangeRate = "Not applicable";
+
+		if (!Objects.equals(order.getCurrencyCode(), "USD") &&
+			orderMetadataJSONObject.has("exchangeRate")) {
+
+			exchangeRate = orderMetadataJSONObject.optString("exchangeRate");
+		}
+
+		String orderStatus = "Completed";
+
+		if (Objects.equals(
+				order.getOrderStatus(),
+				CommerceOrderConstants.ORDER_STATUS_PENDING)) {
+
+			orderStatus = "Pending";
+		}
+		else if (Objects.equals(
+					order.getOrderStatus(),
+					CommerceOrderConstants.ORDER_STATUS_PROCESSING)) {
+
+			orderStatus = "Processing";
+		}
+
+		String paymentMethod = "PayPal";
+
+		if (Objects.equals(order.getPaymentMethod(), "money-order")) {
+			paymentMethod = "Money Order / Wire";
+		}
+
+		String paymentTerms = GetterUtil.getString(
+			order.getPaymentTermDescription());
+
+		return HashMapBuilder.put(
+			"EMAIL_ADDRESS",
+			GetterUtil.getString(order.getCreatorEmailAddress())
+		).put(
+			"EXCHANGE_RATE", exchangeRate
+		).put(
+			"NET_PRICE_FORMATTED",
+			GetterUtil.getString(order.getSubtotalFormatted())
+		).put(
+			"ORDER_DATE", _formatDate(order.getCreateDate())
+		).put(
+			"ORDER_ID", String.valueOf(order.getId())
+		).put(
+			"ORDER_PAYMENT_METHOD", paymentMethod
+		).put(
+			"ORDER_STATUS", orderStatus
+		).put(
+			"PAYMENT_TERM_DESCRIPTION", paymentTerms
+		).put(
+			"PAYMENT_TERMS", paymentTerms
+		).put(
+			"SUBSCRIPTION_EXPIRATION_DATE",
+			_formatDate(
+				CommerceOrderUtil.getOrderPurchaseEndDate(licenseType, null))
+		).put(
+			"SUBSCRIPTION_STARTING_DATE", _formatDate(new Date())
+		).put(
+			"SUBTOTAL_FORMATTED",
+			GetterUtil.getString(order.getSubtotalFormatted())
+		).put(
+			"TAX_AMOUNT_FORMATTED",
+			GetterUtil.getString(order.getTaxAmountFormatted())
+		).put(
+			"TOTAL_FORMATTED", GetterUtil.getString(order.getTotalFormatted())
+		).put(
+			"VAT_FORMATTED", GetterUtil.getString(order.getTaxAmountFormatted())
+		).build();
 	}
 
 	private String _getOrderTypeExternalReferenceCode(
@@ -1465,6 +1651,63 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return ordersList;
+	}
+
+	private String _getProductName(OrderItem orderItem, Product product) {
+		if (product != null) {
+			String productName = CommerceProductUtil.getName(product);
+
+			if (Validator.isNotNull(productName)) {
+				return productName;
+			}
+		}
+
+		if (orderItem.getName() != null) {
+			return GetterUtil.getString(
+				orderItem.getName(
+				).get(
+					"en_US"
+				));
+		}
+
+		return "";
+	}
+
+	private Map<String, String> _getProductPlaceholders(OrderItem[] orderItems)
+		throws Exception {
+
+		if (ArrayUtil.isEmpty(orderItems)) {
+			return Collections.emptyMap();
+		}
+
+		OrderItem orderItem = orderItems[0];
+
+		Product product = null;
+
+		if (orderItem.getProductId() != null) {
+			product = _commerceProductService.fetchProduct(
+				orderItem.getProductId());
+		}
+
+		return HashMapBuilder.put(
+			"CATALOG_NAME", _getCatalogName(product)
+		).put(
+			"LICENSE_TYPE", _getSpecificationValue(product, "license-type")
+		).put(
+			"PRODUCT_NAME", _getProductName(orderItem, product)
+		).put(
+			"PRODUCT_THUMBNAIL", _getProductThumbnail(product)
+		).put(
+			"PRODUCT_TYPE", _getSpecificationValue(product, "type")
+		).build();
+	}
+
+	private String _getProductThumbnail(Product product) {
+		if (product == null) {
+			return "";
+		}
+
+		return GetterUtil.getString(product.getThumbnail());
 	}
 
 	private String _getProjectName(Order order, String salesforceProjectId) {
@@ -1608,6 +1851,15 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return null;
+	}
+
+	private String _getSpecificationValue(Product product, String key) {
+		if (product == null) {
+			return "";
+		}
+
+		return GetterUtil.getString(
+			CommerceProductUtil.getSpecificationValue(product, key));
 	}
 
 	private BigDecimal _getTotal(
@@ -2092,273 +2344,6 @@ public class CommerceOrderService extends OneBaseService {
 		}
 	}
 
-	private Order _upsertOrder(String externalReferenceCode, Order order)
-		throws Exception {
-
-		Order existingOrder = fetchOrderByExternalReferenceCode(
-			externalReferenceCode);
-
-		OrderResource orderResource = _buildOrderResource();
-
-		if (existingOrder != null) {
-			return orderResource.patchOrder(existingOrder.getId(), order);
-		}
-
-		return orderResource.postOrder(order);
-	}
-
-	private String _formatBillingAddress(BillingAddress billingAddress) {
-		if (billingAddress == null) {
-			return "";
-		}
-
-		List<String> addressParts = new ArrayList<>();
-
-		if (Validator.isNotNull(billingAddress.getStreet1())) {
-			addressParts.add(billingAddress.getStreet1());
-		}
-
-		if (Validator.isNotNull(billingAddress.getCity())) {
-			addressParts.add(billingAddress.getCity());
-		}
-
-		if (Validator.isNotNull(billingAddress.getRegionISOCode())) {
-			addressParts.add(billingAddress.getRegionISOCode());
-		}
-
-		if (Validator.isNotNull(billingAddress.getCountryISOCode())) {
-			addressParts.add(billingAddress.getCountryISOCode());
-		}
-
-		return String.join(", ", addressParts);
-	}
-
-	private String _formatDate(Date date) {
-		if (date == null) {
-			return "";
-		}
-
-		return date.toInstant(
-		).atZone(
-			ZoneId.of("UTC")
-		).format(
-			DateTimeFormatter.ofPattern("MMMM d, yyyy")
-		);
-	}
-
-	private Map<String, String> _getAccountPlaceholders(Order order) {
-		String accountId = "";
-		String accountName = "";
-		String taxId = "";
-
-		Account account = order.getAccount();
-
-		if (account != null) {
-			accountId = GetterUtil.getString(account.getId());
-			accountName = GetterUtil.getString(account.getName());
-			taxId = GetterUtil.getString(account.getTaxId());
-		}
-
-		String billingAddressName = "";
-		String billingAddressPhone = "";
-
-		BillingAddress billingAddress = order.getBillingAddress();
-
-		if (billingAddress != null) {
-			billingAddressName = GetterUtil.getString(billingAddress.getName());
-			billingAddressPhone = GetterUtil.getString(
-				billingAddress.getPhoneNumber());
-		}
-
-		return HashMapBuilder.put(
-			"ACCOUNT_ID", accountId
-		).put(
-			"ACCOUNT_NAME", accountName
-		).put(
-			"BILLING_ADDRESS_FORMATTED", _formatBillingAddress(billingAddress)
-		).put(
-			"BILLING_ADDRESS_NAME", billingAddressName
-		).put(
-			"BILLING_ADDRESS_PHONE", billingAddressPhone
-		).put(
-			"TAX_ID", taxId
-		).put(
-			"VAT_NUMBER", taxId
-		).build();
-	}
-
-	private String _getCatalogName(Product product) {
-		if (product == null) {
-			return "";
-		}
-
-		Catalog catalog = product.getCatalog();
-
-		if (catalog == null) {
-			return "";
-		}
-
-		return GetterUtil.getString(catalog.getName());
-	}
-
-	private Map<String, String> _getInvoiceOrderPlaceholders(
-			Order order, JSONObject orderMetadataJSONObject)
-		throws Exception {
-
-		Map<String, String> productPlaceholders = _getProductPlaceholders(
-			order.getOrderItems());
-
-		return HashMapBuilder.putAll(
-			_getAccountPlaceholders(order)
-		).putAll(
-			_getOrderPaymentPlaceholders(
-				productPlaceholders.getOrDefault("LICENSE_TYPE", ""), order,
-				orderMetadataJSONObject)
-		).putAll(
-			productPlaceholders
-		).build();
-	}
-
-	private Map<String, String> _getOrderPaymentPlaceholders(
-		String licenseType, Order order, JSONObject orderMetadataJSONObject) {
-
-		String exchangeRate = "Not applicable";
-
-		if (!Objects.equals(order.getCurrencyCode(), "USD") &&
-			orderMetadataJSONObject.has("exchangeRate")) {
-
-			exchangeRate = orderMetadataJSONObject.optString("exchangeRate");
-		}
-
-		String orderStatus = "Completed";
-
-		if (Objects.equals(
-				order.getOrderStatus(),
-				CommerceOrderConstants.ORDER_STATUS_PENDING)) {
-
-			orderStatus = "Pending";
-		}
-		else if (Objects.equals(
-					order.getOrderStatus(),
-					CommerceOrderConstants.ORDER_STATUS_PROCESSING)) {
-
-			orderStatus = "Processing";
-		}
-
-		String paymentMethod = "PayPal";
-
-		if (Objects.equals(order.getPaymentMethod(), "money-order")) {
-			paymentMethod = "Money Order / Wire";
-		}
-
-		String paymentTerms = GetterUtil.getString(
-			order.getPaymentTermDescription());
-
-		return HashMapBuilder.put(
-			"EMAIL_ADDRESS",
-			GetterUtil.getString(order.getCreatorEmailAddress())
-		).put(
-			"EXCHANGE_RATE", exchangeRate
-		).put(
-			"NET_PRICE_FORMATTED",
-			GetterUtil.getString(order.getSubtotalFormatted())
-		).put(
-			"ORDER_DATE", _formatDate(order.getCreateDate())
-		).put(
-			"ORDER_ID", String.valueOf(order.getId())
-		).put(
-			"ORDER_PAYMENT_METHOD", paymentMethod
-		).put(
-			"ORDER_STATUS", orderStatus
-		).put(
-			"PAYMENT_TERM_DESCRIPTION", paymentTerms
-		).put(
-			"PAYMENT_TERMS", paymentTerms
-		).put(
-			"SUBSCRIPTION_EXPIRATION_DATE",
-			_formatDate(
-				CommerceOrderUtil.getOrderPurchaseEndDate(licenseType, null))
-		).put(
-			"SUBSCRIPTION_STARTING_DATE", _formatDate(new Date())
-		).put(
-			"SUBTOTAL_FORMATTED",
-			GetterUtil.getString(order.getSubtotalFormatted())
-		).put(
-			"TAX_AMOUNT_FORMATTED",
-			GetterUtil.getString(order.getTaxAmountFormatted())
-		).put(
-			"TOTAL_FORMATTED", GetterUtil.getString(order.getTotalFormatted())
-		).put(
-			"VAT_FORMATTED", GetterUtil.getString(order.getTaxAmountFormatted())
-		).build();
-	}
-
-	private String _getProductName(OrderItem orderItem, Product product) {
-		if (product != null) {
-			String productName = CommerceProductUtil.getName(product);
-
-			if (Validator.isNotNull(productName)) {
-				return productName;
-			}
-		}
-
-		if (orderItem.getName() != null) {
-			return GetterUtil.getString(
-				orderItem.getName(
-				).get(
-					"en_US"
-				));
-		}
-
-		return "";
-	}
-
-	private Map<String, String> _getProductPlaceholders(OrderItem[] orderItems)
-		throws Exception {
-
-		if (ArrayUtil.isEmpty(orderItems)) {
-			return Collections.emptyMap();
-		}
-
-		OrderItem orderItem = orderItems[0];
-
-		Product product = null;
-
-		if (orderItem.getProductId() != null) {
-			product = _commerceProductService.fetchProduct(
-				orderItem.getProductId());
-		}
-
-		return HashMapBuilder.put(
-			"CATALOG_NAME", _getCatalogName(product)
-		).put(
-			"LICENSE_TYPE", _getSpecificationValue(product, "license-type")
-		).put(
-			"PRODUCT_NAME", _getProductName(orderItem, product)
-		).put(
-			"PRODUCT_THUMBNAIL", _getProductThumbnail(product)
-		).put(
-			"PRODUCT_TYPE", _getSpecificationValue(product, "type")
-		).build();
-	}
-
-	private String _getProductThumbnail(Product product) {
-		if (product == null) {
-			return "";
-		}
-
-		return GetterUtil.getString(product.getThumbnail());
-	}
-
-	private String _getSpecificationValue(Product product, String key) {
-		if (product == null) {
-			return "";
-		}
-
-		return GetterUtil.getString(
-			CommerceProductUtil.getSpecificationValue(product, key));
-	}
-
 	private void _sendInvoiceNotification(Order order) {
 		String paymentMethod = order.getPaymentMethod();
 		Integer paymentStatus = order.getPaymentStatus();
@@ -2440,6 +2425,21 @@ public class CommerceOrderService extends OneBaseService {
 		finally {
 			_inFlightInvoiceOrderIds.remove(orderId);
 		}
+	}
+
+	private Order _upsertOrder(String externalReferenceCode, Order order)
+		throws Exception {
+
+		Order existingOrder = fetchOrderByExternalReferenceCode(
+			externalReferenceCode);
+
+		OrderResource orderResource = _buildOrderResource();
+
+		if (existingOrder != null) {
+			return orderResource.patchOrder(existingOrder.getId(), order);
+		}
+
+		return orderResource.postOrder(order);
 	}
 
 	private static final int _ACCOUNT_TYPE_BUSINESS = 2;
