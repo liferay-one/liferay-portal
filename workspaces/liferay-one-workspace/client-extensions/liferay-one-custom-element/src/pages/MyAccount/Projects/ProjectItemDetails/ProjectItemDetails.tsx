@@ -180,6 +180,7 @@ export default function ProjectItemDetails({
 			return (
 				<DetailsTab
 					contract={contract}
+					itemType={itemType}
 					orderInfo={orderInfo}
 					orderItems={getProductEnvironmentOrderItems(
 						productOrders,

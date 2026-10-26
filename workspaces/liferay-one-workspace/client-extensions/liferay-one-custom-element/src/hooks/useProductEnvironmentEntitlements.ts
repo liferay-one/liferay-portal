@@ -22,6 +22,7 @@ export type EnvironmentEntitlement = {
 	quantity: number;
 	startDate: string;
 	terminationStatus: string;
+	tierName: string;
 };
 
 type EntitlementNode = {
@@ -129,19 +130,17 @@ export function useProductEnvironmentEntitlements(
 		});
 
 	const environmentEntitlements: EnvironmentEntitlement[] = useMemo(() => {
-		const optionValueNamesByOrderItemId = new Map(
-			orderItems.map((orderItem) => [
-				orderItem.id,
-				orderItem.optionValueNames,
-			])
+		const orderItemsById = new Map(
+			orderItems.map((orderItem) => [orderItem.id, orderItem])
 		);
 
 		return entitlementNodes.map((entitlementNode, index) => {
-			const optionValueNames =
-				optionValueNamesByOrderItemId.get(
-					entitlementNode.r_commerceOrderItemToEntitlement_commerceOrderItemId ??
-						0
-				) ?? [];
+			const orderItem = orderItemsById.get(
+				entitlementNode.r_commerceOrderItemToEntitlement_commerceOrderItemId ??
+					0
+			);
+
+			const optionValueNames = orderItem?.optionValueNames ?? [];
 
 			return {
 				endDate: entitlementNode.endDate ?? '',
@@ -153,6 +152,7 @@ export function useProductEnvironmentEntitlements(
 				quantity: entitlementNode.quantity ?? 0,
 				startDate: entitlementNode.startDate ?? '',
 				terminationStatus: entitlementNode.terminationStatus ?? '',
+				tierName: orderItem?.tierName ?? '',
 			};
 		});
 	}, [entitlementNodes, orderItems, provisionedCounts]);

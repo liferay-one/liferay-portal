@@ -16,12 +16,14 @@ import type {EnvironmentEntitlement} from '~/hooks/useProductEnvironmentEntitlem
 import type {ProjectContract} from '~/hooks/useProjectCommerce';
 import type {ProjectContact} from '~/hooks/useProjectContacts';
 
+import type {ProjectItemType} from '../types';
 import type {DetailsProfile} from './resolveDetailsProfile';
 
 type DetailsContext = {
 	accountName: string;
 	contract?: ProjectContract;
 	environmentEntitlements?: EnvironmentEntitlement[];
+	itemType: ProjectItemType;
 	orderDate?: string;
 	orderInfo: {
 		itemName: string;
@@ -53,6 +55,7 @@ type EnvironmentSummary = {
 	quantity: number;
 	startDate: string;
 	status: Word;
+	tierNames: string[];
 };
 
 function formatDate(value?: string): string {
@@ -158,6 +161,9 @@ function summarizeEnvironment(
 		quantity: term.reduce((total, {quantity}) => total + quantity, 0),
 		startDate: sortDates(term.map(({startDate}) => startDate))[0] ?? '',
 		status,
+		tierNames: [...new Set(term.map(({tierName}) => tierName))].filter(
+			Boolean
+		),
 	};
 }
 
@@ -205,13 +211,22 @@ function environmentSections(
 
 	if (!environmentSummaries.length) {
 		return [
-			{rows: [...orderRows(context), ...contractRows(context.contract)]},
+			{
+				rows: [
+					...productRows(context, context.orderInfo.itemName),
+					...orderRows(context),
+					...contractRows(context.contract),
+				],
+			},
 		];
 	}
 
 	return environmentSummaries.map((environmentSummary) => ({
 		id: environmentSummary.environment,
-		rows: toRows(environmentSummary),
+		rows: [
+			...productRows(context, environmentSummary.tierNames.join(', ')),
+			...toRows(environmentSummary),
+		],
 		title: environmentSummary.environment
 			? i18n.translate(environmentSummary.environment as Word)
 			: undefined,
@@ -291,6 +306,18 @@ function contractRows(contract?: ProjectContract): DetailsRow[] {
 	];
 }
 
+function productRows(context: DetailsContext, tierName: string): DetailsRow[] {
+	if (
+		context.itemType !== 'product' ||
+		!tierName ||
+		tierName === context.productName
+	) {
+		return [];
+	}
+
+	return [{label: i18n.translate('product'), value: tierName}];
+}
+
 function purchasedRow(context: DetailsContext): DetailsRow {
 	return {
 		label: i18n.translate('purchased'),
@@ -335,13 +362,31 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 			],
 		},
 	],
-	'basic': (context) => [{rows: orderRows(context)}],
-	'basic-incident': (context) => [
+	'basic': (context) => [
 		{
-			rows: [...orderRows(context), securityIncidentContactRow(context)],
+			rows: [
+				...productRows(context, context.orderInfo.itemName),
+				...orderRows(context),
+			],
 		},
 	],
-	'dates-status': (context) => [{rows: contractRows(context.contract)}],
+	'basic-incident': (context) => [
+		{
+			rows: [
+				...productRows(context, context.orderInfo.itemName),
+				...orderRows(context),
+				securityIncidentContactRow(context),
+			],
+		},
+	],
+	'dates-status': (context) => [
+		{
+			rows: [
+				...productRows(context, context.orderInfo.itemName),
+				...contractRows(context.contract),
+			],
+		},
+	],
 	'env-commerce': (context) =>
 		environmentSections(context, (environmentSummary) => [
 			{

@@ -20,10 +20,12 @@ import type {
 	ProductOrderInfo,
 	ProductOrderItem,
 } from '~/hooks/useProjectOrders';
+import type {ProjectItemType} from '~/pages/MyAccount/Projects/types';
 import type {DetailsProfile} from '~/pages/MyAccount/Projects/utils/resolveDetailsProfile';
 
 type DetailsTabProps = {
 	contract?: ProjectContract;
+	itemType: ProjectItemType;
 	orderInfo: ProductOrderInfo;
 	orderItems: ProductOrderItem[];
 	productName: string;
@@ -34,6 +36,7 @@ const ENVIRONMENT_PROFILES: DetailsProfile[] = ['env-commerce', 'env-instance'];
 
 export default function DetailsTab({
 	contract,
+	itemType,
 	orderInfo,
 	orderItems,
 	productName,
@@ -64,6 +67,7 @@ export default function DetailsTab({
 		accountName: Liferay.CommerceContext.account?.accountName ?? '',
 		contract,
 		environmentEntitlements,
+		itemType,
 		orderDate,
 		orderInfo,
 		productName,
