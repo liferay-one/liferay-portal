@@ -38,7 +38,12 @@ type EntitlementNode = {
 	terminationStatus?: string;
 };
 
-export const ENVIRONMENTS: Word[] = ['production', 'non-production'];
+export const ENVIRONMENTS: Word[] = [
+	'production',
+	'non-production',
+	'backup',
+	'complimentary',
+];
 
 const ENTITLEMENT_FIELDS = [
 	'endDate',

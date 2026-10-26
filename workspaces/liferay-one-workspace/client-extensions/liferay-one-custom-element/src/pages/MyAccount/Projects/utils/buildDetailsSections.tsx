@@ -35,7 +35,7 @@ type DetailsContext = {
 	securityIncidentContacts?: ProjectContact[];
 };
 
-const ENVIRONMENT_ORDER: Word[] = [...ENVIRONMENTS, 'backup', 'limited'];
+const ENVIRONMENT_ORDER: Word[] = [...ENVIRONMENTS, 'limited'];
 
 const ENTITLEMENT_STATUSES: Word[] = [
 	'active',
