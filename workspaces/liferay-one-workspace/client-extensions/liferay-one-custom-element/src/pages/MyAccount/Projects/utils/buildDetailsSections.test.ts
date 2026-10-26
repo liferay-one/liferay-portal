@@ -218,12 +218,13 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		]);
 	});
 
-	it('orders the backup and limited environments after the others', () => {
+	it('orders the backup, complimentary, and limited environments after the others', () => {
 		expect(
 			getSections('env-commerce', {
 				environmentEntitlements: [
 					{...environmentEntitlement, environment: 'limited'},
 					{...environmentEntitlement, environment: ''},
+					{...environmentEntitlement, environment: 'complimentary'},
 					{...environmentEntitlement, environment: 'backup'},
 					{...environmentEntitlement, environment: 'non-production'},
 					environmentEntitlement,
@@ -233,6 +234,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 			'Production',
 			'Non-Production',
 			'Backup',
+			'Complimentary',
 			'Limited',
 			undefined,
 		]);

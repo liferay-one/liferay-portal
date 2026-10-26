@@ -146,6 +146,38 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		).toEqual(['production', '']);
 	});
 
+	it('keeps the backup and complimentary entitlements and hides the developer entitlements', () => {
+		useDataQueryMock.mockReturnValue({data: undefined, isLoading: false});
+		useFetchMock.mockReturnValue({
+			data: {
+				items: [
+					'backup',
+					'complimentary',
+					'developer',
+					'developer-cluster',
+				].map((licenseKeyType, index) => ({
+					entitlementDefinitionToEntitlement: {
+						generatesActivationKey: true,
+						licenseKeyType,
+						unit: 'boolean',
+					},
+					id: 21 + index,
+				})),
+			},
+			isLoading: false,
+		});
+
+		const {result} = renderHook(() =>
+			useProductEnvironmentEntitlements(orderItems, true)
+		);
+
+		expect(
+			result.current.environmentEntitlements.map(
+				({environment}) => environment
+			)
+		).toEqual(['backup', 'complimentary']);
+	});
+
 	it('keeps the plan entitlements without activation keys', () => {
 		useDataQueryMock.mockReturnValue({data: undefined, isLoading: false});
 		useFetchMock.mockReturnValue({
