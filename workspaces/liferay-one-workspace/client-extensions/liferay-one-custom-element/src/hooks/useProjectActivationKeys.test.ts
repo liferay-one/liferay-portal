@@ -128,7 +128,7 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 		);
 	});
 
-	it('filters by account when the project is the unassigned project', () => {
+	it('filters by account and excludes the keys of its projects when the project is the unassigned project', () => {
 		useProjectMock.mockReturnValue({projectId: 'one-time-purchases'});
 
 		renderActivationKeys();
@@ -136,18 +136,18 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 		expect(useObjectItemsMock).toHaveBeenCalledWith(
 			'/o/c/activationkeys',
 			expect.objectContaining({
-				filter: "r_accountEntryToActivationKey_accountEntryId eq '77'",
+				filter: "r_accountEntryToActivationKey_accountEntryId eq '77' and r_projectToActivationKey_c_projectId eq '0'",
 			})
 		);
 		expect(useObjectItemsMock).toHaveBeenCalledWith(
 			'/o/c/licensekeys',
 			expect.objectContaining({
-				filter: "r_accountEntryToLicenseKey_accountEntryId eq '77'",
+				filter: "r_accountEntryToLicenseKey_accountEntryId eq '77' and r_projectToLicenseKey_c_projectId eq '0'",
 			})
 		);
 	});
 
-	it('filters by account when no project is selected', () => {
+	it('filters by account and excludes the keys of its projects when no project is selected', () => {
 		useProjectMock.mockReturnValue({projectId: undefined});
 
 		renderActivationKeys();
@@ -155,7 +155,13 @@ describe('[HOOK-USEPROJECTACTIVATIONKEYS] useProjectActivationKeys', () => {
 		expect(useObjectItemsMock).toHaveBeenCalledWith(
 			'/o/c/activationkeys',
 			expect.objectContaining({
-				filter: "r_accountEntryToActivationKey_accountEntryId eq '77'",
+				filter: "r_accountEntryToActivationKey_accountEntryId eq '77' and r_projectToActivationKey_c_projectId eq '0'",
+			})
+		);
+		expect(useObjectItemsMock).toHaveBeenCalledWith(
+			'/o/c/licensekeys',
+			expect.objectContaining({
+				filter: "r_accountEntryToLicenseKey_accountEntryId eq '77' and r_projectToLicenseKey_c_projectId eq '0'",
 			})
 		);
 	});
