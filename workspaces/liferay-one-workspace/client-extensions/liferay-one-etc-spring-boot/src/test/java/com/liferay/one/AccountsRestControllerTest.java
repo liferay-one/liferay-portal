@@ -410,6 +410,75 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testGetJiraAssetsRejectsNonadministrator() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.doThrow(
+			PrincipalException.class
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.getJiraAssets(
+				null, _EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verifyNoInteractions(_accountAssetService);
+	}
+
+	@Test
+	public void testGetJiraAssetsReturnsTheAccountAssetsForAdministrator()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = _createAccount();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			account
+		);
+
+		Mockito.when(
+			_accountAssetService.getJiraAssetsJSONObject(account)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"accounts", new JSONArray()
+			).put(
+				"contacts", new JSONArray()
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			accountsRestController.getJiraAssets(
+				null, _EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertTrue(
+			jsonObject.getJSONArray(
+				"accounts"
+			).isEmpty());
+		Assertions.assertTrue(
+			jsonObject.getJSONArray(
+				"contacts"
+			).isEmpty());
+
+		Mockito.verify(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+	}
+
+	@Test
 	public void testGetJiraObjectKeyChecksViewPermission() throws Exception {
 		AccountsRestController accountsRestController = _createController();
 

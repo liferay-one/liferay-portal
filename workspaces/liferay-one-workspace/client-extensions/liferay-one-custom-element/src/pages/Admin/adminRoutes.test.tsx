@@ -56,6 +56,19 @@ vi.mock('./Payments/PaymentDetails', () => ({
 	default: () => 'PaymentDetails page',
 }));
 vi.mock('./Payments/Payments', () => ({default: () => 'Payments page'}));
+vi.mock(
+	'./ProductInspector/EntitlementDefinitionDetail/EntitlementDefinitionDetail',
+	() => ({default: () => 'EntitlementDefinitionDetail page'})
+);
+vi.mock('./ProductInspector/ProductInspector', () => ({
+	default: () => 'ProductInspector page',
+}));
+vi.mock(
+	'./ProductInspector/ProductInspectorDetail/ProductInspectorDetail',
+	() => ({
+		default: () => 'ProductInspectorDetail page',
+	})
+);
 vi.mock('./PubSub/PubSub', () => ({default: () => 'PubSub page'}));
 vi.mock('./PublisherRequests/PublisherRequests', () => ({
 	default: () => 'PublisherRequests page',
@@ -196,6 +209,14 @@ const navRoutes = [
 		users: ['ssaAdminUser', 'ssaUser'],
 	},
 	{
+		icon: 'catalog',
+		id: 'ROUTE-ADMIN-PRODUCT-INSPECTOR',
+		label: 'product-inspector',
+		page: 'ProductInspector page',
+		path: 'product-inspector',
+		users: ['adminUser'],
+	},
+	{
 		icon: 'message-boards',
 		id: 'ROUTE-ADMIN-PUB-SUB',
 		label: 'pub-sub',
@@ -272,6 +293,20 @@ const detailRoutes = [
 		path: 'mp-payments/:entryId',
 		url: '/mp-payments/42',
 		users: ['adminUser', 'financeUser'],
+	},
+	{
+		id: 'ROUTE-ADMIN-PRODUCT-INSPECTOR-ENTITLEMENT-DEFINITIONS-ENTITLEMENTDEFINITIONID',
+		page: 'EntitlementDefinitionDetail page',
+		path: 'product-inspector/entitlement-definitions/:entitlementDefinitionId',
+		url: '/product-inspector/entitlement-definitions/42',
+		users: ['adminUser'],
+	},
+	{
+		id: 'ROUTE-ADMIN-PRODUCT-INSPECTOR-PRODUCTID',
+		page: 'ProductInspectorDetail page',
+		path: 'product-inspector/:productId',
+		url: '/product-inspector/42',
+		users: ['adminUser'],
 	},
 	{
 		id: 'ROUTE-ADMIN-MP-SOLUTIONS-PRODUCTID',

@@ -62,6 +62,57 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTS] Products', () => {
 		expect(container.querySelector('.list-card-icon')).toBeNull();
 	});
 
+	it('shows the filter and columns buttons as icons only', () => {
+		renderProducts([product('Liferay DXP', 'Platform')]);
+
+		expect(
+			screen.getByRole('button', {name: 'Filter'})
+		).toBeInTheDocument();
+		expect(
+			screen.getByRole('button', {name: 'Columns'})
+		).toBeInTheDocument();
+		expect(screen.queryByText('Filter')).toBeNull();
+	});
+
+	it('sorts products when a column header is clicked', () => {
+		const {container} = renderProducts([
+			product('Beta', 'Platform'),
+			product('Alpha', 'Platform'),
+			product('Gamma', 'Platform'),
+		]);
+
+		const getNames = () =>
+			Array.from(container.querySelectorAll('.list-card-name-label')).map(
+				(element) => element.textContent
+			);
+
+		expect(getNames()).toEqual(['Beta', 'Alpha', 'Gamma']);
+
+		fireEvent.click(screen.getByRole('button', {name: 'Name'}));
+
+		expect(getNames()).toEqual(['Alpha', 'Beta', 'Gamma']);
+
+		fireEvent.click(screen.getByRole('button', {name: 'Name'}));
+
+		expect(getNames()).toEqual(['Gamma', 'Beta', 'Alpha']);
+	});
+
+	it('hides a column that is cleared in the columns menu', async () => {
+		renderProducts([product('Liferay DXP', 'Platform')]);
+
+		expect(
+			screen.getByRole('button', {name: 'Start Date'})
+		).toBeInTheDocument();
+
+		fireEvent.click(screen.getByRole('button', {name: 'Columns'}));
+
+		fireEvent.click(
+			await screen.findByRole('checkbox', {name: 'Start Date'})
+		);
+
+		expect(screen.queryByRole('button', {name: 'Start Date'})).toBeNull();
+	});
+
 	it('opens the project Activation page from a contract scoped list', async () => {
 		vi.mocked(useProjectContractItems).mockReturnValue({
 			error: undefined,

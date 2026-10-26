@@ -201,6 +201,40 @@ public class JiraAssetServiceTest {
 	}
 
 	@Test
+	public void testGetJiraAssetObjectsByExternalKeysChunksUniqueKeys() {
+		Mockito.when(
+			_jiraAssetPersistence.searchObjects(
+				Mockito.anyString(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(_existingJiraAssetObject)
+		);
+
+		List<String> externalKeys = new ArrayList<>();
+
+		for (int i = 0; i < 51; i++) {
+			externalKeys.add("external-key-" + i);
+			externalKeys.add("external-key-" + i);
+		}
+
+		Assertions.assertEquals(
+			Arrays.asList(_existingJiraAssetObject, _existingJiraAssetObject),
+			_jiraAssetService.getJiraAssetObjectsByExternalKeys(
+				_converter, externalKeys));
+
+		Mockito.verify(
+			_jiraAssetPersistence, Mockito.times(2)
+		).searchObjects(
+			Mockito.anyString(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetPersistence, Mockito.never()
+		).createObject(
+			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testGetOrCreateReferenceObjectIdsCreatesMissingObjects() {
 		Mockito.when(
 			_jiraAssetPersistence.searchObjects(
