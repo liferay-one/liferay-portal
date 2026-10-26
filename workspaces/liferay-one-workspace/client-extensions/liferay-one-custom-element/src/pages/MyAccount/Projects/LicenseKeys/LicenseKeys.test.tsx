@@ -180,4 +180,16 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 			button.closest('span[data-tooltip-align="top"]')
 		).toHaveAttribute('title', 'No licenses available');
 	});
+
+	it('renders the filter button as an icon only', () => {
+		mockGeneratePermission(true);
+		mockSummary({generatable: true});
+
+		renderLicenseKeys();
+
+		expect(
+			screen.getByRole('button', {name: 'Filter'})
+		).toBeInTheDocument();
+		expect(screen.queryByText('Filter')).toBeNull();
+	});
 });
