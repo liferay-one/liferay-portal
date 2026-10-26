@@ -7,7 +7,6 @@ package com.liferay.one.service;
 
 import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.LicenseVersion;
-import com.liferay.one.exception.LicenseKeyActiveException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.license.LicenseEntry;
 import com.liferay.one.license.LicenseEntryService;
@@ -564,26 +563,6 @@ public class LicenseKeyService extends OneBaseService {
 				escapeODataString(serverId), "')"));
 	}
 
-	public LicenseKey replaceLicenseKey(
-			Date expirationDate, long licenseKeyId, Date startDate)
-		throws Exception {
-
-		LicenseKey licenseKey = getLicenseKey(licenseKeyId);
-
-		if (Validator.isNotNull(licenseKey.getOrderId()) &&
-			!licenseKey.isActive()) {
-
-			throw new LicenseKeyActiveException();
-		}
-
-		LicenseKey newLicenseKey = _copyLicenseKey(
-			expirationDate, licenseKey, startDate);
-
-		updateLicenseKey(false, licenseKey.isComplimentary(), licenseKeyId);
-
-		return newLicenseKey;
-	}
-
 	public List<LicenseKey> search(
 			Boolean active, String description, String hostName,
 			String ipAddress, String licenseType, String macAddress,
@@ -765,30 +744,6 @@ public class LicenseKeyService extends OneBaseService {
 		}
 
 		return String.join(" and ", conditions);
-	}
-
-	private LicenseKey _copyLicenseKey(
-			Date expirationDate, LicenseKey licenseKey, Date startDate)
-		throws Exception {
-
-		return addLicenseKey(
-			licenseKey.getAccountEntryId(), licenseKey.getAccountName(),
-			licenseKey.getActivationKeyId(), true,
-			licenseKey.getAdditionalInfo(), licenseKey.isComplimentary(),
-			licenseKey.getDescription(), licenseKey.getDomains(),
-			licenseKey.getEntitlementDefinitionId(),
-			licenseKey.getEntitlementId(), expirationDate,
-			licenseKey.getHostName(), licenseKey.getIpAddresses(), null,
-			licenseKey.getLicenseKeyFamily(), licenseKey.getLicenseName(),
-			licenseKey.getLicenseType(), licenseKey.getLicenseVersion(),
-			licenseKey.getMacAddresses(), licenseKey.getMaxClusterNodes(),
-			licenseKey.getMaxConcurrentUsers(), licenseKey.getMaxHttpSessions(),
-			licenseKey.getMaxServers(), licenseKey.getMaxUsers(),
-			licenseKey.getName(), licenseKey.getOrderId(),
-			licenseKey.getOwner(), licenseKey.getProductExternalId(),
-			licenseKey.getProductName(), licenseKey.getProductVersion(),
-			licenseKey.getProjectExternalReferenceCode(),
-			licenseKey.getServerId(), licenseKey.getSizing(), startDate);
 	}
 
 	private Map<Long, Integer> _getActiveLicenseKeyCounts(
