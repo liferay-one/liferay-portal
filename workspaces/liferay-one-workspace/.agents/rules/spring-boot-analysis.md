@@ -29,10 +29,11 @@ A reviewer works from `concurrency.md`. That file has a higher priority than thi
 
 Leave `ignoreFailures` on while findings remain, so that SpotBugs reports them and the build still succeeds. Turn `ignoreFailures` off when the count reaches zero.
 
-`spotbugs-exclude.xml` holds two exclusions:
+`spotbugs-exclude.xml` holds three exclusions:
 
 - The `liferay-release-tool-ee` sources. Git checks these files into the source set of this project. This team does not own them.
 - `EI_EXPOSE_REP` and `EI_EXPOSE_REP2`. These two rules report every getter that returns a mutable field. This project holds many DTOs, so these two rules report no defect.
+- `NP_BOOLEAN_RETURN_NULL` in the `*SyncModel` classes of `com.liferay.one.jira.synchronizer`. A `Boolean` getter on a sync model returns `null` when a value is unknown, as [`code-style.md`](./code-style.md) specifies in "Null Means Unknown in Partial Updates". The callers check for `null`, so this rule reports no defect there.
 
 SpotBugs reports every other rule. Add an exclusion only when a rule is incorrect for this project. Do not add an exclusion to hide a correct finding.
 
