@@ -11,13 +11,16 @@ import {OrderTypes} from '~/types/orders';
 import {
 	OrderCustomFields,
 	getOrderStatusToken,
-	getProductStatusToken,
+	getProjectItemStatusToken,
 } from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import {placedOrdersQuery, usePlacedOrders} from './usePlacedOrder';
 
-import type {UserProject} from '~/pages/MyAccount/Projects/types';
+import type {
+	ProjectItemType,
+	UserProject,
+} from '~/pages/MyAccount/Projects/types';
 import type {AnalyticsProject} from '~/types/analytics';
 import type {PlacedOrder, PlacedOrderItems, VirtualItem} from '~/types/orders';
 
@@ -292,6 +295,7 @@ export function getProductOrderItemIds(
 }
 
 export function getProductOrderInfo(
+	itemType: ProjectItemType,
 	placedOrders: PlacedOrder[],
 	productId: number
 ): ProductOrderInfo {
@@ -349,7 +353,8 @@ export function getProductOrderInfo(
 				? ''
 				: order.author ?? '',
 		quantity: quantity ? String(quantity) : '',
-		status: getProductStatusToken(
+		status: getProjectItemStatusToken(
+			itemType,
 			order,
 			getProductOrderItems(placedOrders, productId)
 		),

@@ -8,7 +8,7 @@ import {formatShortDate} from '~/utils/dateUtils';
 import {
 	getContractProductOrders,
 	getPlacedOrderItemDate,
-	getProductStatusToken,
+	getProjectItemStatusToken,
 } from '~/utils/orderUtils';
 import {
 	getProductSpecificationValue,
@@ -50,6 +50,7 @@ function formatStartDate(
 }
 
 function toProjectProduct(
+	itemType: ProjectItemType,
 	order: PlacedOrder,
 	placedOrderItems: PlacedOrderItems[],
 	product: DeliveryProduct
@@ -62,7 +63,7 @@ function toProjectProduct(
 		saleType: getProductSpecificationValue('price-model', product),
 		specifications: product.productSpecifications ?? [],
 		startDate: formatStartDate(order, placedOrderItems),
-		status: getProductStatusToken(order, placedOrderItems) || 'active',
+		status: getProjectItemStatusToken(itemType, order, placedOrderItems),
 		type:
 			getProductSpecificationValues(
 				'liferay-products-categories',
@@ -125,6 +126,7 @@ export function toProjectItemsByType(
 		items.set(
 			product.externalReferenceCode,
 			toProjectProduct(
+				projectItemType,
 				contractOrders[0],
 				contractOrders.flatMap((order) =>
 					(order.placedOrderItems ?? []).filter(

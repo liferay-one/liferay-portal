@@ -8,6 +8,7 @@ import {toUTCCalendarDate} from '~/utils/dateUtils';
 import {formatCurrency} from '~/utils/formatCurrency';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
+import type {ProjectItemType} from '~/pages/MyAccount/Projects/types';
 import type {
 	Order,
 	OrderTypes,
@@ -307,15 +308,47 @@ export function isTermExpired(placedOrderItems: PlacedOrderItems[]): boolean {
 	);
 }
 
+export function isTermFuture(placedOrderItems: PlacedOrderItems[]): boolean {
+	const today = startOfToday();
+
+	return (
+		!!placedOrderItems.length &&
+		placedOrderItems.every((placedOrderItem) => {
+			const startDate = getPlacedOrderItemDate(
+				placedOrderItem,
+				'startDate'
+			);
+
+			return startDate !== undefined && startDate > today;
+		})
+	);
+}
+
 export function getProductStatusToken(
 	order: PlacedOrder,
 	placedOrderItems: PlacedOrderItems[]
 ): string {
 	const statusToken = getOrderStatusToken(order);
 
-	return statusToken === 'active' && isTermExpired(placedOrderItems)
-		? 'expired'
-		: statusToken;
+	if (statusToken !== 'completed') {
+		return statusToken;
+	}
+
+	if (isTermExpired(placedOrderItems)) {
+		return 'expired';
+	}
+
+	return isTermFuture(placedOrderItems) ? 'future' : 'active';
+}
+
+export function getProjectItemStatusToken(
+	itemType: ProjectItemType,
+	order: PlacedOrder,
+	placedOrderItems: PlacedOrderItems[]
+): string {
+	return itemType === 'application'
+		? getOrderStatusToken(order)
+		: getProductStatusToken(order, placedOrderItems);
 }
 
 const BETA_SKU_OPTION_VALUE_KEYS = ['beta', 'open-beta', 'private-beta'];

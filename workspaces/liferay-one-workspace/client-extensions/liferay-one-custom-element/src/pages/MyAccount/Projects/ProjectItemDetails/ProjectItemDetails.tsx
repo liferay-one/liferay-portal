@@ -46,7 +46,10 @@ import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassigned
 import {resolveEnvironmentProfile} from '~/pages/MyAccount/Projects/utils/resolveEnvironmentProfile';
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
 import {Liferay} from '~/services/liferay/liferay';
-import {getContractProductOrders} from '~/utils/orderUtils';
+import {
+	getContractProductOrders,
+	getOrderStatusToken,
+} from '~/utils/orderUtils';
 import {
 	getProductSpecificationValue,
 	getProductSpecificationValues,
@@ -133,7 +136,13 @@ export default function ProjectItemDetails({
 		resolvedContractId
 	);
 
-	const orderInfo = getProductOrderInfo(productOrders, product.productId);
+	const productOrder = getProductOrder(productOrders, product.productId);
+
+	const orderInfo = getProductOrderInfo(
+		itemType,
+		productOrders,
+		product.productId
+	);
 	const virtualItems = getProductVirtualItems(
 		productOrders,
 		product.productId
@@ -165,14 +174,7 @@ export default function ProjectItemDetails({
 		),
 		'details': () => {
 			if (orderInfo.orderType === 'SEO_STUDIO') {
-				return (
-					<SEOStudioDetails
-						placedOrder={getProductOrder(
-							productOrders,
-							product.productId
-						)}
-					/>
-				);
+				return <SEOStudioDetails placedOrder={productOrder} />;
 			}
 
 			return (
@@ -223,6 +225,9 @@ export default function ProjectItemDetails({
 
 	const lrTokensProductId = lrTokensProduct?.productId;
 
+	const isProductOrderCompleted =
+		!!productOrder && getOrderStatusToken(productOrder) === 'completed';
+
 	return (
 		<ProjectDetailTabs
 			header={
@@ -230,7 +235,7 @@ export default function ProjectItemDetails({
 					actions={
 						isAIHub &&
 						lrTokensProductId &&
-						orderInfo.status === 'completed' ? (
+						isProductOrderCompleted ? (
 							<Button
 								displayType="primary"
 								onClick={() =>

@@ -37,6 +37,7 @@ export const STATUS_DOT_COLORS: {[key: string]: string} = {
 	'cancelled': 'var(--color-state-error)',
 	'completed': 'var(--color-state-success)',
 	'expired': 'var(--color-state-error)',
+	'future': 'var(--color-state-info)',
 	'in-progress': 'var(--color-state-info)',
 	'on-hold': 'var(--color-state-warning)',
 	'paid': 'var(--color-state-success)',
