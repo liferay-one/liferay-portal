@@ -94,6 +94,10 @@ class ProjectsOAuth2 extends OneSpringBootOAuth2 {
 		);
 	}
 
+	async postSyncToJSM(projectExternalReferenceCode: string) {
+		return this.post(`/${projectExternalReferenceCode}/sync-to-jsm`);
+	}
+
 	async putProjectMembership(
 		projectExternalReferenceCode: string,
 		userId: number | string,

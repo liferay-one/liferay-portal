@@ -12,6 +12,8 @@ import classNames from 'classnames';
 import {ComponentProps, forwardRef, useState} from 'react';
 import i18n from '~/i18n';
 
+import '~/components/ManagementToolbarSearch/ManagementToolbarSearch.css';
+
 import {
 	getActiveValueCount,
 	toggleFilterValue,
@@ -38,6 +40,7 @@ type InspectorToolbarProps = {
 	onChange: (filter: InspectorFilter) => void;
 	onToggleColumn?: (label: Word) => void;
 	resultCount?: number;
+	searchFullWidth?: boolean;
 	showFlaggedOnly?: boolean;
 	totalCount?: number;
 };
@@ -47,25 +50,27 @@ type IconButtonProps = Omit<
 	'aria-label' | 'symbol'
 > & {
 	active?: boolean;
+	compact?: boolean;
 	label: string;
 	symbol: string;
 };
 
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-	({active, className, label, symbol, ...otherProps}, ref) => (
+	(
+		{active, className, compact = true, label, symbol, ...otherProps},
+		ref
+	) => (
 		<ClayButtonWithIcon
 			{...otherProps}
 			aria-label={label}
-			className={classNames(
-				className,
-				'account-inspector-toolbar-button',
-				{
-					active,
-				}
-			)}
+			className={classNames(className, {
+				'account-inspector-toolbar-button': compact,
+				active,
+				'btn-monospaced mr-2': !compact,
+			})}
 			displayType="secondary"
 			ref={ref}
-			size="sm"
+			size={compact ? 'sm' : undefined}
 			symbol={symbol}
 			title={label}
 		/>
@@ -79,6 +84,7 @@ export default function InspectorToolbar({
 	onChange,
 	onToggleColumn,
 	resultCount,
+	searchFullWidth = false,
 	showFlaggedOnly = true,
 	totalCount,
 }: InspectorToolbarProps) {
@@ -117,7 +123,79 @@ export default function InspectorToolbar({
 
 	return (
 		<div className="account-inspector-toolbar align-items-center d-flex mb-3">
-			{searchOpen ? (
+			{Boolean(filterItems.length) && (
+				<ClayDropDownWithItems
+					items={filterItems}
+					menuElementAttrs={{className: 'account-inspector-menu'}}
+					trigger={
+						<IconButton
+							active={Boolean(activeFilterCount)}
+							compact={!searchFullWidth}
+							label={i18n.translate('filter')}
+							symbol="filter"
+						/>
+					}
+				/>
+			)}
+
+			{columns && onToggleColumn && (
+				<ClayDropDownWithItems
+					items={columns.map(({label, visible}) => ({
+						checked: visible,
+						disabled:
+							visible &&
+							columns.filter((column) => column.visible)
+								.length === 1,
+						onChange: () => onToggleColumn(label),
+						title: i18n.translate(label),
+						type: 'checkbox',
+					}))}
+					menuElementAttrs={{className: 'account-inspector-menu'}}
+					trigger={
+						<IconButton
+							className="account-inspector-columns-button"
+							compact={!searchFullWidth}
+							label={i18n.translate('columns')}
+							symbol="bars"
+						/>
+					}
+				/>
+			)}
+
+			{searchFullWidth ? (
+				<div className="flex-grow-1 management-toolbar-search">
+					<ClayInput.Group>
+						<ClayInput.GroupItem>
+							<ClayInput
+								aria-label={i18n.translate('search')}
+								className="bg-white form-control input-group-inset input-group-inset-after"
+								onChange={(event) =>
+									onChange({
+										...filter,
+										search: event.target.value,
+									})
+								}
+								onKeyDown={(event) => {
+									if (event.key === 'Escape') {
+										onChange({...filter, search: ''});
+									}
+								}}
+								placeholder={i18n.translate('search')}
+								type="text"
+								value={filter.search}
+							/>
+
+							<ClayInput.GroupInsetItem
+								after
+								className="bg-white"
+								tag="span"
+							>
+								<ClayIcon symbol="search" />
+							</ClayInput.GroupInsetItem>
+						</ClayInput.GroupItem>
+					</ClayInput.Group>
+				</div>
+			) : searchOpen ? (
 				<div className="account-inspector-toolbar-search">
 					<ClayInput
 						aria-label={i18n.translate('search')}
@@ -148,43 +226,6 @@ export default function InspectorToolbar({
 					label={i18n.translate('search')}
 					onClick={() => setSearchOpen(true)}
 					symbol="search"
-				/>
-			)}
-
-			{columns && onToggleColumn && (
-				<ClayDropDownWithItems
-					items={columns.map(({label, visible}) => ({
-						checked: visible,
-						disabled:
-							visible &&
-							columns.filter((column) => column.visible)
-								.length === 1,
-						onChange: () => onToggleColumn(label),
-						title: i18n.translate(label),
-						type: 'checkbox',
-					}))}
-					menuElementAttrs={{className: 'account-inspector-menu'}}
-					trigger={
-						<IconButton
-							className="account-inspector-columns-button"
-							label={i18n.translate('columns')}
-							symbol="bars"
-						/>
-					}
-				/>
-			)}
-
-			{Boolean(filterItems.length) && (
-				<ClayDropDownWithItems
-					items={filterItems}
-					menuElementAttrs={{className: 'account-inspector-menu'}}
-					trigger={
-						<IconButton
-							active={Boolean(activeFilterCount)}
-							label={i18n.translate('filter')}
-							symbol="filter"
-						/>
-					}
 				/>
 			)}
 

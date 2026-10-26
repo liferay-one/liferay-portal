@@ -84,6 +84,29 @@ export type AccountInspection = {
 	users: InspectedCollection<InspectedUser>;
 };
 
+export type JiraAsset = {
+	attributes: Record<string, string[]>;
+	externalKey: string;
+	name: string;
+	objectId: string;
+	objectKey: string;
+};
+
+export type JiraAssets = {
+	accounts: JiraAsset[];
+	contacts: JiraAsset[];
+};
+
+export type JSMRecordType = 'account' | 'project' | 'user';
+
+export type JSMRecord = InspectedEntry & {
+	drift: Word[];
+	jiraAsset?: JiraAsset;
+	name: string;
+	recordId: number;
+	type: JSMRecordType;
+};
+
 export type AccountFindingSeverity = 'danger' | 'info' | 'warning';
 
 export type AccountFinding = {

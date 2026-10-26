@@ -112,7 +112,7 @@ const RELATED_COLLECTION_SOURCES: Record<
 	},
 };
 
-function toErrorMessage(error: unknown) {
+export function toErrorMessage(error: unknown) {
 	const fetcherError = error as FetcherError;
 
 	const title = fetcherError.info?.title ?? fetcherError.message;

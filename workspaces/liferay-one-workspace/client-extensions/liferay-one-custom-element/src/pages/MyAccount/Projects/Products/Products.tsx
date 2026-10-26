@@ -49,12 +49,14 @@ export default function Products() {
 			render: (product) => (
 				<span className="list-card-name-label">{product.name}</span>
 			),
+			sortValue: (product) => product.name,
 		},
 		{
 			heading: 'start-date',
 			key: 'start-date',
 			noWrap: true,
 			render: (product) => product.startDate,
+			sortValue: (product) => Date.parse(product.startDate) || 0,
 			width: '1%',
 		},
 		statusColumn(),

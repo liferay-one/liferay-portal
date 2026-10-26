@@ -120,11 +120,13 @@ export default function Applications() {
 			render: (application) => (
 				<span className="list-card-name-label">{application.name}</span>
 			),
+			sortValue: (application) => application.name,
 		},
 		{
 			heading: 'type',
 			key: 'type',
 			render: (application) => application.saleType,
+			sortValue: (application) => application.saleType,
 			width: '1%',
 		},
 		{
@@ -132,6 +134,7 @@ export default function Applications() {
 			key: 'start-date',
 			noWrap: true,
 			render: (application) => application.startDate,
+			sortValue: (application) => Date.parse(application.startDate) || 0,
 			width: '1%',
 		},
 		statusColumn(),

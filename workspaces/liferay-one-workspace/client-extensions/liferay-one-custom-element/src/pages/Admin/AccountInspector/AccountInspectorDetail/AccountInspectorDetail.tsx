@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayButton from '@clayui/button';
 import ClayLabel from '@clayui/label';
 import {useMemo, useState} from 'react';
 import {Navigate, useParams} from 'react-router';
 import BackLink from '~/components/BackLink/BackLink';
 import {PageRenderer} from '~/components/Page/Page';
+import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import {useDataQuery} from '~/hooks/useDataQuery';
 import i18n from '~/i18n';
 import {accountInspectionQuery} from '~/services/queries/accountInspectionQuery';
@@ -17,9 +17,11 @@ import AccountFindings from './components/AccountFindings/AccountFindings';
 import AccountSummary from './components/AccountSummary/AccountSummary';
 import AccountTree from './components/AccountTree/AccountTree';
 import InspectedCollectionPanel from './components/InspectedCollectionPanel/InspectedCollectionPanel';
+import JSMRecords from './components/JSMRecords/JSMRecords';
 import {openAccountDashboard} from './utils/accountDashboardUtils';
 import buildAccountTree from './utils/buildAccountTree';
 import getAccountFindings from './utils/getAccountFindings';
+import syncRecordToJSM from './utils/syncRecordToJSM';
 
 import type FetcherError from '~/services/fetcher/FetcherError';
 import type {
@@ -31,6 +33,7 @@ import type {
 	InspectedEntry,
 	RelatedCollectionKey,
 } from '~/types/accountInspection';
+import type {Account} from '~/types/accounts';
 
 const RELATED_COLLECTION_DISPLAY_ORDER: RelatedCollectionKey[] = [
 	'projects',
@@ -169,6 +172,8 @@ function AccountInspectorContent({
 
 			<AccountSummary inspection={inspection} />
 
+			<JSMRecords inspection={inspection} />
+
 			<h3 className="mb-3">{i18n.translate('related-records')}</h3>
 
 			{getCollections(inspection).map(([collectionKey, collection]) => (
@@ -194,6 +199,25 @@ export default function AccountInspectorDetail() {
 		revalidateOnFocus: false,
 	});
 
+	const [syncing, setSyncing] = useState(false);
+
+	const syncAccountToJSM = async (account: Account) => {
+		setSyncing(true);
+
+		if (
+			await syncRecordToJSM({
+				externalReferenceCode: account.externalReferenceCode,
+				name: account.name,
+				recordId: account.id,
+				type: 'account',
+			})
+		) {
+			mutate();
+		}
+
+		setSyncing(false);
+	};
+
 	if (!query.key) {
 		return <Navigate replace to="/account-inspector" />;
 	}
@@ -205,27 +229,32 @@ export default function AccountInspectorDetail() {
 					{i18n.translate('back-to-accounts')}
 				</BackLink>
 
-				<div className="d-flex">
-					{data && (
-						<ClayButton
-							className="mr-2"
-							displayType="secondary"
-							onClick={() => openAccountDashboard(data.account)}
-							size="sm"
-						>
-							{i18n.translate('go-to-account')}
-						</ClayButton>
-					)}
-
-					<ClayButton
-						disabled={isValidating}
-						displayType="secondary"
-						onClick={() => mutate()}
-						size="sm"
-					>
-						{i18n.translate('reload')}
-					</ClayButton>
-				</div>
+				<RowActionsMenu
+					actions={[
+						...(data
+							? [
+									{
+										label: 'go-to-account' as const,
+										onClick: () =>
+											openAccountDashboard(data.account),
+									},
+									{
+										disabled:
+											syncing ||
+											!data.account.externalReferenceCode,
+										label: 'sync-to-jsm' as const,
+										onClick: () =>
+											syncAccountToJSM(data.account),
+									},
+								]
+							: []),
+						{
+							disabled: isValidating,
+							label: 'reload',
+							onClick: () => mutate(),
+						},
+					]}
+				/>
 			</div>
 
 			<PageRenderer

@@ -38,6 +38,7 @@ export default {
 	'account-type': 'Account Type',
 	'accounts': 'Accounts',
 	'accounts-available-for-x-you': 'Accounts available for {0} (you)',
+	'accounts-without-users': 'Accounts without Users',
 	'actions': 'Actions',
 	'activate': 'Activate',
 	'activated': 'Activated',
@@ -60,6 +61,7 @@ export default {
 		'Activation keys reference a project that is not in this account.',
 	'activation-keys-uploaded-successfully':
 		'Activation keys uploaded successfully.',
+	'activation-keys-without-an-account': 'Activation Keys without an Account',
 	'activation-mode': 'Activation Mode',
 	'activation-status': 'Activation Status',
 	'activation-token': 'Activation Token',
@@ -103,6 +105,7 @@ export default {
 		'After you paste an activation code, no further action is needed. Cloud Native environments sync with Liferay daily, and any add-on purchased later is picked up on the next sync without regenerating the code.',
 	'agent-portal': 'Agent Portal',
 	'aggregate': 'Aggregate',
+	'aggregation-type': 'Aggregation Type',
 	'agreements': 'Agreements',
 	'ai': 'AI',
 	'ai-hub': 'AI Hub',
@@ -231,6 +234,8 @@ export default {
 	'attachment-deleted-successfully': 'Attachment deleted successfully.',
 	'attention-this-cannot-be-undone': 'Attention: This cannot be undone.',
 	'attributes': 'Attributes',
+	'audit-every-product-its-specifications-skus-and-entitlement-definitions-and-the-problems-found-in-them':
+		'Audit every product, its specifications, SKUs, and entitlement definitions, and the problems found in them.',
 	'authenticated-logins-malus': 'Authenticated Logins (MALUs)',
 	'automation': 'Automation',
 	'available': 'Available',
@@ -245,6 +250,8 @@ export default {
 	'back-to-my-products': 'Back to My Products',
 	'back-to-my-solutions': 'Back to My Solutions',
 	'back-to-payments': 'Back to Payments',
+	'back-to-product': 'Back to Product',
+	'back-to-products': 'Back to Products',
 	'back-to-project': 'Back to Project',
 	'back-to-solutions': 'Back to Solutions',
 	'back-to-the-list': 'Back to the list',
@@ -406,6 +413,7 @@ export default {
 		'Contracts have an end date before their start date.',
 	'contracts-reference-projects-outside-the-account':
 		'Contracts reference a project that is not in this account.',
+	'contracts-without-an-account': 'Contracts without an Account',
 	'copied-to-the-clipboard': 'Copied to the clipboard.',
 	'copied-x-to-the-clipboard': 'Copied {0} to the clipboard.',
 	'copy': 'Copy',
@@ -486,6 +494,7 @@ export default {
 		'Dear {0}, based on our records, you have already completed a trial. Therefore currently we are unable to start your trial. Please contact our sales department via email',
 	'decline': 'Decline',
 	'default-billing-address': 'Default Billing Address',
+	'default-quantity': 'Default Quantity',
 	'define-company-profile-information-for-your-solution-this-will-inform-users-about-this-versions-updates-on-the-storefront':
 		'Define company profile information for your solution. This will inform users about this version’s updates on the storefront.',
 	'define-contact-information-for-your-solution-this-will-inform-users-about-this-versions-updates-on-the-storefront':
@@ -525,6 +534,8 @@ export default {
 		'Disaster Recovery Data Center Location',
 	'disaster-recovery-data-center-region':
 		'Disaster Recovery Data Center Region',
+	'discontinued': 'Discontinued',
+	'display-name': 'Display Name',
 	'do-not-close-this-window': 'DO NOT CLOSE THIS WINDOW',
 	'documentation': 'Documentation',
 	'does-not-expire': 'Does Not Expire',
@@ -569,6 +580,7 @@ export default {
 	'elasticsearch': 'Elasticsearch',
 	'email': 'Email',
 	'email-address': 'Email Address',
+	'email-address-differs-in-jsm': 'Email Address Differs in JSM',
 	'embed-video-url': 'Embed Video URL',
 	'employee-experience': 'Employee Experience',
 	'employee-portal': 'Employee Portal',
@@ -613,6 +625,13 @@ export default {
 	'enterprise-search': 'Enterprise Search',
 	'entitlement': 'Entitlement',
 	'entitlement-definition': 'Entitlement Definition',
+	'entitlement-definition-details': 'Entitlement Definition Details',
+	'entitlement-definition-skus-without-a-match':
+		'Entitlement Definition SKUs without a Match',
+	'entitlement-definitions': 'Entitlement Definitions',
+	'entitlement-definitions-are-inactive': 'are inactive.',
+	'entitlement-definitions-without-a-product':
+		'Entitlement Definitions without a Product',
 	'entitlements': 'Entitlements',
 	'entitlements-end-before-they-start':
 		'Entitlements have an end date before their start date.',
@@ -625,6 +644,9 @@ export default {
 		'Entitlements reference an order item that is not in an order of this account.',
 	'entitlements-reference-projects-outside-the-account':
 		'Entitlements reference a project that is not in this account.',
+	'entitlements-without-an-account': 'Entitlements without an Account',
+	'entitlements-without-an-entitlement-definition':
+		'Entitlements without an Entitlement Definition',
 	'entity-type': 'Entity Type',
 	'environment': 'Environment',
 	'environment-details': 'Environment Details',
@@ -691,6 +713,7 @@ export default {
 	'failed-to-extend-trial': 'Failed to extend trial.',
 	'failed-to-reject-trial-extension': 'Failed to reject trial extension.',
 	'failure': 'Failure',
+	'field-type': 'Field Type',
 	'file-name': 'File Name',
 	'file-not-available-for-download': 'File not available for download.',
 	'file-to-download-doesnt-exist-anymore':
@@ -738,6 +761,7 @@ export default {
 	'generate-sample': 'Generate Sample',
 	'generate-x-key': 'Generate {0} Key',
 	'generate-x-keys': 'Generate {0} Keys',
+	'generates-activation-key': 'Generates Activation Key',
 	'get-activation-key': 'Get Activation Key',
 	'get-app': 'Get App',
 	'get-digital-sales-room': 'Get Digital Sales Room',
@@ -764,6 +788,7 @@ export default {
 	'go-to-trial': 'Go to Trial',
 	'got-it': 'Got it',
 	'government': 'Government',
+	'grant-type': 'Grant Type',
 	'hamina-finland': 'Hamina, Finland',
 	'hang-tight-your-purchase-is-being-processed':
 		'Hang tight, your purchase is being processed.',
@@ -772,6 +797,7 @@ export default {
 	'help-and-support': 'Help & Support',
 	'help-page': 'help page',
 	'hide-json': 'Hide JSON',
+	'hide-source': 'Hide Source',
 	'higher-education': 'Higher Education',
 	'hold-tight-we-re-preparing-your-environment-so-you-can-start-using-your-liferay-data-platform-this-will-only-take-a-moment':
 		'Hold tight. We’re preparing your environment so you can start using your Liferay Data Platform. This will only take a moment!',
@@ -815,6 +841,7 @@ export default {
 	'important-images-will-be-displayed-following-the-numerical-order-above':
 		'Important: Images will be displayed following the numerical order above.',
 	'in-progress': 'In Progress',
+	'in-sync': 'In Sync',
 	'in-the-future-you-will-be-able-to-submit-your-app-directly-from-liferay-experience-cloud-projects':
 		'In the future, you will be able to submit your app directly from Liferay SaaS projects.',
 	'in-the-future-you-will-be-able-to-submit-your-app-source-code-for-additional-support-and-partnership-opportunities-with-liferay':
@@ -881,6 +908,9 @@ export default {
 	'join-an-existing-business-account-e-g-your-company-and-gain-full-access':
 		'Join an existing business account (e.g., your company) and gain full access.',
 	'join-existing-business-account': 'Join Existing Business Account',
+	'jsm': 'JSM',
+	'jsm-object-key': 'JSM Object Key',
+	'key': 'Key',
 	'key-activations-available-x-of-x':
 		'Key activations available: {0} of {1}.',
 	'key-deactivation-requested-succesfully':
@@ -905,12 +935,15 @@ export default {
 	'license': 'License',
 	'license-key': 'License Key',
 	'license-key-details': 'License Key Details',
+	'license-key-duration-days': 'License Key Duration Days',
 	'license-key-family': 'License Key Family',
+	'license-key-type': 'License Key Type',
 	'license-keys': 'License Keys',
 	'license-keys-reference-entitlements-outside-the-account':
 		'License keys reference an entitlement that is not in this account.',
 	'license-keys-reference-orders-outside-the-account':
 		'License keys reference an order that is not in this account.',
+	'license-keys-without-an-account': 'License Keys without an Account',
 	'license-name': 'License Name',
 	'license-price': 'License Price',
 	'license-prices': 'License Prices',
@@ -1024,6 +1057,7 @@ export default {
 	'marketplace-payments': 'Marketplace Payments',
 	'marketplace-solutions': 'Marketplace Solutions',
 	'marketplace-summary': 'Marketplace Summary',
+	'max-quantity': 'Max Quantity',
 	'maximum-cluster-nodes': 'Maximum Cluster Nodes',
 	'maximum-number-of-active-nodes-available-for-this-environment':
 		'Maximum number of active nodes available for this environment. This does not include expired or future nodes.',
@@ -1033,6 +1067,7 @@ export default {
 	'members': 'Members',
 	'metadata': 'Metadata',
 	'migration': 'Migration',
+	'missing-in-jsm': 'Missing in JSM',
 	'mm-dd-yyyy': 'MM-DD-YYYY',
 	'modified-date': 'Modified Date',
 	'modify': 'Modify',
@@ -1066,6 +1101,7 @@ export default {
 	'my-solutions': 'My Solutions',
 	'my-ssa-saas-demo': 'My SSA SaaS Demo',
 	'name': 'Name',
+	'name-differs-in-jsm': 'Name Differs in JSM',
 	'name-example-com': 'name@example.com',
 	'name-the-workspace-your-digital-sales-room-runs-in-and-give-us-the-server-details-we-need-to-issue-its-activation-key':
 		'Name the workspace your Digital Sales Room runs in, and give us the server details we need to issue its activation key.',
@@ -1123,6 +1159,11 @@ export default {
 	'no-orders-yet': 'No Orders Yet',
 	'no-problems-were-found-for-this-account':
 		'No problems were found for this account.',
+	'no-problems-were-found-for-this-entitlement-definition':
+		'No problems were found for this entitlement definition.',
+	'no-problems-were-found-for-this-product':
+		'No problems were found for this product.',
+	'no-product': 'No Product',
 	'no-products-yet': 'No Products Yet',
 	'no-project-account-level': 'No Project (Account Level)',
 	'no-project-linked': 'No Project Linked',
@@ -1139,6 +1180,8 @@ export default {
 	'no-tokens-available': 'No tokens available',
 	'no-trials-yet': 'No Trials Yet',
 	'no-usage-data-yet': 'No Usage Data Yet',
+	'no-usage-definition':
+		'This entitlement definition has no usage definition.',
 	'no-versions-yet': 'No Versions Yet',
 	'no-x': 'No {0}',
 	'non-production': 'Non-Production',
@@ -1211,6 +1254,7 @@ export default {
 	'open-order': 'Open Order',
 	'open-project': 'Open Project',
 	'open-project-members': 'Open Project Members',
+	'options': 'Options',
 	'order': 'Order',
 	'order-confirmation': 'Order Confirmation',
 	'order-date': 'Order Date',
@@ -1235,11 +1279,16 @@ export default {
 		'Orders reference a contract that is not in this account.',
 	'oregon-usa': 'Oregon, USA',
 	'organization': 'Organization',
+	'orphaned-entitlement-definitions': 'Orphaned Entitlement Definitions',
+	'orphans': 'Orphans',
 	'osaka-japan': 'Osaka, Japan',
 	'other': 'Other',
 	'other-event': 'Other Event',
 	'other-please-specify': 'Other, please specify',
+	'overage-bucket-size': 'Overage Bucket Size',
 	'overage-quantity': 'Overage Quantity',
+	'overage-rate': 'Overage Rate',
+	'overage-sku': 'Overage SKU',
 	'overall-experience': 'Overall Experience',
 	'overdue': 'Overdue',
 	'owner': 'Owner',
@@ -1273,6 +1322,7 @@ export default {
 	'pending': 'Pending',
 	'pending-payment': 'Pending Payment',
 	'performance-management': 'Performance Management',
+	'period': 'Period',
 	'permissions-successfully-updated': 'Permissions successfully updated.',
 	'perpetual': 'Perpetual',
 	'person': 'Person',
@@ -1348,7 +1398,11 @@ export default {
 	'product': 'Product',
 	'product-details': 'Product Details',
 	'product-environment': 'Product Environment',
+	'product-id': 'Product ID',
+	'product-inspector': 'Product Inspector',
 	'product-name': 'Product Name',
+	'product-options': 'Product Options',
+	'product-type': 'Product Type',
 	'product-type-client-extension-description':
 		'Modular, decoupled components that allow developers to customize and extend Liferay DXP’s functionality without altering its core code. They interact with Liferay via headless APIs, providing flexibility and maintainability.',
 	'product-type-cloud-description':
@@ -1365,12 +1419,16 @@ export default {
 	'product-version': 'Product Version',
 	'production': 'Production',
 	'products': 'Products',
+	'products-with-problems': 'Products with Problems',
+	'products-without-entitlement-definitions':
+		'Products without Entitlement Definitions',
 	'profile': 'Profile',
 	'project': 'Project',
 	'project-admin-email': 'Project Admin Email',
 	'project-admin-name': 'Project Admin Name',
 	'project-admins': 'Project Admins',
 	'project-id': 'Project ID',
+	'project-item-type': 'Project Item Type',
 	'project-members': 'Project Members',
 	'project-members-successfully-updated':
 		'Project members successfully updated.',
@@ -1382,6 +1440,8 @@ export default {
 		'Project memberships reference a project that is not in this account.',
 	'project-memberships-reference-users-outside-the-account':
 		'Project memberships reference a user who is not a member of this account. These rows show as empty member chips.',
+	'project-memberships-whose-user-is-not-in-the-account':
+		'Project Memberships Whose User Is Not in the Account',
 	'project-metrics-are-available-for-liferay-saas-customers-on-liferays-latest-usage-based-model':
 		"Project Metrics are available for Liferay SaaS customers on Liferay's latest usage-based model. Reach out to your Account Manager to learn more about how you can track resource usage, site users, and storage capacity.",
 	'project-name': 'Project Name',
@@ -1396,6 +1456,7 @@ export default {
 	'projects-have-no-members': 'Projects have no members.',
 	'projects-share-a-name':
 		'Projects share a name. An order that names one of these projects cannot be matched to a project.',
+	'projects-without-an-account': 'Projects without an Account',
 	'prompt': 'Prompt',
 	'properties': 'Properties',
 	'provide-app-build': 'Provide App Build',
@@ -1440,6 +1501,7 @@ export default {
 	'publisher-with-apps-supporting-quarterly-release':
 		'Publisher With Apps Supporting Quarterly Release',
 	'publishers': 'Publishers',
+	'purchasable': 'Purchasable',
 	'purchase': 'Purchase',
 	'purchase-and-install-new-apps-and-they-will-show-up-here':
 		'Purchase and install new apps and they will show up here.',
@@ -1516,6 +1578,7 @@ export default {
 	'request-sent-successfully': 'Request Sent Successfully',
 	'requested': 'Requested',
 	'requester': 'Requester',
+	'required': 'Required',
 	'requirements': 'Requirements',
 	'resend-invitation': 'Resend Invitation',
 	'resource-requirements': 'Resource Requirements',
@@ -1650,6 +1713,16 @@ export default {
 	'size': 'Size',
 	'sizing': 'Sizing',
 	'sku': 'SKU',
+	'sku-codes': 'SKU Codes',
+	'sku-contributor': 'SKU Contributor',
+	'skus': 'SKUs',
+	'skus-and-products': 'SKUs and Products',
+	'skus-are-also-used-by-another-product':
+		'are also used by another product.',
+	'skus-are-not-published-or-not-purchasable':
+		'are not published or not purchasable.',
+	'skus-have-no-entitlement-definition': 'have no entitlement definition.',
+	'skus-match-no-product': 'match no product SKU.',
 	'solution': 'Solution',
 	'solution-deleted-successfully': 'Solution deleted successfully.',
 	'solution-details': 'Solution Details',
@@ -1667,6 +1740,13 @@ export default {
 	'something-went-wrong': 'Something went wrong.',
 	'sorry-there-are-no-results-found': 'Sorry, there are no results found.',
 	'source': 'Source',
+	'specification-values': 'Specification Values',
+	'specifications': 'Specifications',
+	'specifications-have-no-specification-definition':
+		'have no specification definition.',
+	'specifications-have-no-value': 'have no value.',
+	'specifications-repeat-the-key-and-value-of-another-specification':
+		'repeat the key and the value of another specification.',
 	'specify-your-apps-version-this-will-help-the-user-understand-the-latest-version-of-your-app-offered-on-the-marketplace':
 		'Specify your app’s version. This will help the user understand the latest version of your app offered on the Marketplace.',
 	'ssa-dashboard': 'SSA Dashboard',
@@ -1773,6 +1853,8 @@ export default {
 		'The app submission is compatible with Liferay SaaS and ',
 	'the-app-submission-is-integrates-with-liferay-dxp-version-7-4-or-later':
 		'The app submission is integrates with Liferay DXP version 7.4 or later.',
+	'the-approved-product-has-no-categories':
+		'The approved product has no categories.',
 	'the-changes-were-saved-successfully':
 		'The changes were saved successfully.',
 	'the-cloud-app-is-client-extension-based-and-compatible-with-liferay-saas-it-fully-supports-and-deploys-on-extension-environments':
@@ -1791,6 +1873,16 @@ export default {
 		'The DXP app is module-based and is compatible with 7.4 builds of Liferay DXP.',
 	'the-dxp-app-is-module-based-and-is-compatible-with-7-4-builds-of-liferay-dxp-self-managed-liferay-cloud-formerly-dxp-cloud':
 		'The DXP app is module-based and is compatible with 7.4 builds of Liferay Self-Managed.',
+	'the-entitlement-definition-generates-activation-keys-but-has-no-license-key-family':
+		'The entitlement definition generates activation keys but has no license key family.',
+	'the-entitlement-definition-has-an-overage-rate-but-no-overage-sku':
+		'The entitlement definition has an overage rate but no overage SKU.',
+	'the-entitlement-definition-has-no-skus':
+		'The entitlement definition has no SKUs.',
+	'the-entitlement-definition-is-inactive':
+		'The entitlement definition is inactive.',
+	'the-entitlement-definition-was-not-found':
+		'The entitlement definition was not found.',
 	'the-environment-was-activated': 'The environment was activated.',
 	'the-file-has-already-been-uploaded': 'The file has already been uploaded.',
 	'the-file-is-downloading-automatically-if-you-encounter-any-issues-click-the-download-button-below-to-start-the-download-manually':
@@ -1808,6 +1900,15 @@ export default {
 		'The monthly view supports a date range of up to ten years.',
 	'the-order-must-be-completed-before-licensing-this-app.':
 		'The order must be completed before licensing this app.',
+	'the-overage-sku-matches-no-product':
+		'The overage SKU matches no product SKU.',
+	'the-product-has-no-project-item-type-specification':
+		'The product has no project item type specification.',
+	'the-product-has-no-skus': 'The product has no SKUs.',
+	'the-product-is-inactive': 'The product is inactive.',
+	'the-product-is-not-approved': 'The product is not approved.',
+	'the-product-was-not-found-in-the-catalog':
+		'The product was not found in the catalog.',
 	'the-published-version-is-x': 'The published version is {0}.',
 	'the-records-could-not-be-loaded':
 		'The records could not be loaded. The object definition can be missing on this environment.',
@@ -1827,6 +1928,8 @@ export default {
 		'The start date must be earlier than the end date.',
 	'the-start-date-must-be-less-than-30-days-ago':
 		'The start date must be less than 30 days ago.',
+	'the-usage-definition-does-not-exist':
+		'The usage definition does not exist.',
 	'the-workspace-url-must-not-have-spaces':
 		'The workspace URL must not have spaces.',
 	'the-workspace-url-should-start-with-/':
@@ -1878,6 +1981,8 @@ export default {
 		'This key is not tied to a subscription and is intended for temporary access only.',
 	'this-liferay-dxp-is-requesting-access-to-your-liferay-one-account':
 		'This Liferay DXP is requesting access to your Liferay One account.',
+	'this-list-could-not-be-checked-because-its-records-did-not-load-completely':
+		'This list could not be checked because its records did not load completely.',
 	'this-may-restrict-the-functionality-available-to-you':
 		'This may restrict the functionality available to you.',
 	'this-order-does-not-have-a-publisher':
@@ -1998,11 +2103,14 @@ export default {
 	'unable-to-update-publisher-profile': 'Unable to update publisher profile',
 	'under-review': 'Under Review',
 	'uninstall': 'Uninstall',
+	'unit': 'Unit',
 	'unknown-member': 'Unknown member',
 	'unlimited': 'Unlimited',
 	'unlock-exclusive-benefits-with-a-business-account':
 		'Unlock exclusive benefits with a Business Account!',
 	'unpaid': 'Unpaid',
+	'unused-specifications': 'Unused Specifications',
+	'unused-usage-definitions': 'Unused Usage Definitions',
 	'upgrade': 'Upgrade',
 	'upload': 'Upload',
 	'upload-and-download-large-files-associated-with-your-support-tickets':
@@ -2021,7 +2129,11 @@ export default {
 	'usage-data-is-temporarily-unavailable-please-try-again-later':
 		'Usage data is temporarily unavailable. Please try again later.',
 	'usage-data-not-loaded': 'Usage Data Not Loaded',
+	'usage-definition': 'Usage Definition',
 	'usage-reports': 'Usage Reports',
+	'usage-source': 'Usage Source',
+	'usage-source-metric-key': 'Usage Source Metric Key',
+	'usage-source-unit': 'Usage Source Unit',
 	'use-any-build-from-any-available-liferay-experience-cloud-account-requires-lxc-account':
 		'Use any build from any available Liferay SaaS account (requires Liferay SaaS account) ',
 	'use-any-build-from-your-computer-connecting-with-a-github-provider':
@@ -2061,14 +2173,18 @@ export default {
 	'view-all-account-orders': 'View All Account Orders',
 	'view-app-in-cloud': 'View App in Cloud',
 	'view-details': 'View Details',
+	'view-in-control-panel': 'View in Control Panel',
 	'view-json': 'View JSON',
 	'view-less': 'View Less',
 	'view-license-details': 'View License Details',
 	'view-more': 'View More',
 	'view-request': 'View Request',
+	'view-source': 'View Source',
 	'view-the-documentation': 'View the documentation',
 	'virtual-cluster': 'Virtual Cluster',
+	'visible': 'Visible',
 	'visit': 'Visit',
+	'vocabulary': 'Vocabulary',
 	'vr': 'VR',
 	'warning': 'Warning',
 	'we-apologize-for-the-inconvenience-but-we-ve-detected-a-system-error-with-this-project':
@@ -2149,6 +2265,7 @@ export default {
 	'x-solutions-available': '{0} solutions available',
 	'x-tickets': '{0} Tickets',
 	'x-tokens': '{0} tokens',
+	'x-was-synced-to-jsm': '{0} was synced to JSM.',
 	'x-was-uploaded-successfully': '{0} was uploaded successfully.',
 	'x-will-be-deleted-and-this-action-cant-be-undone-are-you-sure-you-want-to-delete-it':
 		'{0} will be deleted and this action can’t be undone. Are you sure you want to delete it?',

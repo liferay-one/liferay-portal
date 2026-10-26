@@ -5,6 +5,9 @@
 
 import ClayManagementToolbar from '@clayui/management-toolbar';
 import {ReactElement, useContext} from 'react';
+import ColumnsDropDown, {
+	ColumnOption,
+} from '~/components/ColumnsDropDown/ColumnsDropDown';
 import {FieldOptions} from '~/components/FormRenderer/FormRenderer';
 import {ListViewContext} from '~/components/ListView/context/ListViewContextProvider';
 import ManagementToolbarFilter from '~/components/ManagementToolbarFilters/ManagementToolbarFilters';
@@ -22,14 +25,20 @@ export type ManagementToolbarProps = {
 	) => ReactElement;
 
 	availableFilterOptions?: FieldOptions;
+	columns?: ColumnOption[];
+	filterIconOnly?: boolean;
 	filterSchema?: FilterSchemaOption;
+	onToggleColumn?: (id: string) => void;
 	searchVisible?: boolean;
 };
 
 const ManagementToolbar: React.FC<ManagementToolbarProps> = ({
 	actionButton,
 	availableFilterOptions,
+	columns,
+	filterIconOnly = false,
 	filterSchema,
+	onToggleColumn,
 	searchVisible = false,
 }) => {
 	const [{filters}] = useContext(ListViewContext);
@@ -46,7 +55,18 @@ const ManagementToolbar: React.FC<ManagementToolbarProps> = ({
 									filterSchema as FilterSchemaOption
 								]
 							}
+							iconOnly={filterIconOnly}
 						/>
+					)}
+
+					{columns && onToggleColumn && (
+						<div className="align-items-center d-flex">
+							<ColumnsDropDown
+								className="mr-2"
+								columns={columns}
+								onToggle={onToggleColumn}
+							/>
+						</div>
 					)}
 
 					{!!searchVisible && (

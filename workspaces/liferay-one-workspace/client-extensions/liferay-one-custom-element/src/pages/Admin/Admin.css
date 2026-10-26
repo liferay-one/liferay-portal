@@ -139,6 +139,24 @@
 	transform: translateY(-50%);
 }
 
+.account-inspector-sort-button {
+	text-align: left;
+	white-space: normal;
+}
+
+.inspector-stats {
+	display: grid;
+	gap: var(--spacer-3, 1rem);
+	grid-template-columns: repeat(
+		var(--inspector-stats-columns),
+		minmax(0, 1fr)
+	);
+
+	@media (max-width: 767px) {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
 .account-inspector-tree-label {
 	max-width: 480px;
 	padding: 0 var(--spacer-1, 0.25rem);

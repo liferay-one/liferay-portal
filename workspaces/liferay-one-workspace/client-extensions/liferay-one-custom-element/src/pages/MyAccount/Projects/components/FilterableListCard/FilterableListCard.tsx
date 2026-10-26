@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayButton from '@clayui/button';
+import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
 import {ClayCheckbox, ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
@@ -12,6 +12,7 @@ import ClayTable from '@clayui/table';
 import classNames from 'classnames';
 import {ReactNode, useMemo, useState} from 'react';
 import Button from '~/components/Button/Button';
+import ColumnsDropDown from '~/components/ColumnsDropDown/ColumnsDropDown';
 import {Word, translate} from '~/i18n';
 
 import './FilterableListCard.css';
@@ -37,15 +38,23 @@ export type ListColumn<T> = {
 	key: string;
 	noWrap?: boolean;
 	render: (item: T) => ReactNode;
+	sortValue?: (item: T) => number | string;
 	width?: string;
+};
+
+type ListSort = {
+	ascending: boolean;
+	key: string;
 };
 
 type FilterableListCardProps<T> = {
 	action?: ReactNode;
 	className?: string;
 	columns: ListColumn<T>[];
+	columnsVisible?: boolean;
 	defaultPageSize?: number;
 	emptyLabel: Word;
+	filterIconOnly?: boolean;
 	filters?: ListFilter<T>[];
 	hideToolbar?: boolean;
 	items: T[];
@@ -64,6 +73,20 @@ type FilterSubPanelProps = {
 	title: string;
 	variant: 'checkbox' | 'date-range';
 };
+
+function compareSortValues(
+	first: number | string,
+	second: number | string
+): number {
+	if (typeof first === 'number' && typeof second === 'number') {
+		return first - second;
+	}
+
+	return String(first).localeCompare(String(second), undefined, {
+		numeric: true,
+		sensitivity: 'base',
+	});
+}
 
 function getBoundValue(values: string[], bound: string): string {
 	const match = values.find((value) => value.startsWith(`${bound}:`));
@@ -195,8 +218,10 @@ export default function FilterableListCard<T>({
 	action,
 	className,
 	columns,
+	columnsVisible = false,
 	defaultPageSize = PAGE_SIZE_OPTIONS[0],
 	emptyLabel,
+	filterIconOnly = false,
 	filters = [],
 	hideToolbar = false,
 	items,
@@ -210,6 +235,8 @@ export default function FilterableListCard<T>({
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(defaultPageSize);
 	const [filterActive, setFilterActive] = useState(false);
+	const [hiddenColumnKeys, setHiddenColumnKeys] = useState<string[]>([]);
+	const [sort, setSort] = useState<ListSort | null>(null);
 	const [activeFilterKey, setActiveFilterKey] = useState<string | null>(null);
 	const [selectedFilters, setSelectedFilters] = useState<
 		Record<string, string[]>
@@ -231,11 +258,33 @@ export default function FilterableListCard<T>({
 		});
 	}, [filters, items, keywords, matchesSearch, selectedFilters]);
 
+	const visibleColumns = useMemo(
+		() => columns.filter(({key}) => !hiddenColumnKeys.includes(key)),
+		[columns, hiddenColumnKeys]
+	);
+
+	const sortedItems = useMemo(() => {
+		const sortValue = columns.find(({key}) => key === sort?.key)?.sortValue;
+
+		if (!sort || !sortValue) {
+			return filteredItems;
+		}
+
+		return [...filteredItems].sort((first, second) => {
+			const result = compareSortValues(
+				sortValue(first),
+				sortValue(second)
+			);
+
+			return sort.ascending ? result : -result;
+		});
+	}, [columns, filteredItems, sort]);
+
 	const paginatedItems = useMemo(() => {
 		const start = (page - 1) * pageSize;
 
-		return filteredItems.slice(start, start + pageSize);
-	}, [filteredItems, page, pageSize]);
+		return sortedItems.slice(start, start + pageSize);
+	}, [page, pageSize, sortedItems]);
 
 	const activeFilters = useMemo(() => {
 		const active: {
@@ -288,10 +337,33 @@ export default function FilterableListCard<T>({
 		(filter) => filter.key === activeFilterKey
 	);
 
+	const changeSort = (key: string) => {
+		setSort((previous) => ({
+			ascending: previous?.key === key ? !previous.ascending : true,
+			key,
+		}));
+		setPage(1);
+	};
+
+	const getSortSymbol = (key: string) => {
+		if (sort?.key !== key) {
+			return 'caret-double-l';
+		}
+
+		return sort.ascending ? 'caret-top-l' : 'caret-bottom-l';
+	};
+
+	const toggleColumn = (key: string) =>
+		setHiddenColumnKeys((previous) =>
+			previous.includes(key)
+				? previous.filter((current) => current !== key)
+				: [...previous, key]
+		);
+
 	const renderHead = () => (
 		<ClayTable.Head>
 			<ClayTable.Row>
-				{columns.map((column) => (
+				{visibleColumns.map((column) => (
 					<ClayTable.Cell
 						expanded={column.expanded}
 						headingCell
@@ -301,7 +373,22 @@ export default function FilterableListCard<T>({
 							width: column.width,
 						}}
 					>
-						{column.heading ? translate(column.heading) : null}
+						{column.heading && column.sortValue ? (
+							<button
+								className="align-items-center d-flex list-card-sort-button"
+								onClick={() => changeSort(column.key)}
+								type="button"
+							>
+								{translate(column.heading)}
+
+								<ClayIcon
+									className="ml-1"
+									symbol={getSortSymbol(column.key)}
+								/>
+							</button>
+						) : column.heading ? (
+							translate(column.heading)
+						) : null}
 					</ClayTable.Cell>
 				))}
 			</ClayTable.Row>
@@ -327,14 +414,23 @@ export default function FilterableListCard<T>({
 							}
 						}}
 						trigger={
-							<Button
-								appendIcon="caret-bottom"
-								className="list-card-filter-button"
-								displayType="secondary"
-								prependIcon="filter"
-							>
-								{translate('filter')}
-							</Button>
+							filterIconOnly ? (
+								<ClayButtonWithIcon
+									aria-label={translate('filter')}
+									displayType="secondary"
+									symbol="filter"
+									title={translate('filter')}
+								/>
+							) : (
+								<Button
+									appendIcon="caret-bottom"
+									className="list-card-filter-button"
+									displayType="secondary"
+									prependIcon="filter"
+								>
+									{translate('filter')}
+								</Button>
+							)
 						}
 					>
 						{activeFilter ? (
@@ -378,6 +474,19 @@ export default function FilterableListCard<T>({
 							</div>
 						)}
 					</ClayDropDown>
+
+					{columnsVisible && (
+						<ColumnsDropDown
+							columns={columns
+								.filter(({heading}) => heading)
+								.map(({heading, key}) => ({
+									id: key,
+									label: translate(heading as Word),
+									visible: !hiddenColumnKeys.includes(key),
+								}))}
+							onToggle={toggleColumn}
+						/>
+					)}
 
 					<ClayInput.Group className="list-card-search">
 						<ClayInput.GroupItem>
@@ -432,7 +541,7 @@ export default function FilterableListCard<T>({
 					<ClayTable.Body>
 						{Array.from({length: defaultPageSize}, (_, row) => (
 							<ClayTable.Row key={row}>
-								{columns.map((column) => (
+								{visibleColumns.map((column) => (
 									<ClayTable.Cell
 										expanded={column.expanded}
 										key={column.key}
@@ -475,7 +584,7 @@ export default function FilterableListCard<T>({
 											: undefined
 									}
 								>
-									{columns.map((column) => (
+									{visibleColumns.map((column) => (
 										<ClayTable.Cell
 											expanded={column.expanded}
 											key={column.key}
@@ -513,7 +622,7 @@ export default function FilterableListCard<T>({
 								setPageSize(delta);
 							}}
 							onPageChange={setPage}
-							totalItems={filteredItems.length}
+							totalItems={sortedItems.length}
 						/>
 					</div>
 				</>

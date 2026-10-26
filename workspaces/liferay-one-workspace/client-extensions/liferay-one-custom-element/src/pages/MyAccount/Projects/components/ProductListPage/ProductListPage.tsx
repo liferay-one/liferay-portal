@@ -40,6 +40,7 @@ export function statusColumn(): ListColumn<ProjectProduct> {
 				{translate(product.status as Word)}
 			</span>
 		),
+		sortValue: (product) => translate(product.status as Word),
 		width: '1%',
 	};
 }
@@ -114,7 +115,9 @@ export default function ProductListPage({
 		>
 			<FilterableListCard
 				columns={columnsWithActions}
+				columnsVisible
 				emptyLabel={emptyLabel}
+				filterIconOnly
 				filters={filters}
 				items={items}
 				loading={loading}

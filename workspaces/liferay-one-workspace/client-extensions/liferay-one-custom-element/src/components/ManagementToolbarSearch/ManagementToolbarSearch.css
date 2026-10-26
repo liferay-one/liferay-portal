@@ -10,4 +10,8 @@
 	& .input-group-inset-item {
 		border-color: var(--color-neutral-2);
 	}
+
+	& .form-control:focus ~ .input-group-inset-item {
+		border-color: var(--color-neutral-2);
+	}
 }
