@@ -30,6 +30,8 @@ public class EntitlementConstants {
 	public static final String NAME_ACTIVE_REAL_TIME_SEGMENTS =
 		"active-real-time-segments";
 
+	public static final String NAME_ACTIVE_SUBSCRIPTION = "active-subscription";
+
 	public static final String NAME_AI_TOKEN_BLOCK = "aiTokenBlock";
 
 	public static final String NAME_API_REQUESTS = "api-requests";
@@ -46,6 +48,20 @@ public class EntitlementConstants {
 
 	public static final String NAME_DOCUMENT_LIBRARY_SIZE =
 		"document-library-size";
+
+	public static final String NAME_EPS_6_2 = "eps-6-2";
+
+	public static final String NAME_EPS_7_0 = "eps-7-0";
+
+	public static final String NAME_EPS_7_1 = "eps-7-1";
+
+	public static final String NAME_EPS_7_2 = "eps-7-2";
+
+	public static final String NAME_EPS_7_3 = "eps-7-3";
+
+	public static final String NAME_EPS_PORTAL = "eps-portal";
+
+	public static final String NAME_EPS_SS_EXCEPTION = "eps-ss-exception";
 
 	public static final String NAME_EVENTS = "events";
 
@@ -130,6 +146,12 @@ public class EntitlementConstants {
 			Arrays.asList(
 				EXTERNAL_REFERENCE_CODE_DXP, EXTERNAL_REFERENCE_CODE_PORTAL,
 				EXTERNAL_REFERENCE_CODE_PORTAL_EWSA));
+	public static final List<String> namesJSMProjects =
+		Collections.unmodifiableList(
+			Arrays.asList(
+				NAME_ACTIVE_SUBSCRIPTION, NAME_EPS_6_2, NAME_EPS_7_0,
+				NAME_EPS_7_1, NAME_EPS_7_2, NAME_EPS_7_3, NAME_EPS_PORTAL,
+				NAME_EPS_SS_EXCEPTION, NAME_PARTNER));
 	public static final List<String> namesSLAs = Collections.unmodifiableList(
 		Arrays.asList(
 			NAME_GLOBAL_24_7_SUPPORT, NAME_GLOBAL_SUPPORT, NAME_GOLD_SUPPORT,

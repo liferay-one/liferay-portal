@@ -199,10 +199,10 @@ public class AccountConverter extends BaseJiraAssetObjectConverter {
 		}
 
 		if (status == 0) {
-			return "Active";
+			return AccountConstants.STATUS_ACTIVE;
 		}
 
-		return "Closed";
+		return AccountConstants.STATUS_CLOSED;
 	}
 
 	private static final String _CUSTOM_FIELD_NAME_ACCOUNT_CODE = "accountCode";

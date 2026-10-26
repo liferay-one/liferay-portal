@@ -648,7 +648,8 @@ public class UserAssignmentService {
 		String projectRoleExternalReferenceCode, long userId) {
 
 		try {
-			_accountSynchronizer.syncProjectUserAccounts(project);
+			boolean synced = _accountSynchronizer.syncProjectUserAccounts(
+				project);
 
 			_accountSynchronizer.syncAccountUserAccounts(
 				_accountService.getAccount(
@@ -659,6 +660,10 @@ public class UserAssignmentService {
 
 			_userAccountSynchronizer.syncUserAccountAccounts(userAccount);
 			_userAccountSynchronizer.syncUserAccountRoles(userAccount);
+
+			if (!synced) {
+				return;
+			}
 
 			if (assigned) {
 				_accountUserAccountRoleSynchronizer.syncAssignRole(

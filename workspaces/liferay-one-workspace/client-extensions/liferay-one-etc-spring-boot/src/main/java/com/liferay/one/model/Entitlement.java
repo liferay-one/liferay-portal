@@ -10,6 +10,8 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
 
+import java.util.Objects;
+
 import org.json.JSONObject;
 
 /**
@@ -161,6 +163,12 @@ public final class Entitlement {
 		}
 
 		return false;
+	}
+
+	public boolean isTerminated() {
+		return Objects.equals(
+			getTerminationStatus(),
+			EntitlementConstants.TERMINATION_STATUS_TERMINATED);
 	}
 
 	private final long _accountEntryId;
