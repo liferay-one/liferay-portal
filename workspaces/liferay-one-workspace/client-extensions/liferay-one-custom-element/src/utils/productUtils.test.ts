@@ -237,9 +237,10 @@ describe('[MOD-PRODUCTUTILS] productUtils', () => {
 			).toEqual({isFreeApp: false, isPaidApp: true, priceModel: 'paid'});
 		});
 
-		it('decides contact sales for CMP, DSR, and LDP solutions', () => {
+		it('decides contact sales for CMP, CMS, DSR, and LDP solutions', () => {
 			for (const solutionType of [
 				'cmp',
+				'cms',
 				'dsr',
 				'liferay-data-platform',
 			]) {
