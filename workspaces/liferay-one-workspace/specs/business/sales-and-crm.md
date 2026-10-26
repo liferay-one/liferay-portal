@@ -73,7 +73,7 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-SALES-050 | Only the sales team sells the Content Marketing Platform, the Digital Sales Room, and the Liferay Data Platform. For these products, the purchase flow shows the contact sales page in place of checkout. This also applies when the buyer opens the purchase URL directly. | P0 | LPD-102451, LPD-104271 | `FLOW-CMP-CONTACT-SALES`, `MOD-PRODUCTUTILS` |
+| REQ-SALES-050 | Only the sales team sells the Content Marketing Platform, Liferay CMS, the Digital Sales Room, and the Liferay Data Platform. For these products, the purchase flow shows the contact sales page in place of checkout. This also applies when the buyer opens the purchase URL directly. | P0 | LPD-102451, LPD-104271, LPD-106434 | `FLOW-CMP-CONTACT-SALES`, `MOD-PRODUCTUTILS` |
 | REQ-SALES-051 | The contact sales page names the product, lists the license tiers of its purchasable SKUs, and links to the Liferay contact sales page. The tiers are in the order developer, trial, production, and standard. | P2 | LPD-102451 | `FLOW-CMP-CONTACT-SALES`, `MOD-LICENSETIERUTILS` |
 | REQ-SALES-052 | A solution product that is not a prebuilt trial shows the contact sales page. | P2 | — | `ROUTE-PRODUCT-PURCHASE-SOLUTION` |
 
