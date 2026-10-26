@@ -161,6 +161,22 @@ public class LicenseKeyExporterTest {
 	}
 
 	@Test
+	public void testToXMLOmitsInstanceSizeBeforeVersion6() throws Exception {
+		String xml = _licenseKeyExporter.toXML(
+			"TESTKEY", "Acme Corp", "DXP Production",
+			LicenseConstants.TYPE_PRODUCTION, 5, "DXP Production",
+			LicenseConstants.PRODUCT_ID_PORTAL, "7.0", "Acme Corp", 0, 1, 0, 0L,
+			0L, "Sizing 1", "", "", "host.example.com", "127.0.0.1", "", "",
+			new Date(1000000000000L), new Date(2000000000000L));
+
+		JSONObject jsonObject = XML.toJSONObject(xml);
+
+		JSONObject licenseJSONObject = jsonObject.getJSONObject("license");
+
+		Assertions.assertFalse(licenseJSONObject.has("instance-size"));
+	}
+
+	@Test
 	public void testToXMLWritesMaxClusterNodes() throws Exception {
 		String xml = _licenseKeyExporter.toXML(
 			"Acme Corp", "DXP Non-Production (Virtual Cluster)",
