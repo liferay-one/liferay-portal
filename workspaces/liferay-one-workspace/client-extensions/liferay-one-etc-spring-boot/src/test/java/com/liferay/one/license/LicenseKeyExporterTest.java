@@ -86,6 +86,14 @@ public class LicenseKeyExporterTest {
 	}
 
 	@Test
+	public void testGetFileNameKeepsUnicodeCharacters() {
+		Assertions.assertEquals(
+			"activation-key-dxp-7.2-serviciostecnológicos–portales.xml",
+			_licenseKeyExporter.getFileName(
+				"DXP", "7.2", "Servicios Tecnológicos – Portales"));
+	}
+
+	@Test
 	public void testGetFileNameStripsPathSeparators() {
 		Assertions.assertEquals(
 			"activation-key-dxp-7.4-......etccron.d.xml",
