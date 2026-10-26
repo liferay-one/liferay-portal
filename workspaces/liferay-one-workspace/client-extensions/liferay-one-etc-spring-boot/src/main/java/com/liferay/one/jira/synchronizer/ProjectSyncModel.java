@@ -7,6 +7,8 @@ package com.liferay.one.jira.synchronizer;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Role;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.EntitlementConstants;
+import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
@@ -38,14 +40,15 @@ public class ProjectSyncModel {
 		UserAccountService userAccountService) {
 
 		_accountSyncModel = accountSyncModel;
+		_entitlementService = entitlementService;
 		_project = project;
 		_userAccountService = userAccountService;
 
 		String externalReferenceCode = project.getExternalReferenceCode();
 
-		_activeEntitlementDefinitions = new MemoizedValue<>(
+		_activeEntitlements = new MemoizedValue<>(
 			"entitlements for project " + externalReferenceCode, _log,
-			() -> entitlementService.getActiveEntitlementDefinitions(
+			() -> entitlementService.getActiveEntitlements(
 				externalReferenceCode));
 		_projectMembers = new MemoizedValue<>(
 			"project members for project " + externalReferenceCode, _log,
@@ -67,7 +70,14 @@ public class ProjectSyncModel {
 	}
 
 	public List<EntitlementDefinition> getActiveEntitlementDefinitions() {
-		return _activeEntitlementDefinitions.get();
+		List<Entitlement> activeEntitlements = _activeEntitlements.get();
+
+		if (activeEntitlements == null) {
+			return null;
+		}
+
+		return _entitlementService.getEntitlementDefinitions(
+			activeEntitlements);
 	}
 
 	public List<UserAccount> getCustomerUserAccounts() {
@@ -106,6 +116,25 @@ public class ProjectSyncModel {
 		}
 
 		return userAccountBucket.getWorkerUserAccounts();
+	}
+
+	public Boolean isSupported() {
+		List<Entitlement> activeEntitlements = _activeEntitlements.get();
+
+		if (activeEntitlements == null) {
+			return null;
+		}
+
+		for (Entitlement entitlement : activeEntitlements) {
+			if (EntitlementConstants.namesJSMProjects.contains(
+					entitlement.getName()) &&
+				!entitlement.isTerminated()) {
+
+				return true;
+			}
+		}
+
+		return _accountSyncModel.isSupported();
 	}
 
 	private List<ProjectMember> _toProjectMembers() throws Exception {
@@ -215,9 +244,9 @@ public class ProjectSyncModel {
 	private static final Log _log = LogFactory.getLog(ProjectSyncModel.class);
 
 	private final AccountSyncModel _accountSyncModel;
-	private final MemoizedValue<List<EntitlementDefinition>>
-		_activeEntitlementDefinitions;
+	private final MemoizedValue<List<Entitlement>> _activeEntitlements;
 	private final List<String> _employeeRoleNames = EmployeeRoles.getNames();
+	private final EntitlementService _entitlementService;
 	private final Project _project;
 	private final MemoizedValue<List<ProjectMember>> _projectMembers;
 	private final MemoizedValue<List<ProjectMembership>> _projectMemberships;

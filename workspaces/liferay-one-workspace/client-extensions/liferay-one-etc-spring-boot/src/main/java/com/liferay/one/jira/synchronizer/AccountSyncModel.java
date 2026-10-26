@@ -13,6 +13,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.PostalAddress;
 import com.liferay.headless.admin.user.client.dto.v1_0.Role;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.jira.converter.ExternalLinkConverter;
 import com.liferay.one.jira.model.JiraBusinessEvent;
 import com.liferay.one.jira.service.JiraBusinessEventService;
@@ -36,6 +37,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -99,6 +101,16 @@ public class AccountSyncModel {
 		_roleExternalKeysByUserAccountExternalKey = new MemoizedValue<>(
 			"role external keys for account " + externalReferenceCode, _log,
 			this::_toRoleExternalKeysByUserAccountExternalKey);
+		_supported = new MemoizedValue<>(
+			"support entitlements for account " + externalReferenceCode, _log,
+			() ->
+				entitlementService.hasUnterminatedActiveEntitlement(
+					Collections.singletonList(account.getId()),
+					Collections.singletonList(
+						EntitlementConstants.NAME_PARTNER),
+					Collections.emptyList()) ||
+				entitlementService.hasUnterminatedActiveUnassignedEntitlement(
+					account.getId(), EntitlementConstants.namesJSMProjects));
 		_userAccountBucket = new MemoizedValue<>(
 			"user account bucket for account " + externalReferenceCode, _log,
 			this::_toUserAccountBucket);
@@ -196,6 +208,10 @@ public class AccountSyncModel {
 		}
 
 		return userAccountBucket.getWorkerUserAccounts();
+	}
+
+	public Boolean isSupported() {
+		return _supported.get();
 	}
 
 	private void _addJiraBusinessEventLine(
@@ -384,6 +400,7 @@ public class AccountSyncModel {
 	private final MemoizedValue<Map<String, Set<String>>>
 		_roleExternalKeysByUserAccountExternalKey;
 	private final RoleService _roleService;
+	private final MemoizedValue<Boolean> _supported;
 	private final MemoizedValue<UserAccountBucket> _userAccountBucket;
 
 }

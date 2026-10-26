@@ -288,8 +288,11 @@ public class ProjectRestController extends OneBaseRestController {
 
 		_projectPermission.check(ActionKeys.UPDATE, jwt, externalReferenceCode);
 
-		_accountSynchronizer.syncProject(
-			_projectService.getProject(externalReferenceCode));
+		if (!_accountSynchronizer.syncProject(
+				_projectService.getProject(externalReferenceCode))) {
+
+			return new ResponseEntity<>(HttpStatus.CONFLICT);
+		}
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}

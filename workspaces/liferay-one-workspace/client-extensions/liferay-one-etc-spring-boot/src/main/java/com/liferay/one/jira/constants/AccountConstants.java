@@ -61,4 +61,8 @@ public interface AccountConstants {
 
 	public static final String OBJECT_TYPE_NAME = "Account";
 
+	public static final String STATUS_ACTIVE = "Active";
+
+	public static final String STATUS_CLOSED = "Closed";
+
 }

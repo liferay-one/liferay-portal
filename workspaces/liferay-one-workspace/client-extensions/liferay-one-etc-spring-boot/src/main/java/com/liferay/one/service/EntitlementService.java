@@ -252,7 +252,7 @@ public class EntitlementService extends OneBaseService {
 			Collection<Long> accountEntryIds)
 		throws Exception {
 
-		return _getEntitlementDefinitions(
+		return getEntitlementDefinitions(
 			getActiveEntitlements(accountEntryIds));
 	}
 
@@ -260,7 +260,7 @@ public class EntitlementService extends OneBaseService {
 			String projectExternalReferenceCode)
 		throws Exception {
 
-		return _getEntitlementDefinitions(
+		return getEntitlementDefinitions(
 			getActiveEntitlements(projectExternalReferenceCode));
 	}
 
@@ -269,7 +269,7 @@ public class EntitlementService extends OneBaseService {
 				long accountEntryId)
 		throws Exception {
 
-		return _getEntitlementDefinitions(
+		return getEntitlementDefinitions(
 			ListUtil.filter(
 				getActiveEntitlements(accountEntryId),
 				entitlement -> !entitlement.isSelfServiceTrial()));
@@ -439,6 +439,28 @@ public class EntitlementService extends OneBaseService {
 		return entitlement;
 	}
 
+	public List<EntitlementDefinition> getEntitlementDefinitions(
+		List<Entitlement> entitlements) {
+
+		Map<Long, EntitlementDefinition> entitlementDefinitions =
+			new LinkedHashMap<>();
+
+		for (Entitlement entitlement : entitlements) {
+			EntitlementDefinition entitlementDefinition =
+				entitlement.getEntitlementDefinition();
+
+			if (entitlementDefinition == null) {
+				continue;
+			}
+
+			entitlementDefinitions.put(
+				entitlementDefinition.getEntitlementDefinitionId(),
+				entitlementDefinition);
+		}
+
+		return new ArrayList<>(entitlementDefinitions.values());
+	}
+
 	public List<Entitlement> getEntitlements(
 			Instant endInstant, Collection<String> names, Instant startInstant)
 		throws Exception {
@@ -604,6 +626,49 @@ public class EntitlementService extends OneBaseService {
 			Arrays.asList(entitlementNames));
 	}
 
+	public boolean hasUnterminatedActiveEntitlement(
+			Collection<Long> accountEntryIds, List<String> names,
+			Collection<String> projectExternalReferenceCodes)
+		throws Exception {
+
+		for (Entitlement entitlement :
+				getActiveEntitlements(
+					accountEntryIds, names, projectExternalReferenceCodes)) {
+
+			if (!entitlement.isTerminated()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	public boolean hasUnterminatedActiveUnassignedEntitlement(
+			long accountEntryId, List<String> names)
+		throws Exception {
+
+		if (names.isEmpty()) {
+			return false;
+		}
+
+		for (Entitlement entitlement :
+				_getActiveEntitlements(
+					_getEntitlementNamesFilterString(
+						StringBundler.concat(
+							"(r_accountEntryToEntitlement_accountEntryId eq '",
+							accountEntryId,
+							"') and (r_projectToEntitlement_c_projectId eq ",
+							"'0')"),
+						names))) {
+
+			if (!entitlement.isTerminated()) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public boolean isCustomer(long accountEntryId) throws Exception {
 		Instant instant = Instant.now(
 		).truncatedTo(
@@ -621,9 +686,7 @@ public class EntitlementService extends OneBaseService {
 					Entitlement::new)) {
 
 			if ((entitlement.getContractId() > 0) &&
-				!Objects.equals(
-					entitlement.getTerminationStatus(),
-					EntitlementConstants.TERMINATION_STATUS_TERMINATED)) {
+				!entitlement.isTerminated()) {
 
 				return true;
 			}
@@ -971,28 +1034,6 @@ public class EntitlementService extends OneBaseService {
 		}
 
 		return GetterUtil.getLong(customFields.get("contractId"));
-	}
-
-	private List<EntitlementDefinition> _getEntitlementDefinitions(
-		List<Entitlement> entitlements) {
-
-		Map<Long, EntitlementDefinition> entitlementDefinitions =
-			new LinkedHashMap<>();
-
-		for (Entitlement entitlement : entitlements) {
-			EntitlementDefinition entitlementDefinition =
-				entitlement.getEntitlementDefinition();
-
-			if (entitlementDefinition == null) {
-				continue;
-			}
-
-			entitlementDefinitions.put(
-				entitlementDefinition.getEntitlementDefinitionId(),
-				entitlementDefinition);
-		}
-
-		return new ArrayList<>(entitlementDefinitions.values());
 	}
 
 	private String _getEntitlementNamesFilterString(

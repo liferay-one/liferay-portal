@@ -8,6 +8,7 @@ package com.liferay.one.jira.synchronizer;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.jira.constants.AccountConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
@@ -19,6 +20,7 @@ import com.liferay.one.jira.exception.AccountNotFoundException;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.service.JiraBusinessEventService;
+import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.Property;
@@ -35,6 +37,9 @@ import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -42,12 +47,14 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 /**
@@ -130,6 +137,10 @@ public class AccountSynchronizer {
 					ProjectSyncModel projectSyncModel = _createProjectSyncModel(
 						accountSyncModel, project);
 
+					if (!_isSyncable(projectSyncModel)) {
+						continue;
+					}
+
 					_syncProject(projectSyncModel, startDate);
 
 					_addUserAccounts(
@@ -174,20 +185,24 @@ public class AccountSynchronizer {
 			});
 	}
 
-	public void syncProject(Project project) throws Exception {
+	public boolean syncProject(Project project) throws Exception {
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Syncing project " + project.getExternalReferenceCode() +
 					" to JSM");
 		}
 
-		Date startDate = new Date();
-
 		AccountSyncModel accountSyncModel = _createAccountSyncModel(
 			_getProjectAccount(project));
 
 		ProjectSyncModel projectSyncModel = _createProjectSyncModel(
 			accountSyncModel, project);
+
+		if (!_isSyncable(projectSyncModel)) {
+			return false;
+		}
+
+		Date startDate = new Date();
 
 		_syncProject(projectSyncModel, startDate);
 
@@ -199,9 +214,57 @@ public class AccountSynchronizer {
 			projectSyncModel.getWorkerUserAccounts(), userAccounts);
 
 		_syncUserAccounts(userAccounts, startDate);
+
+		return true;
 	}
 
-	public void syncProjectUserAccounts(Project project) throws Exception {
+	@Scheduled(cron = "${liferay.one.jira.project.status.sync.cron}")
+	public void syncProjectStatuses() {
+		if (!_syncingProjectStatuses.compareAndSet(false, true)) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Skipping project status sync because another sync is in " +
+						"progress");
+			}
+
+			return;
+		}
+
+		try {
+			Instant endInstant = Instant.now(
+			).truncatedTo(
+				ChronoUnit.MILLIS
+			);
+
+			Instant startInstant = endInstant.minus(
+				_LOOK_BACK_HOURS, ChronoUnit.HOURS);
+
+			for (String projectExternalReferenceCode :
+					_getChangedProjectExternalReferenceCodes(
+						endInstant, startInstant)) {
+
+				try {
+					syncProject(
+						_projectService.getProject(
+							projectExternalReferenceCode));
+				}
+				catch (Exception exception) {
+					_log.error(
+						"Unable to sync project " +
+							projectExternalReferenceCode + " to JSM",
+						exception);
+				}
+			}
+		}
+		catch (Exception exception) {
+			_log.error("Unable to sync project statuses to JSM", exception);
+		}
+		finally {
+			_syncingProjectStatuses.set(false);
+		}
+	}
+
+	public boolean syncProjectUserAccounts(Project project) throws Exception {
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Syncing user accounts for project " +
@@ -215,9 +278,15 @@ public class AccountSynchronizer {
 		ProjectSyncModel projectSyncModel = _createProjectSyncModel(
 			accountSyncModel, project);
 
+		if (!_isSyncable(projectSyncModel)) {
+			return false;
+		}
+
 		_syncAccountAsset(
 			account, project.getExternalReferenceCode(), project.getName(),
 			jiraAssetObject -> {
+				_setProjectStatus(jiraAssetObject, projectSyncModel);
+
 				jiraAssetObject.setAttributeValue(
 					AccountConstants.ATTRIBUTE_NAME_CUSTOMER_CONTACTS,
 					_toContactObjectIds(
@@ -227,6 +296,8 @@ public class AccountSynchronizer {
 					_toContactObjectIds(
 						projectSyncModel.getWorkerUserAccounts()));
 			});
+
+		return true;
 	}
 
 	private void _addUserAccounts(
@@ -253,6 +324,41 @@ public class AccountSynchronizer {
 			_projectMembershipService, _userAccountService);
 	}
 
+	private Set<String> _getChangedProjectExternalReferenceCodes(
+			Instant endInstant, Instant startInstant)
+		throws Exception {
+
+		Set<Long> accountEntryIds = new LinkedHashSet<>();
+		Set<String> projectExternalReferenceCodes = new LinkedHashSet<>();
+
+		for (Entitlement entitlement :
+				_entitlementService.getChangedEntitlements(
+					endInstant, EntitlementConstants.namesJSMProjects,
+					startInstant)) {
+
+			if (Validator.isNotNull(
+					entitlement.getProjectExternalReferenceCode())) {
+
+				projectExternalReferenceCodes.add(
+					entitlement.getProjectExternalReferenceCode());
+			}
+			else if (entitlement.getAccountEntryId() > 0) {
+				accountEntryIds.add(entitlement.getAccountEntryId());
+			}
+		}
+
+		for (long accountEntryId : accountEntryIds) {
+			for (Project project :
+					_projectService.getProjects(accountEntryId)) {
+
+				projectExternalReferenceCodes.add(
+					project.getExternalReferenceCode());
+			}
+		}
+
+		return projectExternalReferenceCodes;
+	}
+
 	private Account _getProjectAccount(Project project) throws Exception {
 		String accountExternalReferenceCode =
 			project.getAccountExternalReferenceCode();
@@ -264,6 +370,29 @@ public class AccountSynchronizer {
 		}
 
 		return _accountService.getAccount(accountExternalReferenceCode);
+	}
+
+	private boolean _isSyncable(ProjectSyncModel projectSyncModel) {
+		Boolean supported = projectSyncModel.isSupported();
+
+		if (supported == null) {
+			return false;
+		}
+
+		if (supported) {
+			return true;
+		}
+
+		Project project = projectSyncModel.getProject();
+
+		String objectId = _jiraAssetService.fetchReferenceObjectId(
+			_accountConverter, project.getExternalReferenceCode());
+
+		if (objectId != null) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private void _setAccountAttributeValues(
@@ -286,6 +415,7 @@ public class AccountSynchronizer {
 	private void _setProjectAttributeValues(
 		JiraAssetObject jiraAssetObject, ProjectSyncModel projectSyncModel) {
 
+		_setProjectStatus(jiraAssetObject, projectSyncModel);
 		_setSharedAttributeValues(
 			projectSyncModel.getAccountSyncModel(), jiraAssetObject);
 
@@ -299,6 +429,16 @@ public class AccountSynchronizer {
 		jiraAssetObject.setAttributeValue(
 			AccountConstants.ATTRIBUTE_NAME_WORKER_CONTACTS,
 			_toContactObjectIds(projectSyncModel.getWorkerUserAccounts()));
+	}
+
+	private void _setProjectStatus(
+		JiraAssetObject jiraAssetObject, ProjectSyncModel projectSyncModel) {
+
+		if (Boolean.FALSE.equals(projectSyncModel.isSupported())) {
+			jiraAssetObject.setAttributeValue(
+				AccountConstants.ATTRIBUTE_NAME_STATUS,
+				AccountConstants.STATUS_CLOSED);
+		}
 	}
 
 	private void _setSharedAttributeValues(
@@ -464,6 +604,8 @@ public class AccountSynchronizer {
 			_entitlementConverter::toAssetObject);
 	}
 
+	private static final long _LOOK_BACK_HOURS = 48;
+
 	private static final Log _log = LogFactory.getLog(
 		AccountSynchronizer.class);
 
@@ -521,6 +663,8 @@ public class AccountSynchronizer {
 
 	@Autowired
 	private RoleService _roleService;
+
+	private final AtomicBoolean _syncingProjectStatuses = new AtomicBoolean();
 
 	@Autowired
 	private TeamConverter _teamConverter;
