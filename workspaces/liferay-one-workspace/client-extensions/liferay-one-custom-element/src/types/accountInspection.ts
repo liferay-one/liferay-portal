@@ -21,8 +21,9 @@ export type InspectedCollection<Entry = InspectedEntry> = {
 	truncated?: boolean;
 };
 
-type InspectedOrderItem = InspectedEntry & {
+export type InspectedOrderItem = InspectedEntry & {
 	name?: Record<string, string>;
+	orderId?: number;
 	quantity?: number;
 	sku?: string;
 	skuExternalReferenceCode?: string;
@@ -31,6 +32,7 @@ type InspectedOrderItem = InspectedEntry & {
 export type InspectedOrder = InspectedEntry & {
 	createDate?: string;
 	customFields?: Record<string, unknown>;
+	incompleteOrderItems?: boolean;
 	orderItems?: InspectedOrderItem[];
 	orderStatus?: number;
 	orderStatusInfo?: {label?: string};
@@ -71,6 +73,7 @@ export type RelatedCollectionKey = (typeof RELATED_COLLECTION_KEYS)[number];
 
 export type InspectedCollectionKey =
 	| 'account'
+	| 'orderItems'
 	| 'orders'
 	| 'users'
 	| RelatedCollectionKey;

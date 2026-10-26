@@ -13,6 +13,7 @@ import type {
 	AccountTreeNode,
 	InspectedCollectionKey,
 	InspectedEntry,
+	InspectedOrderItem,
 } from '~/types/accountInspection';
 
 export type SeverityIndex = Map<string, AccountFindingSeverity>;
@@ -74,6 +75,14 @@ function getRecordLabel(
 			.join(' ');
 	}
 
+	if (collection === 'orderItems') {
+		return String(
+			Object.values((entry as InspectedOrderItem).name ?? {})[0] ||
+				entry.sku ||
+				''
+		);
+	}
+
 	if (collection === 'contracts' && (entry.startDate || entry.endDate)) {
 		return `${entry.externalReferenceCode ?? entry.id} ${String(
 			entry.startDate ?? ''
@@ -110,7 +119,11 @@ export function toGroupNode(
 	parentKey: string,
 	collection: InspectedCollectionKey,
 	entries: InspectedEntry[],
-	severityIndex: SeverityIndex
+	severityIndex: SeverityIndex,
+	getChildren?: (
+		entry: InspectedEntry,
+		recordKey: string
+	) => AccountTreeNode[]
 ): AccountTreeNode[] {
 	if (!entries.length) {
 		return [];
@@ -119,7 +132,16 @@ export function toGroupNode(
 	const groupKey = `${parentKey}/${collection}`;
 
 	const children = entries.map((entry) =>
-		toRecordNode(groupKey, collection, entry, severityIndex)
+		toRecordNode(
+			groupKey,
+			collection,
+			entry,
+			severityIndex,
+			getChildren?.(
+				entry,
+				`${groupKey}/${toSeverityKey(collection, entry.id)}`
+			)
+		)
 	);
 
 	return [

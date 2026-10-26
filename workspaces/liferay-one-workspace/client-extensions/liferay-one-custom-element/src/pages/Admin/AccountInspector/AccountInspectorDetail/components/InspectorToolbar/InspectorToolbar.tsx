@@ -9,7 +9,7 @@ import {ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLabel from '@clayui/label';
 import classNames from 'classnames';
-import {ComponentProps, forwardRef, useState} from 'react';
+import {ComponentProps, forwardRef} from 'react';
 import i18n from '~/i18n';
 
 import '~/components/ManagementToolbarSearch/ManagementToolbarSearch.css';
@@ -39,10 +39,7 @@ type InspectorToolbarProps = {
 	filterOptions?: InspectorFilterOption[];
 	onChange: (filter: InspectorFilter) => void;
 	onToggleColumn?: (label: Word) => void;
-	resultCount?: number;
-	searchFullWidth?: boolean;
 	showFlaggedOnly?: boolean;
-	totalCount?: number;
 };
 
 type IconButtonProps = Omit<
@@ -50,27 +47,18 @@ type IconButtonProps = Omit<
 	'aria-label' | 'symbol'
 > & {
 	active?: boolean;
-	compact?: boolean;
 	label: string;
 	symbol: string;
 };
 
 const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-	(
-		{active, className, compact = true, label, symbol, ...otherProps},
-		ref
-	) => (
+	({active, className, label, symbol, ...otherProps}, ref) => (
 		<ClayButtonWithIcon
 			{...otherProps}
 			aria-label={label}
-			className={classNames(className, {
-				'account-inspector-toolbar-button': compact,
-				active,
-				'btn-monospaced mr-2': !compact,
-			})}
+			className={classNames(className, 'btn-monospaced mr-2', {active})}
 			displayType="secondary"
 			ref={ref}
-			size={compact ? 'sm' : undefined}
 			symbol={symbol}
 			title={label}
 		/>
@@ -83,13 +71,8 @@ export default function InspectorToolbar({
 	filterOptions = [],
 	onChange,
 	onToggleColumn,
-	resultCount,
-	searchFullWidth = false,
 	showFlaggedOnly = true,
-	totalCount,
 }: InspectorToolbarProps) {
-	const [searchOpen, setSearchOpen] = useState(Boolean(filter.search));
-
 	const activeFilterCount =
 		getActiveValueCount(filter) + (filter.flaggedOnly ? 1 : 0);
 
@@ -130,7 +113,6 @@ export default function InspectorToolbar({
 					trigger={
 						<IconButton
 							active={Boolean(activeFilterCount)}
-							compact={!searchFullWidth}
 							label={i18n.translate('filter')}
 							symbol="filter"
 						/>
@@ -154,7 +136,6 @@ export default function InspectorToolbar({
 					trigger={
 						<IconButton
 							className="account-inspector-columns-button"
-							compact={!searchFullWidth}
 							label={i18n.translate('columns')}
 							symbol="bars"
 						/>
@@ -162,72 +143,38 @@ export default function InspectorToolbar({
 				/>
 			)}
 
-			{searchFullWidth ? (
-				<div className="flex-grow-1 management-toolbar-search">
-					<ClayInput.Group>
-						<ClayInput.GroupItem>
-							<ClayInput
-								aria-label={i18n.translate('search')}
-								className="bg-white form-control input-group-inset input-group-inset-after"
-								onChange={(event) =>
-									onChange({
-										...filter,
-										search: event.target.value,
-									})
-								}
-								onKeyDown={(event) => {
-									if (event.key === 'Escape') {
-										onChange({...filter, search: ''});
-									}
-								}}
-								placeholder={i18n.translate('search')}
-								type="text"
-								value={filter.search}
-							/>
-
-							<ClayInput.GroupInsetItem
-								after
-								className="bg-white"
-								tag="span"
-							>
-								<ClayIcon symbol="search" />
-							</ClayInput.GroupInsetItem>
-						</ClayInput.GroupItem>
-					</ClayInput.Group>
-				</div>
-			) : searchOpen ? (
-				<div className="account-inspector-toolbar-search">
-					<ClayInput
-						aria-label={i18n.translate('search')}
-						autoFocus
-						onBlur={() => !filter.search && setSearchOpen(false)}
-						onChange={(event) =>
-							onChange({...filter, search: event.target.value})
-						}
-						onKeyDown={(event) => {
-							if (event.key === 'Escape') {
-								onChange({...filter, search: ''});
-								setSearchOpen(false);
+			<div className="flex-grow-1 management-toolbar-search">
+				<ClayInput.Group>
+					<ClayInput.GroupItem>
+						<ClayInput
+							aria-label={i18n.translate('search')}
+							className="bg-white form-control input-group-inset input-group-inset-after"
+							onChange={(event) =>
+								onChange({
+									...filter,
+									search: event.target.value,
+								})
 							}
-						}}
-						placeholder={i18n.translate('search')}
-						sizing="sm"
-						type="search"
-						value={filter.search}
-					/>
+							onKeyDown={(event) => {
+								if (event.key === 'Escape') {
+									onChange({...filter, search: ''});
+								}
+							}}
+							placeholder={i18n.translate('search')}
+							type="text"
+							value={filter.search}
+						/>
 
-					<ClayIcon
-						className="account-inspector-toolbar-search-icon"
-						symbol="search"
-					/>
-				</div>
-			) : (
-				<IconButton
-					label={i18n.translate('search')}
-					onClick={() => setSearchOpen(true)}
-					symbol="search"
-				/>
-			)}
+						<ClayInput.GroupInsetItem
+							after
+							className="bg-white"
+							tag="span"
+						>
+							<ClayIcon symbol="search" />
+						</ClayInput.GroupInsetItem>
+					</ClayInput.GroupItem>
+				</ClayInput.Group>
+			</div>
 
 			{Boolean(activeFilterCount) && (
 				<ClayLabel
@@ -245,15 +192,6 @@ export default function InspectorToolbar({
 				>
 					{i18n.sub('filters-x', String(activeFilterCount))}
 				</ClayLabel>
-			)}
-
-			{resultCount !== undefined && totalCount !== undefined && (
-				<span className="ml-auto small text-secondary">
-					{i18n.sub('showing-x-of-x', [
-						String(resultCount),
-						String(totalCount),
-					])}
-				</span>
 			)}
 		</div>
 	);

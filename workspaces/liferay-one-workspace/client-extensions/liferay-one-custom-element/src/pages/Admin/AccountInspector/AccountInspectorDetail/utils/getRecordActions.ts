@@ -78,6 +78,8 @@ function getDashboardAction(
 					)
 				: null;
 		}
+		case 'orderItems':
+			return toAction('open-order', `orders/${entry.orderId}`);
 		case 'orders':
 			return toAction('open-order', `orders/${entry.id}`);
 		case 'projectMemberships':

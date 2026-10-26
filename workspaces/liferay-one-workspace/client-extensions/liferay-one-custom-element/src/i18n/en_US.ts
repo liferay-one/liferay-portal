@@ -1705,7 +1705,6 @@ export default {
 	'share-your-feedback': 'Share Your Feedback',
 	'shared-investigator-platform': 'Shared Investigator Platform',
 	'show-less': 'Show Less',
-	'showing-x-of-x': 'Showing {0} of {1}',
 	'showing-x-to-x-of-x': 'Showing {0} to {1} of {2}',
 	'sign-in': 'Sign In',
 	'sign-in-with-a-different-account': 'Sign in with a Different Account',
