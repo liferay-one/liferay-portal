@@ -5,7 +5,9 @@
 
 package com.liferay.one.license;
 
+import com.liferay.petra.string.CharPool;
 import com.liferay.portal.ee.license.shared.KeyGenerator;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Date;
@@ -51,13 +53,60 @@ public class LicenseKeyGenerator {
 		String hostNames, String ipAddresses, String macAddresses,
 		String serverIds, Date startDate, Date expirationDate) {
 
-		return KeyGenerator.getProperties(
+		Map<String, String> properties = KeyGenerator.getProperties(
 			accountName, description, StringUtil.split(domains), expirationDate,
 			StringUtil.split(hostNames), sizing, StringUtil.split(ipAddresses),
 			licenseEntryName, licenseType, String.valueOf(licenseVersion),
 			StringUtil.split(macAddresses), maxClusterNodes, maxConcurrentUsers,
 			maxHttpSessions, maxServers, maxUsers, owner, productName,
 			productId, productVersion, new String[] {serverIds}, startDate);
+
+		if (licenseVersion < 6) {
+			properties.remove("instanceSize");
+		}
+
+		if (licenseVersion == 2) {
+			properties.remove("hostNames");
+			properties.remove("ipAddresses");
+			properties.remove("macAddresses");
+			properties.remove("productId");
+			properties.remove("serverIds");
+
+			properties.put("accountEntryName", accountName);
+			properties.put("licenseEntryName", licenseEntryName);
+
+			if (licenseType.equals(LicenseConstants.TYPE_CLUSTER) ||
+				licenseType.equals(LicenseConstants.TYPE_DEVELOPER_CLUSTER)) {
+
+				properties.put("maxServers", String.valueOf(maxServers));
+			}
+
+			if (licenseType.equals(LicenseConstants.TYPE_PRODUCTION)) {
+				properties.put(
+					"serverIds",
+					StringUtil.replace(
+						StringUtil.toLowerCase(serverIds), CharPool.DASH,
+						CharPool.COLON));
+			}
+
+			return properties;
+		}
+
+		if (licenseType.equals(LicenseConstants.TYPE_CLUSTER)) {
+			properties.put(
+				"hostNames", StringUtil.merge(StringUtil.split(hostNames)));
+			properties.put(
+				"ipAddresses", StringUtil.merge(StringUtil.split(ipAddresses)));
+			properties.put(
+				"macAddresses",
+				StringUtil.replace(
+					StringUtil.merge(StringUtil.split(macAddresses)),
+					CharPool.DASH, CharPool.COLON));
+			properties.put("maxServers", String.valueOf(maxServers));
+			properties.put("serverIds", serverIds);
+		}
+
+		return properties;
 	}
 
 }
