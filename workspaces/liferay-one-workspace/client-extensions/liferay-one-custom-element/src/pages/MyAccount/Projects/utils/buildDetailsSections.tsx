@@ -32,6 +32,7 @@ type DetailsContext = {
 		purchaseNumber: string;
 		purchasedBy: string;
 		quantity: string;
+		skuProductNames: string[];
 	};
 	productName: string;
 	securityIncidentContacts?: ProjectContact[];
@@ -53,9 +54,9 @@ type EnvironmentSummary = {
 	instanceSizes: string[];
 	provisionedCount?: number;
 	quantity: number;
+	skuProductNames: string[];
 	startDate: string;
 	status: Word;
-	tierNames: string[];
 };
 
 function formatDate(value?: string): string {
@@ -159,11 +160,9 @@ function summarizeEnvironment(
 				)
 			: undefined,
 		quantity: term.reduce((total, {quantity}) => total + quantity, 0),
+		skuProductNames: term.map(({skuProductName}) => skuProductName),
 		startDate: sortDates(term.map(({startDate}) => startDate))[0] ?? '',
 		status,
-		tierNames: [...new Set(term.map(({tierName}) => tierName))].filter(
-			Boolean
-		),
 	};
 }
 
@@ -213,7 +212,7 @@ function environmentSections(
 		return [
 			{
 				rows: [
-					...productRows(context, context.orderInfo.itemName),
+					...productRows(context, context.orderInfo.skuProductNames),
 					...orderRows(context),
 					...contractRows(context.contract),
 				],
@@ -224,7 +223,7 @@ function environmentSections(
 	return environmentSummaries.map((environmentSummary) => ({
 		id: environmentSummary.environment,
 		rows: [
-			...productRows(context, environmentSummary.tierNames.join(', ')),
+			...productRows(context, environmentSummary.skuProductNames),
 			...toRows(environmentSummary),
 		],
 		title: environmentSummary.environment
@@ -306,16 +305,20 @@ function contractRows(contract?: ProjectContract): DetailsRow[] {
 	];
 }
 
-function productRows(context: DetailsContext, tierName: string): DetailsRow[] {
-	if (
-		context.itemType !== 'product' ||
-		!tierName ||
-		tierName === context.productName
-	) {
+function productRows(
+	context: DetailsContext,
+	skuProductNames: string[]
+): DetailsRow[] {
+	const productNames = [...new Set(skuProductNames)].filter(
+		(skuProductName) =>
+			skuProductName && skuProductName !== context.productName
+	);
+
+	if (context.itemType !== 'product' || !productNames.length) {
 		return [];
 	}
 
-	return [{label: i18n.translate('product'), value: tierName}];
+	return [{label: i18n.translate('product'), value: productNames.join(', ')}];
 }
 
 function purchasedRow(context: DetailsContext): DetailsRow {
@@ -365,7 +368,7 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 	'basic': (context) => [
 		{
 			rows: [
-				...productRows(context, context.orderInfo.itemName),
+				...productRows(context, context.orderInfo.skuProductNames),
 				...orderRows(context),
 			],
 		},
@@ -373,7 +376,7 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 	'basic-incident': (context) => [
 		{
 			rows: [
-				...productRows(context, context.orderInfo.itemName),
+				...productRows(context, context.orderInfo.skuProductNames),
 				...orderRows(context),
 				securityIncidentContactRow(context),
 			],
@@ -382,7 +385,7 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 	'dates-status': (context) => [
 		{
 			rows: [
-				...productRows(context, context.orderInfo.itemName),
+				...productRows(context, context.orderInfo.skuProductNames),
 				...contractRows(context.contract),
 			],
 		},

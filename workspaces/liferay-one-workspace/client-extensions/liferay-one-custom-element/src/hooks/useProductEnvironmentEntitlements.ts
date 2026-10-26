@@ -20,9 +20,9 @@ export type EnvironmentEntitlement = {
 	instanceSize: string;
 	provisionedCount?: number;
 	quantity: number;
+	skuProductName: string;
 	startDate: string;
 	terminationStatus: string;
-	tierName: string;
 };
 
 type EntitlementNode = {
@@ -150,9 +150,9 @@ export function useProductEnvironmentEntitlements(
 				instanceSize: getInstanceSize(optionValueNames),
 				provisionedCount: provisionedCounts?.[index],
 				quantity: entitlementNode.quantity ?? 0,
+				skuProductName: orderItem?.skuProductName ?? '',
 				startDate: entitlementNode.startDate ?? '',
 				terminationStatus: entitlementNode.terminationStatus ?? '',
-				tierName: orderItem?.tierName ?? '',
 			};
 		});
 	}, [entitlementNodes, orderItems, provisionedCounts]);
