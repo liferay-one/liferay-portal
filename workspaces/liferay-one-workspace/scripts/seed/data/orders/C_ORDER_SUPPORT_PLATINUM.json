@@ -1,0 +1,44 @@
+{
+	"entitlements": [
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_SUPPORT_PLATINUM",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Platinum Support",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-029",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_SUPPORT_PLATINUM",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_DSR",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SUPPORT_PLATINUM",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-029",
+			"startDate": "2026-08-09T00:00:00Z"
+		}
+	],
+	"order": {
+		"accountExternalReferenceCode": "ACCNT-029",
+		"channelExternalReferenceCode": "LIFERAY_ONE_CHANNEL",
+		"contractExternalReferenceCode": "C_CONTRACT_DSR",
+		"currencyCode": "USD",
+		"externalReferenceCode": "C_ORDER_SUPPORT_PLATINUM",
+		"orderItems": [
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_SUPPORT_PLATINUM",
+				"name": "Platinum Support",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01tVO00000MWE87YAH",
+				"unitPrice": 0
+			}
+		],
+		"orderStatus": 0,
+		"orderTypeExternalReferenceCode": "SALESFORCE",
+		"projectExternalReferenceCode": "PRJCT-029"
+	},
+	"purchaseOrderNumber": "PO-SUPPORT-PLATINUM"
+}

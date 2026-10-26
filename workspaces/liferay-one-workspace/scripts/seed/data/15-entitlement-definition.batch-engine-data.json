@@ -1324,6 +1324,26 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "Gold Support",
+			"externalReferenceCode": "C_ENT_DEF_SUPPORT_GOLD",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Platinum Support",
+			"externalReferenceCode": "C_ENT_DEF_SUPPORT_PLATINUM",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Test App",
 			"externalReferenceCode": "C_ENT_DEF_TEST_APP",
 			"generatesActivationKey": true,

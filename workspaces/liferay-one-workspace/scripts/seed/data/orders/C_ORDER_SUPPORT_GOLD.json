@@ -1,0 +1,44 @@
+{
+	"entitlements": [
+		{
+			"endDate": "2027-08-09T00:00:00Z",
+			"externalReferenceCode": "C_ENT_SUPPORT_GOLD",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "Gold Support",
+			"quantity": 1,
+			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-027",
+			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_SUPPORT_GOLD",
+			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_CONTENT_MARKETING",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SUPPORT_GOLD",
+			"r_projectToEntitlement_c_projectERC": "PRJCT-027",
+			"startDate": "2026-08-09T00:00:00Z"
+		}
+	],
+	"order": {
+		"accountExternalReferenceCode": "ACCNT-027",
+		"channelExternalReferenceCode": "LIFERAY_ONE_CHANNEL",
+		"contractExternalReferenceCode": "C_CONTRACT_CONTENT_MARKETING",
+		"currencyCode": "USD",
+		"externalReferenceCode": "C_ORDER_SUPPORT_GOLD",
+		"orderItems": [
+			{
+				"customFields": {
+					"customStatus": "Approved",
+					"effectiveEndDate": "2027-09-08T00:00:00Z",
+					"endDate": "2027-08-09T00:00:00Z",
+					"startDate": "2026-08-09T00:00:00Z"
+				},
+				"externalReferenceCode": "C_ORDER_ITEM_SUPPORT_GOLD",
+				"name": "Gold Support",
+				"quantity": 1,
+				"skuExternalReferenceCode": "01tVO00000MWE86YAH",
+				"unitPrice": 0
+			}
+		],
+		"orderStatus": 0,
+		"orderTypeExternalReferenceCode": "SALESFORCE",
+		"projectExternalReferenceCode": "PRJCT-027"
+	},
+	"purchaseOrderNumber": "PO-SUPPORT-GOLD"
+}

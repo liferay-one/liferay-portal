@@ -696,6 +696,16 @@
 			"skuExternalReferenceCode": "PRDCT-SSA-TRIAL"
 		},
 		{
+			"externalReferenceCode": "C_ENT_DEF_SUPPORT_GOLD_01tVO00000MWE86YAH",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SUPPORT_GOLD",
+			"skuExternalReferenceCode": "01tVO00000MWE86YAH"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SUPPORT_PLATINUM_01tVO00000MWE87YAH",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SUPPORT_PLATINUM",
+			"skuExternalReferenceCode": "01tVO00000MWE87YAH"
+		},
+		{
 			"externalReferenceCode": "C_ENT_DEF_TEST_APP_PRDCT-TEST-APP",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_APP",
 			"skuExternalReferenceCode": "PRDCT-TEST-APP"
