@@ -185,10 +185,14 @@ export default function InspectedCollectionPanel({
 
 			{collection.truncated && (
 				<ClayAlert displayType="warning">
-					{i18n.sub('only-x-of-x-records-could-be-loaded', [
-						String(collection.items.length),
-						String(collection.totalCount),
-					])}
+					{collection.totalCount > collection.items.length
+						? i18n.sub('only-x-of-x-records-could-be-loaded', [
+								String(collection.items.length),
+								String(collection.totalCount),
+							])
+						: i18n.translate(
+								'only-part-of-the-records-could-be-loaded'
+							)}
 				</ClayAlert>
 			)}
 
@@ -208,9 +212,7 @@ export default function InspectedCollectionPanel({
 					filterOptions={filterOptions}
 					onChange={onFilterChange}
 					onToggleColumn={onToggleColumn}
-					resultCount={entries.length}
 					showFlaggedOnly={Boolean(flaggedIds.size)}
-					totalCount={collection.items.length}
 				/>
 			)}
 

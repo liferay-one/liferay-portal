@@ -19,6 +19,7 @@ import AccountTree from './components/AccountTree/AccountTree';
 import InspectedCollectionPanel from './components/InspectedCollectionPanel/InspectedCollectionPanel';
 import JSMRecords from './components/JSMRecords/JSMRecords';
 import {openAccountDashboard} from './utils/accountDashboardUtils';
+import {getOrderItemCollection} from './utils/accountFindingUtils';
 import buildAccountTree from './utils/buildAccountTree';
 import getAccountFindings from './utils/getAccountFindings';
 import syncRecordToJSM from './utils/syncRecordToJSM';
@@ -61,6 +62,7 @@ function getCollections(
 	return [
 		['users', inspection.users],
 		['orders', inspection.orders],
+		['orderItems', getOrderItemCollection(inspection.orders)],
 		...RELATED_COLLECTION_DISPLAY_ORDER.map(
 			(key) =>
 				[key, inspection.related[key]] as [

@@ -14,6 +14,7 @@ import type {
 	InspectedCollectionKey,
 	InspectedEntry,
 	InspectedOrder,
+	InspectedOrderItem,
 } from '~/types/accountInspection';
 
 export function toNumber(value: unknown) {
@@ -46,6 +47,23 @@ export function getLoadedIds(collection: InspectedCollection<InspectedEntry>) {
 		: null;
 }
 
+export function getOrderItemCollection(
+	orders: InspectedCollection<InspectedOrder>
+): InspectedCollection<InspectedOrderItem> {
+	const items = orders.items.flatMap(({id, orderItems}) =>
+		(orderItems ?? []).map((orderItem) => ({...orderItem, orderId: id}))
+	);
+
+	return {
+		error: orders.error,
+		items,
+		totalCount: items.length,
+		truncated:
+			orders.truncated ||
+			orders.items.some(({incompleteOrderItems}) => incompleteOrderItems),
+	};
+}
+
 export function getInspectedCollections({
 	orders,
 	related,
@@ -53,6 +71,7 @@ export function getInspectedCollections({
 }: AccountInspection): [InspectedCollectionKey, InspectedCollection][] {
 	return [
 		['orders', orders],
+		['orderItems', getOrderItemCollection(orders)],
 		['users', users],
 		...RELATED_COLLECTION_KEYS.map(
 			(key) =>

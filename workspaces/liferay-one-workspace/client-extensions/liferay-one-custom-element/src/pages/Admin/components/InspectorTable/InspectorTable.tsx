@@ -183,7 +183,6 @@ export default function InspectorTable<Entry extends InspectedEntry>({
 					filterOptions={filterOptions}
 					onChange={onFilterChange}
 					onToggleColumn={onToggleColumn}
-					searchFullWidth
 					showFlaggedOnly={Boolean(flaggedIds.size)}
 				/>
 			)}

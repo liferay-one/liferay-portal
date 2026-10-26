@@ -8,6 +8,7 @@ import type {
 	InspectedCollectionKey,
 	InspectedEntry,
 	InspectedOrder,
+	InspectedOrderItem,
 	InspectedUser,
 } from '~/types/accountInspection';
 
@@ -127,6 +128,18 @@ export const INSPECTED_COLLECTION_COLUMNS: Record<
 		field('connection-source', 'connectionSource'),
 		field('date-created', 'dateCreated'),
 	],
+	orderItems: [
+		ID_COLUMN,
+		{
+			label: 'name',
+			value: (entry) =>
+				Object.values((entry as InspectedOrderItem).name ?? {})[0],
+		},
+		field('order', 'orderId'),
+		field('sku', 'sku'),
+		field('quantity', 'quantity'),
+		hiddenField('external-reference-code', 'externalReferenceCode'),
+	],
 	orders: [
 		ID_COLUMN,
 		ERC_COLUMN,
@@ -244,6 +257,7 @@ export const INSPECTED_COLLECTION_LABELS: Record<InspectedCollectionKey, Word> =
 		environments: 'environments',
 		licenseKeys: 'license-keys',
 		oauth2DxpAuthorizations: 'dxp-connections',
+		orderItems: 'order-items',
 		orders: 'orders',
 		projectMemberships: 'project-memberships',
 		projects: 'projects',

@@ -12,11 +12,16 @@ import type {
 	AccountInspection,
 	InspectedCollection,
 	InspectedOrder,
+	InspectedOrderItem,
 	InspectedUser,
 	RelatedCollectionKey,
 } from '~/types/accountInspection';
 import type {Account, AccountPostalAddresses} from '~/types/accounts';
 import type {DataQuery} from '~/types/api';
+
+const NESTED_PAGE_SIZE = 20;
+
+const ORDER_PATH = '/o/headless-commerce-admin-order/v1.0/orders';
 
 type RelatedCollectionSource = {
 	filter: (account: Account) => string;
@@ -137,6 +142,43 @@ async function getCollection<Item>(
 	}
 }
 
+async function toInspectedOrder(order: InspectedOrder) {
+	if ((order.orderItems ?? []).length < NESTED_PAGE_SIZE) {
+		return order;
+	}
+
+	const orderItems = await getCollection<InspectedOrderItem>(
+		`${ORDER_PATH}/${order.id}/orderItems`
+	);
+
+	if (orderItems.error) {
+		return {...order, incompleteOrderItems: true};
+	}
+
+	return {
+		...order,
+		incompleteOrderItems: orderItems.truncated,
+		orderItems: orderItems.items,
+	};
+}
+
+async function getOrders(
+	account: Account
+): Promise<InspectedCollection<InspectedOrder>> {
+	const orders = await getCollection<InspectedOrder>(ORDER_PATH, {
+		filter: SearchBuilder.unquote(
+			SearchBuilder.lambda('accountId', account.id)
+		),
+		nestedFields: 'orderItems',
+		sort: 'createDate:desc',
+	});
+
+	return {
+		...orders,
+		items: await Promise.all(orders.items.map(toInspectedOrder)),
+	};
+}
+
 async function getRelatedCollections(account: Account) {
 	const entries = await Promise.all(
 		Object.entries(RELATED_COLLECTION_SOURCES).map(
@@ -157,16 +199,7 @@ async function getAccountInspection(
 	const account = await HeadlessAdminUser.getAccount(accountId);
 
 	const [orders, postalAddresses, related, users] = await Promise.all([
-		getCollection<InspectedOrder>(
-			'/o/headless-commerce-admin-order/v1.0/orders',
-			{
-				filter: SearchBuilder.unquote(
-					SearchBuilder.lambda('accountId', account.id)
-				),
-				nestedFields: 'orderItems',
-				sort: 'createDate:desc',
-			}
-		),
+		getOrders(account),
 		getCollection<AccountPostalAddresses>(
 			`/o/headless-admin-user/v1.0/accounts/${account.id}/postal-addresses`
 		),

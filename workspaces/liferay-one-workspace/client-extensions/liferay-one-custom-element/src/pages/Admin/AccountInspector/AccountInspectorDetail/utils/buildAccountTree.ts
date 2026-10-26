@@ -5,7 +5,11 @@
 
 import i18n from '~/i18n';
 
-import {getInspectedCollections, toNumber} from './accountFindingUtils';
+import {
+	getInspectedCollections,
+	getOrderItemCollection,
+	toNumber,
+} from './accountFindingUtils';
 import {
 	buildSeverityIndex,
 	getWorstSeverity,
@@ -70,6 +74,8 @@ function buildBuckets(inspection: AccountInspection) {
 		return (bucketId: number) => entriesByBucket.get(bucketId) ?? [];
 	};
 
+	const orderItems = getOrderItemCollection(orders).items;
+
 	const byRelationship = (entries: InspectedEntry[], fieldName: string) =>
 		byBucket(entries, (entry) => toBucketId(entry[fieldName]));
 
@@ -95,6 +101,7 @@ function buildBuckets(inspection: AccountInspection) {
 			related.licenseKeys.items,
 			'r_projectToLicenseKey_c_projectId'
 		),
+		orderItems: byBucket(orderItems, ({orderId}) => orderId ?? 0),
 		orders: byBucket(
 			orders.items,
 			({customFields}) =>
@@ -228,7 +235,14 @@ function buildBucketChildren(
 			bucketKey,
 			'orders',
 			buckets.orders(bucketId),
-			severityIndex
+			severityIndex,
+			(order, orderKey) =>
+				toGroupNode(
+					orderKey,
+					'orderItems',
+					buckets.orderItems(order.id),
+					severityIndex
+				)
 		),
 		...toGroupNode(
 			bucketKey,
