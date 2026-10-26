@@ -109,6 +109,7 @@ export type ProductOrderInfo = {
 export type ProductOrderItem = {
 	id: number;
 	optionValueNames: string[];
+	tierName: string;
 };
 
 export type ProductEnvironmentInfo = {
@@ -300,6 +301,7 @@ export function getProductEnvironmentOrderItems(
 	return getProductOrderItems(placedOrders, productId).map((item) => ({
 		id: item.id,
 		optionValueNames: getOptionValueNames(item.options),
+		tierName: getTierName(item),
 	}));
 }
 
