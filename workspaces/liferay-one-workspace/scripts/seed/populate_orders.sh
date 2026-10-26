@@ -302,7 +302,7 @@ function _complete_payment {
 function _import_entitlements {
 	local items
 
-	items=$(_collect_items "entitlements")
+	items=$(_collect_items "entitlements" | _set_entitlement_sku_external_reference_codes)
 
 	_run_batch_import "entitlements" "/o/c/entitlements" "UPDATE" "${items}"
 }
@@ -779,6 +779,34 @@ function _run_batch_import {
 	fi
 
 	_verify_batch_import "${label}" "${rest_context_path}" "${items}"
+}
+
+# Reads a JSON array of entitlement entries on stdin and writes it back with each
+# entry's skuExternalReferenceCode set to the SKU of the order item that its
+# commerceOrderItemToEntitlement relationship names, as the EntitlementGeneration
+# action does. An entry that already has a SKU keeps it.
+
+function _set_entitlement_sku_external_reference_codes {
+	python3 -c "
+import glob
+import json
+import sys
+
+sku_external_reference_codes = {}
+
+for path in sorted(glob.glob('${ORDERS_DIR}/*.json')):
+	with open(path) as file:
+		for order_item in json.load(file).get('order', {}).get('orderItems', []):
+			sku_external_reference_codes[order_item.get('externalReferenceCode')] = order_item.get('skuExternalReferenceCode', '')
+
+items = json.load(sys.stdin)
+
+for item in items:
+	if not item.get('skuExternalReferenceCode'):
+		item['skuExternalReferenceCode'] = sku_external_reference_codes.get(item.get('r_commerceOrderItemToEntitlement_commerceOrderItemERC'), '')
+
+json.dump(items, sys.stdout)
+"
 }
 
 # Reads a JSON array of license key entries on stdin and writes it back with each
