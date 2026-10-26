@@ -1,0 +1,55 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"defaultValue": true,
+					"label": "Available",
+					"name": "available",
+					"type": "checkbox"
+				},
+				{
+					"defaultValue": "Coming Soon",
+					"label": "Badge Text",
+					"name": "badgeText",
+					"type": "text"
+				},
+				{
+					"defaultValue": "",
+					"label": "Button Link",
+					"name": "buttonLink",
+					"type": "text"
+				},
+				{
+					"defaultValue": "Purchase",
+					"label": "Button Text",
+					"name": "buttonText",
+					"type": "text"
+				},
+				{
+					"defaultValue": false,
+					"label": "Custom Price",
+					"name": "customPrice",
+					"type": "checkbox"
+				},
+				{
+					"label": "Product ID",
+					"name": "productId",
+					"type": "text"
+				},
+				{
+					"defaultValue": true,
+					"label": "Purchasable",
+					"name": "purchasable",
+					"type": "checkbox"
+				},
+				{
+					"label": "SKU ID",
+					"name": "skuId",
+					"type": "text"
+				}
+			],
+			"label": "Tier Card"
+		}
+	]
+}

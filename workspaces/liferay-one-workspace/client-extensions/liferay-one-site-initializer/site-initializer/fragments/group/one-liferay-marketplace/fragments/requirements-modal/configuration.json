@@ -1,0 +1,23 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"label": "Description",
+					"name": "description",
+					"type": "text"
+				},
+				{
+					"label": "Header",
+					"name": "header",
+					"type": "text"
+				},
+				{
+					"label": "Title",
+					"name": "title",
+					"type": "text"
+				}
+			]
+		}
+	]
+}
