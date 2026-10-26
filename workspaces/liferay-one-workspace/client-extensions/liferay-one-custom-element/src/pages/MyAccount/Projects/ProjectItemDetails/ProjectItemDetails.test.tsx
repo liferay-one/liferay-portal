@@ -15,7 +15,8 @@ import {
 	useProjectProducts,
 } from '~/hooks/useProjectCommerce';
 import {useProjectItems} from '~/hooks/useProjectItems';
-import {useProjectOrders} from '~/hooks/useProjectOrders';
+import {getProductOrder, useProjectOrders} from '~/hooks/useProjectOrders';
+import i18n from '~/i18n';
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
 
 import ProjectItemDetails from './ProjectItemDetails';
@@ -41,6 +42,10 @@ vi.mock('~/hooks/useProjectOrders', () => ({
 	getProductOrderInfo: vi.fn(() => ({status: 'active'})),
 	getProductVirtualItems: vi.fn(() => []),
 	useProjectOrders: vi.fn(),
+}));
+
+vi.mock('~/pages/MyAccount/Projects/components/AIHubAlert/AIHubAlert', () => ({
+	default: () => null,
 }));
 
 vi.mock(
@@ -118,5 +123,54 @@ describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 
 		expect(screen.getByText('Liferay DXP')).toBeTruthy();
 		expect(screen.queryByText(PRODUCT_DESCRIPTION)).toBeNull();
+	});
+
+	describe('Buy Liferay Tokens button', () => {
+		beforeEach(() => {
+			vi.mocked(resolveProductTabConfig).mockReturnValue({
+				environmentProfile: 'ai-hub',
+				tabKeys: [],
+			} as unknown as ReturnType<typeof resolveProductTabConfig>);
+
+			vi.mocked(
+				useDeliveryProductByExternalReferenceCode
+			).mockReturnValue({data: {productId: 55}} as unknown as ReturnType<
+				typeof useDeliveryProductByExternalReferenceCode
+			>);
+		});
+
+		it('shows the button when the AI Hub order is completed', () => {
+			vi.mocked(getProductOrder).mockReturnValue({
+				orderStatusInfo: {code: 0, label: 'Completed', label_i18n: ''},
+			} as unknown as ReturnType<typeof getProductOrder>);
+
+			render(<ProjectItemDetails itemType="product" />);
+
+			expect(
+				screen.getByText(i18n.translate('buy-liferay-tokens'))
+			).toBeTruthy();
+		});
+
+		it('hides the button when the AI Hub order is not completed', () => {
+			vi.mocked(getProductOrder).mockReturnValue({
+				orderStatusInfo: {code: 1, label: 'Pending', label_i18n: ''},
+			} as unknown as ReturnType<typeof getProductOrder>);
+
+			render(<ProjectItemDetails itemType="product" />);
+
+			expect(
+				screen.queryByText(i18n.translate('buy-liferay-tokens'))
+			).toBeNull();
+		});
+
+		it('hides the button when the AI Hub product has no order', () => {
+			vi.mocked(getProductOrder).mockReturnValue(undefined);
+
+			render(<ProjectItemDetails itemType="product" />);
+
+			expect(
+				screen.queryByText(i18n.translate('buy-liferay-tokens'))
+			).toBeNull();
+		});
 	});
 });

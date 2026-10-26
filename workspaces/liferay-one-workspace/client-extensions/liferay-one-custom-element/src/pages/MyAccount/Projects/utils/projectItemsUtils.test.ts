@@ -133,7 +133,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 		expect(itemsByType.product.get('PRDCT-DXP')?.startDate).toBe('');
 	});
 
-	it('shows a completed order of any type as completed', () => {
+	it('shows a completed product order without term dates as active', () => {
 		const itemsByType = toProjectItemsByType(
 			[
 				toOrder(
@@ -147,7 +147,51 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 			productsByProductId
 		);
 
-		expect(itemsByType.product.get('PRDCT-DXP')?.status).toBe('completed');
+		expect(itemsByType.product.get('PRDCT-DXP')?.status).toBe('active');
+	});
+
+	it('shows a pending or canceled product order as that status whatever its dates', () => {
+		const toProductStatus = (code: number) =>
+			toProjectItemsByType(
+				[
+					{
+						orderStatusInfo: {code, label: '', label_i18n: ''},
+						orderTypeExternalReferenceCode: 'SALESFORCE',
+						placedOrderItems: [
+							{
+								customFields: {endDate: '2017-04-14T00:00:00Z'},
+								productId: 2,
+							},
+						],
+					} as unknown as PlacedOrder,
+				],
+				productsByProductId
+			).product.get('PRDCT-DXP')?.status;
+
+		expect(toProductStatus(1)).toBe('pending');
+		expect(toProductStatus(8)).toBe('canceled');
+	});
+
+	it('keeps an application on its order status whatever its dates', () => {
+		const itemsByType = toProjectItemsByType(
+			[
+				{
+					orderStatusInfo: {code: 0, label: '', label_i18n: ''},
+					orderTypeExternalReferenceCode: 'DXP_APP',
+					placedOrderItems: [
+						{
+							customFields: {endDate: '2017-04-14T00:00:00Z'},
+							productId: 1,
+						},
+					],
+				} as unknown as PlacedOrder,
+			],
+			productsByProductId
+		);
+
+		expect(itemsByType.application.get('PRDCT-APP')?.status).toBe(
+			'completed'
+		);
 	});
 
 	it('shows an application order as completed, pending, or canceled', () => {
@@ -183,6 +227,26 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 		);
 
 		expect(itemsByType.product.get('PRDCT-DXP')?.type).toBe('Subscription');
+	});
+
+	it('shows a product as future only when the terms of all its orders have not started', () => {
+		const toSalesforceOrder = (startDate: string) =>
+			({
+				orderStatusInfo: {code: 0, label: 'Completed', label_i18n: ''},
+				orderTypeExternalReferenceCode: 'SALESFORCE',
+				placedOrderItems: [{customFields: {startDate}, productId: 2}],
+			}) as unknown as PlacedOrder;
+
+		const toStatus = (startDates: string[]) =>
+			toProjectItemsByType(
+				startDates.map(toSalesforceOrder),
+				productsByProductId
+			).product.get('PRDCT-DXP')?.status;
+
+		expect(toStatus(['2999-01-01T00:00:00Z'])).toBe('future');
+		expect(toStatus(['2999-01-01T00:00:00Z', '2017-04-14T00:00:00Z'])).toBe(
+			'active'
+		);
 	});
 
 	it('shows a product as expired only when the terms of all its orders ended', () => {

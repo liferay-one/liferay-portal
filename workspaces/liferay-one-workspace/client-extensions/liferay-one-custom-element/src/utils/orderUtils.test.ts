@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {describe, expect, it} from 'vitest';
+import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {
 	getContractProductOrders,
@@ -11,11 +11,13 @@ import {
 	getOrderStatusToken,
 	getPlacedOrderItemDate,
 	getProductStatusToken,
+	getProjectItemStatusToken,
 	getTotalByOrderKey,
 	hasAIHubOrder,
 	hasProvisionedAIHubOrder,
 	isBetaOrder,
 	isTermExpired,
+	isTermFuture,
 	toStatusToken,
 } from './orderUtils';
 
@@ -304,7 +306,58 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 		});
 	});
 
+	describe('isTermFuture', () => {
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
+		it('is true when every order item starts after today', () => {
+			expect(
+				isTermFuture([
+					toPlacedOrderItem(undefined, '2999-01-01T00:00:00Z'),
+					toPlacedOrderItem(undefined, '2998-01-01T00:00:00Z'),
+				])
+			).toBe(true);
+		});
+
+		it('is false when one order item started or has no start date', () => {
+			expect(
+				isTermFuture([
+					toPlacedOrderItem(undefined, '2999-01-01T00:00:00Z'),
+					toPlacedOrderItem(undefined, '2017-04-14T00:00:00Z'),
+				])
+			).toBe(false);
+			expect(
+				isTermFuture([
+					toPlacedOrderItem(undefined, '2999-01-01T00:00:00Z'),
+					toPlacedOrderItem(undefined, '1970-01-01T00:00:00Z'),
+				])
+			).toBe(false);
+			expect(isTermFuture([])).toBe(false);
+		});
+
+		it('is false for an order item that starts today', () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(new Date(2026, 9, 26, 15));
+
+			expect(
+				isTermFuture([
+					toPlacedOrderItem(undefined, '2026-10-26T00:00:00Z'),
+				])
+			).toBe(false);
+			expect(
+				isTermFuture([
+					toPlacedOrderItem(undefined, '2026-10-27T00:00:00Z'),
+				])
+			).toBe(true);
+		});
+	});
+
 	describe('getProductStatusToken', () => {
+		afterEach(() => {
+			vi.useRealTimers();
+		});
+
 		const expiredPlacedOrderItems = [
 			toPlacedOrderItem('2017-04-14T00:00:00Z'),
 		];
@@ -326,13 +379,75 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			).toBe('active');
 		});
 
-		it('keeps a status other than active', () => {
+		it('shows a completed order as future when no term has started', () => {
+			expect(
+				getProductStatusToken(toPlacedOrder('SALESFORCE', 0), [
+					toPlacedOrderItem(undefined, '2999-01-01T00:00:00Z'),
+				])
+			).toBe('future');
+		});
+
+		it('shows a completed order as active without term dates', () => {
+			expect(
+				getProductStatusToken(toPlacedOrder('SALESFORCE', 0), [
+					toPlacedOrderItem(),
+				])
+			).toBe('active');
+			expect(
+				getProductStatusToken(toPlacedOrder('SALESFORCE', 0), [])
+			).toBe('active');
+		});
+
+		it('shows a completed order as expired when its terms end today', () => {
+			vi.useFakeTimers();
+			vi.setSystemTime(new Date(2026, 9, 26, 15));
+
+			expect(
+				getProductStatusToken(toPlacedOrder('SALESFORCE', 0), [
+					toPlacedOrderItem('2026-10-26T00:00:00Z'),
+				])
+			).toBe('expired');
+			expect(
+				getProductStatusToken(toPlacedOrder('SALESFORCE', 0), [
+					toPlacedOrderItem('2026-10-27T00:00:00Z'),
+				])
+			).toBe('active');
+		});
+
+		it('keeps a pending or canceled order status whatever its dates', () => {
 			expect(
 				getProductStatusToken(
 					toPlacedOrder('SALESFORCE', 1),
 					expiredPlacedOrderItems
 				)
 			).toBe('pending');
+			expect(
+				getProductStatusToken(toPlacedOrder('SALESFORCE', 8), [
+					toPlacedOrderItem(undefined, '2999-01-01T00:00:00Z'),
+				])
+			).toBe('canceled');
+		});
+	});
+
+	describe('getProjectItemStatusToken', () => {
+		it('shows an application with the status of its order', () => {
+			expect(
+				getProjectItemStatusToken(
+					'application',
+					toPlacedOrder('DXP_APP', 0),
+					[toPlacedOrderItem('2017-04-14T00:00:00Z')]
+				)
+			).toBe('completed');
+		});
+
+		it('shows a product with the status of its terms', () => {
+			expect(
+				getProjectItemStatusToken(
+					'product',
+					toPlacedOrder('SALESFORCE', 0),
+					[toPlacedOrderItem('2017-04-14T00:00:00Z')]
+				)
+			).toBe('expired');
 		});
 	});
 

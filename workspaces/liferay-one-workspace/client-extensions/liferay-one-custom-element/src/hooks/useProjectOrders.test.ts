@@ -271,7 +271,9 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			purchaseOrderNumber: 'PO-1',
 		});
 
-		expect(getProductOrderInfo([tokenOrder, aiHubOrder], 7)).toEqual({
+		expect(
+			getProductOrderInfo('product', [tokenOrder, aiHubOrder], 7)
+		).toEqual({
 			environment: {
 				cloudProjectName: 'cloud-1',
 				ldpDataSourceAccessToken: 'token-1',
@@ -284,7 +286,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			purchaseNumber: 'PO-1',
 			purchasedBy: 'Jane Doe',
 			quantity: '3',
-			status: 'completed',
+			status: 'active',
 		});
 	});
 
@@ -298,7 +300,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			],
 		});
 
-		expect(getProductOrderInfo([order], 7)).toMatchObject({
+		expect(getProductOrderInfo('product', [order], 7)).toMatchObject({
 			itemName: 'Analytics Cloud - Business',
 			quantity: '5',
 		});
@@ -313,7 +315,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			placedOrderItems: [{productId: 7}],
 		});
 
-		expect(getProductOrderInfo([order], 7).purchasedBy).toBe('');
+		expect(getProductOrderInfo('product', [order], 7).purchasedBy).toBe('');
 	});
 
 	it('leaves token orders out of the term status of the product', () => {
@@ -331,6 +333,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 
 		expect(
 			getProductOrderInfo(
+				'product',
 				[
 					toOrder(15, 'DXP', '2017-04-14T00:00:00Z'),
 					toOrder(16, 'AI_HUB_TOKEN'),
@@ -338,6 +341,26 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 				7
 			).status
 		).toBe('expired');
+	});
+
+	it('shows an application with the status of its order', () => {
+		const order = placedOrder({
+			id: 17,
+			orderStatusInfo: {code: 0, label: 'Completed', label_i18n: ''},
+			placedOrderItems: [
+				{
+					customFields: {endDate: '2017-04-14T00:00:00Z'},
+					productId: 7,
+				},
+			],
+		});
+
+		expect(getProductOrderInfo('application', [order], 7).status).toBe(
+			'completed'
+		);
+		expect(getProductOrderInfo('product', [order], 7).status).toBe(
+			'expired'
+		);
 	});
 
 	it('names the tier after the SKU option value of each order item', () => {
@@ -371,7 +394,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			],
 		});
 
-		expect(getProductOrderInfo([order], 7).itemName).toBe(
+		expect(getProductOrderInfo('product', [order], 7).itemName).toBe(
 			'Global 24/7 Support, Support Plans'
 		);
 	});
@@ -379,6 +402,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 	it('returns blank product order info when no order matches', () => {
 		expect(
 			getProductOrderInfo(
+				'product',
 				[
 					placedOrder({
 						id: 10,
