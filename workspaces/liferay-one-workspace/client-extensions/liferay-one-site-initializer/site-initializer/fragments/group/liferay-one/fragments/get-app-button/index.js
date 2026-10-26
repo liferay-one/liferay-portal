@@ -225,7 +225,7 @@ const main = async () => {
 	const isContactSalesProduct = product.productSpecifications.some(
 		({specificationKey, value}) =>
 			specificationKey === 'solution-type' &&
-			['cmp', 'dsr', 'liferay-data-platform'].includes(value)
+			['cmp', 'cms', 'dsr', 'liferay-data-platform'].includes(value)
 	);
 
 	if (isContactSalesProduct) {

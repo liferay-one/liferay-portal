@@ -74,7 +74,7 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-CATALOG-050 | Liferay sells Content Marketing Platform, Digital Sales Room, and Liferay Data Platform only through its sales team. Their product pages show Contact Sales instead of Get App. | P0 | LPD-102451, LPD-104271 | `FLOW-CMP-CONTACT-SALES`, `MOD-PRODUCTUTILS` |
+| REQ-CATALOG-050 | Liferay sells Content Marketing Platform, Liferay CMS, Digital Sales Room, and Liferay Data Platform only through its sales team. Their product pages show Contact Sales instead of Get App. | P0 | LPD-102451, LPD-104271, LPD-106434 | `FLOW-CMP-CONTACT-SALES`, `MOD-PRODUCTUTILS` |
 | REQ-CATALOG-051 | A buyer who opens the purchase page of a contact sales product by its URL sees the Contact Sales invitation. The buyer cannot select an account, and the system creates no order. | P0 | LPD-102451, LPD-104271 | `FLOW-CMP-CONTACT-SALES` |
 | REQ-CATALOG-052 | The Contact Sales invitation lists the license tiers of the product from its SKUs. When the product has no tier SKU, the invitation shows no tier list. | P1 | LPD-102451 | `FLOW-CMP-CONTACT-SALES`, `MOD-LICENSETIERUTILS` |
 | REQ-CATALOG-053 | The Contact Sales button opens the Liferay contact sales page in a new tab. | P2 | LPD-102451 | `FLOW-CMP-CONTACT-SALES` |

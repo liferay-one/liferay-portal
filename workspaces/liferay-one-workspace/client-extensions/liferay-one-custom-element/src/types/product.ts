@@ -305,6 +305,7 @@ export type SolutionTypes =
 	| 'ai-hub-open-beta'
 	| 'analytics'
 	| 'cmp'
+	| 'cms'
 	| 'dsr'
 	| 'dxp'
 	| 'liferay-data-platform'
