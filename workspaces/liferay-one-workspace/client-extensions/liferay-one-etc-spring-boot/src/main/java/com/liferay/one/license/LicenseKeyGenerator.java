@@ -11,6 +11,7 @@ import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map;
 
 import org.springframework.stereotype.Component;
@@ -85,8 +86,8 @@ public class LicenseKeyGenerator {
 				properties.put(
 					"serverIds",
 					StringUtil.replace(
-						StringUtil.toLowerCase(serverIds), CharPool.DASH,
-						CharPool.COLON));
+						StringUtil.toLowerCase(serverIds, Locale.ROOT),
+						CharPool.DASH, CharPool.COLON));
 			}
 
 			return properties;

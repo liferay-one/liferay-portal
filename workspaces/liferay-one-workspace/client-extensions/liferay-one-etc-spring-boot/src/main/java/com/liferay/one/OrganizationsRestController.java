@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.util.Validator;
 
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -119,7 +120,8 @@ public class OrganizationsRestController extends OneBaseRestController {
 				continue;
 			}
 
-			oktaEmailAddresses.add(StringUtil.toLowerCase(emailAddress));
+			oktaEmailAddresses.add(
+				StringUtil.toLowerCase(emailAddress, Locale.ROOT));
 		}
 
 		Map<String, UserAccount> organizationUserAccounts =
@@ -136,7 +138,7 @@ public class OrganizationsRestController extends OneBaseRestController {
 			}
 
 			organizationUserAccounts.put(
-				StringUtil.toLowerCase(emailAddress), userAccount);
+				StringUtil.toLowerCase(emailAddress, Locale.ROOT), userAccount);
 		}
 
 		for (String emailAddress : oktaEmailAddresses) {

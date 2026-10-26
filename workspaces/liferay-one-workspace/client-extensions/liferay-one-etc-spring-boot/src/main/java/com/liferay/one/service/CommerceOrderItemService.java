@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -165,7 +166,8 @@ public class CommerceOrderItemService extends OneBaseService {
 			String options = CommerceOrderItemUtil.toOptionsJSON(
 				"machinetype",
 				StringUtil.toLowerCase(
-					salesforceOpportunityLineItem.getMachineType()));
+					salesforceOpportunityLineItem.getMachineType(),
+					Locale.ROOT));
 
 			orderItem.setOptions(() -> options);
 		}

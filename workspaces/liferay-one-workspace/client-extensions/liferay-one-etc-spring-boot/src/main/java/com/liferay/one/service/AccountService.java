@@ -29,6 +29,7 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -675,7 +676,7 @@ public class AccountService extends OneBaseService {
 			return null;
 		}
 
-		String lowerCaseWebsite = StringUtil.toLowerCase(website);
+		String lowerCaseWebsite = StringUtil.toLowerCase(website, Locale.ROOT);
 
 		if (lowerCaseWebsite.startsWith("http://") ||
 			lowerCaseWebsite.startsWith("https://")) {

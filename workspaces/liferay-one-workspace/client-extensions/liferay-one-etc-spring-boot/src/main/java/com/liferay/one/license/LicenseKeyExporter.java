@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
@@ -298,7 +299,7 @@ public class LicenseKeyExporter {
 			fileName, CharPool.BACK_SLASH, StringPool.BLANK);
 		fileName = StringUtil.replace(
 			fileName, CharPool.QUOTE, StringPool.BLANK);
-		fileName = StringUtil.toLowerCase(fileName);
+		fileName = StringUtil.toLowerCase(fileName, Locale.ROOT);
 		fileName = fileName.substring(0, Math.min(fileName.length(), 251));
 
 		return fileName.concat(".xml");

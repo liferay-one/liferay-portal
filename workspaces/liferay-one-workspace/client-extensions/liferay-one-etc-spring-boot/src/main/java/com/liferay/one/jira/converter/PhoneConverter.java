@@ -11,6 +11,8 @@ import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.util.Locale;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -58,7 +60,7 @@ public class PhoneConverter extends BaseJiraAssetObjectConverter {
 			return null;
 		}
 
-		phoneType = StringUtil.toLowerCase(phoneType);
+		phoneType = StringUtil.toLowerCase(phoneType, Locale.ROOT);
 
 		if (phoneType.contains("mobile")) {
 			return "Mobile";
