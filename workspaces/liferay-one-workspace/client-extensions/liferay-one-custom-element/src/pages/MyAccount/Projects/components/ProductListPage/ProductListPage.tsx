@@ -115,7 +115,6 @@ export default function ProductListPage({
 		>
 			<FilterableListCard
 				columns={columnsWithActions}
-				columnsVisible
 				emptyLabel={emptyLabel}
 				filterIconOnly
 				filters={filters}

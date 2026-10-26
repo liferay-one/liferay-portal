@@ -369,7 +369,7 @@ const ManagementToolbarFilters: React.FC<ManagementToolbarFilterProps> = ({
 				{iconOnly ? (
 					<ClayButtonWithIcon
 						aria-label={i18n.translate('filter')}
-						className="ml-3 mr-2"
+						className="management-toolbar-filter-icon-button ml-3 mr-2"
 						displayType="secondary"
 						onClick={handleExpand}
 						symbol="filter"

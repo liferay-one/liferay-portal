@@ -541,6 +541,7 @@ export default function LicenseKeys() {
 				className="license-keys"
 				columns={columns}
 				emptyLabel="no-activation-keys"
+				filterIconOnly
 				filters={visibleFilters}
 				items={rows}
 				loading={loading || loadingEnvironments}

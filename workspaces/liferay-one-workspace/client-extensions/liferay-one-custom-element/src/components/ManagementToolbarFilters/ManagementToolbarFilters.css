@@ -9,10 +9,16 @@
 }
 
 .management-toolbar-filter-button {
-	border: 1px solid var(--color-neutral-4);
+	border: 1px solid var(--color-neutral-2);
+	color: var(--color-neutral-6);
 	height: 40px;
 	max-height: 40px;
 	white-space: nowrap;
+}
+
+.management-toolbar-filter-icon-button {
+	border-color: var(--color-neutral-2);
+	color: var(--color-neutral-6);
 }
 
 .management-toolbar-filter-panel {

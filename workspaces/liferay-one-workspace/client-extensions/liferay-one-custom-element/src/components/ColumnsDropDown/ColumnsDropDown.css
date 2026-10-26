@@ -1,3 +1,8 @@
-.columns-drop-down-button .lexicon-icon {
-	transform: rotate(90deg);
+.columns-drop-down-button {
+	border-color: var(--color-neutral-2);
+	color: var(--color-neutral-6);
+
+	& .lexicon-icon {
+		transform: rotate(90deg);
+	}
 }
