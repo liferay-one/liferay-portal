@@ -185,22 +185,6 @@ public class JiraAssetServiceTest {
 	}
 
 	@Test
-	public void testGetJiraAssetObjectsSearchesWithConverterAQL()
-		throws Exception {
-
-		Mockito.when(
-			_jiraAssetPersistence.<JiraAssetObject>searchObjects(
-				Mockito.eq("aql"), Mockito.any())
-		).thenReturn(
-			Collections.singletonList(_existingJiraAssetObject)
-		);
-
-		Assertions.assertEquals(
-			Collections.singletonList(_existingJiraAssetObject),
-			_jiraAssetService.getJiraAssetObjects(_converter, null));
-	}
-
-	@Test
 	public void testGetJiraAssetObjectsByExternalKeysChunksUniqueKeys() {
 		Mockito.when(
 			_jiraAssetPersistence.searchObjects(
@@ -232,6 +216,22 @@ public class JiraAssetServiceTest {
 		).createObject(
 			Mockito.any(), Mockito.any()
 		);
+	}
+
+	@Test
+	public void testGetJiraAssetObjectsSearchesWithConverterAQL()
+		throws Exception {
+
+		Mockito.when(
+			_jiraAssetPersistence.<JiraAssetObject>searchObjects(
+				Mockito.eq("aql"), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(_existingJiraAssetObject)
+		);
+
+		Assertions.assertEquals(
+			Collections.singletonList(_existingJiraAssetObject),
+			_jiraAssetService.getJiraAssetObjects(_converter, null));
 	}
 
 	@Test
