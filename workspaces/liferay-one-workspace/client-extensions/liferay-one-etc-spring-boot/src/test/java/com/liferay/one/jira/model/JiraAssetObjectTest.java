@@ -184,6 +184,88 @@ public class JiraAssetObjectTest {
 			).isEmpty());
 	}
 
+	@Test
+	public void testToJSONObjectListsDisplayValuesByAttributeName() {
+		JSONObject jsonObject = _createJiraAssetObject(
+			new JSONObject(
+			).put(
+				"attributes",
+				new JSONArray(
+				).put(
+					_createAttributeJSONObject(
+						"1",
+						new JSONObject(
+						).put(
+							"displayValue", "Acme Display"
+						).put(
+							"value", "Acme"
+						))
+				).put(
+					new JSONObject(
+					).put(
+						"objectAttributeValues",
+						new JSONArray(
+						).put(
+							new JSONObject(
+							).put(
+								"displayValue", "Ada"
+							).put(
+								"referencedObject",
+								new JSONObject(
+								).put(
+									"id", "77"
+								)
+							)
+						).put(
+							new JSONObject(
+							).put(
+								"referencedObject",
+								new JSONObject(
+								).put(
+									"id", "78"
+								)
+							)
+						)
+					).put(
+						"objectTypeAttributeId", "3"
+					)
+				).put(
+					new JSONObject(
+					).put(
+						"objectAttributeValues", new JSONArray()
+					).put(
+						"objectTypeAttributeId", "2"
+					)
+				)
+			).put(
+				"id", "5"
+			).put(
+				"name", "Acme"
+			).put(
+				"objectKey", "CUS-5"
+			)
+		).toJSONObject();
+
+		Assertions.assertEquals("Acme", jsonObject.getString("name"));
+		Assertions.assertEquals("5", jsonObject.getString("objectId"));
+		Assertions.assertEquals("CUS-5", jsonObject.getString("objectKey"));
+
+		JSONObject attributesJSONObject = jsonObject.getJSONObject(
+			"attributes");
+
+		Assertions.assertEquals(
+			List.of("Ada", "78"),
+			attributesJSONObject.getJSONArray(
+				"Account"
+			).toList());
+		Assertions.assertEquals(
+			List.of("Acme Display"),
+			attributesJSONObject.getJSONArray(
+				"Name"
+			).toList());
+		Assertions.assertFalse(attributesJSONObject.has("Status"));
+	}
+
 	private JSONObject _createAttributeJSONObject(
 		String attributeId, JSONObject valueJSONObject) {
 
