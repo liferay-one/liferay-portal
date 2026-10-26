@@ -102,6 +102,9 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 						customFields: {projectName: 'Main'},
 						externalReferenceCode: 'ORDER-1',
 						id: 50,
+						orderItems: [
+							{id: 501, name: {en_US: 'DXP'}, sku: 'DXP-1'},
+						],
 					},
 				]),
 			}
@@ -126,7 +129,18 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 						label: 'Entitlements',
 					},
 					{
-						children: [{label: 'ORDER-1'}],
+						children: [
+							{
+								children: [
+									{
+										children: [{label: 'DXP'}],
+										count: 1,
+										label: 'Order Items',
+									},
+								],
+								label: 'ORDER-1',
+							},
+						],
 						count: 1,
 						label: 'Orders',
 					},

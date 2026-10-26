@@ -75,6 +75,69 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 		).toBeDefined();
 	});
 
+	it('reads the order items of an order again when the nested list reaches 20 rows', async () => {
+		const nestedItems = Array.from({length: 20}, (_, index) => ({
+			id: index,
+		}));
+
+		mocks.fetcher.mockImplementation(async (url: string) => {
+			const {pathname} = new URL(url, 'http://x');
+
+			if (pathname === '/o/headless-commerce-admin-order/v1.0/orders') {
+				return toPage([
+					{id: 50, orderItems: nestedItems},
+					{id: 51, orderItems: [{id: 100}]},
+				]);
+			}
+
+			if (
+				pathname ===
+				'/o/headless-commerce-admin-order/v1.0/orders/50/orderItems'
+			) {
+				return toPage(
+					Array.from({length: 25}, (_, index) => ({id: index})),
+					25
+				);
+			}
+
+			return toPage([]);
+		});
+
+		const {orders} = await accountInspectionQuery('100').fetcher();
+
+		expect(orders.items[0].orderItems).toHaveLength(25);
+		expect(orders.items[0].incompleteOrderItems).toBe(false);
+		expect(orders.items[1].orderItems).toEqual([{id: 100}]);
+		expect(
+			findRequest(
+				'/o/headless-commerce-admin-order/v1.0/orders/51/orderItems'
+			)
+		).toBeUndefined();
+	});
+
+	it('keeps the nested order items and marks them incomplete when the second read fails', async () => {
+		const nestedItems = Array.from({length: 20}, (_, index) => ({
+			id: index,
+		}));
+
+		mocks.fetcher.mockImplementation(async (url: string) => {
+			const {pathname} = new URL(url, 'http://x');
+
+			if (pathname.endsWith('/orders/50/orderItems')) {
+				throw new FetcherError('Failed');
+			}
+
+			return pathname === '/o/headless-commerce-admin-order/v1.0/orders'
+				? toPage([{id: 50, orderItems: nestedItems}])
+				: toPage([]);
+		});
+
+		const {orders} = await accountInspectionQuery('100').fetcher();
+
+		expect(orders.items[0].orderItems).toHaveLength(20);
+		expect(orders.items[0].incompleteOrderItems).toBe(true);
+	});
+
 	it('reads every page of a large collection', async () => {
 		mocks.fetcher.mockImplementation(async (url: string) => {
 			if (!url.startsWith('/o/c/entitlements')) {
