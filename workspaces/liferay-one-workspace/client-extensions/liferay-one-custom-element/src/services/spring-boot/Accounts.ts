@@ -7,6 +7,7 @@ import zodSchema, {z} from '~/schemas/zodSchema';
 
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
+import type {JiraAssets} from '~/types/accountInspection';
 import type {Account} from '~/types/accounts';
 import type {APIResponse} from '~/types/api';
 import type {DeliveryProduct} from '~/types/product';
@@ -44,6 +45,12 @@ class AccountsOAuth2 extends OneSpringBootOAuth2 {
 	async getInvitations(accountExternalReferenceCode: string) {
 		return this.get<AccountInvitation[]>(
 			`/${accountExternalReferenceCode}/invitations`
+		);
+	}
+
+	async getJiraAssets(accountExternalReferenceCode: string) {
+		return this.get<JiraAssets>(
+			`/${accountExternalReferenceCode}/jira/assets`
 		);
 	}
 

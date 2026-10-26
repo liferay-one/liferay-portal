@@ -36,7 +36,7 @@ export function getIds<Entry extends InspectedEntry>(
 	return entries.filter(predicate).map(({id}) => id);
 }
 
-export function isComplete(collection: InspectedCollection<InspectedEntry>) {
+export function isComplete(collection: InspectedCollection<unknown>) {
 	return !collection.error && !collection.truncated;
 }
 

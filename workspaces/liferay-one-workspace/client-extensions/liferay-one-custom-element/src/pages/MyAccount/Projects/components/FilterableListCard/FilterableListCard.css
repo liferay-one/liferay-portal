@@ -235,6 +235,16 @@
 	}
 }
 
+.list-card-sort-button {
+	background-color: transparent;
+	border: 0;
+	color: inherit;
+	cursor: pointer;
+	font-weight: inherit;
+	padding: 0;
+	white-space: nowrap;
+}
+
 .list-card-status {
 	align-items: center;
 	display: flex;

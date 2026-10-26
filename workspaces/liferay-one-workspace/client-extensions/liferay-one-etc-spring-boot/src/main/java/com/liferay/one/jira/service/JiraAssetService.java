@@ -162,6 +162,41 @@ public class JiraAssetService {
 	}
 
 	/**
+	 * Returns the asset objects of the converter's type whose external keys
+	 * are among the given keys. The lookup is chunked to keep each AQL query
+	 * short. No asset object is created.
+	 *
+	 * @param  converter the converter describing the asset object type and its
+	 *         external key attribute
+	 * @param  externalKeys the external keys to look up
+	 *
+	 * @return the matching asset objects
+	 */
+	public List<JiraAssetObject> getJiraAssetObjectsByExternalKeys(
+		BaseJiraAssetObjectConverter converter,
+		Collection<String> externalKeys) {
+
+		List<JiraAssetObject> jiraAssetObjects = new ArrayList<>();
+
+		List<String> uniqueExternalKeys = new ArrayList<>(
+			new LinkedHashSet<>(externalKeys));
+
+		for (int i = 0; i < uniqueExternalKeys.size(); i += _CHUNK_SIZE) {
+			List<String> chunkExternalKeys = uniqueExternalKeys.subList(
+				i, Math.min(i + _CHUNK_SIZE, uniqueExternalKeys.size()));
+
+			jiraAssetObjects.addAll(
+				getJiraAssetObjects(
+					converter,
+					aqlBuilder -> aqlBuilder.andIn(
+						chunkExternalKeys,
+						converter.getExternalKeyAttributeName())));
+		}
+
+		return jiraAssetObjects;
+	}
+
+	/**
 	 * Resolves a collection of entities to the IDs of their asset objects,
 	 * creating an asset object for any external key that does not already
 	 * resolve to one.

@@ -73,9 +73,9 @@ export function isFilterActive(filter: InspectorFilter) {
 	);
 }
 
-export function getFilterOptions(
-	entries: InspectedEntry[],
-	columns: InspectedCollectionColumn[],
+export function getFilterOptions<Entry extends InspectedEntry>(
+	entries: Entry[],
+	columns: InspectedCollectionColumn<Entry>[],
 	accountId: number
 ): InspectorFilterOption[] {
 	return columns
@@ -118,9 +118,9 @@ export function toggleFilterValue(
 	};
 }
 
-export function filterInspectedEntries(
-	entries: InspectedEntry[],
-	columns: InspectedCollectionColumn[],
+export function filterInspectedEntries<Entry extends InspectedEntry>(
+	entries: Entry[],
+	columns: InspectedCollectionColumn<Entry>[],
 	{flaggedOnly, search, values}: InspectorFilter,
 	flaggedIds: Set<number | string>,
 	accountId: number

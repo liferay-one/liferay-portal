@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import ClayButton from '@clayui/button';
+import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import ClayDropDown, {Align} from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
 import classNames from 'classnames';
@@ -35,6 +35,7 @@ import './ManagementToolbarFilters.css';
 type ManagementToolbarFilterProps = {
 	availableOptions?: FieldOptions;
 	filterSchema?: FilterSchema;
+	iconOnly?: boolean;
 };
 
 export type Option = {label: string; value: string};
@@ -346,6 +347,7 @@ const FilterBody: React.FC<FilterBodyProps> = ({
 const ManagementToolbarFilters: React.FC<ManagementToolbarFilterProps> = ({
 	availableOptions,
 	filterSchema,
+	iconOnly = false,
 }) => {
 	const buttonRef = useRef<HTMLButtonElement | null>(null);
 
@@ -364,17 +366,28 @@ const ManagementToolbarFilters: React.FC<ManagementToolbarFilterProps> = ({
 	return (
 		<>
 			<div className="align-items-center d-flex justify-content-between">
-				<ClayButton
-					className="align-items-center btn-secondary d-flex justify-content-between management-toolbar-filter-button ml-3 mr-2 px-2"
-					displayType="unstyled"
-					onClick={handleExpand}
-				>
-					<ClayIcon className="mr-2" symbol="filter" />
+				{iconOnly ? (
+					<ClayButtonWithIcon
+						aria-label={i18n.translate('filter')}
+						className="ml-3 mr-2"
+						displayType="secondary"
+						onClick={handleExpand}
+						symbol="filter"
+						title={i18n.translate('filter')}
+					/>
+				) : (
+					<ClayButton
+						className="align-items-center btn-secondary d-flex justify-content-between management-toolbar-filter-button ml-3 mr-2 px-2"
+						displayType="unstyled"
+						onClick={handleExpand}
+					>
+						<ClayIcon className="mr-2" symbol="filter" />
 
-					{i18n.translate('filter')}
+						{i18n.translate('filter')}
 
-					<ClayIcon className="ml-2" symbol="caret-bottom" />
-				</ClayButton>
+						<ClayIcon className="ml-2" symbol="caret-bottom" />
+					</ClayButton>
+				)}
 			</div>
 
 			{isVisible && (

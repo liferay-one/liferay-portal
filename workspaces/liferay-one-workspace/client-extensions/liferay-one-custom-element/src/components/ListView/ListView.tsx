@@ -11,6 +11,7 @@ import React, {
 	useContext,
 	useEffect,
 	useMemo,
+	useState,
 } from 'react';
 import {useSearchParams} from 'react-router';
 import {KeyedMutator} from 'swr';
@@ -65,10 +66,16 @@ export type ListViewProps<T extends Record<string, unknown>> = {
 	initialContext?: ListViewContextProviderProps;
 
 	managementToolbarProps?: {
+		columnsVisible?: boolean;
 		visible?: boolean;
 	} & Omit<
 		ManagementToolbarProps,
-		'actions' | 'onSelectAllRows' | 'rowSelectable' | 'tableProps'
+		| 'actions'
+		| 'columns'
+		| 'onSelectAllRows'
+		| 'onToggleColumn'
+		| 'rowSelectable'
+		| 'tableProps'
 	>;
 
 	paginationOptions?: {
@@ -104,6 +111,7 @@ const ListViewBase = <T extends Record<string, unknown>>({
 	defaultFilters,
 	emptyStateProps,
 	managementToolbarProps: {
+		columnsVisible = false,
 		visible: managementToolbarVisible = false,
 		...managementToolbarProps
 	} = {},
@@ -114,6 +122,8 @@ const ListViewBase = <T extends Record<string, unknown>>({
 	transformData = (item) => item,
 }: ListViewProps<T>) => {
 	const [listViewContext, dispatch] = useContext(ListViewContext);
+
+	const [hiddenColumnIds, setHiddenColumnIds] = useState<string[]>([]);
 
 	const updateUrlParams = useUpdateUrlParams();
 	const [searchParams] = useSearchParams();
@@ -247,6 +257,17 @@ const ListViewBase = <T extends Record<string, unknown>>({
 		totalCount = 0,
 	} = transformData(response || {items: []});
 
+	const onToggleColumn = (id: string) =>
+		setHiddenColumnIds((previous) =>
+			previous.includes(id)
+				? previous.filter((current) => current !== id)
+				: [...previous, id]
+		);
+
+	const visibleColumns = tableProps.columns.filter(
+		({id}) => !hiddenColumnIds.includes(String(id))
+	);
+
 	if (loading || (isValidating && searchParams.get('filter'))) {
 		return <Loading.Page />;
 	}
@@ -281,7 +302,23 @@ const ListViewBase = <T extends Record<string, unknown>>({
 	return (
 		<>
 			{managementToolbarVisible && (
-				<ManagementToolbar {...managementToolbarProps} />
+				<ManagementToolbar
+					{...managementToolbarProps}
+					columns={
+						columnsVisible
+							? tableProps.columns
+									.filter(({name}) => name)
+									.map(({id, name}) => ({
+										id: String(id),
+										label: name,
+										visible: !hiddenColumnIds.includes(
+											String(id)
+										),
+									}))
+							: undefined
+					}
+					onToggleColumn={columnsVisible ? onToggleColumn : undefined}
+				/>
 			)}
 
 			{!items.length && (
@@ -297,6 +334,7 @@ const ListViewBase = <T extends Record<string, unknown>>({
 				<>
 					<Table
 						{...tableProps}
+						columns={visibleColumns}
 						items={items}
 						mutate={mutate}
 						onSort={onSort}

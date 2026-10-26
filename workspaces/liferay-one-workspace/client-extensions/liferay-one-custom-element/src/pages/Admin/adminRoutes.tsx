@@ -20,6 +20,12 @@ const AccountInspectorDetail = lazy(
 );
 const AppDetail = lazy(() => import('./Apps/AppDetail/AppDetail'));
 const Apps = lazy(() => import('./Apps/Apps'));
+const EntitlementDefinitionDetail = lazy(
+	() =>
+		import(
+			'./ProductInspector/EntitlementDefinitionDetail/EntitlementDefinitionDetail'
+		)
+);
 const Environments = lazy(() => import('./Environments/Environments'));
 const LicenseKeyUploads = lazy(
 	() => import('./LicenseKeyUploads/LicenseKeyUploads')
@@ -34,6 +40,15 @@ const OrderDetails = lazy(() => import('./MPFinanceOrders/OrderDetails'));
 const Orders = lazy(() => import('./Orders/Orders'));
 const PaymentDetails = lazy(() => import('./Payments/PaymentDetails'));
 const Payments = lazy(() => import('./Payments/Payments'));
+const ProductInspector = lazy(
+	() => import('./ProductInspector/ProductInspector')
+);
+const ProductInspectorDetail = lazy(
+	() =>
+		import(
+			'./ProductInspector/ProductInspectorDetail/ProductInspectorDetail'
+		)
+);
 const PublisherRequests = lazy(
 	() => import('./PublisherRequests/PublisherRequests')
 );
@@ -108,6 +123,22 @@ export const adminRoutes: AppRoute[] = [
 		canAccess: canAccessAdmin,
 		element: <AccountInspectorDetail />,
 		path: 'account-inspector/:accountId',
+	},
+	{
+		canAccess: canAccessAdmin,
+		element: <ProductInspector />,
+		nav: {icon: 'catalog', label: i18n.translate('product-inspector')},
+		path: 'product-inspector',
+	},
+	{
+		canAccess: canAccessAdmin,
+		element: <ProductInspectorDetail />,
+		path: 'product-inspector/:productId',
+	},
+	{
+		canAccess: canAccessAdmin,
+		element: <EntitlementDefinitionDetail />,
+		path: 'product-inspector/entitlement-definitions/:entitlementDefinitionId',
 	},
 	{
 		canAccess: canAccessFinance,

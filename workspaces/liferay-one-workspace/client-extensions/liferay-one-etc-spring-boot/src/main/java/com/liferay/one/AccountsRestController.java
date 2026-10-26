@@ -159,6 +159,20 @@ public class AccountsRestController extends OneBaseRestController {
 		return new ResponseEntity<>(jsonArray.toString(), HttpStatus.OK);
 	}
 
+	@GetMapping("/{externalReferenceCode}/jira/assets")
+	public ResponseEntity<String> getJiraAssets(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_adminPermission.check(jwt);
+
+		JSONObject jsonObject = _accountAssetService.getJiraAssetsJSONObject(
+			_accountService.getAccount(externalReferenceCode));
+
+		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+	}
+
 	@GetMapping("/{externalReferenceCode}/jira/object-key")
 	public ResponseEntity<String> getJiraObjectKey(
 			@AuthenticationPrincipal Jwt jwt,

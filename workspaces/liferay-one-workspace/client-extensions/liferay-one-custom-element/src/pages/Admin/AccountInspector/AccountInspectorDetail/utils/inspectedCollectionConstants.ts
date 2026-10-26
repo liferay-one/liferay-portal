@@ -11,10 +11,10 @@ import type {
 	InspectedUser,
 } from '~/types/accountInspection';
 
-export type InspectedCollectionColumn = {
+export type InspectedCollectionColumn<Entry = InspectedEntry> = {
 	hidden?: boolean;
 	label: Word;
-	value: (entry: InspectedEntry, accountId: number) => unknown;
+	value: (entry: Entry, accountId: number) => unknown;
 };
 
 function field(label: Word, fieldName: string): InspectedCollectionColumn {

@@ -158,6 +158,57 @@ public class JiraAssetObject {
 		return attributesJSONArray;
 	}
 
+	/**
+	 * Serializes the object's identity and the display values of every
+	 * attribute the schema maps, keyed by attribute name. Attributes without
+	 * a value are omitted.
+	 */
+	public JSONObject toJSONObject() {
+		JSONObject attributesJSONObject = new JSONObject();
+
+		for (Map.Entry<String, String> entry : _attributeIds.entrySet()) {
+			JSONArray displayValuesJSONArray =
+				_getAttributeDisplayValuesJSONArray(entry.getValue());
+
+			if (!displayValuesJSONArray.isEmpty()) {
+				attributesJSONObject.put(
+					entry.getKey(), displayValuesJSONArray);
+			}
+		}
+
+		return new JSONObject(
+		).put(
+			"attributes", attributesJSONObject
+		).put(
+			"name", _jsonObject.optString("name")
+		).put(
+			"objectId", _jsonObject.optString("id")
+		).put(
+			"objectKey", _jsonObject.optString("objectKey")
+		);
+	}
+
+	private JSONArray _getAttributeDisplayValuesJSONArray(String attributeId) {
+		JSONArray displayValuesJSONArray = new JSONArray();
+
+		JSONArray objectAttributeValuesJSONArray =
+			_getObjectAttributeValuesJSONArray(attributeId);
+
+		for (int i = 0; i < objectAttributeValuesJSONArray.length(); i++) {
+			JSONObject attributeValueJSONObject =
+				objectAttributeValuesJSONArray.getJSONObject(i);
+
+			String displayValue = attributeValueJSONObject.optString(
+				"displayValue", _getValue(attributeValueJSONObject));
+
+			if (Validator.isNotNull(displayValue)) {
+				displayValuesJSONArray.put(displayValue);
+			}
+		}
+
+		return displayValuesJSONArray;
+	}
+
 	private String _getAttributeId(String attributeName) {
 		String attributeId = _attributeIds.get(attributeName);
 
@@ -180,10 +231,21 @@ public class JiraAssetObject {
 			return new JSONObject();
 		}
 
+		JSONArray objectAttributeValuesJSONArray =
+			_getObjectAttributeValuesJSONArray(attributeId);
+
+		if (objectAttributeValuesJSONArray.isEmpty()) {
+			return new JSONObject();
+		}
+
+		return objectAttributeValuesJSONArray.getJSONObject(0);
+	}
+
+	private JSONArray _getObjectAttributeValuesJSONArray(String attributeId) {
 		JSONArray attributesJSONArray = _jsonObject.optJSONArray("attributes");
 
 		if (attributesJSONArray == null) {
-			return new JSONObject();
+			return new JSONArray();
 		}
 
 		for (int i = 0; i < attributesJSONArray.length(); i++) {
@@ -199,16 +261,14 @@ public class JiraAssetObject {
 			JSONArray objectAttributeValuesJSONArray =
 				attributeJSONObject.optJSONArray("objectAttributeValues");
 
-			if ((objectAttributeValuesJSONArray == null) ||
-				objectAttributeValuesJSONArray.isEmpty()) {
-
+			if (objectAttributeValuesJSONArray == null) {
 				break;
 			}
 
-			return objectAttributeValuesJSONArray.getJSONObject(0);
+			return objectAttributeValuesJSONArray;
 		}
 
-		return new JSONObject();
+		return new JSONArray();
 	}
 
 	private String _getValue(JSONObject attributeValueJSONObject) {
