@@ -35,6 +35,7 @@ function getRows(
 	return buildDetailsSections(profile, {
 		accountName: 'Acme',
 		contract,
+		itemType: 'application',
 		orderInfo,
 		productName: 'Liferay Analytics Cloud',
 		...context,
@@ -48,6 +49,7 @@ function getSections(
 	return buildDetailsSections(profile, {
 		accountName: 'Acme',
 		contract,
+		itemType: 'application',
 		orderInfo,
 		productName: 'Liferay Portal',
 		...context,
@@ -65,6 +67,7 @@ const environmentEntitlement = {
 	quantity: 2,
 	startDate: '2026-08-09T12:00:00Z',
 	terminationStatus: '',
+	tierName: '',
 };
 
 const environmentRows = [
@@ -479,6 +482,110 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		).toEqual([
 			['Start Date', 'Aug 9, 2026'],
 			['Expiration Date', 'Aug 9, 2099'],
+		]);
+	});
+
+	it('shows the SKU product name first for a product', () => {
+		const productRow = [
+			'Product',
+			'Liferay Analytics Cloud Subscription - Business',
+		];
+
+		expect(getRows('basic', {itemType: 'product'})).toEqual([
+			productRow,
+			...orderRows,
+		]);
+		expect(getRows('basic-incident', {itemType: 'product'})[0]).toEqual(
+			productRow
+		);
+		expect(getRows('dates-status', {itemType: 'product'})).toEqual([
+			productRow,
+			...contractRows,
+		]);
+		expect(getRows('env-commerce', {itemType: 'product'})).toEqual([
+			productRow,
+			...orderRows,
+			...contractRows,
+		]);
+	});
+
+	it('leaves out the SKU product name when it repeats the product name', () => {
+		expect(
+			getRows('basic', {
+				itemType: 'product',
+				orderInfo: {...orderInfo, itemName: 'Liferay Analytics Cloud'},
+			})
+		).toEqual(orderRows);
+		expect(
+			getRows('basic', {
+				itemType: 'product',
+				orderInfo: {...orderInfo, itemName: ''},
+			})
+		).toEqual(orderRows);
+	});
+
+	it('leaves out the SKU product name for an application', () => {
+		expect(getRows('basic')).toEqual(orderRows);
+	});
+
+	it('shows the SKU product names of the current term per environment', () => {
+		expect(
+			getSections('env-instance', {
+				environmentEntitlements: [
+					{
+						...environmentEntitlement,
+						tierName:
+							'Subscription Portal EE - Platinum (Production)',
+					},
+					{
+						...environmentEntitlement,
+						tierName:
+							'Subscription Portal EE - Platinum (Production)',
+					},
+					{
+						...environmentEntitlement,
+						tierName: 'Subscription Portal EE - Gold (Production)',
+					},
+					{
+						...environmentEntitlement,
+						endDate: '2025-08-09T12:00:00Z',
+						startDate: '2024-08-09T12:00:00Z',
+						tierName: 'Subscription Portal EE - Basic (Production)',
+					},
+					{
+						...environmentEntitlement,
+						environment: 'non-production',
+						tierName:
+							'Subscription Portal EE - Platinum (Non-Production)',
+					},
+				],
+				itemType: 'product',
+			})
+		).toEqual([
+			[
+				'Production',
+				[
+					[
+						'Product',
+						'Subscription Portal EE - Platinum (Production), Subscription Portal EE - Gold (Production)',
+					],
+					['Instance Size', '-'],
+					['Keys Provisioned', '3 of 6'],
+					...environmentRows,
+				],
+			],
+			[
+				'Non-Production',
+				[
+					[
+						'Product',
+						'Subscription Portal EE - Platinum (Non-Production)',
+					],
+					['Instance Size', '-'],
+					['Keys Provisioned', '1 of 2'],
+					...environmentRows,
+				],
+			],
 		]);
 	});
 });

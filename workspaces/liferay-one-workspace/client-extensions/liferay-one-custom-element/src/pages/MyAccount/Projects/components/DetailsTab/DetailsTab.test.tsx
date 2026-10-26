@@ -44,6 +44,7 @@ const orderInfo = {
 function renderDetailsTab() {
 	return render(
 		<DetailsTab
+			itemType="product"
 			orderInfo={orderInfo}
 			orderItems={[]}
 			productName="Liferay Self-Hosted"

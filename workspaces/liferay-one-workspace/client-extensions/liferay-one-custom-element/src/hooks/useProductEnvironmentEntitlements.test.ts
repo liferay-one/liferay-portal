@@ -21,7 +21,7 @@ vi.mock('~/services/graphql/GraphQL', () => ({
 	toGraphQLString: JSON.stringify,
 }));
 
-const orderItems = [{id: 7, optionValueNames: []}];
+const orderItems = [{id: 7, optionValueNames: [], tierName: ''}];
 
 const entitlementNodes = [
 	{
@@ -75,8 +75,8 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		const {result} = renderHook(() =>
 			useProductEnvironmentEntitlements(
 				[
-					{id: 7, optionValueNames: []},
-					{id: 8, optionValueNames: []},
+					{id: 7, optionValueNames: [], tierName: ''},
+					{id: 8, optionValueNames: [], tierName: ''},
 				],
 				true
 			)
@@ -217,6 +217,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 				quantity: 2,
 				startDate: '2026-08-09T00:00:00.000Z',
 				terminationStatus: '',
+				tierName: '',
 			},
 			{
 				endDate: '',
@@ -226,6 +227,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 				quantity: 0,
 				startDate: '',
 				terminationStatus: 'terminated',
+				tierName: '',
 			},
 		]);
 	});
@@ -258,12 +260,16 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 						optionValueNames: [
 							'Liferay Commerce Subscription - Prod Sizing 1',
 						],
+						tierName:
+							'Liferay Commerce Subscription - Prod Sizing 1',
 					},
 					{
 						id: 8,
 						optionValueNames: [
 							'Liferay Commerce Subscription - Non-Prod Sizing 2',
 						],
+						tierName:
+							'Liferay Commerce Subscription - Non-Prod Sizing 2',
 					},
 				],
 				false
@@ -278,6 +284,45 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 			['production', '1'],
 			['non-production', '2'],
 		]);
+	});
+
+	it('takes the tier name of each entitlement from its order item', () => {
+		useDataQueryMock.mockReturnValue({data: undefined, isLoading: false});
+		useFetchMock.mockReturnValue({
+			data: {
+				items: [
+					{
+						entitlementDefinitionToEntitlement: {unit: 'boolean'},
+						id: 21,
+						r_commerceOrderItemToEntitlement_commerceOrderItemId: 7,
+					},
+					{
+						entitlementDefinitionToEntitlement: {unit: 'boolean'},
+						id: 22,
+						r_commerceOrderItemToEntitlement_commerceOrderItemId: 9,
+					},
+				],
+			},
+			isLoading: false,
+		});
+
+		const {result} = renderHook(() =>
+			useProductEnvironmentEntitlements(
+				[
+					{
+						id: 7,
+						optionValueNames: [],
+						tierName:
+							'Subscription Portal EE - Platinum (Production)',
+					},
+				],
+				false
+			)
+		);
+
+		expect(
+			result.current.environmentEntitlements.map(({tierName}) => tierName)
+		).toEqual(['Subscription Portal EE - Platinum (Production)', '']);
 	});
 
 	it('prefers the license key type of the definition to the order item options', () => {
@@ -306,6 +351,8 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 						optionValueNames: [
 							'Liferay Self-Hosted Subscription - Gold Prod Sizing 3',
 						],
+						tierName:
+							'Liferay Self-Hosted Subscription - Gold Prod Sizing 3',
 					},
 				],
 				false
