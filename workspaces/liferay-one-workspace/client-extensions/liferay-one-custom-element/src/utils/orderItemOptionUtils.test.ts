@@ -9,7 +9,13 @@ import {
 	getEnvironment,
 	getInstanceSize,
 	getOptionValueNames,
+	getOrderItemProductName,
+	getProductOptionValueName,
 } from './orderItemOptionUtils';
+
+function orderItem(options: object[]) {
+	return {name: 'Liferay Data Platform', options: JSON.stringify(options)};
+}
 
 describe('[MOD-ORDERITEMOPTIONUTILS] orderItemOptionUtils', () => {
 	it('reads the option value names of every option', () => {
@@ -69,5 +75,72 @@ describe('[MOD-ORDERITEMOPTIONUTILS] orderItemOptionUtils', () => {
 				'Portal EE 6.x License (Production)',
 			].map((optionValueName) => getInstanceSize([optionValueName]))
 		).toEqual(['1', '12', '2', '']);
+	});
+
+	it('names an order item after its Salesforce product option first', () => {
+		expect(
+			getOrderItemProductName(
+				orderItem([
+					{
+						key: 'consumption-role',
+						skuOptionValueNames: ['Base Allotment'],
+					},
+					{
+						key: 'liferay-data-platform',
+						skuOptionValueNames: [
+							'Liferay Data Platform - Sizing 1',
+						],
+					},
+					{
+						key: 'salesforce-product',
+						skuOptionValueNames: [
+							'Liferay Data Platform - Enterprise',
+						],
+					},
+				])
+			)
+		).toBe('Liferay Data Platform - Enterprise');
+	});
+
+	it('names an order item after the option of its product', () => {
+		expect(
+			getOrderItemProductName(
+				orderItem([
+					{key: 'machinetype', skuOptionValueNames: ['High']},
+					{
+						key: 'liferay-data-platform',
+						skuOptionValueNames: [
+							'Liferay Data Platform - Sizing 1',
+						],
+					},
+				])
+			)
+		).toBe('Liferay Data Platform - Sizing 1');
+	});
+
+	it('keeps the order item name when no option names a product', () => {
+		expect(
+			getOrderItemProductName(
+				orderItem([
+					{
+						key: 'base-license-usage-type',
+						skuOptionValueNames: ['Developer'],
+					},
+					{
+						key: 'consumption-role',
+						skuOptionValueNames: ['Add-On Bucket'],
+					},
+					{key: 'machinetype', skuOptionValueNames: ['High']},
+					{key: 'liferay-data-platform', skuOptionValueNames: []},
+				])
+			)
+		).toBe('Liferay Data Platform');
+		expect(getProductOptionValueName(orderItem([]))).toBe('');
+		expect(
+			getOrderItemProductName({
+				name: 'Liferay Data Platform',
+				options: '{oops',
+			})
+		).toBe('Liferay Data Platform');
 	});
 });
