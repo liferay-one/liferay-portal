@@ -122,7 +122,7 @@ export const adminRoutes: AppRoute[] = [
 	{
 		canAccess: canAccessAdmin,
 		element: <AccountInspectorDetail />,
-		path: 'account-inspector/:accountId',
+		path: 'account-inspector/:externalReferenceCode',
 	},
 	{
 		canAccess: canAccessAdmin,
@@ -133,12 +133,12 @@ export const adminRoutes: AppRoute[] = [
 	{
 		canAccess: canAccessAdmin,
 		element: <ProductInspectorDetail />,
-		path: 'product-inspector/:productId',
+		path: 'product-inspector/:externalReferenceCode',
 	},
 	{
 		canAccess: canAccessAdmin,
 		element: <EntitlementDefinitionDetail />,
-		path: 'product-inspector/entitlement-definitions/:entitlementDefinitionId',
+		path: 'product-inspector/entitlement-definitions/:externalReferenceCode',
 	},
 	{
 		canAccess: canAccessFinance,

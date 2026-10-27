@@ -7,6 +7,8 @@ import {Link} from 'react-router';
 import i18n from '~/i18n';
 import InspectorTable from '~/pages/Admin/components/InspectorTable/InspectorTable';
 
+import getAccountPath from '../../utils/getAccountPath';
+
 import type {Word} from '~/i18n';
 import type {InspectorTableColumn} from '~/pages/Admin/components/InspectorTable/InspectorTable';
 import type {
@@ -25,19 +27,23 @@ function field(label: Word, fieldName: string): Column {
 	};
 }
 
-function accountColumn(idFieldName: string, labelFieldName: string): Column {
+function accountColumn(externalReferenceCodeFieldName: string): Column {
 	return {
 		label: 'account',
 		render: (entry) =>
-			entry[idFieldName] ? (
-				<Link to={`/account-inspector/${entry[idFieldName]}`}>
-					{String(entry[labelFieldName] || entry[idFieldName])}
+			entry[externalReferenceCodeFieldName] ? (
+				<Link
+					to={getAccountPath(
+						String(entry[externalReferenceCodeFieldName])
+					)}
+				>
+					{String(entry[externalReferenceCodeFieldName])}
 				</Link>
 			) : (
 				'-'
 			),
 		sortable: true,
-		value: (entry) => entry[labelFieldName],
+		value: (entry) => entry[externalReferenceCodeFieldName],
 	};
 }
 
@@ -54,8 +60,8 @@ const ACCOUNT_ORPHAN_SECTIONS: {
 		columns: [
 			{
 				label: 'name',
-				render: ({id, name}) => (
-					<Link to={`/account-inspector/${id}`}>
+				render: ({externalReferenceCode, name}) => (
+					<Link to={getAccountPath(String(externalReferenceCode))}>
 						<b>{String(name)}</b>
 					</Link>
 				),
@@ -72,10 +78,7 @@ const ACCOUNT_ORPHAN_SECTIONS: {
 	{
 		columns: [
 			ID_COLUMN,
-			accountColumn(
-				'r_accountEntryToProjectMembership_accountEntryId',
-				'r_accountEntryToProjectMembership_accountEntryERC'
-			),
+			accountColumn('r_accountEntryToProjectMembership_accountEntryERC'),
 			field('project', 'r_projectToProjectMembership_c_projectERC'),
 			field('user', 'r_userToProjectMembership_userERC'),
 		],
@@ -116,10 +119,7 @@ const ACCOUNT_ORPHAN_SECTIONS: {
 			ID_COLUMN,
 			field('name', 'name'),
 			field('sku', 'skuExternalReferenceCode'),
-			accountColumn(
-				'r_accountEntryToEntitlement_accountEntryId',
-				'r_accountEntryToEntitlement_accountEntryERC'
-			),
+			accountColumn('r_accountEntryToEntitlement_accountEntryERC'),
 			ERC_COLUMN,
 		],
 		key: 'entitlementsWithoutDefinition',

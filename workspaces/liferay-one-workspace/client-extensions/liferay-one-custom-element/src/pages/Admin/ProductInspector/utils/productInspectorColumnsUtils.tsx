@@ -24,18 +24,18 @@ import type {
 
 import type {CatalogIndex} from './productCatalogUtils';
 
-export function getProductPath(productId: number) {
-	return `/product-inspector/${productId}`;
+export function getProductPath(externalReferenceCode = '') {
+	return `/product-inspector/${encodeURIComponent(externalReferenceCode)}`;
 }
 
 export function getEntitlementDefinitionPath(
-	entitlementDefinitionId: number,
-	productId?: number
+	externalReferenceCode = '',
+	productExternalReferenceCode?: string
 ) {
-	const path = `/product-inspector/entitlement-definitions/${entitlementDefinitionId}`;
+	const path = `/product-inspector/entitlement-definitions/${encodeURIComponent(externalReferenceCode)}`;
 
-	return productId
-		? `${path}?${new URLSearchParams({productId: String(productId)})}`
+	return productExternalReferenceCode
+		? `${path}?${new URLSearchParams({productExternalReferenceCode})}`
 		: path;
 }
 
@@ -56,7 +56,7 @@ export function getProductColumns(
 		{
 			label: 'name',
 			render: (product) => (
-				<Link to={getProductPath(product.id)}>
+				<Link to={getProductPath(product.externalReferenceCode)}>
 					<b>{getProductName(product)}</b>
 				</Link>
 			),
@@ -151,8 +151,8 @@ export function getProductColumns(
 export function getEntitlementDefinitionColumns(
 	findings: Map<number, InspectorFinding[]>,
 	index: CatalogIndex,
-	productId?: number,
-	productsVisible = !productId
+	productExternalReferenceCode?: string,
+	productsVisible = !productExternalReferenceCode
 ): InspectorTableColumn<InspectedEntitlementDefinition>[] {
 	return [
 		{
@@ -160,8 +160,8 @@ export function getEntitlementDefinitionColumns(
 			render: (entitlementDefinition) => (
 				<Link
 					to={getEntitlementDefinitionPath(
-						entitlementDefinition.id,
-						productId
+						entitlementDefinition.externalReferenceCode,
+						productExternalReferenceCode
 					)}
 				>
 					<b>{getEntitlementDefinitionName(entitlementDefinition)}</b>

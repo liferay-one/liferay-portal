@@ -22,7 +22,10 @@ import {
 	getFlaggedIdsByCollection,
 	scrollToSection,
 } from '../utils/productCatalogUtils';
-import {getEntitlementDefinitionName} from '../utils/productInspectorColumnsUtils';
+import {
+	getEntitlementDefinitionName,
+	getProductPath,
+} from '../utils/productInspectorColumnsUtils';
 import EntitlementDefinitionSummary from './components/EntitlementDefinitionSummary/EntitlementDefinitionSummary';
 import {
 	ENTITLEMENT_COLUMNS,
@@ -159,7 +162,7 @@ function EntitlementDefinitionContent({
 }
 
 export default function EntitlementDefinitionDetail() {
-	const {entitlementDefinitionId} = useParams();
+	const {externalReferenceCode} = useParams();
 	const [searchParams] = useSearchParams();
 
 	const {audit, error, isLoading, isValidating, mutate} =
@@ -167,23 +170,29 @@ export default function EntitlementDefinitionDetail() {
 
 	const entitlementDefinition =
 		audit?.inspection.entitlementDefinitions.items.find(
-			({id}) => String(id) === entitlementDefinitionId
+			(entitlementDefinition) =>
+				entitlementDefinition.externalReferenceCode ===
+				externalReferenceCode
 		);
 
-	const productId = searchParams.get('productId');
+	const productExternalReferenceCode = searchParams.get(
+		'productExternalReferenceCode'
+	);
 
 	return (
 		<div className="account-inspector w-100">
 			<div className="align-items-center d-flex justify-content-between mb-4">
 				<BackLink
 					path={
-						productId
-							? `/product-inspector/${productId}`
+						productExternalReferenceCode
+							? getProductPath(productExternalReferenceCode)
 							: '/product-inspector'
 					}
 				>
 					{i18n.translate(
-						productId ? 'back-to-product' : 'back-to-products'
+						productExternalReferenceCode
+							? 'back-to-product'
+							: 'back-to-products'
 					)}
 				</BackLink>
 

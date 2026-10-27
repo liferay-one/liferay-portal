@@ -74,7 +74,8 @@ function ProductInspectorContent({
 	const getProductActions = (product: InspectedProduct) => [
 		{
 			label: 'view-details' as const,
-			onClick: () => navigate(getProductPath(product.id)),
+			onClick: () =>
+				navigate(getProductPath(product.externalReferenceCode)),
 		},
 		{
 			label: 'view-in-control-panel' as const,

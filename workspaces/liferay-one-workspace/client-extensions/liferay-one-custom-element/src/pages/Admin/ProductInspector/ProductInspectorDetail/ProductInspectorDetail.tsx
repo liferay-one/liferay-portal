@@ -161,7 +161,7 @@ function ProductInspectorContent({
 			/>
 
 			<InspectorTable
-				columns={getSKUColumns(index, product.id)}
+				columns={getSKUColumns(index, product.externalReferenceCode)}
 				defaultExpanded
 				entries={product.skus ?? []}
 				flaggedIds={flaggedIds.get('skus')}
@@ -173,7 +173,7 @@ function ProductInspectorContent({
 				columns={getEntitlementDefinitionColumns(
 					entitlementDefinitionFindings,
 					index,
-					product.id
+					product.externalReferenceCode
 				)}
 				defaultExpanded
 				entries={entitlementDefinitions}
@@ -201,13 +201,13 @@ function ProductInspectorContent({
 }
 
 export default function ProductInspectorDetail() {
-	const {productId} = useParams();
+	const {externalReferenceCode} = useParams();
 
 	const {audit, error, isLoading, isValidating, mutate} =
 		useProductCatalogInspection();
 
 	const product = audit?.inspection.products.items.find(
-		({id}) => String(id) === productId
+		(product) => product.externalReferenceCode === externalReferenceCode
 	);
 
 	return (

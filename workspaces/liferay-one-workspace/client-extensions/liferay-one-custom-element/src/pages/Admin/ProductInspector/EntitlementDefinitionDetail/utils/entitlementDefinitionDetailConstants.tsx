@@ -6,6 +6,7 @@
 import {Link} from 'react-router';
 import i18n from '~/i18n';
 import {formatInspectedValue} from '~/pages/Admin/AccountInspector/AccountInspectorDetail/utils/inspectorFilterUtils';
+import getAccountPath from '~/pages/Admin/AccountInspector/utils/getAccountPath';
 import {getProductName} from '~/pages/Admin/ProductInspector/utils/productCatalogUtils';
 import {getProductPath} from '~/pages/Admin/ProductInspector/utils/productInspectorColumnsUtils';
 import {formatDate} from '~/utils/dateUtils';
@@ -25,7 +26,7 @@ export const SKU_PRODUCT_COLUMNS: InspectorTableColumn<SKUProductRow>[] = [
 		label: 'product',
 		render: ({product}) =>
 			product ? (
-				<Link to={getProductPath(product.id)}>
+				<Link to={getProductPath(product.externalReferenceCode)}>
 					<b>{getProductName(product)}</b>
 				</Link>
 			) : (
@@ -50,9 +51,13 @@ export const ENTITLEMENT_COLUMNS: InspectorTableColumn<InspectedEntry>[] = [
 	{
 		label: 'account',
 		render: (entitlement) =>
-			entitlement.r_accountEntryToEntitlement_accountEntryId ? (
+			entitlement.r_accountEntryToEntitlement_accountEntryERC ? (
 				<Link
-					to={`/account-inspector/${entitlement.r_accountEntryToEntitlement_accountEntryId}`}
+					to={getAccountPath(
+						String(
+							entitlement.r_accountEntryToEntitlement_accountEntryERC
+						)
+					)}
 				>
 					{String(
 						entitlement.r_accountEntryToEntitlement_accountEntryERC

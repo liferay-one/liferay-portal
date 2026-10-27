@@ -14,6 +14,7 @@ import {accountOrphansQuery} from '~/services/queries/accountOrphansQuery';
 import {formatDate} from '~/utils/dateUtils';
 
 import AccountOrphans from './components/AccountOrphans/AccountOrphans';
+import getAccountPath from './utils/getAccountPath';
 
 import type {Account} from '~/types/accounts';
 
@@ -73,7 +74,9 @@ export default function AccountInspector() {
 								name: i18n.translate('view'),
 								onClick: (account: Account) =>
 									navigate(
-										`/account-inspector/${account.id}`
+										getAccountPath(
+											account.externalReferenceCode
+										)
 									),
 							},
 						],
@@ -106,7 +109,7 @@ export default function AccountInspector() {
 							},
 						],
 						navigateTo: (account) =>
-							`/account-inspector/${account.id}`,
+							getAccountPath(account.externalReferenceCode),
 						rowWrap: true,
 					}}
 				/>
