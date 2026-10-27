@@ -87,30 +87,19 @@ test.describe('[FLOW-ADMIN-ROUTE-GATING] admin route gating', () => {
 		).toBeVisible();
 	});
 
-	test('[FLOW-ADMIN-ROUTE-GATING] Liferay Staff without an admin role sees the access required state', async ({
+	test('[FLOW-ADMIN-ROUTE-GATING] Liferay Staff without an admin role is refused the admin page by the portal', async ({
 		page,
 		signIn,
 	}) => {
 		await signIn('LIFERAY_STAFF');
 
-		test.info().annotations.push({
-			description: SEED_GROUP_ROLE_DEFECT,
-			type: 'issue',
-		});
+		const response = await page.goto(sitePath('/admin#/mp-summary'));
 
-		test.fail();
+		expect(response?.status()).toBe(404);
 
-		await gotoAdmin(page, 'mp-summary');
+		await expect(page.getByText('Page Not Found')).toBeVisible();
 
-		await expect(adminNavLinks(page)).toHaveCount(0);
-
-		await expect(
-			adminApp(page).getByText('Access required.')
-		).toBeVisible();
-
-		await expect(
-			adminApp(page).getByText('You do not have access to this page.')
-		).toBeVisible();
+		await expect(adminApp(page)).toHaveCount(0);
 	});
 
 	test('[FLOW-ADMIN-ROUTE-GATING] [ROUTE-ADMIN-MY-SSA-SAAS-DEMO] an SSA user sees only their own SaaS demos', async ({

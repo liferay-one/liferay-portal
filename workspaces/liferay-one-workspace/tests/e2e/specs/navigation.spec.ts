@@ -13,7 +13,12 @@ import {
 	SWITCH_ACCOUNT_ERC,
 	sitePath,
 } from '../utils/environmentUtils';
-import {dismissCookieBanner} from '../utils/loginUtils';
+import {dismissCookieBanner, liferayLogin} from '../utils/loginUtils';
+import {
+	TemporaryMember,
+	createTemporaryMember,
+	deleteTemporaryMember,
+} from '../utils/myAccountUtils';
 
 const HOME_PATH = sitePath('/home');
 
@@ -313,21 +318,32 @@ test.describe('[FLOW-NAVIGATION] site header and navigation', () => {
 
 test.describe('[FLOW-NAVIGATION] account selector', () => {
 	test('[FLOW-NAVIGATION] a user with one account sees it without a selector', async ({
+		adminAPI,
 		page,
-		signIn,
 	}) => {
-		await signIn('LIFERAY_STAFF');
+		let member: TemporaryMember | undefined;
 
-		await gotoAndExpectRender(page, HOME_PATH);
+		try {
+			member = await createTemporaryMember(adminAPI, [ACCOUNT_ERC]);
 
-		const accountSelector = page.locator(
-			'liferay-one-custom-element[route="account-selector"]'
-		);
+			const account = await adminAPI.getAccountByERC(ACCOUNT_ERC);
 
-		await expect(accountSelector).toContainText('Omni Test Account');
-		await expect(
-			accountSelector.getByRole('button', {name: 'Select Account'})
-		).toHaveCount(0);
+			await liferayLogin(page, member.email, member.password);
+
+			await gotoAndExpectRender(page, HOME_PATH);
+
+			const accountSelector = page.locator(
+				'liferay-one-custom-element[route="account-selector"]'
+			);
+
+			await expect(accountSelector).toContainText(account.name);
+			await expect(
+				accountSelector.getByRole('button', {name: 'Select Account'})
+			).toHaveCount(0);
+		}
+		finally {
+			await deleteTemporaryMember(adminAPI, member);
+		}
 	});
 
 	test('[FLOW-NAVIGATION] [ROUTE-MY-ACCOUNT-ACCOUNT-DETAILS] switching the account reloads My Account on the new account', async ({

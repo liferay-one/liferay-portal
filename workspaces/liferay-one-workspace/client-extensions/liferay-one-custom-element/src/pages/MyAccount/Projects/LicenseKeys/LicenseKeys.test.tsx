@@ -30,6 +30,10 @@ vi.mock('../hooks/useHasActivationPermission', () => ({
 	useHasLicenseKeyPermission: () => mocks.useHasLicenseKeyPermission(),
 }));
 
+vi.mock('../hooks/useCanRenewVirtualCluster', () => ({
+	useCanRenewVirtualCluster: () => false,
+}));
+
 vi.mock('../hooks/useHasAdminPermission', () => ({
 	useHasAdminPermission: () => mocks.useHasAdminPermission(),
 }));

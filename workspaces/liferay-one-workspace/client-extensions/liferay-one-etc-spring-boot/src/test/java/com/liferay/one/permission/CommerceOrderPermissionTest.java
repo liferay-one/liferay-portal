@@ -58,19 +58,6 @@ public class CommerceOrderPermissionTest {
 	}
 
 	@Test
-	public void testCheckAllowsLiferayStaff() throws Exception {
-		_commerceOrderPermission.check(
-			_COMMERCE_ORDER_ID,
-			_createUserAccount(RoleConstants.NAME_LIFERAY_STAFF));
-
-		Mockito.verify(
-			_commerceOrderService, Mockito.never()
-		).fetchCommerceOrder(
-			ArgumentMatchers.anyLong()
-		);
-	}
-
-	@Test
 	public void testCheckAllowsMatchingAccount() throws Exception {
 		_whenFetchCommerceOrder(_createOrder(_ACCOUNT_ID));
 
@@ -89,6 +76,17 @@ public class CommerceOrderPermissionTest {
 		).fetchCommerceOrder(
 			ArgumentMatchers.anyLong()
 		);
+	}
+
+	@Test
+	public void testCheckDeniesLiferayStaffOfOtherAccount() throws Exception {
+		_whenFetchCommerceOrder(_createOrder(_ACCOUNT_ID));
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _commerceOrderPermission.check(
+				_COMMERCE_ORDER_ID,
+				_createUserAccount(RoleConstants.NAME_LIFERAY_STAFF, 99L)));
 	}
 
 	@Test

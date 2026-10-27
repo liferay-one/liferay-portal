@@ -172,10 +172,10 @@ public class TicketsTicketAttachmentsRestControllerTest {
 	}
 
 	@Test
-	public void testGetUploadAccessCheckSkipsPermissionForProvisioningMember()
+	public void testGetUploadAccessCheckSkipsPermissionForProvisioningWorker()
 		throws Exception {
 
-		_mockRoleNames(RoleConstants.NAME_PROVISIONING_MEMBER);
+		_mockRoleNames(RoleConstants.NAME_PROVISIONING_WORKER);
 
 		ResponseEntity<String> responseEntity =
 			_ticketsTicketAttachmentsRestController.getUploadAccessCheck(

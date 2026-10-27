@@ -35,6 +35,7 @@ describe('[CLIENT-MODELS-USERACCOUNTMODEL] UserAccountModel', () => {
 		['Finance Administrator', 'isFinanceAdministrator'],
 		['Liferay Staff', 'isLiferayStaff'],
 		['Provisioning Administrator', 'isProvisioningAdministrator'],
+		['Provisioning Worker', 'isProvisioningWorker'],
 	] as const)('reads the %s regular role into %s', (roleName, flag) => {
 		expect(createModel({roleBriefs: [{name: roleName}]})[flag]).toBe(true);
 		expect(createModel({roleBriefs: [{name: 'User'}]})[flag]).toBe(false);
@@ -45,6 +46,7 @@ describe('[CLIENT-MODELS-USERACCOUNTMODEL] UserAccountModel', () => {
 		['Finance Administrator', false],
 		['Liferay Staff', false],
 		['Provisioning Administrator', true],
+		['Provisioning Worker', false],
 		['User', false],
 	] as const)(
 		'reads whether the %s regular role manages all accounts',
@@ -59,8 +61,9 @@ describe('[CLIENT-MODELS-USERACCOUNTMODEL] UserAccountModel', () => {
 	it.each([
 		['Administrator', true],
 		['Finance Administrator', true],
-		['Liferay Staff', false],
+		['Liferay Staff', true],
 		['Provisioning Administrator', true],
+		['Provisioning Worker', true],
 		['User', false],
 	] as const)(
 		'reads whether the %s regular role views all accounts',

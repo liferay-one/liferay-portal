@@ -123,22 +123,6 @@ public class EnvironmentActivationPermissionTest {
 	}
 
 	@Test
-	public void testCheckAccountLicenseKeyActivationGrantsLiferayStaff()
-		throws Exception {
-
-		EnvironmentActivationPermission environmentActivationPermission =
-			_createPermission(
-				_createUserAccount(
-					new String[] {RoleConstants.NAME_LIFERAY_STAFF}, null,
-					new String[0]),
-				null, null);
-
-		Assertions.assertNotNull(
-			environmentActivationPermission.checkAccountLicenseKeyActivation(
-				_ACCOUNT_ERC, null));
-	}
-
-	@Test
 	public void testCheckAccountLicenseKeyActivationGrantsPartnerManager()
 		throws Exception {
 
@@ -173,6 +157,22 @@ public class EnvironmentActivationPermissionTest {
 	}
 
 	@Test
+	public void testCheckAccountLicenseKeyActivationGrantsProvisioningWorker()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[] {RoleConstants.NAME_PROVISIONING_WORKER}, null,
+					new String[0]),
+				null, null);
+
+		Assertions.assertNotNull(
+			environmentActivationPermission.checkAccountLicenseKeyActivation(
+				_ACCOUNT_ERC, null));
+	}
+
+	@Test
 	public void testCheckAccountLicenseKeyActivationThrowsForAccountMember()
 		throws Exception {
 
@@ -197,6 +197,24 @@ public class EnvironmentActivationPermissionTest {
 				_createUserAccount(
 					new String[0], _OTHER_ACCOUNT_ERC,
 					new String[] {RoleConstants.NAME_ACCOUNT_ADMINISTRATOR}),
+				null, null);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() ->
+				environmentActivationPermission.
+					checkAccountLicenseKeyActivation(_ACCOUNT_ERC, null));
+	}
+
+	@Test
+	public void testCheckAccountLicenseKeyActivationThrowsForLiferayStaff()
+		throws Exception {
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[] {RoleConstants.NAME_LIFERAY_STAFF}, null,
+					new String[0]),
 				null, null);
 
 		Assertions.assertThrows(
@@ -276,18 +294,6 @@ public class EnvironmentActivationPermissionTest {
 	}
 
 	@Test
-	public void testCheckGrantsLiferayStaff() throws Exception {
-		EnvironmentActivationPermission environmentActivationPermission =
-			_createPermission(
-				_createUserAccount(
-					new String[] {RoleConstants.NAME_LIFERAY_STAFF}, null,
-					new String[0]),
-				null, null);
-
-		environmentActivationPermission.check(null, _PROJECT_ERC);
-	}
-
-	@Test
 	public void testCheckGrantsProjectAdminMembership() throws Exception {
 		EnvironmentActivationPermission environmentActivationPermission =
 			_createPermission(
@@ -333,6 +339,25 @@ public class EnvironmentActivationPermissionTest {
 	}
 
 	@Test
+	public void testCheckLicenseKeyActivationGrantsProvisioningWorker()
+		throws Exception {
+
+		Project project = _createProject(_ACCOUNT_ERC);
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[] {RoleConstants.NAME_PROVISIONING_WORKER}, null,
+					new String[0]),
+				project, null);
+
+		Assertions.assertSame(
+			project,
+			environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC));
+	}
+
+	@Test
 	public void testCheckLicenseKeyActivationThrowsForPartnerManagerOfOtherAccount()
 		throws Exception {
 
@@ -365,6 +390,20 @@ public class EnvironmentActivationPermissionTest {
 			PrincipalException.class,
 			() -> environmentActivationPermission.checkSelfProvisioning(
 				_ACCOUNT_ID, null));
+	}
+
+	@Test
+	public void testCheckThrowsForLiferayStaff() throws Exception {
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[] {RoleConstants.NAME_LIFERAY_STAFF}, null,
+					new String[0]),
+				null, null);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> environmentActivationPermission.check(null, _PROJECT_ERC));
 	}
 
 	@Test
@@ -423,6 +462,40 @@ public class EnvironmentActivationPermissionTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> environmentActivationPermission.check(null, _PROJECT_ERC));
+	}
+
+	@Test
+	public void testContainsLicenseKeyActivationDeniesProjectMember()
+		throws Exception {
+
+		Project project = _createProject(_ACCOUNT_ERC);
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(new String[0], _ACCOUNT_ERC, new String[0]),
+				project, null);
+
+		Assertions.assertFalse(
+			environmentActivationPermission.containsLicenseKeyActivation(
+				null, project));
+	}
+
+	@Test
+	public void testContainsLicenseKeyActivationGrantsPartnerManager()
+		throws Exception {
+
+		Project project = _createProject(_ACCOUNT_ERC);
+
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[0], _ACCOUNT_ERC,
+					new String[] {RoleConstants.NAME_PARTNER_MANAGER}),
+				project, null);
+
+		Assertions.assertTrue(
+			environmentActivationPermission.containsLicenseKeyActivation(
+				null, project));
 	}
 
 	@Test
@@ -558,8 +631,8 @@ public class EnvironmentActivationPermissionTest {
 		for (String roleName :
 				new String[] {
 					RoleConstants.NAME_ADMINISTRATOR,
-					RoleConstants.NAME_LIFERAY_STAFF,
-					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR
+					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR,
+					RoleConstants.NAME_PROVISIONING_WORKER
 				}) {
 
 			EnvironmentActivationPermission environmentActivationPermission =

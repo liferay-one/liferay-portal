@@ -5,8 +5,11 @@
 
 package com.liferay.one.jira.synchronizer;
 
+import com.liferay.headless.admin.user.client.custom.field.CustomField;
+import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
+import com.liferay.one.constants.CustomFieldConstants;
 import com.liferay.one.jira.constants.TeamConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
@@ -236,6 +239,29 @@ public class OrganizationSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncOrganizationSkipsOktaGroupOrganization()
+		throws Exception {
+
+		_organizationSynchronizer.syncOrganization(
+			_createOktaGroupOrganization());
+
+		Mockito.verifyNoInteractions(
+			_accountOrganizationSynchronizer, _jiraAssetObject,
+			_jiraAssetService);
+	}
+
+	@Test
+	public void testSyncOrganizationUserAccountsSkipsOktaGroupOrganization()
+		throws Exception {
+
+		_organizationSynchronizer.syncOrganizationUserAccounts(
+			_createOktaGroupOrganization());
+
+		Mockito.verifyNoInteractions(
+			_jiraAssetObject, _jiraAssetService, _userAccountService);
+	}
+
+	@Test
 	public void testSyncOrganizationUserAccountsUpsertsUserAccountReferences()
 		throws Exception {
 
@@ -281,6 +307,23 @@ public class OrganizationSynchronizerTest {
 		).upsert(
 			Mockito.any(), Mockito.eq(_jiraAssetObject)
 		);
+	}
+
+	private Organization _createOktaGroupOrganization() {
+		Organization organization = _createOrganization();
+
+		CustomValue customValue = new CustomValue();
+
+		customValue.setData("00g1okta");
+
+		CustomField customField = new CustomField();
+
+		customField.setCustomValue(customValue);
+		customField.setName(CustomFieldConstants.NAME_OKTA_GROUP_ID);
+
+		organization.setCustomFields(new CustomField[] {customField});
+
+		return organization;
 	}
 
 	private Organization _createOrganization() {

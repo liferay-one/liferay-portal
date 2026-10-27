@@ -77,6 +77,17 @@ public class CommonLicenseKeyPermissionTest {
 	}
 
 	@Test
+	public void testCheckGrantsProvisioningWorker() throws Exception {
+		CommonLicenseKeyPermission commonLicenseKeyPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[] {RoleConstants.NAME_PROVISIONING_WORKER}));
+
+		commonLicenseKeyPermission.check(
+			CommonLicenseKeyConstants.PRODUCT_FAMILY_COMMERCE, null);
+	}
+
+	@Test
 	public void testCheckThrowsForLiferayStaff() throws Exception {
 		CommonLicenseKeyPermission commonLicenseKeyPermission =
 			_createPermission(

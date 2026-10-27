@@ -181,7 +181,7 @@ public class AccountPermissionTest {
 	}
 
 	@Test
-	public void testContainsAllowsLiferayStaff() throws Exception {
+	public void testContainsAllowsLiferayStaffToView() throws Exception {
 		UserAccount userAccount = _createUserAccount(null, null);
 
 		userAccount.setRoleBriefs(
@@ -191,8 +191,7 @@ public class AccountPermissionTest {
 
 		Assertions.assertTrue(
 			_accountPermission.contains(
-				_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null,
-				userAccount));
+				_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null, userAccount));
 	}
 
 	@Test
@@ -255,6 +254,20 @@ public class AccountPermissionTest {
 	}
 
 	@Test
+	public void testContainsAllowsProvisioningWorkerToView() throws Exception {
+		UserAccount userAccount = _createUserAccount(null, null);
+
+		userAccount.setRoleBriefs(
+			new RoleBrief[] {
+				_createRoleBrief(RoleConstants.NAME_PROVISIONING_WORKER)
+			});
+
+		Assertions.assertTrue(
+			_accountPermission.contains(
+				_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null, userAccount));
+	}
+
+	@Test
 	public void testContainsAllowsSSAAdminToAssignMembers() throws Exception {
 		Assertions.assertTrue(
 			_accountPermission.contains(
@@ -282,6 +295,23 @@ public class AccountPermissionTest {
 				_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null,
 				_createUserAccount(
 					"ACC-2", RoleConstants.NAME_ACCOUNT_ADMINISTRATOR)));
+	}
+
+	@Test
+	public void testContainsRejectsLiferayStaffToUpdate() throws Exception {
+		UserAccount userAccount = _createUserAccount(null, null);
+
+		userAccount.setRoleBriefs(
+			new RoleBrief[] {
+				_createRoleBrief(RoleConstants.NAME_LIFERAY_STAFF)
+			});
+
+		_mockAccount();
+
+		Assertions.assertFalse(
+			_accountPermission.contains(
+				_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null,
+				userAccount));
 	}
 
 	@Test
@@ -353,6 +383,23 @@ public class AccountPermissionTest {
 					userAccount),
 				roleName);
 		}
+	}
+
+	@Test
+	public void testContainsRejectsProvisioningWorkerToAssignMembers()
+		throws Exception {
+
+		UserAccount userAccount = _createUserAccount(null, null);
+
+		userAccount.setRoleBriefs(
+			new RoleBrief[] {
+				_createRoleBrief(RoleConstants.NAME_PROVISIONING_WORKER)
+			});
+
+		Assertions.assertFalse(
+			_accountPermission.contains(
+				_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null,
+				userAccount));
 	}
 
 	private OrganizationBrief _createOrganizationBrief() {

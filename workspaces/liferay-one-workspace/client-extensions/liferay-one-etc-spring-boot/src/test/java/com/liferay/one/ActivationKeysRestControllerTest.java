@@ -6,8 +6,10 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.ClassNameConstants;
+import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.exception.NoSuchAccountException;
 import com.liferay.one.exception.NoSuchActivationKeyException;
@@ -34,6 +36,7 @@ import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.SubscriptionEntryService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
@@ -260,7 +263,7 @@ public class ActivationKeysRestControllerTest {
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.getGenerateForm(
-				false, project, false, null)
+				false, project, false, null, false)
 		).thenReturn(
 			new JSONObject(
 			).put(
@@ -639,6 +642,86 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetActivationKeysGenerateFormLetsALicenseKeyActivatorSkipProjectView()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_ERC)
+		).thenReturn(
+			project
+		);
+
+		Mockito.when(
+			_environmentActivationPermission.containsLicenseKeyActivation(
+				null, project)
+		).thenReturn(
+			true
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_ERC
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.getGenerateForm(
+				false, project, false, null, false)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"products", new JSONArray()
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getActivationKeysGenerateForm(
+				null, null, _PROJECT_ERC, null);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_projectPermission, Mockito.never()
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_ERC
+		);
+	}
+
+	@Test
+	public void testGetActivationKeysGenerateFormOffersAProvisioningWorkerAVirtualClusterRenewal()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController(RoleConstants.NAME_PROVISIONING_WORKER);
+
+		Project project = _stubVirtualClusterRenewal();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.getGenerateForm(
+				false, project, false, _VIRTUAL_CLUSTER_ACTIVATION_KEY_ERC,
+				true)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"products", new JSONArray()
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getActivationKeysGenerateForm(
+				null, null, _PROJECT_ERC, _VIRTUAL_CLUSTER_ACTIVATION_KEY_ERC);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+	}
+
+	@Test
 	public void testGetActivationKeysGenerateFormWithoutProject()
 		throws Exception {
 
@@ -799,6 +882,55 @@ public class ActivationKeysRestControllerTest {
 			).length());
 		Assertions.assertFalse(jsonObject.getBoolean("generatable"));
 		Assertions.assertTrue(jsonObject.getBoolean("provisionable"));
+	}
+
+	@Test
+	public void testGetActivationKeysSummaryLetsALicenseKeyActivatorSkipProjectView()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_ERC)
+		).thenReturn(
+			project
+		);
+
+		Mockito.when(
+			_environmentActivationPermission.containsLicenseKeyActivation(
+				null, project)
+		).thenReturn(
+			true
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_ERC
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.getSummary(false, project, false)
+		).thenReturn(
+			new JSONObject()
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getActivationKeysSummary(
+				null, null, _PROJECT_ERC);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_projectPermission, Mockito.never()
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_ERC
+		);
 	}
 
 	@Test
@@ -1758,6 +1890,97 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPostActivationKeysGenerateVirtualClusterRenewalAllowsAProvisioningWorker()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController(RoleConstants.NAME_PROVISIONING_WORKER);
+
+		Project project = _stubVirtualClusterRenewal();
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenReturn(
+			project
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Mockito.when(
+			_licenseKeyGenerationService.generateActivationKey(Mockito.any())
+		).thenReturn(
+			new ActivationKey(
+				new JSONObject(
+				).put(
+					"externalReferenceCode", "ACTVK-2"
+				).put(
+					"id", 8L
+				))
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.postActivationKeysGenerate(
+				null,
+				new JSONObject(
+					_toGenerateJSON("production")
+				).put(
+					"renewedActivationKeyExternalReferenceCode",
+					_VIRTUAL_CLUSTER_ACTIVATION_KEY_ERC
+				).put(
+					"virtualCluster", true
+				).toString());
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+	}
+
+	@Test
+	public void testPostActivationKeysGenerateVirtualClusterRenewalNeedsAProvisioningWorker()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Project project = _stubVirtualClusterRenewal();
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenReturn(
+			project
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.postActivationKeysGenerate(
+				null,
+				new JSONObject(
+					_toGenerateJSON("production")
+				).put(
+					"renewedActivationKeyExternalReferenceCode",
+					_VIRTUAL_CLUSTER_ACTIVATION_KEY_ERC
+				).put(
+					"virtualCluster", true
+				).toString()));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
 	public void testPutSubscriptionsAddsEveryKeyForTheUser() throws Exception {
 		ActivationKeysRestController activationKeysRestController =
 			_createController();
@@ -1851,11 +2074,29 @@ public class ActivationKeysRestControllerTest {
 		Assertions.assertTrue(jsonObject.getBoolean("provisionable"));
 	}
 
-	private ActivationKeysRestController _createController() throws Exception {
+	private ActivationKeysRestController _createController(String... roleNames)
+		throws Exception {
+
 		ActivationKeysRestController activationKeysRestController =
 			new ActivationKeysRestController();
 
+		RoleBrief[] roleBriefs = new RoleBrief[roleNames.length];
+
+		for (int i = 0; i < roleNames.length; i++) {
+			RoleBrief roleBrief = new RoleBrief();
+
+			roleBrief.setName(roleNames[i]);
+
+			roleBriefs[i] = roleBrief;
+		}
+
 		UserAccount userAccount = Mockito.mock(UserAccount.class);
+
+		Mockito.when(
+			userAccount.getRoleBriefs()
+		).thenReturn(
+			roleBriefs
+		);
 
 		Mockito.when(
 			userAccount.getEmailAddress()
@@ -2073,6 +2314,45 @@ public class ActivationKeysRestControllerTest {
 		return generateJSONObject;
 	}
 
+	private Project _stubVirtualClusterRenewal() throws Exception {
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.when(
+			project.getExternalReferenceCode()
+		).thenReturn(
+			_PROJECT_ERC
+		);
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_ERC)
+		).thenReturn(
+			project
+		);
+
+		ActivationKey activationKey = Mockito.mock(ActivationKey.class);
+
+		Mockito.when(
+			activationKey.getProjectExternalReferenceCode()
+		).thenReturn(
+			_PROJECT_ERC
+		);
+
+		Mockito.when(
+			activationKey.getType()
+		).thenReturn(
+			LicenseConstants.TYPE_VIRTUAL_CLUSTER
+		);
+
+		Mockito.when(
+			_activationKeyService.fetchActivationKey(
+				_VIRTUAL_CLUSTER_ACTIVATION_KEY_ERC)
+		).thenReturn(
+			activationKey
+		);
+
+		return project;
+	}
+
 	private String _toGenerateJSON() {
 		return _toGenerateJSON("DXP Backup");
 	}
@@ -2127,6 +2407,9 @@ public class ActivationKeysRestControllerTest {
 	private static final String _PROJECT_ERC = "PROJ-1";
 
 	private static final long _USER_ID = 123L;
+
+	private static final String _VIRTUAL_CLUSTER_ACTIVATION_KEY_ERC =
+		"ACTVK-VC";
 
 	private final AccountService _accountService = Mockito.mock(
 		AccountService.class);

@@ -121,7 +121,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasActivationP
 	it.each([
 		'canManageAllAccounts',
 		'isAccountAdministrator',
-		'isLiferayStaff',
+		'isProvisioningWorker',
 	])('grants access to %s without a membership request', (roleFlag) => {
 		mockContext({userAccountModel: {[roleFlag]: true}});
 
@@ -182,6 +182,17 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasActivationP
 		expect(result.current.hasActivationPermission).toBe(false);
 	});
 
+	it('denies Liferay Staff without a project admin membership', () => {
+		mockContext({userAccountModel: {isLiferayStaff: true}});
+
+		const {result} = renderHook(() =>
+			useHasActivationPermission('PRJCT-1')
+		);
+
+		expect(getRequestedURL()).toBe('/o/c/projectmemberships');
+		expect(result.current.hasActivationPermission).toBe(false);
+	});
+
 	it('denies the partner manager account role', () => {
 		mockContext({accountRoleNames: [PARTNER_MANAGER]});
 
@@ -239,6 +250,21 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASACTIVATIONPERMISSION] useHasLicenseKeyP
 		mockedUseOneContext.mockReset();
 		mockMembership({});
 		mockSummary({provisionable: true});
+	});
+
+	it('grants access to a provisioning worker without a membership request', () => {
+		mockContext({userAccountModel: {isProvisioningWorker: true}});
+
+		const {result} = renderHook(() =>
+			useHasLicenseKeyPermission('PRJCT-1')
+		);
+
+		expect(getRequestedURL()).toBeNull();
+		expect(result.current).toEqual({
+			hasActivationPermission: true,
+			hasGeneratePermission: true,
+			loading: false,
+		});
 	});
 
 	it('grants access to the partner manager account role without a membership request', () => {

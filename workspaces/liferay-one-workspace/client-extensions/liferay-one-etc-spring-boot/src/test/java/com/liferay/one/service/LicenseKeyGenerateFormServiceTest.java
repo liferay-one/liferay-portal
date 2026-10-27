@@ -734,7 +734,8 @@ public class LicenseKeyGenerateFormServiceTest {
 			HashMapBuilder.put(
 				entitlement.getEntitlementId(), 5
 			).build(),
-			"DXP", licenseKeyTypeEntitlements, Collections.emptyList(), true);
+			"DXP", licenseKeyTypeEntitlements, Collections.emptyList(), true,
+			false);
 
 		Assertions.assertEquals(1, jsonArray.length());
 
@@ -853,7 +854,7 @@ public class LicenseKeyGenerateFormServiceTest {
 					"production", _toEntitlement(5.0)
 				).build()
 			).build(),
-			Collections.emptyList(), false);
+			Collections.emptyList(), false, false);
 
 		Assertions.assertEquals(2, jsonArray.length());
 		Assertions.assertEquals(
@@ -1447,7 +1448,7 @@ public class LicenseKeyGenerateFormServiceTest {
 					"complimentary", entitlement
 				).build()
 			).build(),
-			Collections.emptyList(), true);
+			Collections.emptyList(), true, false);
 	}
 
 	private List<Object> _getEntitledProducts(
@@ -1522,7 +1523,7 @@ public class LicenseKeyGenerateFormServiceTest {
 				).build()
 			).build(),
 			Collections.singletonList(_toProductVersion("7.4", "DXP 7.4")),
-			true);
+			true, admin);
 	}
 
 	private boolean _isGeneratable(

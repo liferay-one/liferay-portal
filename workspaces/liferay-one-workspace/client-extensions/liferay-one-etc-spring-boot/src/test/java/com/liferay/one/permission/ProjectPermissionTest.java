@@ -162,6 +162,18 @@ public class ProjectPermissionTest {
 	}
 
 	@Test
+	public void testCheckUpdateRejectsLiferayStaff() throws Exception {
+		_mockRegularRole(RoleConstants.NAME_LIFERAY_STAFF);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
 	public void testCheckUpdateRejectsPartnerManagerOfNonpartnerAccount()
 		throws Exception {
 
@@ -196,6 +208,18 @@ public class ProjectPermissionTest {
 	}
 
 	@Test
+	public void testCheckUpdateRejectsProvisioningWorker() throws Exception {
+		_mockRegularRole(RoleConstants.NAME_PROVISIONING_WORKER);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> projectPermission.check(
+				ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
 	public void testCheckUpdateThrowsWithoutTicketRole() throws Exception {
 		ProjectPermission projectPermission = _createPermission(
 			List.of(_createProjectMembership(RoleConstants.ERC_PROJECT_USER)));
@@ -218,6 +242,17 @@ public class ProjectPermissionTest {
 	}
 
 	@Test
+	public void testCheckViewAllowsLiferayStaff() throws Exception {
+		_mockRegularRole(RoleConstants.NAME_LIFERAY_STAFF);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertDoesNotThrow(
+			() -> projectPermission.check(
+				ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
 	public void testCheckViewAllowsPartnerAccountManager() throws Exception {
 		_mockAccountRoles(true, RoleConstants.NAME_PARTNER_ACCOUNT_ADMIN);
 
@@ -231,6 +266,17 @@ public class ProjectPermissionTest {
 	@Test
 	public void testCheckViewAllowsPartnerTechnicalUser() throws Exception {
 		_mockAccountRoles(true, RoleConstants.NAME_PARTNER_TECHNICAL_USER);
+
+		ProjectPermission projectPermission = _createPermission(List.of());
+
+		Assertions.assertDoesNotThrow(
+			() -> projectPermission.check(
+				ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testCheckViewAllowsProvisioningWorker() throws Exception {
+		_mockRegularRole(RoleConstants.NAME_PROVISIONING_WORKER);
 
 		ProjectPermission projectPermission = _createPermission(List.of());
 
@@ -454,6 +500,18 @@ public class ProjectPermissionTest {
 				_ACCOUNT_ID, EntitlementConstants.NAME_PARTNER)
 		).thenReturn(
 			partnerAccount
+		);
+	}
+
+	private void _mockRegularRole(String roleName) {
+		RoleBrief roleBrief = new RoleBrief();
+
+		roleBrief.setName(roleName);
+
+		Mockito.when(
+			_userAccount.getRoleBriefs()
+		).thenReturn(
+			new RoleBrief[] {roleBrief}
 		);
 	}
 

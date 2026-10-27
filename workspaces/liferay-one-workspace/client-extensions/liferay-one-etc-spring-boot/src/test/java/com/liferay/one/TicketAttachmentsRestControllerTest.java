@@ -570,10 +570,10 @@ public class TicketAttachmentsRestControllerTest {
 	}
 
 	@Test
-	public void testPostInitiateUploadSkipsProjectPermissionForProvisioningMember()
+	public void testPostInitiateUploadSkipsProjectPermissionForProvisioningWorker()
 		throws Exception {
 
-		_mockRoleNames(RoleConstants.NAME_PROVISIONING_MEMBER);
+		_mockRoleNames(RoleConstants.NAME_PROVISIONING_WORKER);
 
 		_mockFetchTicketAttachment(
 			_createTicketAttachment(TicketAttachment.STATUS_DRAFT));

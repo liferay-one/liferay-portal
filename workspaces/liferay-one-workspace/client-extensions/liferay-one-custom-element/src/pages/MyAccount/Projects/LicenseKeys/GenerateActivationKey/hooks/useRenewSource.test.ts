@@ -15,7 +15,7 @@ import type {
 
 const mocks = vi.hoisted(() => ({
 	activationKeys: [] as Record<string, unknown>[],
-	admin: false,
+	canRenewVirtualCluster: false,
 	isRenewableKey: vi.fn(),
 	licenseKeys: [] as Record<string, unknown>[],
 	loadingActivationKeys: false,
@@ -34,8 +34,8 @@ vi.mock('~/hooks/useActivationKeyLicenseKeys', () => ({
 	useActivationKeyLicenseKeys: mocks.useActivationKeyLicenseKeys,
 }));
 
-vi.mock('~/pages/MyAccount/Projects/hooks/useHasAdminPermission', () => ({
-	useHasAdminPermission: () => mocks.admin,
+vi.mock('~/pages/MyAccount/Projects/hooks/useCanRenewVirtualCluster', () => ({
+	useCanRenewVirtualCluster: () => mocks.canRenewVirtualCluster,
 }));
 
 vi.mock('~/pages/MyAccount/Projects/utils/isRenewableKey', () => ({
@@ -86,7 +86,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 		mocks.activationKeys = [
 			{activationKeyId: 'AK-1', id: 'KEY-1', type: 'production'},
 		];
-		mocks.admin = false;
+		mocks.canRenewVirtualCluster = false;
 		mocks.isRenewableKey.mockReset();
 		mocks.isRenewableKey.mockReturnValue(true);
 		mocks.licenseKeys = [];
@@ -263,7 +263,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 		});
 	});
 
-	it('lets an administrator renew a virtual cluster key', async () => {
+	it('lets a user who can renew virtual cluster keys renew one', async () => {
 		const {isRenewableKey} = await vi.importActual<
 			typeof import('~/pages/MyAccount/Projects/utils/isRenewableKey')
 		>('~/pages/MyAccount/Projects/utils/isRenewableKey');
@@ -271,7 +271,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 		mocks.activationKeys = [
 			{activationKeyId: 'AK-1', id: 'KEY-1', type: 'virtual-cluster'},
 		];
-		mocks.admin = true;
+		mocks.canRenewVirtualCluster = true;
 		mocks.isRenewableKey.mockImplementation(isRenewableKey);
 		mocks.licenseKeys = [
 			licenseKey({
@@ -292,7 +292,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 			virtualCluster: true,
 		});
 
-		mocks.admin = false;
+		mocks.canRenewVirtualCluster = false;
 
 		rerender();
 
