@@ -110,6 +110,38 @@ export type JSMRecord = InspectedEntry & {
 	type: JSMRecordType;
 };
 
+export type SalesforceRecordStatus =
+	| 'differs-from-salesforce'
+	| 'in-sync'
+	| 'missing-in-liferay'
+	| 'missing-in-salesforce';
+
+export type SalesforceRecordType = 'account' | 'contract' | 'project';
+
+export type SalesforceFieldDifference = {
+	fieldName: string;
+	liferayValue: string;
+	salesforceValue: string;
+};
+
+export type SalesforceRecord = {
+	differences: SalesforceFieldDifference[];
+	externalReferenceCode: string;
+	name: string;
+	status: SalesforceRecordStatus;
+	type: SalesforceRecordType;
+};
+
+export type SalesforceRecords = {
+	records: SalesforceRecord[];
+};
+
+export type SalesforceEntry = InspectedEntry & SalesforceRecord;
+
+export type SalesforceSyncResult = {
+	count: number;
+};
+
 export type AccountFindingSeverity = 'danger' | 'info' | 'warning';
 
 export type AccountFinding = {

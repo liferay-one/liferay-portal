@@ -18,10 +18,12 @@ import AccountFindings from './components/AccountFindings/AccountFindings';
 import AccountSummary from './components/AccountSummary/AccountSummary';
 import InspectedCollectionPanel from './components/InspectedCollectionPanel/InspectedCollectionPanel';
 import JSMRecords from './components/JSMRecords/JSMRecords';
+import SalesforceRecords from './components/SalesforceRecords/SalesforceRecords';
 import {openAccountDashboard} from './utils/accountDashboardUtils';
 import {getOrderItemCollection} from './utils/accountFindingUtils';
 import buildAccountTree from './utils/buildAccountTree';
 import getAccountFindings from './utils/getAccountFindings';
+import syncAccountFromSalesforce from './utils/syncAccountFromSalesforce';
 import syncRecordToJSM from './utils/syncRecordToJSM';
 
 import type FetcherError from '~/services/fetcher/FetcherError';
@@ -180,6 +182,8 @@ function AccountInspectorContent({
 
 			<JSMRecords inspection={inspection} />
 
+			<SalesforceRecords inspection={inspection} />
+
 			<h3 className="mb-3">{i18n.translate('related-records')}</h3>
 
 			{getCollections(inspection).map(([collectionKey, collection]) => (
@@ -225,6 +229,16 @@ export default function AccountInspectorDetail() {
 		setSyncing(false);
 	};
 
+	const syncFromSalesforce = async (account: Account) => {
+		setSyncing(true);
+
+		if (await syncAccountFromSalesforce(account.externalReferenceCode)) {
+			mutate();
+		}
+
+		setSyncing(false);
+	};
+
 	if (!query.key) {
 		return <Navigate replace to="/account-inspector" />;
 	}
@@ -252,6 +266,14 @@ export default function AccountInspectorDetail() {
 										label: 'sync-to-jsm' as const,
 										onClick: () =>
 											syncAccountToJSM(data.account),
+									},
+									{
+										disabled:
+											syncing ||
+											!data.account.externalReferenceCode,
+										label: 'sync-from-salesforce' as const,
+										onClick: () =>
+											syncFromSalesforce(data.account),
 									},
 								]
 							: []),

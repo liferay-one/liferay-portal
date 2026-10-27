@@ -267,7 +267,7 @@ public class ContractService extends OneBaseService {
 		}
 	}
 
-	public void upsertContract(
+	public boolean upsertContract(
 			String action, SalesforceContract salesforceContract)
 		throws Exception {
 
@@ -280,7 +280,7 @@ public class ContractService extends OneBaseService {
 						" without an ID and account");
 			}
 
-			return;
+			return false;
 		}
 
 		JSONObject jsonObject = new JSONObject(
@@ -386,6 +386,8 @@ public class ContractService extends OneBaseService {
 		reconcileOpportunityContract(salesforceContract.getOpportunityId());
 
 		_attachSuccessorContract(contract, salesforceContract);
+
+		return true;
 	}
 
 	private void _attachOriginalContract(

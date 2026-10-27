@@ -37,6 +37,7 @@ export default {
 	'account-roles': 'Account Roles',
 	'account-selected': 'Account Selected',
 	'account-selection': 'Account Selection',
+	'account-tier': 'Account Tier',
 	'account-type': 'Account Type',
 	'accounts': 'Accounts',
 	'accounts-available-for-x-you': 'Accounts available for {0} (you)',
@@ -529,6 +530,8 @@ export default {
 	'developer-licenses-are-limited-to-5-unique-addresses-and-should-not-be-used-for-full-scale-production-deployments':
 		'Developer licenses are limited to 5 unique addresses and should not be used for full-scale production deployments.',
 	'development-framework': 'Development Framework',
+	'differences': 'Differences',
+	'differs-from-salesforce': 'Differs From Salesforce',
 	'digital-sales-room': 'Digital Sales Room',
 	'digital-sales-room-setup': 'Digital Sales Room Setup',
 	'digital-workplace': 'Digital Workplace',
@@ -1073,6 +1076,8 @@ export default {
 	'metadata': 'Metadata',
 	'migration': 'Migration',
 	'missing-in-jsm': 'Missing in JSM',
+	'missing-in-liferay': 'Missing in Liferay',
+	'missing-in-salesforce': 'Missing in Salesforce',
 	'mm-dd-yyyy': 'MM-DD-YYYY',
 	'modified-date': 'Modified Date',
 	'modify': 'Modify',
@@ -1261,6 +1266,7 @@ export default {
 	'open-order': 'Open Order',
 	'open-project': 'Open Project',
 	'open-project-members': 'Open Project Members',
+	'opportunity-id': 'Opportunity ID',
 	'options': 'Options',
 	'order': 'Order',
 	'order-confirmation': 'Order Confirmation',
@@ -1564,6 +1570,7 @@ export default {
 	'renew-key': 'Renew Key',
 	'renew-x-key': 'Renew {0} Key',
 	'renew-x-keys': 'Renew {0} Keys',
+	'renewal-opportunity-id': 'Renewal Opportunity ID',
 	'renewal-state': 'Renewal State',
 	'renewal-will-be-available-3-months-before-your-activation-key-expires':
 		'Renewal will be available 3 months before your activation key expires.',
@@ -1615,6 +1622,7 @@ export default {
 	'saas-environments': 'SaaS Environments',
 	'saas-trials': 'SaaS Trials',
 	'sales-email': 'Sales Email',
+	'salesforce': 'Salesforce',
 	'save': 'Save',
 	'save-and-download-package': 'Save and Download Package',
 	'save-as-a-draft-exit': 'Save as a Draft & Exit',
@@ -1635,6 +1643,7 @@ export default {
 	'section-that-shows-the-payments': 'Section that shows the payments.',
 	'security': 'Security',
 	'security-breach-contacts': 'Security Breach Contacts',
+	'security-contact-email-address': 'Security Contact Email Address',
 	'security-incident-contact': 'Security Incident Contact',
 	'see-the-privacy-policy-for-details': 'See the privacy policy for details.',
 	'select-a-dxp-version': 'Select a DXP Version',
@@ -1809,6 +1818,7 @@ export default {
 	'supported-version': 'Supported Version',
 	'suspended': 'Suspended',
 	'sydney-australia': 'Sydney, Australia',
+	'sync-from-salesforce': 'Sync From Salesforce',
 	'sync-to-jsm': 'Sync to JSM',
 	'syncing-to-jsm': 'Syncing to JSM...',
 	'system-admin-email': 'System Admin Email',
@@ -1849,6 +1859,8 @@ export default {
 		"Thank you for your order. We have registered your request and will send you the invoice by email with all the details to complete your payment. Check your Spam or Promotions folder if you don't see it in your inbox. Your order is currently pending payment.",
 	'thank-you-for-your-purchase': 'Thank You for Your Purchase!',
 	'thank-you-for-your-request': 'Thank You for Your Request!',
+	'the-account-already-matches-salesforce':
+		'The account already matches Salesforce.',
 	'the-account-has-no-account-administrator':
 		'The account has no user with the Account Administrator role.',
 	'the-account-has-no-account-type': 'The account has no account type.',
@@ -1931,6 +1943,8 @@ export default {
 		'The requested activation key exceeds the purchased subscriptions for this Liferay project. In case of unauthorized use, Liferay can request financial compensation for breach of use. For more information, please reach out to your Liferay contact or sales@liferay.com.',
 	'the-requested-activation-key-is-not-yet-available':
 		'The requested activation key is not yet available.',
+	'the-salesforce-sync-updates-the-records-that-differ':
+		'The Salesforce sync updates the account, contracts, and projects that differ from Salesforce. It does not create or delete records, and it does not sync contacts.',
 	'the-selected-dxp-version-is-not-supported':
 		'The selected DXP version is not supported.',
 	'the-selected-project-does-not-meet-the-necessary-resource-requirements-for-this-app-please-contact-sales-to-request-additional-resources':
@@ -2259,9 +2273,13 @@ export default {
 		'{0} is a member of {1} on this account. Removing them from the account will also remove their access to these projects. Are you sure you want to proceed?',
 	'x-is-already-a-member-of-this-account':
 		'{0} is already a member of this account.',
+	'x-is-empty-in-liferay-and-x-in-salesforce':
+		'{0} is empty in Liferay and "{1}" in Salesforce.',
 	'x-is-required': '{0} is required',
 	'x-is-sold-through-our-sales-team-contact-sales-to-get-a-quote-and-choose-the-license-tier-that-fits-your-team':
 		'{0} is sold through our sales team. Contact Sales to get a quote and choose the license tier that fits your team.',
+	'x-is-x-in-liferay-and-x-in-salesforce':
+		'{0} is "{1}" in Liferay and "{2}" in Salesforce.',
 	'x-items': '{0} Items',
 	'x-me': '{0} (me)',
 	'x-more': '+{0} more',
@@ -2270,6 +2288,8 @@ export default {
 	'x-of-x-invitations-were-sent': '{0} of {1} invitations were sent.',
 	'x-previously-selected-subscriptions-are-no-longer-entitled-and-were-removed':
 		'{0} previously selected subscriptions are no longer entitled and were removed.',
+	'x-records-were-synced-from-salesforce':
+		'{0} records were synced from Salesforce.',
 	'x-result-for-x': '{0} Result for "{1}"',
 	'x-results-for': '{0} Results for',
 	'x-results-for-x': '{0} Results for "{1}"',
