@@ -5,7 +5,7 @@
 
 import ClayAlert from '@clayui/alert';
 import ClayLabel from '@clayui/label';
-import {useMemo} from 'react';
+import {useMemo, useState} from 'react';
 import Loading from '~/components/Loading/Loading';
 import {useDataQuery} from '~/hooks/useDataQuery';
 import i18n from '~/i18n';
@@ -16,9 +16,10 @@ import {accountJiraAssetsQuery} from '~/services/queries/accountJiraAssetsQuery'
 import getJSMProjectQualification from '../../utils/getJSMProjectQualification';
 import getJSMRecords from '../../utils/getJSMRecords';
 import {JSM_PROJECT_ENTITLEMENT_NAMES} from '../../utils/jsmSyncConstants';
+import syncRecordToJSM from '../../utils/syncRecordToJSM';
 import InspectorSection from '../InspectorSection/InspectorSection';
-import JSMSyncButton from '../JSMSyncButton/JSMSyncButton';
 
+import type {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
 import type {InspectorTableColumn} from '~/pages/Admin/components/InspectorTable/InspectorTable';
 import type {AccountInspection, JSMRecord} from '~/types/accountInspection';
 
@@ -30,47 +31,38 @@ function getStatus({drift}: JSMRecord) {
 		: i18n.translate('in-sync');
 }
 
-function getColumns(onSynced: () => void): InspectorTableColumn<JSMRecord>[] {
-	return [
-		{label: 'name', value: ({name}) => name},
-		{
-			label: 'external-reference-code',
-			value: ({externalReferenceCode}) => externalReferenceCode,
-		},
-		{
-			label: 'jsm-object-key',
-			value: ({jiraAsset}) => jiraAsset?.objectKey,
-		},
-		{
-			label: 'status',
-			render: (record) =>
-				record.drift.length ? (
-					record.drift.map((word) => (
-						<ClayLabel
-							displayType={
-								word === 'missing-in-jsm' ? 'danger' : 'warning'
-							}
-							key={word}
-						>
-							{i18n.translate(word)}
-						</ClayLabel>
-					))
-				) : (
-					<ClayLabel displayType="success">
-						{i18n.translate('in-sync')}
+const COLUMNS: InspectorTableColumn<JSMRecord>[] = [
+	{label: 'name', value: ({name}) => name},
+	{
+		label: 'external-reference-code',
+		value: ({externalReferenceCode}) => externalReferenceCode,
+	},
+	{
+		label: 'jsm-object-key',
+		value: ({jiraAsset}) => jiraAsset?.objectKey,
+	},
+	{
+		label: 'status',
+		render: (record) =>
+			record.drift.length ? (
+				record.drift.map((word) => (
+					<ClayLabel
+						displayType={
+							word === 'missing-in-jsm' ? 'danger' : 'warning'
+						}
+						key={word}
+					>
+						{i18n.translate(word)}
 					</ClayLabel>
-				),
-			value: getStatus,
-		},
-		{
-			label: 'actions',
-			render: (record) => (
-				<JSMSyncButton onSynced={onSynced} record={record} />
+				))
+			) : (
+				<ClayLabel displayType="success">
+					{i18n.translate('in-sync')}
+				</ClayLabel>
 			),
-			value: () => '',
-		},
-	];
-}
+		value: getStatus,
+	},
+];
 
 type JSMRecordsProps = {
 	inspection: AccountInspection;
@@ -97,7 +89,37 @@ export default function JSMRecords({inspection}: JSMRecordsProps) {
 		[data, qualifyingProjects]
 	);
 
-	const columns = useMemo(() => getColumns(() => mutate()), [mutate]);
+	const [syncingIds, setSyncingIds] = useState<Set<number | string>>(
+		new Set()
+	);
+
+	const syncRecord = async (record: JSMRecord) => {
+		setSyncingIds((ids) => new Set(ids).add(record.id));
+
+		if (await syncRecordToJSM(record)) {
+			mutate();
+		}
+
+		setSyncingIds((ids) => {
+			const remainingIds = new Set(ids);
+
+			remainingIds.delete(record.id);
+
+			return remainingIds;
+		});
+	};
+
+	const getRecordActions = (record: JSMRecord): RowAction[] => {
+		const syncing = syncingIds.has(record.id);
+
+		return [
+			{
+				disabled: syncing || !record.externalReferenceCode,
+				label: syncing ? 'syncing-to-jsm' : 'sync-to-jsm',
+				onClick: () => syncRecord(record),
+			},
+		];
+	};
 
 	const flaggedIds = useMemo(
 		() =>
@@ -144,10 +166,11 @@ export default function JSMRecords({inspection}: JSMRecordsProps) {
 
 	return (
 		<InspectorTable
-			columns={columns}
+			columns={COLUMNS}
 			entries={records}
 			error={error ? toErrorMessage(error) : undefined}
 			flaggedIds={flaggedIds}
+			getRowActions={getRecordActions}
 			id="account-inspector-jsm"
 			notice={qualificationNote}
 			title={i18n.translate('jsm')}
