@@ -10,6 +10,8 @@ export default {
 	'1-ticket': '1 Ticket',
 	'7-days-trials': '7 Days Trials',
 	'30-day-trial': '30-day Trial',
+	'a-project-qualifies-for-the-jsm-sync-when-x':
+		'A project qualifies for the JSM sync when it has an active entitlement named one of {0}, when the account has an active partner entitlement, or when the account has an active entitlement with one of those names that is not assigned to a project. An active entitlement has started, has not ended, and is not terminated. The server also syncs a project that already exists in JSM.',
 	'a-request-will-be-sent-to-deactivate-the-selected-activation-key-from-now-on-it-will-be-hidden-and-no-longer-visible':
 		'A request will be sent to deactivate the selected activation key. From now on, it will be hidden and no longer visible.',
 	'a-role-is-required': 'A role is required.',
@@ -1169,6 +1171,8 @@ export default {
 	'no-project-account-level': 'No Project (Account Level)',
 	'no-project-linked': 'No Project Linked',
 	'no-projects-available-for-x': 'No projects available for {0}',
+	'no-projects-qualify-for-the-jsm-sync':
+		'No projects qualify for the JSM sync.',
 	'no-projects-were-found': 'No projects were found.',
 	'no-projects-yet': 'No Projects Yet',
 	'no-publisher-catalog-found': 'No Publisher Catalog Found',
@@ -1457,6 +1461,7 @@ export default {
 	'projects-have-no-members': 'Projects have no members.',
 	'projects-share-a-name':
 		'Projects share a name. An order that names one of these projects cannot be matched to a project.',
+	'projects-that-do-not-qualify-x': 'Projects that do not qualify: {0}.',
 	'projects-without-an-account': 'Projects without an Account',
 	'prompt': 'Prompt',
 	'properties': 'Properties',
@@ -1737,6 +1742,8 @@ export default {
 	'solutions-built-on-liferay-requires-existing-liferay-partnership':
 		'Solutions built on Liferay, requires existing Liferay Partnership',
 	'solutions-info': 'Solutions Info',
+	'some-projects-do-not-qualify-for-the-jsm-sync':
+		'Some projects do not qualify for the JSM sync.',
 	'something-went-wrong': 'Something went wrong.',
 	'sorry-there-are-no-results-found': 'Sorry, there are no results found.',
 	'source': 'Source',

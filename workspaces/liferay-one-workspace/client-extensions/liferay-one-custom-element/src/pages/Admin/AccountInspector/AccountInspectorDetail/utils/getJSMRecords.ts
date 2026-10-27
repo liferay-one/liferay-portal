@@ -5,122 +5,59 @@
 
 import type {Word} from '~/i18n';
 import type {
-	AccountInspection,
+	InspectedEntry,
 	JSMRecord,
-	JSMRecordType,
 	JiraAsset,
 	JiraAssets,
 } from '~/types/accountInspection';
 
-const JSM_ATTRIBUTE_EMAIL_ADDRESS = 'Email Address';
-
 const JSM_ATTRIBUTE_NAME = 'Name';
-
-type LiferayRecord = {
-	emailAddress?: string;
-	externalReferenceCode?: string;
-	name: string;
-	recordId: number;
-	type: JSMRecordType;
-};
-
-function getAttributeValue(jiraAsset: JiraAsset, attributeName: string) {
-	return jiraAsset.attributes[attributeName]?.[0] ?? '';
-}
 
 function normalize(value: string | undefined) {
 	return (value ?? '').trim();
 }
 
-function getDrift(
-	liferayRecord: LiferayRecord,
-	jiraAsset: JiraAsset | undefined
-): Word[] {
+function getDrift(name: string, jiraAsset: JiraAsset | undefined): Word[] {
 	if (!jiraAsset) {
 		return ['missing-in-jsm'];
 	}
 
-	const drift: Word[] = [];
-
 	if (
-		normalize(liferayRecord.name) !==
-		normalize(getAttributeValue(jiraAsset, JSM_ATTRIBUTE_NAME))
+		normalize(name) !==
+		normalize(jiraAsset.attributes[JSM_ATTRIBUTE_NAME]?.[0])
 	) {
-		drift.push('name-differs-in-jsm');
+		return ['name-differs-in-jsm'];
 	}
 
-	if (
-		liferayRecord.type === 'user' &&
-		normalize(liferayRecord.emailAddress).toLowerCase() !==
-			normalize(
-				getAttributeValue(jiraAsset, JSM_ATTRIBUTE_EMAIL_ADDRESS)
-			).toLowerCase()
-	) {
-		drift.push('email-address-differs-in-jsm');
-	}
-
-	return drift;
-}
-
-function getLiferayRecords({
-	account,
-	related,
-	users,
-}: AccountInspection): LiferayRecord[] {
-	return [
-		{
-			externalReferenceCode: account.externalReferenceCode,
-			name: account.name,
-			recordId: account.id,
-			type: 'account',
-		},
-		...related.projects.items.map((project) => ({
-			externalReferenceCode: project.externalReferenceCode,
-			name: String(project.name ?? ''),
-			recordId: project.id,
-			type: 'project' as const,
-		})),
-		...users.items.map((user) => ({
-			emailAddress: user.emailAddress,
-			externalReferenceCode: user.externalReferenceCode,
-			name: user.name ?? '',
-			recordId: user.id,
-			type: 'user' as const,
-		})),
-	];
-}
-
-function toJiraAssetsMap(jiraAssets: JiraAsset[]) {
-	return new Map(
-		jiraAssets.map((jiraAsset) => [jiraAsset.externalKey, jiraAsset])
-	);
+	return [];
 }
 
 export default function getJSMRecords(
-	inspection: AccountInspection,
+	projects: InspectedEntry[],
 	jiraAssets: JiraAssets
 ): JSMRecord[] {
-	const accountJiraAssetsMap = toJiraAssetsMap(jiraAssets.accounts);
-	const contactJiraAssetsMap = toJiraAssetsMap(jiraAssets.contacts);
+	const jiraAssetsByExternalKey = new Map(
+		jiraAssets.accounts.map((jiraAsset) => [
+			jiraAsset.externalKey,
+			jiraAsset,
+		])
+	);
 
-	return getLiferayRecords(inspection).map((liferayRecord, index) => {
-		const jiraAssetsMap =
-			liferayRecord.type === 'user'
-				? contactJiraAssetsMap
-				: accountJiraAssetsMap;
-
-		const jiraAsset = liferayRecord.externalReferenceCode
-			? jiraAssetsMap.get(liferayRecord.externalReferenceCode)
+	return projects.map(({externalReferenceCode, id, name}) => {
+		const jiraAsset = externalReferenceCode
+			? jiraAssetsByExternalKey.get(externalReferenceCode)
 			: undefined;
 
+		const projectName = String(name ?? '');
+
 		return {
-			drift: getDrift(liferayRecord, jiraAsset),
-			externalReferenceCode: liferayRecord.externalReferenceCode,
-			id: index + 1,
+			drift: getDrift(projectName, jiraAsset),
+			externalReferenceCode,
+			id,
 			jiraAsset,
-			name: liferayRecord.name,
-			recordId: liferayRecord.recordId,
-			type: liferayRecord.type,
+			name: projectName,
+			recordId: id,
+			type: 'project',
 		};
 	});
 }

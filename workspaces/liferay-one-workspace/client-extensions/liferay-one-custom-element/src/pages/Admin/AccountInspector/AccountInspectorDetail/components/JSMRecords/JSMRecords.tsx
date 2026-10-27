@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayAlert from '@clayui/alert';
 import ClayLabel from '@clayui/label';
 import {useMemo} from 'react';
 import Loading from '~/components/Loading/Loading';
@@ -12,7 +13,9 @@ import InspectorTable from '~/pages/Admin/components/InspectorTable/InspectorTab
 import {toErrorMessage} from '~/services/queries/accountInspectionQuery';
 import {accountJiraAssetsQuery} from '~/services/queries/accountJiraAssetsQuery';
 
+import getJSMProjectQualification from '../../utils/getJSMProjectQualification';
 import getJSMRecords from '../../utils/getJSMRecords';
+import {JSM_PROJECT_ENTITLEMENT_NAMES} from '../../utils/jsmSyncConstants';
 import InspectorSection from '../InspectorSection/InspectorSection';
 import JSMSyncButton from '../JSMSyncButton/JSMSyncButton';
 
@@ -29,7 +32,6 @@ function getStatus({drift}: JSMRecord) {
 
 function getColumns(onSynced: () => void): InspectorTableColumn<JSMRecord>[] {
 	return [
-		{label: 'type', value: ({type}) => i18n.translate(type)},
 		{label: 'name', value: ({name}) => name},
 		{
 			label: 'external-reference-code',
@@ -75,17 +77,24 @@ type JSMRecordsProps = {
 };
 
 export default function JSMRecords({inspection}: JSMRecordsProps) {
+	const {nonqualifyingProjects, qualifyingProjects} = useMemo(
+		() => getJSMProjectQualification(inspection),
+		[inspection]
+	);
+
 	const {data, error, isLoading, mutate} = useDataQuery(
 		accountJiraAssetsQuery(
-			inspection.account.externalReferenceCode,
+			qualifyingProjects.length
+				? inspection.account.externalReferenceCode
+				: undefined,
 			inspection.loadedAt
 		),
 		{revalidateOnFocus: false}
 	);
 
 	const records = useMemo(
-		() => (data ? getJSMRecords(inspection, data) : NO_RECORDS),
-		[data, inspection]
+		() => (data ? getJSMRecords(qualifyingProjects, data) : NO_RECORDS),
+		[data, qualifyingProjects]
 	);
 
 	const columns = useMemo(() => getColumns(() => mutate()), [mutate]);
@@ -96,6 +105,33 @@ export default function JSMRecords({inspection}: JSMRecordsProps) {
 				records.filter(({drift}) => drift.length).map(({id}) => id)
 			),
 		[records]
+	);
+
+	const qualificationNote = Boolean(nonqualifyingProjects.length) && (
+		<ClayAlert
+			displayType="info"
+			title={i18n.translate(
+				qualifyingProjects.length
+					? 'some-projects-do-not-qualify-for-the-jsm-sync'
+					: 'no-projects-qualify-for-the-jsm-sync'
+			)}
+		>
+			<p className="mb-1">
+				{i18n.sub(
+					'a-project-qualifies-for-the-jsm-sync-when-x',
+					JSM_PROJECT_ENTITLEMENT_NAMES.join(', ')
+				)}
+			</p>
+
+			<p className="mb-0">
+				{i18n.sub(
+					'projects-that-do-not-qualify-x',
+					nonqualifyingProjects
+						.map(({id, name}) => String(name || `#${id}`))
+						.join(', ')
+				)}
+			</p>
+		</ClayAlert>
 	);
 
 	if (isLoading) {
@@ -113,6 +149,7 @@ export default function JSMRecords({inspection}: JSMRecordsProps) {
 			error={error ? toErrorMessage(error) : undefined}
 			flaggedIds={flaggedIds}
 			id="account-inspector-jsm"
+			notice={qualificationNote}
 			title={i18n.translate('jsm')}
 		/>
 	);

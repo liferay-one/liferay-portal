@@ -56,6 +56,7 @@ type InspectorTableProps<Entry extends InspectedEntry> = {
 	flaggedIds?: Set<number | string>;
 	getRowActions?: (entry: Entry) => RowAction[];
 	id: string;
+	notice?: ReactNode;
 	title: string;
 	totalCount?: number;
 	truncated?: boolean;
@@ -71,6 +72,7 @@ export default function InspectorTable<Entry extends InspectedEntry>({
 	flaggedIds = NO_FLAGGED_IDS,
 	getRowActions,
 	id,
+	notice,
 	title,
 	totalCount = allEntries.length,
 	truncated,
@@ -156,6 +158,8 @@ export default function InspectorTable<Entry extends InspectedEntry>({
 
 	const content = (
 		<>
+			{notice}
+
 			{error && <ClayAlert displayType="danger">{error}</ClayAlert>}
 
 			{truncated && (
@@ -382,7 +386,7 @@ export default function InspectorTable<Entry extends InspectedEntry>({
 			}
 			defaultExpanded={
 				defaultExpanded ||
-				Boolean(error || truncated || flaggedIds.size)
+				Boolean(error || notice || truncated || flaggedIds.size)
 			}
 			id={id}
 			title={title}
