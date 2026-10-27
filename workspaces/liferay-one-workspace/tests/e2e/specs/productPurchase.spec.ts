@@ -23,6 +23,8 @@ const BANK_TRANSFER_COMPLETED_PATTERN =
 
 const CONTACT_SALES_URL = 'https://www.liferay.com/contact-sales';
 
+const DEVELOPER_LICENSE_PRICE_PATTERN = /\$\s?2,000\.00/;
+
 const CUSTOM_FIELDS_ISSUE =
 	'Purchase App PATCHes the whole cart, including the order and cart item ' +
 	'custom fields, and an Account Administrator is forbidden to write order ' +
@@ -33,14 +35,20 @@ const CUSTOM_FIELDS_ISSUE =
 const PURCHASE_COMPLETED_PATTERN = /#\/purchase-completed\?orderId=(\d+)/;
 
 const PRODUCT_ERCS = {
-	aiHub: 'PRDCT-AI-HUB',
-	contentMarketingPlatform: 'PRDCT-CONTENT-MARKETING',
-	digitalSalesRoom: 'PRDCT-DSR',
-	dxpFreeTier: 'PRDCT-DXP',
-	paidApp: 'PRDCT-APP',
-	sampleApp: 'PRDCT-SAMPLE-APP',
-	seoStudio: 'PRDCT-SEO',
+	aiHub: 'marketplace-product-32915366',
+	contentMarketingPlatform: 'marketplace-product-32653971',
+	digitalSalesRoom: 'marketplace-product-33597098',
+	dxpFreeTier: 'marketplace-product-32654011',
+	paidApp: 'marketplace-product-18657298',
+	sampleApp: 'marketplace-product-27830822',
+	seoStudio: 'marketplace-product-34997892',
 };
+
+function developerLicenseCard(page: Page) {
+	return page
+		.locator('.product-purchase-license-card')
+		.filter({hasText: /developer license/i});
+}
 
 async function getProductId(
 	adminAPI: HeadlessAPI,
@@ -137,7 +145,7 @@ async function goToPaidSummary(
 		timeout: PORTAL_TIMEOUT,
 	});
 
-	const licenseCard = page.locator('.product-purchase-license-card').first();
+	const licenseCard = developerLicenseCard(page);
 
 	const continueButton = page.getByRole('button', {name: 'Continue'});
 
@@ -285,7 +293,7 @@ test.describe('[FLOW-PRODUCT-PURCHASE-ENTRY] entering the purchase wizard', () =
 
 		await expect(
 			page.locator('.product-purchase-banner-title', {
-				hasText: 'Sample Marketplace App',
+				hasText: 'Minium Theme',
 			})
 		).toBeVisible();
 
@@ -534,11 +542,11 @@ test.describe('[FLOW-CHECKOUT-PAID] paid app checkout', () => {
 			timeout: PORTAL_TIMEOUT,
 		});
 
-		await expect(page.getByText('1 License: $ 99.00')).toBeVisible();
+		const licenseCard = developerLicenseCard(page);
 
-		const licenseCard = page
-			.locator('.product-purchase-license-card')
-			.first();
+		await expect(
+			licenseCard.getByText(DEVELOPER_LICENSE_PRICE_PATTERN)
+		).toBeVisible();
 
 		const count = licenseCard.locator(
 			'.product-purchase-license-card-stepper-count'
@@ -587,7 +595,9 @@ test.describe('[FLOW-CHECKOUT-PAID] paid app checkout', () => {
 			await expect(page.getByText(label)).toBeVisible();
 		}
 
-		await expect(page.getByText('$ 99.00').first()).toBeVisible();
+		await expect(
+			page.getByText(DEVELOPER_LICENSE_PRICE_PATTERN).first()
+		).toBeVisible();
 
 		const purchaseButton = page.getByRole('button', {name: 'Purchase App'});
 
@@ -629,7 +639,9 @@ test.describe('[FLOW-CHECKOUT-PAID] paid app checkout', () => {
 
 		await expect(page.getByText(/^€\s?[\d.,]+$/).first()).toBeVisible();
 
-		await expect(page.getByText('$ 99.00')).toHaveCount(0);
+		await expect(
+			page.getByText(DEVELOPER_LICENSE_PRICE_PATTERN)
+		).toHaveCount(0);
 
 		const {account} = buyer;
 

@@ -41,7 +41,7 @@ function toOrder(order: Partial<PlacedOrder>, productIds: number[]) {
 }
 
 const application = toProduct(1, 'PRDCT-APP', {
-	'liferay-products-categories': ['Commerce', 'Search'],
+	'liferay-product-categories': ['Commerce', 'Search'],
 	'price-model': 'Paid',
 	'project-item-type': 'Application',
 	'publisher-name': 'Acme',

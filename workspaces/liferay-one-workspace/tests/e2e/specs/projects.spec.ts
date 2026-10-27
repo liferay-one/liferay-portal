@@ -234,7 +234,7 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] products', () => {
 
 		await expect(page).toHaveURL(
 			new RegExp(
-				`#/${PROJECT_PATH}${CONTRACT_SEGMENT}/products/PRDCT-DXP`
+				`#/${PROJECT_PATH}${CONTRACT_SEGMENT}/products/marketplace-product-32654011`
 			)
 		);
 
@@ -363,9 +363,7 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] applications', () => {
 			page.getByText('Manage the applications within your project')
 		).toBeVisible();
 
-		const row = tableRow(page, 'Test App');
-
-		await expect(row).toContainText('Test Supplier');
+		const row = tableRow(page, 'AI Blog Workspace');
 
 		await expect(row).toContainText('Free');
 
@@ -374,7 +372,9 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] applications', () => {
 		await page.getByRole('menuitem', {name: 'View Details'}).click();
 
 		await expect(page).toHaveURL(
-			new RegExp(`#/${PROJECT_PATH}/applications/PRDCT-TEST-APP`)
+			new RegExp(
+				`#/${PROJECT_PATH}/applications/marketplace-product-30579441`
+			)
 		);
 
 		await expect(page.getByRole('tab', {name: 'Details'})).toBeVisible();
@@ -385,14 +385,16 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] applications', () => {
 	}) => {
 		await gotoMyAccount(page, `${PROJECT_PATH}/applications`);
 
-		await tableRow(page, 'Test App')
+		await tableRow(page, 'AI Blog Workspace')
 			.getByRole('button', {name: 'Actions'})
 			.click();
 
 		await page.getByRole('menuitem', {name: 'Download App'}).click();
 
 		await expect(page).toHaveURL(
-			new RegExp(`applications/PRDCT-TEST-APP\\?tab=download$`)
+			new RegExp(
+				`applications/marketplace-product-30579441\\?tab=download$`
+			)
 		);
 
 		await expect(page.getByRole('tab', {name: 'Download'})).toHaveAttribute(
@@ -413,7 +415,7 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] applications', () => {
 			page.getByRole('button', {name: 'Select Project'})
 		).toContainText('One-Time Purchases');
 
-		const row = tableRow(page, 'Test Client Extension');
+		const row = tableRow(page, 'Liferay Commerce Connector to PunchOut2Go');
 
 		await expect(row).toContainText('Paid');
 
@@ -426,7 +428,7 @@ test.describe('[FLOW-PROJECT-LIFECYCLE] applications', () => {
 		await page.getByRole('menuitem', {name: 'Create License Key'}).click();
 
 		await expect(page).toHaveURL(
-			/activation\/generate\?new=PRDCT-TEST-CLIENT-EXTENSION/
+			/activation\/generate\?new=marketplace-product-18657298/
 		);
 
 		await expect(

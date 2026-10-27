@@ -27,7 +27,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEDETAILSPROFILE] resolveDetailsProfile',
 			resolveDetailsProfile({
 				itemType: 'application',
 				product: toProduct({
-					'liferay-products-categories': 'Platform',
+					'liferay-product-categories': 'Platform',
 					'project-details-profile': 'paas',
 				}),
 			})
@@ -39,7 +39,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEDETAILSPROFILE] resolveDetailsProfile',
 			resolveDetailsProfile({
 				itemType: 'product',
 				product: toProduct({
-					'liferay-products-categories': 'Platform',
+					'liferay-product-categories': 'Platform',
 					'project-details-profile': 'saas',
 				}),
 			})
@@ -51,7 +51,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEDETAILSPROFILE] resolveDetailsProfile',
 			resolveDetailsProfile({
 				itemType: 'product',
 				product: toProduct({
-					'liferay-products-categories': ['Commerce', 'Platform'],
+					'liferay-product-categories': ['Commerce', 'Platform'],
 					'project-details-profile': 'bogus',
 				}),
 			})
@@ -62,7 +62,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEDETAILSPROFILE] resolveDetailsProfile',
 		expect(
 			resolveDetailsProfile({
 				itemType: 'product',
-				product: toProduct({'liferay-products-categories': 'Commerce'}),
+				product: toProduct({'liferay-product-categories': 'Commerce'}),
 			})
 		).toBe('basic');
 		expect(

@@ -39,7 +39,7 @@ export const SSA_ACCOUNT_ERC = value('ONE_SSA_ACCOUNT_ERC', 'SSA-ACCOUNT');
 
 export const SSA_TRIAL_PRODUCT_ERC = value(
 	'ONE_SSA_TRIAL_PRODUCT_ERC',
-	'PRDCT-SSA-TRIAL'
+	'marketplace-product-29366953'
 );
 
 export const SWITCH_ACCOUNT_ERC = value('ONE_SWITCH_ACCOUNT_ERC', 'ACCNT-002');

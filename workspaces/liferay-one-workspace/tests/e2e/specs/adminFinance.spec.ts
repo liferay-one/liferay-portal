@@ -54,7 +54,7 @@ async function createUnpaidOrder(
 				'/o/headless-commerce-admin-channel/v1.0/channels/by-externalReferenceCode/LIFERAY_ONE_CHANNEL'
 			),
 			adminAPI.get<HeadlessPage<{id: number}>>(
-				'/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/PRDCT-APP/skus'
+				'/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/marketplace-product-18657298/skus'
 			),
 		]);
 
@@ -267,7 +267,9 @@ test.describe('[FLOW-ADMIN-FINANCE] finance orders', () => {
 			}
 
 			await expect(
-				app.getByText('Test Application').first()
+				app
+					.getByText('Liferay Commerce Connector to PunchOut2Go')
+					.first()
 			).toBeVisible();
 
 			const markAsPaidButton = app.getByRole('button', {

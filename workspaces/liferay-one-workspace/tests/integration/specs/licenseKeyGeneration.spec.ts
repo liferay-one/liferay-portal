@@ -273,7 +273,7 @@ async function upsertEntitlement(
 			r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC:
 				DEFINITION_ERCS[keyType],
 			r_projectToEntitlement_c_projectERC: projectExternalReferenceCode,
-			skuExternalReferenceCode: 'PRDCT-DXP',
+			skuExternalReferenceCode: 'marketplace-product-32654011-default',
 			startDate: startDate.toISOString(),
 		}
 	);

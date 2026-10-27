@@ -20,15 +20,12 @@ import {
 } from '../utils/publisherUtils';
 
 const SEEDED_APPS = [
-	'Test App',
-	'Test Supplier Slack Connector',
-	'Test Supplier Theme Pack',
+	'AI Blog Workspace',
+	'Collection display grid view with Item Highlight',
+	'Email MFA for Liferay CE',
 ];
 
-const SEEDED_SOLUTIONS = [
-	'Test Supplier CRM Accelerator',
-	'Test Supplier Partner Portal',
-];
+const SEEDED_SOLUTIONS = ['TeamPulse'];
 
 function appRow(page: Page, name: string) {
 	return page.getByRole('row').filter({hasText: name});
@@ -123,11 +120,11 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 				await expect(row).toContainText('Published');
 			}
 
-			await expect(appRow(page, 'Test App')).toContainText(
+			await expect(appRow(page, 'AI Blog Workspace')).toContainText(
 				'Client Extension'
 			);
 			await expect(
-				appRow(page, 'Test Supplier Theme Pack')
+				appRow(page, 'Collection display grid view with Item Highlight')
 			).toContainText('Low-Code Configuration');
 		});
 
@@ -136,22 +133,22 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 		}) => {
 			await gotoPublisherDashboard(page, 'published-apps');
 
-			await expect(appRow(page, 'Test App')).toBeVisible();
+			await expect(appRow(page, 'AI Blog Workspace')).toBeVisible();
 
 			const search = page
 				.locator('liferay-one-custom-element')
 				.getByRole('textbox', {name: 'Search'});
 
-			await search.fill('Slack');
+			await search.fill('MFA');
 			await search.press('Enter');
 
 			await expect(
-				appRow(page, 'Test Supplier Slack Connector')
+				appRow(page, 'Email MFA for Liferay CE')
 			).toBeVisible();
-			await expect(appRow(page, 'Test Supplier Theme Pack')).toHaveCount(
-				0
-			);
-			await expect(appRow(page, 'Test App')).toHaveCount(0);
+			await expect(
+				appRow(page, 'Collection display grid view with Item Highlight')
+			).toHaveCount(0);
+			await expect(appRow(page, 'AI Blog Workspace')).toHaveCount(0);
 		});
 
 		test('[FLOW-PUBLISHER-ONBOARDING] [ROUTE-PUBLISHER-DASHBOARD-PRODUCTID] opens the summary of a published app and returns to the list', async ({
@@ -159,7 +156,7 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 		}) => {
 			await gotoPublisherDashboard(page, 'published-apps');
 
-			await appRow(page, 'Test App')
+			await appRow(page, 'AI Blog Workspace')
 				.getByRole('button', {name: 'actions'})
 				.click();
 
@@ -183,7 +180,7 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 
 			await expect(page).toHaveURL(/#\/published-apps$/);
 
-			await expect(appRow(page, 'Test App')).toBeVisible();
+			await expect(appRow(page, 'AI Blog Workspace')).toBeVisible();
 		});
 
 		test('[FLOW-PUBLISHER-ONBOARDING] [ROUTE-PUBLISHER-DASHBOARD-PUBLISHED-SOLUTIONS] lists the published solutions with their row actions', async ({
@@ -199,7 +196,7 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 				await expect(appRow(page, name)).toContainText('Published');
 			}
 
-			await appRow(page, 'Test Supplier Partner Portal')
+			await appRow(page, 'TeamPulse')
 				.getByRole('button', {name: 'actions'})
 				.click();
 
@@ -292,7 +289,7 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 
 			await expect(page).toHaveURL(/#\/published-apps$/);
 
-			await expect(appRow(page, 'Test App')).toBeVisible();
+			await expect(appRow(page, 'AI Blog Workspace')).toBeVisible();
 		});
 	});
 

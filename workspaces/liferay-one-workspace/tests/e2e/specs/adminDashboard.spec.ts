@@ -563,7 +563,7 @@ test.describe('[FLOW-ADMIN-DASHBOARD] marketplace solutions', () => {
 
 		await expect(app.getByText('Solutions', {exact: true})).toBeVisible();
 
-		const row = rowWithText(page, 'Test Supplier CRM Accelerator');
+		const row = rowWithText(page, 'SugarCRM Customer Portal');
 
 		await expect(row).toBeVisible();
 
@@ -574,7 +574,7 @@ test.describe('[FLOW-ADMIN-DASHBOARD] marketplace solutions', () => {
 		await expect(page).toHaveURL(/#\/mp-solutions\/\d+$/);
 
 		await expect(
-			app.getByRole('heading', {name: 'Test Supplier CRM Accelerator'})
+			app.getByRole('heading', {name: 'SugarCRM Customer Portal'})
 		).toBeVisible();
 
 		await expect(

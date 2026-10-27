@@ -464,8 +464,9 @@ test.describe('publish flows', () => {
 			adminAPI,
 			page,
 		}) => {
-			const {productId} =
-				await adminAPI.getProductByERC('PRDCT-TEST-APP');
+			const {productId} = await adminAPI.getProductByERC(
+				'marketplace-product-30579441'
+			);
 
 			await gotoPublisherDashboard(
 				page,
@@ -476,7 +477,9 @@ test.describe('publish flows', () => {
 
 			await expect(stepHeading(page, 'Provide App Build')).toBeVisible();
 
-			await expect(page.getByText('Test App').first()).toBeVisible();
+			await expect(
+				page.getByText('AI Blog Workspace').first()
+			).toBeVisible();
 
 			for (const step of ['Build', 'Version', 'Submit']) {
 				await expect(
@@ -650,7 +653,7 @@ test.describe('publish flows', () => {
 				.get<{
 					items: Array<{id: number; name: string}>;
 				}>(
-					'/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/PRDCT-TEST-PARTNER-PORTAL/categories'
+					'/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/marketplace-product-33865729/categories'
 				)
 				.then(
 					({items}) =>
@@ -659,7 +662,7 @@ test.describe('publish flows', () => {
 
 			const {catalogId} = await adminAPI.getProductByERC<{
 				catalogId: number;
-			}>('PRDCT-TEST-PARTNER-PORTAL');
+			}>('marketplace-product-33865729');
 
 			const {productId} = await adminAPI.post<{productId: number}>(
 				'/o/headless-commerce-admin-catalog/v1.0/products',

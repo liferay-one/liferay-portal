@@ -16,6 +16,7 @@ import {
 	getProductCategoriesByVocabularyName,
 	getProductFallback,
 	getProductPriceModel,
+	getProductPublisherName,
 	getProductSpecificationValue,
 	getProductSpecificationValues,
 	getProductType,
@@ -135,6 +136,34 @@ describe('[MOD-PRODUCTUTILS] productUtils', () => {
 					'App-Category'
 				)
 			).toEqual(['Commerce']);
+		});
+	});
+
+	describe('getProductPublisherName', () => {
+		it('reads the publisher name first', () => {
+			expect(
+				getProductPublisherName(
+					toProduct([
+						['developer-name', 'IGNEK INFOTECH'],
+						['publisher-name', 'Liferay, Inc.'],
+					])
+				)
+			).toBe('Liferay, Inc.');
+		});
+
+		it('falls back to the developer name, then to the catalog name', () => {
+			expect(
+				getProductPublisherName(
+					toProduct([['developer-name', 'IGNEK INFOTECH']])
+				)
+			).toBe('IGNEK INFOTECH');
+			expect(
+				getProductPublisherName({
+					...toProduct([]),
+					catalogName: 'IGNEK - Liferay Boutique Company',
+				})
+			).toBe('IGNEK - Liferay Boutique Company');
+			expect(getProductPublisherName(toProduct([]))).toBe('');
 		});
 	});
 

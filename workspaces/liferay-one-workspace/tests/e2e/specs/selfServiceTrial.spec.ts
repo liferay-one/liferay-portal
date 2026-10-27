@@ -48,7 +48,7 @@ type TrialProduct = {
 };
 
 const CMP_TRIAL: TrialProduct = {
-	externalReferenceCode: 'PRDCT-CONTENT-MARKETING',
+	externalReferenceCode: 'marketplace-product-32653971',
 	solutionType: 'cmp',
 	trialExternalReferenceCode: 'PRDCT-CONTENT-MARKETING-TRIAL',
 };
@@ -56,12 +56,15 @@ const CMP_TRIAL: TrialProduct = {
 const DAY_MILLISECONDS = 24 * 60 * 60 * 1000;
 
 const DSR_TRIAL: TrialProduct = {
-	externalReferenceCode: 'PRDCT-DSR',
+	externalReferenceCode: 'marketplace-product-33597098',
 	solutionType: 'dsr',
 	trialExternalReferenceCode: 'PRDCT-DSR-TRIAL',
 };
 
 const PROSPECT_LICENSE_KEY_DURATION_DAYS = 30;
+
+const TRIAL_PRODUCTS_MISSING =
+	'UAT holds no CMP trial or DSR trial product, and the seed holds only real UAT products, so no product carries the self-service-trial-product-erc specification.';
 
 const TRIAL_TIMEOUT = 5 * 60 * 1000;
 
@@ -149,6 +152,19 @@ function getDurationDays(activationKey: ActivationKey): number {
 	);
 }
 
+async function hasTrialProducts(adminAPI: HeadlessAPI) {
+	const found = await Promise.all(
+		[CMP_TRIAL, DSR_TRIAL].map(({trialExternalReferenceCode}) =>
+			adminAPI.getProductByERC(trialExternalReferenceCode).then(
+				() => true,
+				() => false
+			)
+		)
+	);
+
+	return found.every(Boolean);
+}
+
 async function startTrial(
 	adminAPI: HeadlessAPI,
 	page: Page,
@@ -224,7 +240,9 @@ async function submitActivationKeyForm(page: Page, trialProduct: TrialProduct) {
 test.describe('[FLOW-SELF-SERVICE-TRIAL] CMP and DSR self service trials', () => {
 	let buyer: TemporaryBuyer | undefined;
 
-	test.beforeEach(async ({page}) => {
+	test.beforeEach(async ({adminAPI, page}) => {
+		test.skip(!(await hasTrialProducts(adminAPI)), TRIAL_PRODUCTS_MISSING);
+
 		await page.route('**://pages.liferay.com/**', (route) => route.abort());
 	});
 
