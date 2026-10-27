@@ -7,11 +7,13 @@ import {useMemo} from 'react';
 import {useOneContext} from '~/context/OneContextProvider';
 import {useFetch} from '~/hooks/useFetch';
 import {useAccountProjectContactRoles} from '~/hooks/useProjectCommerce';
+import {useProjectOrders} from '~/hooks/useProjectOrders';
 import {canViewAllAccountProjects} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {
 	PROJECT_ADMIN_ERC,
 	PROJECT_ROLE_ERCS,
 } from '~/pages/MyAccount/ProjectMembers/projectRoles';
+import {getProjectsWithOrders} from '~/pages/MyAccount/Projects/utils/getProjectsWithOrders';
 import {Liferay} from '~/services/liferay/liferay';
 
 import type {
@@ -57,6 +59,12 @@ export function useProjectMembers() {
 			sort: 'name:asc',
 		},
 	});
+
+	const {
+		error: ordersError,
+		loading: ordersLoading,
+		placedOrders,
+	} = useProjectOrders();
 
 	const {
 		data: membershipData,
@@ -148,7 +156,13 @@ export function useProjectMembers() {
 			membershipsByProject.set(projectExternalReferenceCode, memberships);
 		});
 
-		const projects = (projectData?.items ?? []).filter(
+		const accountProjects = projectData?.items ?? [];
+
+		const projectsWithOrders = ordersError
+			? accountProjects
+			: getProjectsWithOrders(accountProjects, placedOrders);
+
+		const projects = projectsWithOrders.filter(
 			(project) =>
 				showAllAccountProjects ||
 				membershipsByProject
@@ -275,6 +289,8 @@ export function useProjectMembers() {
 		contactRoleExternalReferenceCodesByProjectId,
 		contactRoleNameByExternalReferenceCode,
 		membershipData,
+		ordersError,
+		placedOrders,
 		projectData,
 		showAllAccountProjects,
 		userId,
@@ -291,6 +307,7 @@ export function useProjectMembers() {
 			accountRolesLoading ||
 			contactRolesLoading ||
 			membershipsLoading ||
+			ordersLoading ||
 			projectsLoading ||
 			userAccountsLoading,
 		mutate,

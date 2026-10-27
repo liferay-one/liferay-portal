@@ -12,8 +12,8 @@ import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';
 import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {translate} from '~/i18n';
 import {
+	useProjectsWithOrders,
 	useSelectedProject,
-	useUserProjects,
 } from '~/pages/MyAccount/Projects/projects';
 import {getProjectTickets} from '~/services/spring-boot/Jira';
 import {ITicket} from '~/types/ticket';
@@ -25,7 +25,7 @@ const TicketAttachmentsAdd = () => {
 		hasAccountProjects,
 		loading: projectsLoading,
 		projects,
-	} = useUserProjects();
+	} = useProjectsWithOrders();
 
 	const {projectERC, selectProject} = useSelectedProject(
 		projectsLoading,

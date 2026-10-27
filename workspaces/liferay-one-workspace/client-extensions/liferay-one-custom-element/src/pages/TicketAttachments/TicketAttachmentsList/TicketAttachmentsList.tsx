@@ -18,8 +18,8 @@ import {useConfirmationModal} from '~/hooks/useConfirmationModal';
 import {useFetch} from '~/hooks/useFetch';
 import {translate} from '~/i18n';
 import {
+	useProjectsWithOrders,
 	useSelectedProject,
-	useUserProjects,
 } from '~/pages/MyAccount/Projects/projects';
 import useDeleteTicketAttachment from '~/pages/TicketAttachments/hooks/useDeleteTicketAttachment';
 import formatFileSize from '~/pages/TicketAttachments/utils/formatFileSize';
@@ -82,7 +82,7 @@ const TicketAttachmentsList = () => {
 		hasAccountProjects,
 		loading: projectsLoading,
 		projects,
-	} = useUserProjects();
+	} = useProjectsWithOrders();
 
 	const {projectERC, selectProject} = useSelectedProject(
 		projectsLoading,

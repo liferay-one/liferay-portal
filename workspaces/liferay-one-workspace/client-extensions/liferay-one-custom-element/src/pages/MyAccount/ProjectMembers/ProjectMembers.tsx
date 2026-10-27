@@ -22,7 +22,7 @@ import {
 	getDesignationNames,
 	getProjectRoleLabel,
 } from '~/pages/MyAccount/ProjectMembers/projectRoles';
-import {useHasProject} from '~/pages/MyAccount/Projects/hooks/useHasProject';
+import {useProjectsWithOrders} from '~/pages/MyAccount/Projects/hooks/useProjectsWithOrders';
 import {Liferay} from '~/services/liferay/liferay';
 
 import './ProjectMembers.css';
@@ -38,7 +38,8 @@ export default function ProjectMembers() {
 
 	const {userAccountModel} = useOneContext();
 
-	const {hasProject, loading: hasProjectLoading} = useHasProject();
+	const {hasAccountProjects, loading: hasAccountProjectsLoading} =
+		useProjectsWithOrders();
 
 	const {data: account} = useFetch<Account>(
 		accountId ? `/o/headless-admin-user/v1.0/accounts/${accountId}` : null
@@ -86,7 +87,7 @@ export default function ProjectMembers() {
 		});
 	};
 
-	if (!hasProjectLoading && !hasProject) {
+	if (!hasAccountProjectsLoading && !hasAccountProjects) {
 		return (
 			<Page
 				description={i18n.translate(
@@ -103,7 +104,9 @@ export default function ProjectMembers() {
 			description={i18n.translate(
 				'manage-project-roles-and-cloud-contact-designations'
 			)}
-			pageRendererProps={{isLoading: loading || hasProjectLoading}}
+			pageRendererProps={{
+				isLoading: loading || hasAccountProjectsLoading,
+			}}
 		>
 			<div className="mt-3 project-members-card">
 				{rows.length ? (
