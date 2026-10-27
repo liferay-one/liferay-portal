@@ -260,10 +260,10 @@ const navRoutes = [
 
 const detailRoutes = [
 	{
-		id: 'ROUTE-ADMIN-ACCOUNT-INSPECTOR-ACCOUNTID',
+		id: 'ROUTE-ADMIN-ACCOUNT-INSPECTOR-EXTERNALREFERENCECODE',
 		page: 'AccountInspectorDetail page',
-		path: 'account-inspector/:accountId',
-		url: '/account-inspector/42',
+		path: 'account-inspector/:externalReferenceCode',
+		url: '/account-inspector/ACCNT-001',
 		users: ['adminUser'],
 	},
 	{
@@ -295,17 +295,17 @@ const detailRoutes = [
 		users: ['adminUser', 'financeUser'],
 	},
 	{
-		id: 'ROUTE-ADMIN-PRODUCT-INSPECTOR-ENTITLEMENT-DEFINITIONS-ENTITLEMENTDEFINITIONID',
+		id: 'ROUTE-ADMIN-PRODUCT-INSPECTOR-ENTITLEMENT-DEFINITIONS-EXTERNALREFERENCECODE',
 		page: 'EntitlementDefinitionDetail page',
-		path: 'product-inspector/entitlement-definitions/:entitlementDefinitionId',
-		url: '/product-inspector/entitlement-definitions/42',
+		path: 'product-inspector/entitlement-definitions/:externalReferenceCode',
+		url: '/product-inspector/entitlement-definitions/C_ENTITLEMENT_DEFINITION_001',
 		users: ['adminUser'],
 	},
 	{
-		id: 'ROUTE-ADMIN-PRODUCT-INSPECTOR-PRODUCTID',
+		id: 'ROUTE-ADMIN-PRODUCT-INSPECTOR-EXTERNALREFERENCECODE',
 		page: 'ProductInspectorDetail page',
-		path: 'product-inspector/:productId',
-		url: '/product-inspector/42',
+		path: 'product-inspector/:externalReferenceCode',
+		url: '/product-inspector/PRDCT-001',
 		users: ['adminUser'],
 	},
 	{
