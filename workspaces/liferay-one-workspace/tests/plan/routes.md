@@ -40,7 +40,7 @@ Every SPA route in the custom element. The `route` attribute of the host widget 
 | ROUTE-MY-ACCOUNT-APPLICATIONERC | Project route table wires `applications/:applicationERC` to ProjectItemDetails with kind application | unit | P1 | planned | route:my-account::applicationERC |
 | ROUTE-MY-ACCOUNT-APPLICATIONERC-INSTALL-ORDERID | Project route table wires `applications/:applicationERC/install/:orderId` to the CloudAppInstall page | unit | P1 | planned | route:my-account::applicationERC/install/:orderId |
 | ROUTE-MY-ACCOUNT-LICENSEKEYERC | Project route table wires `activation/:licenseKeyERC` to the LicenseKeyDetails page | unit | P1 | planned | route:my-account::licenseKeyERC |
-| ROUTE-MY-ACCOUNT-ORDERID | Account route table wires `orders/:orderId` to the OrderDetails page | unit | P1 | planned | route:my-account::orderId |
+| ROUTE-MY-ACCOUNT-ORDERID | Account route table wires `orders/:orderId` to the OrderDetails page, whose order items list shows the product option name of each item and no version column | unit | P1 | planned | route:my-account::orderId |
 | ROUTE-MY-ACCOUNT-PRODUCTERC | Project route table wires `products/:productERC` to ProjectItemDetails with kind product | unit | P1 | planned | route:my-account::productERC |
 | ROUTE-MY-ACCOUNT-PROJECTERC | Project detail route (`:projectERC`) renders the selected project; declared inline in MyAccountRouter. Exercised by FLOW-PROJECT-LIFECYCLE | e2e | P1 | planned | route:my-account::projectERC |
 | ROUTE-MY-ACCOUNT-ACCOUNT-DETAILS | Account route table wires `account-details` to the AccountDetails page under the AccountTabsLayout | unit | P1 | planned | route:my-account:account-details |
