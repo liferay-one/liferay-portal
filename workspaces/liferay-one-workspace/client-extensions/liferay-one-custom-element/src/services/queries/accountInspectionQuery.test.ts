@@ -10,13 +10,16 @@ import {accountInspectionQuery} from './accountInspectionQuery';
 
 const mocks = vi.hoisted(() => ({
 	fetcher: vi.fn(),
-	getAccount: vi.fn(),
+	getAccountByExternalReferenceCode: vi.fn(),
 }));
 
 vi.mock('~/services/fetcher/fetcher', () => ({default: mocks.fetcher}));
 
 vi.mock('~/services/headless/HeadlessAdminUser', () => ({
-	default: {getAccount: mocks.getAccount},
+	default: {
+		getAccountByExternalReferenceCode:
+			mocks.getAccountByExternalReferenceCode,
+	},
 }));
 
 const ACCOUNT = {externalReferenceCode: 'ACCNT-001', id: 100, name: 'Omni'};
@@ -36,22 +39,31 @@ function findRequest(pathname: string) {
 describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () => {
 	beforeEach(() => {
 		mocks.fetcher.mockReset();
-		mocks.getAccount.mockReset();
+		mocks.getAccountByExternalReferenceCode.mockReset();
 
-		mocks.getAccount.mockResolvedValue(ACCOUNT);
+		mocks.getAccountByExternalReferenceCode.mockResolvedValue(ACCOUNT);
 		mocks.fetcher.mockResolvedValue(toPage([]));
 	});
 
-	it('has no key without a numeric account ID', () => {
+	it('has no key without an account external reference code', () => {
 		expect(accountInspectionQuery(undefined).key).toBeNull();
-		expect(accountInspectionQuery('..%2F..%2Fx').key).toBeNull();
-		expect(accountInspectionQuery('100').key).toBe(
-			'/account-inspection/100'
+		expect(accountInspectionQuery('').key).toBeNull();
+		expect(accountInspectionQuery('..').key).toBeNull();
+		expect(accountInspectionQuery('ACCNT-001').key).toBe(
+			'/account-inspection/ACCNT-001'
+		);
+	});
+
+	it('loads the account by its encoded external reference code', async () => {
+		await accountInspectionQuery('ACCNT/001').fetcher();
+
+		expect(mocks.getAccountByExternalReferenceCode).toHaveBeenCalledWith(
+			'ACCNT%2F001'
 		);
 	});
 
 	it('filters orders by account and related objects by relationship or ERC', async () => {
-		await accountInspectionQuery('100').fetcher();
+		await accountInspectionQuery('ACCNT-001').fetcher();
 
 		const orders = findRequest(
 			'/o/headless-commerce-admin-order/v1.0/orders'
@@ -103,7 +115,7 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 			return toPage([]);
 		});
 
-		const {orders} = await accountInspectionQuery('100').fetcher();
+		const {orders} = await accountInspectionQuery('ACCNT-001').fetcher();
 
 		expect(orders.items[0].orderItems).toHaveLength(25);
 		expect(orders.items[0].incompleteOrderItems).toBe(false);
@@ -132,7 +144,7 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 				: toPage([]);
 		});
 
-		const {orders} = await accountInspectionQuery('100').fetcher();
+		const {orders} = await accountInspectionQuery('ACCNT-001').fetcher();
 
 		expect(orders.items[0].orderItems).toHaveLength(20);
 		expect(orders.items[0].incompleteOrderItems).toBe(true);
@@ -156,7 +168,7 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 			);
 		});
 
-		const {related} = await accountInspectionQuery('100').fetcher();
+		const {related} = await accountInspectionQuery('ACCNT-001').fetcher();
 
 		expect(related.entitlements.items).toHaveLength(1200);
 		expect(related.entitlements.totalCount).toBe(1200);
@@ -170,7 +182,7 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 				: toPage([])
 		);
 
-		const {related} = await accountInspectionQuery('100').fetcher();
+		const {related} = await accountInspectionQuery('ACCNT-001').fetcher();
 
 		expect(related.entitlements.items).toHaveLength(20);
 		expect(related.entitlements.totalCount).toBe(50000);
@@ -194,7 +206,7 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 			return toPage([{id: page}], 1200);
 		});
 
-		const {related} = await accountInspectionQuery('100').fetcher();
+		const {related} = await accountInspectionQuery('ACCNT-001').fetcher();
 
 		expect(related.entitlements.error).toBeUndefined();
 		expect(related.entitlements.items).toEqual([{id: 1}, {id: 3}]);
@@ -202,12 +214,12 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 	});
 
 	it('doubles a quote in the account ERC filter', async () => {
-		mocks.getAccount.mockResolvedValue({
+		mocks.getAccountByExternalReferenceCode.mockResolvedValue({
 			...ACCOUNT,
 			externalReferenceCode: "O'Brien",
 		});
 
-		await accountInspectionQuery('100').fetcher();
+		await accountInspectionQuery('ACCNT-001').fetcher();
 
 		expect(
 			findRequest('/o/c/usagereports')?.searchParams.get('filter')
@@ -217,7 +229,7 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 	it('stamps the load time', async () => {
 		const before = Date.now();
 
-		const {loadedAt} = await accountInspectionQuery('100').fetcher();
+		const {loadedAt} = await accountInspectionQuery('ACCNT-001').fetcher();
 
 		expect(loadedAt).toBeGreaterThanOrEqual(before);
 	});
@@ -236,7 +248,7 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 			return toPage([{id: 1}]);
 		});
 
-		const inspection = await accountInspectionQuery('100').fetcher();
+		const inspection = await accountInspectionQuery('ACCNT-001').fetcher();
 
 		expect(inspection.related.publisherDetails).toEqual({
 			error: '404 Not Found',
@@ -249,10 +261,12 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 	});
 
 	it('fails when the account cannot be read', async () => {
-		mocks.getAccount.mockRejectedValue(new FetcherError('Failed'));
-
-		await expect(accountInspectionQuery('100').fetcher()).rejects.toThrow(
-			'Failed'
+		mocks.getAccountByExternalReferenceCode.mockRejectedValue(
+			new FetcherError('Failed')
 		);
+
+		await expect(
+			accountInspectionQuery('ACCNT-001').fetcher()
+		).rejects.toThrow('Failed');
 	});
 });
