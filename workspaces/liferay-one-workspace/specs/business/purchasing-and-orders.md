@@ -128,6 +128,7 @@ Terms used in this file:
 | REQ-ORDERS-101 | A user can search the orders by order ID or project name. A user can filter by project, to include or exclude projects, and by status. | P2 | LPD-93898 | — |
 | REQ-ORDERS-102 | The order details show the order ID, date, project, status, payment status, total, purchase order number, buyer, account, and items. A missing total shows $0.00. | P1 | LPD-93898 | `ROUTE-MY-ACCOUNT-ORDERID`, `HOOK-USEPLACEDORDER` |
 | REQ-ORDERS-103 | My Account shows the orders, projects, and billing of an entitled member. | P1 | LPD-88258 | `FLOW-MY-ACCOUNT-OVERVIEW` |
+| REQ-ORDERS-104 | The order items list of the order details shows the product, SKU, quantity, and price of each item. The product is the value of the Salesforce product option of the SKU, else the value of the first other option that names the product, else the name of the order item. A license usage type, a consumption role, or a machine type never names the product. | P1 | LPD-112207 | `ROUTE-MY-ACCOUNT-ORDERID`, `MOD-ORDERITEMOPTIONUTILS` |
 
 ## Next Steps and Completion Pages
 

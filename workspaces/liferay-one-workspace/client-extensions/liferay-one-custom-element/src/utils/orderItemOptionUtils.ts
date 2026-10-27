@@ -6,7 +6,13 @@
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 type OrderItemOption = {
+	key?: string;
 	skuOptionValueNames?: string[];
+};
+
+type OrderItem = {
+	name: string;
+	options?: string;
 };
 
 const ENVIRONMENT_PATTERNS: [RegExp, string][] = [
@@ -16,7 +22,40 @@ const ENVIRONMENT_PATTERNS: [RegExp, string][] = [
 	[/\blimited\b/i, 'limited'],
 ];
 
+const LICENSE_USAGE_TYPE_OPTION_KEY_SUFFIX = '-license-usage-type';
+
+const NON_PRODUCT_OPTION_KEYS = new Set(['consumption-role', 'machinetype']);
+
+const SALESFORCE_PRODUCT_OPTION_KEY = 'salesforce-product';
+
 const SIZING_PATTERN = /\bsizing[- ]?(\d+)\b/i;
+
+export function getOrderItemProductName(orderItem: OrderItem): string {
+	return getProductOptionValueName(orderItem) || orderItem.name;
+}
+
+export function getProductOptionValueName({options}: OrderItem): string {
+	const parsedOptions = safeJSONParse<OrderItemOption[]>(options ?? null, []);
+
+	const productOptions = (
+		Array.isArray(parsedOptions) ? parsedOptions : []
+	).filter(isProductOption);
+
+	const productOption =
+		productOptions.find(
+			(option) => option.key === SALESFORCE_PRODUCT_OPTION_KEY
+		) ?? productOptions[0];
+
+	return productOption?.skuOptionValueNames?.[0] ?? '';
+}
+
+function isProductOption({key, skuOptionValueNames}: OrderItemOption) {
+	return (
+		!!skuOptionValueNames?.length &&
+		!NON_PRODUCT_OPTION_KEYS.has(key ?? '') &&
+		!key?.endsWith(LICENSE_USAGE_TYPE_OPTION_KEY_SUFFIX)
+	);
+}
 
 export function getOptionValueNames(options?: string): string[] {
 	return safeJSONParse<OrderItemOption[]>(options ?? null, []).flatMap(

@@ -8,7 +8,10 @@ import {useMemo} from 'react';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
 import {OrderTypes} from '~/types/orders';
-import {getOptionValueNames} from '~/utils/orderItemOptionUtils';
+import {
+	getOptionValueNames,
+	getProductOptionValueName,
+} from '~/utils/orderItemOptionUtils';
 import {
 	OrderCustomFields,
 	getOrderStatusToken,
@@ -26,8 +29,6 @@ import type {AnalyticsProject} from '~/types/analytics';
 import type {PlacedOrder, PlacedOrderItems, VirtualItem} from '~/types/orders';
 
 const MACHINE_TYPE_OPTION_KEY = 'machinetype';
-
-const SALESFORCE_PRODUCT_OPTION_KEY = 'salesforce-product';
 
 const PAGE_SIZE = 200;
 
@@ -208,17 +209,6 @@ function getSKUOptions(placedOrderItem: PlacedOrderItems) {
 	);
 }
 
-function getSKUProductName(placedOrderItem: PlacedOrderItems): string {
-	const skuOptions = getSKUOptions(placedOrderItem);
-
-	const skuOption =
-		skuOptions.find(
-			(option) => option.key === SALESFORCE_PRODUCT_OPTION_KEY
-		) ?? skuOptions[0];
-
-	return skuOption?.skuOptionValueNames?.[0] ?? '';
-}
-
 function getTierName(placedOrderItem: PlacedOrderItems): string {
 	return (
 		getSKUOptions(placedOrderItem)[0]?.skuOptionValueNames?.[0] ??
@@ -320,7 +310,7 @@ export function getProductEnvironmentOrderItems(
 	return getProductOrderItems(placedOrders, productId).map((item) => ({
 		id: item.id,
 		optionValueNames: getOptionValueNames(item.options),
-		skuProductName: getSKUProductName(item),
+		skuProductName: getProductOptionValueName(item),
 	}));
 }
 
@@ -384,7 +374,7 @@ export function getProductOrderInfo(
 				? ''
 				: order.author ?? '',
 		quantity: quantity ? String(quantity) : '',
-		skuProductNames: placedOrderItems.map(getSKUProductName),
+		skuProductNames: placedOrderItems.map(getProductOptionValueName),
 		status: getProjectItemStatusToken(
 			itemType,
 			order,
