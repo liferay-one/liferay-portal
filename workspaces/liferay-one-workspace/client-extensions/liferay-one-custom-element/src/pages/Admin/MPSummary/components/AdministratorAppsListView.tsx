@@ -43,6 +43,7 @@ const AdministratorAppsListView: React.FC<AdministratorAppsListViewProps> = ({
 	<ListView<Product>
 		id="administrator-apps"
 		managementToolbarProps={{
+			filterIconOnly: true,
 			filterSchema: 'administratorApps',
 			...managementToolbarProps,
 		}}

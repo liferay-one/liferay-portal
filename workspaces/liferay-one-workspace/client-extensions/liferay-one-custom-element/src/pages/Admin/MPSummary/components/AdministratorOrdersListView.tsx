@@ -84,6 +84,8 @@ export function AdministratorOrdersListView({
 					);
 				},
 
+				filterIconOnly: true,
+
 				filterSchema: 'administratorOrders',
 				...managementToolbarProps,
 			}}
