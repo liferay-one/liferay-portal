@@ -34,6 +34,11 @@ const mocks = vi.hoisted(() => ({
 			isAccountMember: true,
 		},
 	},
+	projectOrders: {
+		error: undefined as unknown,
+		loading: false,
+		placedOrders: [] as unknown[],
+	},
 	useFetch: vi.fn(),
 }));
 
@@ -47,6 +52,11 @@ vi.mock('~/hooks/useFetch', () => ({
 
 vi.mock('~/hooks/useProjectCommerce', () => ({
 	useAccountProjectContactRoles: () => mocks.contactRoles,
+}));
+
+vi.mock('~/hooks/useProjectOrders', async (importOriginal) => ({
+	...(await importOriginal<typeof import('~/hooks/useProjectOrders')>()),
+	useProjectOrders: () => mocks.projectOrders,
 }));
 
 vi.mock('~/services/liferay/liferay', () => ({
@@ -90,7 +100,17 @@ function userAccount(
 	};
 }
 
+function order(projectName: string) {
+	return {customFields: {projectName}};
+}
+
 function setDefaultResponses() {
+	mocks.projectOrders = {
+		error: undefined,
+		loading: false,
+		placedOrders: [order('Alpha'), order('Beta'), order('Gamma')],
+	};
+
 	mocks.fetchResponses = {
 		[ACCOUNT_ROLES_URL]: {
 			data: {
@@ -229,6 +249,45 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 		]);
 		expect(beta.members.map(({userId}) => userId)).toEqual([10]);
 		expect(gamma.members).toEqual([]);
+	});
+
+	it('hides a project that has no placed order', () => {
+		mocks.projectOrders.placedOrders = [
+			order('Alpha'),
+			{customFields: {salesforceProjectId: 'PRJ-C'}},
+		];
+
+		const {result} = renderHook(() => useProjectMembers());
+
+		expect(
+			result.current.rows.map(
+				({externalReferenceCode}) => externalReferenceCode
+			)
+		).toEqual(['PRJ-A', 'PRJ-C']);
+	});
+
+	it('lists every project when the orders cannot be read', () => {
+		mocks.projectOrders = {
+			error: new Error('Unable to read orders'),
+			loading: false,
+			placedOrders: [],
+		};
+
+		const {result} = renderHook(() => useProjectMembers());
+
+		expect(
+			result.current.rows.map(
+				({externalReferenceCode}) => externalReferenceCode
+			)
+		).toEqual(['PRJ-A', 'PRJ-B', 'PRJ-C']);
+	});
+
+	it('reports loading while the orders load', () => {
+		mocks.projectOrders = {...mocks.projectOrders, loading: true};
+
+		const {result} = renderHook(() => useProjectMembers());
+
+		expect(result.current.loading).toBe(true);
 	});
 
 	it('lists only the projects of the current user without an account role', () => {

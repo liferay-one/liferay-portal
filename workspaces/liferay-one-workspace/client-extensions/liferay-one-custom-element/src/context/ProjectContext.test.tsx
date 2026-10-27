@@ -103,6 +103,7 @@ function mockState({
 		loading: unassignedLoading,
 	} as unknown as ReturnType<typeof useUnassignedCommerce>);
 	vi.mocked(useUserProjects).mockReturnValue({
+		accountProjects: projects,
 		loading: projectsLoading,
 		projects,
 	} as unknown as ReturnType<typeof useUserProjects>);
