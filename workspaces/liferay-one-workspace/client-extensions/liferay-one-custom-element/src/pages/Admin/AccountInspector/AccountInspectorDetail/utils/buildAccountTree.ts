@@ -28,16 +28,40 @@ import type {
 
 import type {SeverityIndex} from './accountTreeNodeUtils';
 
+const NO_CONTRACT_ID = 0;
+
 const NO_PROJECT_ID = 0;
 
-function buildBuckets(inspection: AccountInspection) {
+function groupBy<Entry>(
+	entries: Entry[],
+	getKey: (entry: Entry) => number | string
+) {
+	const entriesByKey = new Map<string, Entry[]>();
+
+	entries.forEach((entry) => {
+		const key = String(getKey(entry));
+
+		entriesByKey.set(key, [...(entriesByKey.get(key) ?? []), entry]);
+	});
+
+	return (key: number | string) => entriesByKey.get(String(key)) ?? [];
+}
+
+function toPlacementKey(contractId: number, projectId: number) {
+	return `${contractId}/${projectId}`;
+}
+
+function buildTreeIndex(inspection: AccountInspection) {
 	const {orders, related} = inspection;
 
+	const contractIds = new Set(related.contracts.items.map(({id}) => id));
+	const entitlementIds = new Set(
+		related.entitlements.items.map(({id}) => id)
+	);
+	const orderItems = getOrderItemCollection(orders).items;
 	const projectIds = new Set(related.projects.items.map(({id}) => id));
 
-	const contractsById = new Map(
-		related.contracts.items.map((contract) => [contract.id, contract])
-	);
+	const orderItemIds = new Set(orderItems.map(({id}) => id));
 
 	const projectIdsByName = new Map<string, number | null>();
 
@@ -50,216 +74,247 @@ function buildBuckets(inspection: AccountInspection) {
 		}
 	});
 
-	const toBucketId = (projectId: unknown) => {
+	const toContractId = (contractId: unknown) => {
+		const id = toNumber(contractId);
+
+		return contractIds.has(id) ? id : NO_CONTRACT_ID;
+	};
+
+	const toProjectId = (projectId: unknown) => {
 		const id = toNumber(projectId);
 
 		return projectIds.has(id) ? id : NO_PROJECT_ID;
 	};
 
-	const byBucket = <Entry>(
-		entries: Entry[],
-		getProjectId: (entry: Entry) => number
-	) => {
-		const entriesByBucket = new Map<number, Entry[]>();
+	const byProject = (entries: InspectedEntry[], fieldName: string) =>
+		groupBy(entries, (entry) => toProjectId(entry[fieldName]));
 
-		entries.forEach((entry) => {
-			const bucketId = getProjectId(entry);
+	const byPlacement = (
+		entries: InspectedEntry[],
+		contractFieldName: string,
+		projectFieldName: string
+	) =>
+		groupBy(entries, (entry) =>
+			toPlacementKey(
+				toContractId(entry[contractFieldName]),
+				toProjectId(entry[projectFieldName])
+			)
+		);
 
-			entriesByBucket.set(bucketId, [
-				...(entriesByBucket.get(bucketId) ?? []),
-				entry,
-			]);
-		});
+	const getOrderItemId = (entitlement: InspectedEntry) =>
+		toNumber(
+			entitlement.r_commerceOrderItemToEntitlement_commerceOrderItemId
+		);
 
-		return (bucketId: number) => entriesByBucket.get(bucketId) ?? [];
-	};
+	const getEntitlementId = (licenseKey: InspectedEntry) =>
+		toNumber(licenseKey.r_entitlementToLicenseKey_c_entitlementId);
 
-	const orderItems = getOrderItemCollection(orders).items;
+	const isUnderEntitlement = (licenseKey: InspectedEntry) =>
+		entitlementIds.has(getEntitlementId(licenseKey));
 
-	const byRelationship = (entries: InspectedEntry[], fieldName: string) =>
-		byBucket(entries, (entry) => toBucketId(entry[fieldName]));
+	const isUnderOrderItem = (entitlement: InspectedEntry) =>
+		orderItemIds.has(getOrderItemId(entitlement));
 
 	return {
-		activationKeys: byRelationship(
+		activationKeys: byProject(
 			related.activationKeys.items,
 			'r_projectToActivationKey_c_projectId'
 		),
-		contracts: byRelationship(
-			related.contracts.items,
-			'r_projectToContract_c_projectId'
-		),
-		contractsById,
-		entitlements: byRelationship(
-			related.entitlements.items,
+		entitlements: byPlacement(
+			related.entitlements.items.filter(
+				(entitlement) => !isUnderOrderItem(entitlement)
+			),
+			'r_contractToEntitlement_c_contractId',
 			'r_projectToEntitlement_c_projectId'
 		),
-		environments: byRelationship(
+		entitlementsByOrderItem: groupBy(
+			related.entitlements.items.filter(isUnderOrderItem),
+			getOrderItemId
+		),
+		environments: byPlacement(
 			related.environments.items,
+			'r_contractToEnvironment_c_contractId',
 			'r_projectToEnvironment_c_projectId'
 		),
-		licenseKeys: byRelationship(
-			related.licenseKeys.items,
+		licenseKeys: byProject(
+			related.licenseKeys.items.filter(
+				(licenseKey) => !isUnderEntitlement(licenseKey)
+			),
 			'r_projectToLicenseKey_c_projectId'
 		),
-		orderItems: byBucket(orderItems, ({orderId}) => orderId ?? 0),
-		orders: byBucket(
-			orders.items,
-			({customFields}) =>
-				projectIdsByName.get(String(customFields?.projectName ?? '')) ??
-				NO_PROJECT_ID
+		licenseKeysByEntitlement: groupBy(
+			related.licenseKeys.items.filter(isUnderEntitlement),
+			getEntitlementId
 		),
-		projectMemberships: byRelationship(
+		orderItems: groupBy(orderItems, ({orderId}) => orderId ?? 0),
+		orders: groupBy(orders.items, ({customFields}) =>
+			toPlacementKey(
+				toContractId(customFields?.contractId),
+				projectIdsByName.get(String(customFields?.projectName ?? '')) ??
+					NO_PROJECT_ID
+			)
+		),
+		projectMemberships: byProject(
 			related.projectMemberships.items,
 			'r_projectToProjectMembership_c_projectId'
 		),
-		usageReports: byRelationship(
+		toProjectId,
+		usageReports: byProject(
 			related.usageReports.items,
 			'r_projectToUsageReport_c_projectId'
 		),
 	};
 }
 
-function partitionByContract(
-	entries: InspectedEntry[],
-	fieldName: string,
-	contractIds: Set<number>
-) {
-	return {
-		inContract: (contractId: number) =>
-			entries.filter(
-				(entry) => toNumber(entry[fieldName]) === contractId
-			),
-		withoutContract: entries.filter(
-			(entry) => !contractIds.has(toNumber(entry[fieldName]))
-		),
-	};
-}
+type TreeIndex = ReturnType<typeof buildTreeIndex>;
 
-function getReferencedContracts(
-	entries: InspectedEntry[][],
-	contractIds: Set<number>,
-	contractsById: Map<number, InspectedEntry>
+function buildEntitlementNodes(
+	parentKey: string,
+	entitlements: InspectedEntry[],
+	index: TreeIndex,
+	severityIndex: SeverityIndex
 ) {
-	const referencedIds = new Set(
-		entries
-			.flat()
-			.flatMap((entry) => [
-				toNumber(entry.r_contractToEntitlement_c_contractId),
-				toNumber(entry.r_contractToEnvironment_c_contractId),
-			])
-			.filter((id) => id && !contractIds.has(id) && contractsById.has(id))
+	return toGroupNode(
+		parentKey,
+		'entitlements',
+		entitlements,
+		severityIndex,
+		(entitlement, entitlementKey) =>
+			toGroupNode(
+				entitlementKey,
+				'licenseKeys',
+				index.licenseKeysByEntitlement(entitlement.id),
+				severityIndex
+			)
 	);
-
-	return [...referencedIds].map((id) => contractsById.get(id)!);
 }
 
-function buildBucketChildren(
-	bucketKey: string,
-	bucketId: number,
-	buckets: ReturnType<typeof buildBuckets>,
+function buildPlacementChildren(
+	parentKey: string,
+	contractId: number,
+	projectId: number,
+	index: TreeIndex,
 	severityIndex: SeverityIndex
 ): AccountTreeNode[] {
-	const bucketEntitlements = buckets.entitlements(bucketId);
-	const bucketEnvironments = buckets.environments(bucketId);
-	const ownContracts = buckets.contracts(bucketId);
-
-	const contracts = [
-		...ownContracts,
-		...getReferencedContracts(
-			[bucketEntitlements, bucketEnvironments],
-			new Set(ownContracts.map(({id}) => id)),
-			buckets.contractsById
-		),
-	];
-
-	const contractIds = new Set(contracts.map(({id}) => id));
-
-	const entitlements = partitionByContract(
-		bucketEntitlements,
-		'r_contractToEntitlement_c_contractId',
-		contractIds
-	);
-	const environments = partitionByContract(
-		bucketEnvironments,
-		'r_contractToEnvironment_c_contractId',
-		contractIds
-	);
+	const placementKey = toPlacementKey(contractId, projectId);
 
 	return [
 		...toGroupNode(
-			bucketKey,
-			'projectMemberships',
-			buckets.projectMemberships(bucketId),
-			severityIndex
-		),
-		...contracts.map((contract) => {
-			const contractKey = `${bucketKey}/${toSeverityKey(
-				'contracts',
-				contract.id
-			)}`;
-
-			return toRecordNode(
-				bucketKey,
-				'contracts',
-				contract,
-				severityIndex,
-				[
-					...toGroupNode(
-						contractKey,
-						'entitlements',
-						entitlements.inContract(contract.id),
-						severityIndex
-					),
-					...toGroupNode(
-						contractKey,
-						'environments',
-						environments.inContract(contract.id),
-						severityIndex
-					),
-				]
-			);
-		}),
-		...toGroupNode(
-			bucketKey,
-			'entitlements',
-			entitlements.withoutContract,
-			severityIndex
-		),
-		...toGroupNode(
-			bucketKey,
-			'environments',
-			environments.withoutContract,
-			severityIndex
-		),
-		...toGroupNode(
-			bucketKey,
+			parentKey,
 			'orders',
-			buckets.orders(bucketId),
+			index.orders(placementKey),
 			severityIndex,
 			(order, orderKey) =>
 				toGroupNode(
 					orderKey,
 					'orderItems',
-					buckets.orderItems(order.id),
-					severityIndex
+					index.orderItems(order.id),
+					severityIndex,
+					(orderItem, orderItemKey) =>
+						buildEntitlementNodes(
+							orderItemKey,
+							index.entitlementsByOrderItem(orderItem.id),
+							index,
+							severityIndex
+						)
 				)
 		),
+		...buildEntitlementNodes(
+			parentKey,
+			index.entitlements(placementKey),
+			index,
+			severityIndex
+		),
 		...toGroupNode(
-			bucketKey,
+			parentKey,
+			'environments',
+			index.environments(placementKey),
+			severityIndex
+		),
+	];
+}
+
+function buildContractChildren(
+	contract: InspectedEntry,
+	contractKey: string,
+	projects: InspectedEntry[],
+	index: TreeIndex,
+	severityIndex: SeverityIndex
+): AccountTreeNode[] {
+	const ownerProjectId = index.toProjectId(
+		contract.r_projectToContract_c_projectId
+	);
+
+	const projectNodes = projects.flatMap((project) => {
+		const children = buildPlacementChildren(
+			`${contractKey}/${toSeverityKey('projects', project.id)}`,
+			contract.id,
+			project.id,
+			index,
+			severityIndex
+		);
+
+		return children.length || project.id === ownerProjectId
+			? [
+					toRecordNode(
+						contractKey,
+						'projects',
+						project,
+						severityIndex,
+						children
+					),
+				]
+			: [];
+	});
+
+	return [
+		...projectNodes,
+		...buildPlacementChildren(
+			contractKey,
+			contract.id,
+			NO_PROJECT_ID,
+			index,
+			severityIndex
+		),
+	];
+}
+
+function buildProjectChildren(
+	projectKey: string,
+	projectId: number,
+	index: TreeIndex,
+	severityIndex: SeverityIndex
+): AccountTreeNode[] {
+	return [
+		...toGroupNode(
+			projectKey,
+			'projectMemberships',
+			index.projectMemberships(projectId),
+			severityIndex
+		),
+		...buildPlacementChildren(
+			projectKey,
+			NO_CONTRACT_ID,
+			projectId,
+			index,
+			severityIndex
+		),
+		...toGroupNode(
+			projectKey,
 			'licenseKeys',
-			buckets.licenseKeys(bucketId),
+			index.licenseKeys(projectId),
 			severityIndex
 		),
 		...toGroupNode(
-			bucketKey,
+			projectKey,
 			'activationKeys',
-			buckets.activationKeys(bucketId),
+			index.activationKeys(projectId),
 			severityIndex
 		),
 		...toGroupNode(
-			bucketKey,
+			projectKey,
 			'usageReports',
-			buckets.usageReports(bucketId),
+			index.usageReports(projectId),
 			severityIndex
 		),
 	];
@@ -329,32 +384,47 @@ function buildAccountTree(
 ): AccountTreeNode[] {
 	const severityIndex = buildSeverityIndex(findings);
 
-	const buckets = buildBuckets(inspection);
+	const index = buildTreeIndex(inspection);
+	const projects = inspection.related.projects.items;
 
-	const projectNodes = inspection.related.projects.items.map((project) =>
+	const projectNodes = projects.map((project) =>
 		toRecordNode(
 			'root',
 			'projects',
 			project,
 			severityIndex,
-			buildBucketChildren(
+			buildProjectChildren(
 				`root/${toSeverityKey('projects', project.id)}`,
 				project.id,
-				buckets,
+				index,
 				severityIndex
 			)
 		)
 	);
 
-	const accountLevelChildren = buildBucketChildren(
+	const accountLevelChildren = buildProjectChildren(
 		'account-level',
 		NO_PROJECT_ID,
-		buckets,
+		index,
 		severityIndex
 	);
 
 	return [
 		...toGroupNode('root', 'users', inspection.users.items, severityIndex),
+		...toGroupNode(
+			'root',
+			'contracts',
+			inspection.related.contracts.items,
+			severityIndex,
+			(contract, contractKey) =>
+				buildContractChildren(
+					contract,
+					contractKey,
+					projects,
+					index,
+					severityIndex
+				)
+		),
 		...projectNodes,
 		...(accountLevelChildren.length
 			? [
