@@ -8,13 +8,13 @@ import i18n from '~/i18n';
 import {INSPECTED_COLLECTION_LABELS} from './inspectedCollectionConstants';
 
 import type {
-	AccountFinding,
 	AccountFindingSeverity,
 	AccountTreeNode,
 	InspectedCollectionKey,
 	InspectedEntry,
 	InspectedOrderItem,
 } from '~/types/accountInspection';
+import type {InspectorFinding} from '~/types/productInspection';
 
 export type SeverityIndex = Map<string, AccountFindingSeverity>;
 
@@ -24,10 +24,7 @@ const SEVERITY_RANK: Record<AccountFindingSeverity, number> = {
 	warning: 2,
 };
 
-export function toSeverityKey(
-	collection: InspectedCollectionKey,
-	recordId: number | string
-) {
+export function toSeverityKey(collection: string, recordId: number | string) {
 	return `${collection}/${recordId}`;
 }
 
@@ -44,7 +41,9 @@ export function getWorstSeverity(
 	);
 }
 
-export function buildSeverityIndex(findings: AccountFinding[]): SeverityIndex {
+export function buildSeverityIndex(
+	findings: InspectorFinding[]
+): SeverityIndex {
 	const severityIndex: SeverityIndex = new Map();
 
 	findings.forEach(({collection, ids, severity}) =>

@@ -9,35 +9,33 @@ import ClayLabel from '@clayui/label';
 import classNames from 'classnames';
 import {useState} from 'react';
 import i18n from '~/i18n';
-
+import InspectorSection from '~/pages/Admin/AccountInspector/AccountInspectorDetail/components/InspectorSection/InspectorSection';
+import InspectorToolbar from '~/pages/Admin/AccountInspector/AccountInspectorDetail/components/InspectorToolbar/InspectorToolbar';
 import {
 	EMPTY_FILTER,
-	filterAccountTree,
+	filterInspectorTree,
 	getTreeKeys,
 	isFilterActive,
-} from '../../utils/inspectorFilterUtils';
-import InspectorSection from '../InspectorSection/InspectorSection';
-import InspectorToolbar from '../InspectorToolbar/InspectorToolbar';
+} from '~/pages/Admin/AccountInspector/AccountInspectorDetail/utils/inspectorFilterUtils';
 
-import type {AccountTreeNode} from '~/types/accountInspection';
+import type {InspectorFilter} from '~/pages/Admin/AccountInspector/AccountInspectorDetail/utils/inspectorFilterUtils';
+import type {InspectorTreeNode} from '~/types/accountInspection';
 
-import type {InspectorFilter} from '../../utils/inspectorFilterUtils';
-
-type AccountTreeItemProps = {
+type InspectorTreeItemProps<CollectionKey extends string> = {
 	depth: number;
 	expandedKeys: Set<string>;
-	node: AccountTreeNode;
-	onSelect: (node: AccountTreeNode) => void;
+	node: InspectorTreeNode<CollectionKey>;
+	onSelect: (node: InspectorTreeNode<CollectionKey>) => void;
 	onToggle: (key: string) => void;
 };
 
-function AccountTreeItem({
+function InspectorTreeItem<CollectionKey extends string>({
 	depth,
 	expandedKeys,
 	node,
 	onSelect,
 	onToggle,
-}: AccountTreeItemProps) {
+}: InspectorTreeItemProps<CollectionKey>) {
 	const expanded = expandedKeys.has(node.key);
 	const hasChildren = Boolean(node.children.length);
 
@@ -109,7 +107,7 @@ function AccountTreeItem({
 			{expanded && hasChildren && (
 				<ul className="list-unstyled mb-0">
 					{node.children.map((child) => (
-						<AccountTreeItem
+						<InspectorTreeItem
 							depth={depth + 1}
 							expandedKeys={expandedKeys}
 							key={child.key}
@@ -124,36 +122,35 @@ function AccountTreeItem({
 	);
 }
 
-type AccountTreeProps = {
-	accountName: string;
-	nodes: AccountTreeNode[];
-	onSelect: (node: AccountTreeNode) => void;
+type InspectorTreeProps<CollectionKey extends string> = {
+	id: string;
+	isExpandedByDefault: (node: InspectorTreeNode<CollectionKey>) => boolean;
+	nodes: InspectorTreeNode<CollectionKey>[];
+	onSelect: (node: InspectorTreeNode<CollectionKey>) => void;
+	rootLabel: string;
 };
 
-export default function AccountTree({
-	accountName,
+export default function InspectorTree<CollectionKey extends string>({
+	id,
+	isExpandedByDefault,
 	nodes,
 	onSelect,
-}: AccountTreeProps) {
+	rootLabel,
+}: InspectorTreeProps<CollectionKey>) {
 	const [expandedKeys, setExpandedKeys] = useState(
-		() =>
-			new Set(
-				nodes
-					.filter(({collection}) => collection !== 'users')
-					.map(({key}) => key)
-			)
+		() => new Set(nodes.filter(isExpandedByDefault).map(({key}) => key))
 	);
 
 	const [filter, setFilter] = useState<InspectorFilter>(EMPTY_FILTER);
 
-	const visibleNodes = filterAccountTree(nodes, filter);
+	const visibleNodes = filterInspectorTree(nodes, filter);
 
 	const onFilterChange = (nextFilter: InspectorFilter) => {
 		setFilter(nextFilter);
 
 		if (isFilterActive(nextFilter)) {
 			setExpandedKeys(
-				new Set(getTreeKeys(filterAccountTree(nodes, nextFilter)))
+				new Set(getTreeKeys(filterInspectorTree(nodes, nextFilter)))
 			);
 		}
 	};
@@ -170,13 +167,10 @@ export default function AccountTree({
 		});
 
 	return (
-		<InspectorSection
-			id="account-inspector-tree"
-			title={i18n.translate('relationship-tree')}
-		>
+		<InspectorSection id={id} title={i18n.translate('relationship-tree')}>
 			<InspectorToolbar filter={filter} onChange={onFilterChange} />
 
-			<p className="font-weight-semi-bold mb-2">{accountName}</p>
+			<p className="font-weight-semi-bold mb-2">{rootLabel}</p>
 
 			{!visibleNodes.length && (
 				<p className="mb-0 text-secondary">
@@ -186,7 +180,7 @@ export default function AccountTree({
 
 			<ul className="account-inspector-tree list-unstyled mb-0">
 				{visibleNodes.map((node) => (
-					<AccountTreeItem
+					<InspectorTreeItem
 						depth={0}
 						expandedKeys={expandedKeys}
 						key={node.key}

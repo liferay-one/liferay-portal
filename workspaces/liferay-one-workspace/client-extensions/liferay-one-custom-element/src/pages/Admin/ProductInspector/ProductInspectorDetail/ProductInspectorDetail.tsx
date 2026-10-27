@@ -12,6 +12,7 @@ import {PageRenderer} from '~/components/Page/Page';
 import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import i18n from '~/i18n';
 import InspectorTable from '~/pages/Admin/components/InspectorTable/InspectorTable';
+import InspectorTree from '~/pages/Admin/components/InspectorTree/InspectorTree';
 
 import InspectorFindings from '../components/InspectorFindings/InspectorFindings';
 import useProductCatalogInspection from '../hooks/useProductCatalogInspection';
@@ -25,6 +26,7 @@ import {
 } from '../utils/productCatalogUtils';
 import {getEntitlementDefinitionColumns} from '../utils/productInspectorColumnsUtils';
 import ProductSummary from './components/ProductSummary/ProductSummary';
+import buildProductTree from './utils/buildProductTree';
 import {
 	CATEGORY_COLUMNS,
 	OPTION_COLUMNS,
@@ -71,8 +73,32 @@ function ProductInspectorContent({
 		[index, product]
 	);
 
+	const treeNodes = useMemo(
+		() =>
+			buildProductTree(product, {
+				entitlementDefinitionFindings,
+				findings,
+				index,
+				inspection,
+			}),
+		[entitlementDefinitionFindings, findings, index, inspection, product]
+	);
+
 	const sectionId = (collection: ProductCollectionKey) =>
 		`${SECTION_ID_PREFIX}-${collection}`;
+
+	const focusRecord = (
+		collection: ProductCollectionKey,
+		recordId?: number
+	) => {
+		const rowId = `${sectionId(collection)}-${recordId}`;
+
+		scrollToSection(
+			recordId !== undefined && document.getElementById(rowId)
+				? rowId
+				: sectionId(collection)
+		);
+	};
 
 	return (
 		<>
@@ -101,6 +127,18 @@ function ProductInspectorContent({
 				onSelect={(collection) =>
 					scrollToSection(sectionId(collection))
 				}
+			/>
+
+			<InspectorTree
+				id={`${SECTION_ID_PREFIX}-tree`}
+				isExpandedByDefault={({collection}) =>
+					collection !== 'productSpecifications'
+				}
+				nodes={treeNodes}
+				onSelect={({collection, recordId}) =>
+					collection && focusRecord(collection, recordId)
+				}
+				rootLabel={getProductName(product)}
 			/>
 
 			<ProductSummary

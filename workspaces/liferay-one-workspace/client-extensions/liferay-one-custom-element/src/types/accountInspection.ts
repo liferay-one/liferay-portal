@@ -119,9 +119,9 @@ export type AccountFinding = {
 	severity: AccountFindingSeverity;
 };
 
-export type AccountTreeNode = {
-	children: AccountTreeNode[];
-	collection?: InspectedCollectionKey;
+export type InspectorTreeNode<CollectionKey extends string = string> = {
+	children: InspectorTreeNode<CollectionKey>[];
+	collection?: CollectionKey;
 	count?: number;
 	key: string;
 	label: string;
@@ -129,6 +129,8 @@ export type AccountTreeNode = {
 	recordId?: number;
 	severity?: AccountFindingSeverity;
 };
+
+export type AccountTreeNode = InspectorTreeNode<InspectedCollectionKey>;
 
 export type AccountInspectorFocus = {
 	collection: InspectedCollectionKey;

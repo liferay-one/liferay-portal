@@ -11,11 +11,11 @@ import {PageRenderer} from '~/components/Page/Page';
 import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import {useDataQuery} from '~/hooks/useDataQuery';
 import i18n from '~/i18n';
+import InspectorTree from '~/pages/Admin/components/InspectorTree/InspectorTree';
 import {accountInspectionQuery} from '~/services/queries/accountInspectionQuery';
 
 import AccountFindings from './components/AccountFindings/AccountFindings';
 import AccountSummary from './components/AccountSummary/AccountSummary';
-import AccountTree from './components/AccountTree/AccountTree';
 import InspectedCollectionPanel from './components/InspectedCollectionPanel/InspectedCollectionPanel';
 import JSMRecords from './components/JSMRecords/JSMRecords';
 import {openAccountDashboard} from './utils/accountDashboardUtils';
@@ -164,12 +164,14 @@ function AccountInspectorContent({
 				onSelect={(collection) => focusCollection(collection)}
 			/>
 
-			<AccountTree
-				accountName={account.name}
+			<InspectorTree
+				id="account-inspector-tree"
+				isExpandedByDefault={({collection}) => collection !== 'users'}
 				nodes={treeNodes}
 				onSelect={({collection, recordId}) =>
 					collection && focusCollection(collection, recordId)
 				}
+				rootLabel={account.name}
 			/>
 
 			<AccountSummary inspection={inspection} />

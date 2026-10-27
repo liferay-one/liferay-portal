@@ -5,7 +5,10 @@
 
 import i18n from '~/i18n';
 
-import type {AccountTreeNode, InspectedEntry} from '~/types/accountInspection';
+import type {
+	InspectedEntry,
+	InspectorTreeNode,
+} from '~/types/accountInspection';
 
 import type {InspectedCollectionColumn} from './inspectedCollectionConstants';
 
@@ -156,21 +159,23 @@ export function filterInspectedEntries<Entry extends InspectedEntry>(
 	});
 }
 
-function isFlagged({severity}: AccountTreeNode) {
+function isFlagged({severity}: InspectorTreeNode) {
 	return Boolean(severity);
 }
 
-function keepFlagged(nodes: AccountTreeNode[]): AccountTreeNode[] {
+function keepFlagged<CollectionKey extends string>(
+	nodes: InspectorTreeNode<CollectionKey>[]
+): InspectorTreeNode<CollectionKey>[] {
 	return nodes.filter(isFlagged).map((node) => ({
 		...node,
 		children: keepFlagged(node.children),
 	}));
 }
 
-function keepSearched(
-	nodes: AccountTreeNode[],
+function keepSearched<CollectionKey extends string>(
+	nodes: InspectorTreeNode<CollectionKey>[],
 	search: string
-): AccountTreeNode[] {
+): InspectorTreeNode<CollectionKey>[] {
 	return nodes.flatMap((node) => {
 		if (includesText(`${node.label} ${node.meta ?? ''}`, search)) {
 			return [node];
@@ -182,8 +187,8 @@ function keepSearched(
 	});
 }
 
-export function filterAccountTree(
-	nodes: AccountTreeNode[],
+export function filterInspectorTree<CollectionKey extends string>(
+	nodes: InspectorTreeNode<CollectionKey>[],
 	{flaggedOnly, search}: InspectorFilter
 ) {
 	const flaggedNodes = flaggedOnly ? keepFlagged(nodes) : nodes;
@@ -191,6 +196,6 @@ export function filterAccountTree(
 	return search.trim() ? keepSearched(flaggedNodes, search) : flaggedNodes;
 }
 
-export function getTreeKeys(nodes: AccountTreeNode[]): string[] {
+export function getTreeKeys(nodes: InspectorTreeNode[]): string[] {
 	return nodes.flatMap(({children, key}) => [key, ...getTreeKeys(children)]);
 }
