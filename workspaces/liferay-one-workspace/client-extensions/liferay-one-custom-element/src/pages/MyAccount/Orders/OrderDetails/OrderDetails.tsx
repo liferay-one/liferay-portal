@@ -16,6 +16,7 @@ import DetailsCard, {
 	DetailsRow,
 } from '~/pages/MyAccount/Projects/components/DetailsCard/DetailsCard';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
+import {getOrderItemProductName} from '~/utils/orderItemOptionUtils';
 import {
 	PaymentStatus,
 	getOrderStatusToken,
@@ -92,7 +93,12 @@ function OrderDetailsContent({order}: {order: PlacedOrder}) {
 		},
 	];
 
-	const orderItems = order.placedOrderItems ?? [];
+	const orderItems = (order.placedOrderItems ?? []).map(
+		(placedOrderItem) => ({
+			...placedOrderItem,
+			name: getOrderItemProductName(placedOrderItem),
+		})
+	);
 
 	return (
 		<>
@@ -144,11 +150,6 @@ function OrderDetailsContent({order}: {order: PlacedOrder}) {
 								key: 'sku',
 								render: (value) => (value as string) || '-',
 								title: i18n.translate('sku'),
-							},
-							{
-								key: 'version',
-								render: (value) => (value as string) || '-',
-								title: i18n.translate('version'),
 							},
 							{
 								key: 'quantity',
