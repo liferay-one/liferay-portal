@@ -31,7 +31,7 @@ function isInFreeKeyRenewalWindow(expirationDate?: string): boolean {
 
 export function isRenewableKey(
 	activationKey: ProjectActivationKey,
-	admin = false,
+	canRenewVirtualCluster = false,
 	unassigned = false
 ): boolean {
 	const free = activationKey.type === FREE_KEY_TYPE;
@@ -45,7 +45,7 @@ export function isRenewableKey(
 
 	return (
 		!activationKey.unaggregated &&
-		(admin || activationKey.type !== 'virtual-cluster') &&
+		(canRenewVirtualCluster || activationKey.type !== 'virtual-cluster') &&
 		!isPermanentKey(
 			activationKey.expirationDateValue,
 			activationKey.startDateValue

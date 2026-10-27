@@ -1,0 +1,11 @@
+[
+	{
+		"groups": [
+			{
+				"groupName": "Employees",
+				"groupType": "Organization"
+			}
+		],
+		"roleName": "Liferay Staff"
+	}
+]

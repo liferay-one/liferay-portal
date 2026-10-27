@@ -87,12 +87,17 @@ public class EnvironmentActivationPermission {
 		}
 	}
 
+	public boolean containsLicenseKeyActivation(Jwt jwt, Project project)
+		throws Exception {
+
+		return _contains(
+			true, jwt, project, project.getExternalReferenceCode());
+	}
+
 	public boolean containsProvisioning(Jwt jwt, Project project)
 		throws Exception {
 
-		if (!_contains(
-				true, jwt, project, project.getExternalReferenceCode())) {
-
+		if (!containsLicenseKeyActivation(jwt, project)) {
 			return false;
 		}
 
@@ -207,10 +212,10 @@ public class EnvironmentActivationPermission {
 			if (Objects.equals(
 					RoleConstants.NAME_ADMINISTRATOR, roleBriefName) ||
 				Objects.equals(
-					RoleConstants.NAME_LIFERAY_STAFF, roleBriefName) ||
-				Objects.equals(
 					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR,
-					roleBriefName)) {
+					roleBriefName) ||
+				Objects.equals(
+					RoleConstants.NAME_PROVISIONING_WORKER, roleBriefName)) {
 
 				return true;
 			}

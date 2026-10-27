@@ -12,14 +12,7 @@
 	"items": [
 		{
 			"externalReferenceCode": "C_EMPLOYEES",
-			"name": "Employees",
-			"roleBriefs": [
-				{
-					"externalReferenceCode": "C_LIFERAY_STAFF",
-					"name": "Liferay Staff",
-					"roleType": 1
-				}
-			]
+			"name": "Employees"
 		},
 		{
 			"externalReferenceCode": "C_EVERYONE",

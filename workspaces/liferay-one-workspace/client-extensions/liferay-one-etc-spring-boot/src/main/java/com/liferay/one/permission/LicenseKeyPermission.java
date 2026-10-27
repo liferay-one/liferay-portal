@@ -103,7 +103,7 @@ public class LicenseKeyPermission {
 			if (roleBriefName.equals(RoleConstants.NAME_ADMINISTRATOR) ||
 				roleBriefName.equals(
 					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR) ||
-				roleBriefName.equals(RoleConstants.NAME_PROVISIONING_MEMBER)) {
+				roleBriefName.equals(RoleConstants.NAME_PROVISIONING_WORKER)) {
 
 				return true;
 			}

@@ -71,9 +71,7 @@ const TicketAttachmentsList = () => {
 	const currentUserId = Liferay.ThemeDisplay.getUserId();
 
 	const canManageAttachments = Boolean(
-		userAccountModel?.isAdmin ||
-			userAccountModel?.isLiferayStaff ||
-			userAccountModel?.isAccountAdministrator
+		userAccountModel?.isAdmin || userAccountModel?.isAccountAdministrator
 	);
 
 	const {jiraFLSPortalURL, jiraFLSProject, jiraHCPortalURL} = useProperties();

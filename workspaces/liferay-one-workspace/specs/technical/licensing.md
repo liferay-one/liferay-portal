@@ -344,7 +344,7 @@ These are the checks that the server applies before it issues a key. "Project pa
 | A Marketplace app entitlement allows its `maxQuantity`, or its `quantity` when `maxQuantity` is empty or 0 | App path | `sb/service/AppLicenseKeyGenerationService.java:367` |
 | A project has at most one active complimentary activation key | Project path | `sb/service/LicenseKeyGenerationService.java:334` |
 | A renewal names an activation key of the same project, not complimentary | Project path | `sb/ActivationKeysRestController.java:371`, `sb/service/LicenseKeyGenerationService.java:488` |
-| An admin key type (none by default) or a virtual cluster key needs Administrator or Provisioning Administrator | Both paths | `sb/ActivationKeysRestController.java:390` |
+| An admin key type (none by default) or a new virtual cluster key needs Administrator or Provisioning Administrator. A Provisioning Worker can renew a virtual cluster key of the same project | Both paths | `sb/ActivationKeysRestController.java:429` |
 | At least one server is given | Both paths | `sb/service/LicenseKeyGenerationService.java:67`, `sb/service/AppLicenseKeyGenerationService.java:55` |
 | Complimentary keys need the account custom field `allowComplimentary` true | Project path | `sb/service/LicenseKeyGenerationService.java:327`, `sb/service/LicenseKeyGenerateFormService.java:924` |
 | Each entitlement is active: the start date is empty or past, and the end date is empty or future. `terminationStatus` is not read. | Both paths | `sb/service/EntitlementService.java:608` |
@@ -421,7 +421,7 @@ erDiagram
 
 ### Who Can Call Each Endpoint
 
-"Global role" in `EnvironmentActivationPermission` means Administrator, Liferay Staff, or Provisioning Administrator. "Global role" in `LicenseKeyPermission` means Administrator, Provisioning Administrator, or Provisioning Member, plus Liferay Staff for VIEW only.
+"Global role" in `EnvironmentActivationPermission` means Administrator, Provisioning Administrator, or Provisioning Worker. "Global role" in `LicenseKeyPermission` means Administrator, Provisioning Administrator, or Provisioning Worker, plus Liferay Staff for VIEW only.
 
 | Endpoint | Caller Check | Ownership Checked Against the Caller |
 | --- | --- | --- |
@@ -468,8 +468,6 @@ erDiagram
 1. **The license key properties sit under the Okta heading.** `application-default.properties:113` labels the block `# Okta`, but lines 117 and 118 configure license key types.
 
 ## Open Questions
-
-1. Can Liferay Staff change keys? `EnvironmentActivationPermission` treats Liferay Staff as a global role for generate, activate, and deactivate (`sb/permission/EnvironmentActivationPermission.java:210`). REQ-LICENSING-001 says Liferay Staff can see keys but cannot change them. REQ-LICENSING-004 and REQ-LICENSING-003 say Liferay Staff can generate.
 
 1. Should the free key endpoint accept only orders of type `DXP` that the caller placed, and should it be callable by the `external-dxp` application at all?
 

@@ -8,6 +8,7 @@ package com.liferay.one.jira.synchronizer;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.Organization;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.CustomFieldConstants;
 import com.liferay.one.jira.constants.TeamConstants;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
@@ -15,6 +16,7 @@ import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.CustomFieldUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 
@@ -74,6 +76,10 @@ public class OrganizationSynchronizer {
 	}
 
 	public void syncOrganization(Organization organization) {
+		if (_isOktaGroupOrganization(organization)) {
+			return;
+		}
+
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Syncing organization " +
@@ -122,6 +128,10 @@ public class OrganizationSynchronizer {
 	}
 
 	public void syncOrganizationUserAccounts(Organization organization) {
+		if (_isOktaGroupOrganization(organization)) {
+			return;
+		}
+
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Syncing user accounts for organization " +
@@ -153,6 +163,26 @@ public class OrganizationSynchronizer {
 			_contactConverter,
 			organizationSyncModel.getOrganizationUserAccounts(),
 			UserAccount::getExternalReferenceCode);
+	}
+
+	private boolean _isOktaGroupOrganization(Organization organization) {
+		String oktaGroupId = CustomFieldUtil.getString(
+			organization.getCustomFields(),
+			CustomFieldConstants.NAME_OKTA_GROUP_ID);
+
+		if (oktaGroupId == null) {
+			return false;
+		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Skipping the JSM sync of organization ",
+					organization.getExternalReferenceCode(),
+					" because it is linked to an Okta group"));
+		}
+
+		return true;
 	}
 
 	private void _syncOrganizationAssignments(

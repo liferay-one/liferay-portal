@@ -2,7 +2,7 @@
 
 This area covers the back office of Liferay One. It includes the admin page and its sections, the Pub/Sub tools, the synchronization actions that only an administrator can start, the marketplace and finance views, the review of publisher requests, the oversight of trials and SaaS demos, and the upload of common license keys. The rules of each domain belong to that domain's area: trials to PROVISIONING, publishers to PUBLISHER, license keys to LICENSING, usage reports to USAGE, and the JSM sync to SUPPORT. This file states who can use each tool and what the tool shows and controls.
 
-The actors are the Administrator, the Provisioning Administrator, the Finance Administrator, Liferay Staff, the SSA Administrator, and the SSA User.
+The actors are the Administrator, the Provisioning Administrator, the Finance Administrator, the SSA Administrator, and the SSA User.
 
 Terms used in this file:
 
@@ -17,7 +17,7 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-ADMIN-001 | Only an Administrator, a Finance Administrator, or a Liferay Staff user can view the admin page. A guest, a site member, and a signed in user without one of these roles cannot view it. The navigation does not show the page. | P0 | LPD-107296 | `FLOW-ADMIN-DASHBOARD` |
+| REQ-ADMIN-001 | Only an Administrator, a Finance Administrator, or a Provisioning Administrator can view the admin page. A guest, a site member, Liferay Staff, and a signed in user without one of these roles cannot view it. The navigation does not show the page. | P0 | LPD-107296, LPD-111430 | `FLOW-ADMIN-DASHBOARD` |
 | REQ-ADMIN-002 | Only an Administrator can use the Marketplace Summary, Marketplace Orders, Marketplace Apps, Marketplace Solutions, Publishers, Publisher Requests, 7 Days Trials, Pub/Sub, and Activation Key Uploads sections. | P0 | LPD-107296 | `MOD-ROUTEUTILS`, `ROUTE-ADMIN-MP-SUMMARY`, `ROUTE-ADMIN-MP-ORDERS`, `ROUTE-ADMIN-MP-APPS`, `ROUTE-ADMIN-MP-SOLUTIONS`, `ROUTE-ADMIN-PUBLISHERS`, `ROUTE-ADMIN-PUBLISHER-REQUESTS`, `ROUTE-ADMIN-TRIALS`, `ROUTE-ADMIN-PUB-SUB`, `ROUTE-ADMIN-ACTIVATION-KEY-UPLOADS` |
 | REQ-ADMIN-003 | Only an Administrator or a Finance Administrator can use the Marketplace Finance Orders and Marketplace Payments sections. | P0 | LPD-107296 | `MOD-ROUTEUTILS`, `ROUTE-ADMIN-MP-FINANCE-ORDERS`, `ROUTE-ADMIN-MP-PAYMENTS`, `FLOW-ADMIN-ROUTE-GATING` |
 | REQ-ADMIN-004 | Only an SSA Administrator or an Administrator can use the SaaS Environments and Manage SSA SaaS Users sections. An SSA Administrator or an SSA User can use the My SaaS Demos section and the trial details. | P0 | LPD-107296, LPD-89753 | `MOD-ROUTEUTILS`, `CLIENT-MODELS-USERACCOUNTMODEL`, `ROUTE-ADMIN-SSA-SAAS-ENVIRONMENTS`, `ROUTE-ADMIN-MANAGE-SSA-SAAS-USERS`, `ROUTE-ADMIN-MY-SSA-SAAS-DEMO`, `ROUTE-ADMIN-DETAILS-ORDERID`, `FLOW-ADMIN-ROUTE-GATING` |

@@ -2,7 +2,7 @@
 
 This area covers how a buyer turns a catalog product into a placed order, and what the system does with that order afterward. It includes the purchase flow and its steps, the cart, payment methods, currency, tax, the license agreement, the next steps page, order completion, order types, order status labels, the link from an order to a project and a contract, and the Orders page of My Account. Entitlement creation from order items is in [`entitlements.md`](./entitlements.md). The free DXP license is in [`licensing-and-activation.md`](./licensing-and-activation.md). The Digital Sales Room is in `sales-and-crm.md`.
 
-The actors are a signed in buyer, an account member, the account administrator, Liferay Staff, the Administrator role, the payment provider, and the system processes that complete orders.
+The actors are a signed in buyer, an account member, the account administrator, the Administrator role, the payment provider, and the system processes that complete orders.
 
 Terms used in this file:
 
@@ -74,7 +74,7 @@ Terms used in this file:
 | REQ-ORDERS-050 | Tax is 20 percent of the order subtotal. The system adds it to the order total and to the price of each order item. | P0 | LPD-88264, LPD-95435 | `SVC-COMMERCEORDERSERVICE`, `REST-POST-COMMERCE-ORDERS-COMMERCEORDERID-CALCULATE-TAX`, `FLOW-TAX-CALCULATION` |
 | REQ-ORDERS-051 | The system taxes a business account only when its billing country is Ireland. It taxes a person account when its billing country is one of the 27 European Union member states. It taxes no other order. | P0 | LPD-88264, LPD-95435 | `SVC-COMMERCEORDERSERVICE`, `FLOW-TAX-CALCULATION` |
 | REQ-ORDERS-052 | An order without a billing address gets no tax. | P1 | LPD-95435 | `SVC-COMMERCEORDERSERVICE` |
-| REQ-ORDERS-053 | Only an Administrator, Liferay Staff, or a member of the account of the order can request tax for an order. | P0 | LPD-95435 | `PERM-COMMERCEORDERPERMISSION`, `REST-POST-COMMERCE-ORDERS-COMMERCEORDERID-CALCULATE-TAX` |
+| REQ-ORDERS-053 | Only an Administrator, a Provisioning Administrator, or a member of the account of the order can request tax for an order. | P0 | LPD-95435, LPD-111430 | `PERM-COMMERCEORDERPERMISSION`, `REST-POST-COMMERCE-ORDERS-COMMERCEORDERID-CALCULATE-TAX` |
 | REQ-ORDERS-054 | The system calculates tax when the buyer leaves the payment method step. A tax failure does not stop the checkout. | P1 | LPD-95435 | `ROUTE-PRODUCT-PURCHASE-PAYMENT-METHOD`, `FLOW-TAX-CALCULATION` |
 | REQ-ORDERS-055 | A taxed order records the EUR exchange rate in its order metadata. The system records the rate one time and keeps it on later calculations. | P2 | LPD-95435 | `SVC-COMMERCEORDERSERVICE` |
 
@@ -87,7 +87,7 @@ Terms used in this file:
 | REQ-ORDERS-062 | Completion moves the order to pending, then to processing, then to completed, and records the settled payment status. | P0 | LPD-104570 | `REST-POST-COMMERCE-ORDERS-COMMERCEORDERID-COMPLETE-SETTLED` |
 | REQ-ORDERS-063 | Only one completion runs at a time for one order. A repeated request, or a request for a completed order, changes nothing. | P0 | LPD-104570 | `REST-POST-COMMERCE-ORDERS-COMMERCEORDERID-COMPLETE-SETTLED`, `CRON-COMPLETESETTLEDORDERS` |
 | REQ-ORDERS-064 | Every day at midnight, and once at startup, the system completes each settled order that is still open. A failure on one order does not stop the others. | P0 | LPD-104570 | `CRON-COMPLETESETTLEDORDERS`, `LSN-COMMERCEORDERSERVICE-ONAPPLICATIONREADY` |
-| REQ-ORDERS-065 | Only an Administrator, Liferay Staff, or a member of the account of the order can ask the system to complete the order. | P0 | LPD-95435, LPD-101678 | `PERM-COMMERCEORDERPERMISSION`, `REST-POST-COMMERCE-ORDERS-COMMERCEORDERID-COMPLETE-SETTLED`, `REST-POST-COMMERCE-ORDERS-COMMERCEORDERID-COMPLETE-CLOUD-APP` |
+| REQ-ORDERS-065 | Only an Administrator, a Provisioning Administrator, or a member of the account of the order can ask the system to complete the order. | P0 | LPD-95435, LPD-101678, LPD-111430 | `PERM-COMMERCEORDERPERMISSION`, `REST-POST-COMMERCE-ORDERS-COMMERCEORDERID-COMPLETE-SETTLED`, `REST-POST-COMMERCE-ORDERS-COMMERCEORDERID-COMPLETE-CLOUD-APP` |
 | REQ-ORDERS-066 | After a cloud app purchase, the system asks to complete the order. The order completes only under the rules of `REQ-ORDERS-060`. | P0 | LPD-101678, LPD-104570 | `REST-POST-COMMERCE-ORDERS-COMMERCEORDERID-COMPLETE-CLOUD-APP`, `ROUTE-PRODUCT-PURCHASE-PURCHASE-COMPLETED` |
 | REQ-ORDERS-067 | Each change to an order triggers the order update action. The action sets the account currency, then completes the order when its payment is settled. The action ignores an order that does not exist. | P0 | LPD-104570 | `REST-POST-OBJECT-ACTION-COMMERCE-ORDER-UPDATE` |
 | REQ-ORDERS-068 | A pending AI Hub order does not complete on payment. Instead, the order update action creates its Salesforce opportunity and moves the order to processing. | P0 | LPD-102570 | `REST-POST-OBJECT-ACTION-COMMERCE-ORDER-UPDATE`, `FLOW-AI-HUB-PURCHASE` |

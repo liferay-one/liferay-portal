@@ -37,7 +37,9 @@ export class UserAccountModel {
 		return Boolean(
 			this.isAdmin ||
 				this.isFinanceAdministrator ||
-				this.isProvisioningAdministrator
+				this.isLiferayStaff ||
+				this.isProvisioningAdministrator ||
+				this.isProvisioningWorker
 		);
 	}
 
@@ -59,6 +61,10 @@ export class UserAccountModel {
 
 	get isProvisioningAdministrator() {
 		return this.hasRegularRole('Provisioning Administrator');
+	}
+
+	get isProvisioningWorker() {
+		return this.hasRegularRole('Provisioning Worker');
 	}
 
 	get isLiferayStaff() {

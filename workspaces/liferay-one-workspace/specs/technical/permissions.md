@@ -95,7 +95,7 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 | Finance Administrator | `C_FINANCE_ADMIN` | regular | 68 | Manual |
 | LDP Administrator | `C_LDP_ADMIN` | account | 73 | A project contact designation |
 | Liferay Sales | `C_LIFERAY_SALES` | account | 78 | A Salesforce contact role |
-| Liferay Staff | `C_LIFERAY_STAFF` | regular | 83 | Membership in the Employees user group (`16-user-group.batch-engine-data.json:24`). No code adds users to the group. |
+| Liferay Staff | `C_LIFERAY_STAFF` | regular | 83 | Membership in the Employees organization (`organizations.json`), which holds the role (`roles-assignments.json`). The Okta group Employees fills the organization through its `oktaGroupId` link (`OktaUsersPubsubSubscriber`, `POST /organizations/{organizationId}/sync-from-okta`). |
 | Marketplace Account Administrator | `C_MARKETPLACE_ACCOUNT_ADMIN` | account | 88 | Manual. No code reads it. |
 | Marketplace Publisher | `C_MARKETPLACE_PUBLISHER` | regular | 93 | Manual |
 | PaaS User | `C_PAAS_USER` | account | 98 | A project contact designation |
@@ -112,11 +112,7 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 | Project Requester | `C_PROJECT_REQUESTER` | account | 153 | The same as Project Admin |
 | Project User | `C_PROJECT_USER` | account | 158 | The same as Project Admin. Every Salesforce project contact gets it (`ProvisioningContactService.java:197`). |
 | Provisioning Administrator | `C_PROVISIONING_ADMIN` | regular | 163 | Manual |
-| Provisioning Contact Worker | `C_PROVISIONING_CONTACT_WORKER` | regular | 168 | Manual. No code reads it. |
-| Provisioning Member | `C_PROVISIONING_MEMBER` | regular | 173 | Manual |
-| Provisioning Subscription Worker | `C_PROVISIONING_SUBSCRIPTION_WORKER` | regular | 178 | Manual. No code reads it. |
-| Provisioning Watcher | `C_PROVISIONING_WATCHER` | regular | 183 | Manual. No code reads it. |
-| Provisioning Worker | `C_PROVISIONING_WORKER` | regular | 188 | Manual. No code reads it. |
+| Provisioning Worker | `C_PROVISIONING_WORKER` | regular | 168 | Manual |
 | SSA | `C_SSA` | regular | 213 | Manual. No code reads it. |
 | SSA Administrator | `C_SSA_ADMIN` | account | 218 | The SSA dashboard, in the SSA account (`ManageUserRolesModal.tsx`) |
 | SSA User | `C_SSA_USER` | account | 223 | The SSA dashboard, in the SSA account |
@@ -159,9 +155,9 @@ An object has two resources, and a grant on the wrong one applies and grants not
 
 ### Object Matrix
 
-Rows are the 34 custom objects and the 6 system objects that the batch extends. Columns are the 10 roles that hold a grant on an object. A cell lists the actions, the scope, and the line: `V` is `VIEW`, `A` is `ADD_OBJECT_ENTRY`, `U` is `UPDATE`, `D` is `DELETE`. An empty cell means no grant. "Restricted By" is the `accountEntryRestrictedObjectFieldName` from batch file `05`.
+This matrix does not show the grants that LPD-111430 added for Provisioning Worker and Liferay Staff. Read `resource-permissions.json` for those grants. Rows are the 34 custom objects and the 6 system objects that the batch extends. Columns are the 10 roles that hold a grant on an object. A cell lists the actions, the scope, and the line: `V` is `VIEW`, `A` is `ADD_OBJECT_ENTRY`, `U` is `UPDATE`, `D` is `DELETE`. An empty cell means no grant. "Restricted By" is the `accountEntryRestrictedObjectFieldName` from batch file `05`.
 
-| Object | Restricted By | Account Administrator | Account Member | Finance Administrator | Guest | Organization User | Project Admin | Project Requester | Provisioning Administrator | Provisioning Member | User |
+| Object | Restricted By | Account Administrator | Account Member | Finance Administrator | Guest | Organization User | Project Admin | Project Requester | Provisioning Administrator | Provisioning Worker | User |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | AccountInvitation (`C_ACCOUNT_INVITATION`) | — | | | | | | | | V s1 L19 | | |
 | AccountNote (`C_ACCOUNT_NOTE`) | `r_accountEntryToAccountNote_accountEntryId` | | | | | | | | V s1 L28 | | |
@@ -237,7 +233,7 @@ These are the grants at scope 1 and scope 4 that do not name a custom object.
 | `com.liferay.portal.kernel.model.Role` | Liferay Staff | `VIEW` on its own role | 4 | L1102 |
 | `com.liferay.portal.kernel.model.Role` | Provisioning Administrator | `VIEW` on its own role | 4 | L1111 |
 | `com.liferay.portal.kernel.model.User` | Provisioning Administrator | `VIEW` | 1 | L1120 |
-| `com.liferay.portal.kernel.model.User` | Provisioning Member | `VIEW` | 1 | L1129 |
+| `com.liferay.portal.kernel.model.User` | Provisioning Worker | `VIEW` | 1 | L1129 |
 | `com_liferay_account_admin_web_internal_portlet_AccountEntriesAdminPortlet` | Provisioning Administrator | `ACCESS_IN_CONTROL_PANEL`, `VIEW` | 1 | L1138 |
 | `com_liferay_commerce_product_definitions_web_internal_portlet_CPDefinitionsPortlet` | Provisioning Administrator | `ACCESS_IN_CONTROL_PANEL`, `VIEW` | 1 | L1176 |
 | `com_liferay_users_admin_web_portlet_UsersAdminPortlet` | Provisioning Administrator | `ACCESS_IN_CONTROL_PANEL`, `VIEW` | 1 | L1273 |
@@ -286,7 +282,7 @@ All pages are in `client-extensions/liferay-one-site-initializer/site-initialize
 | Page | Hidden | Who Can View | Source |
 | --- | --- | --- | --- |
 | `/account-invitation` | yes | Default (guest) | `08_account-invitation/page.json` |
-| `/admin` | yes | Finance Administrator, Liferay Staff, Provisioning Administrator | `05_admin/page.json` |
+| `/admin` | yes | Finance Administrator, Provisioning Administrator | `05_admin/page.json` |
 | `/authorize` | yes | User | `10_authorize/page.json` |
 | `/home` | no | Default (guest) | `01_home/page.json` |
 | `/license-agreement` | yes | User | `09_license-agreement/page.json` |
@@ -316,16 +312,16 @@ The administrator always has access. A page that grants `VIEW` to Guest also let
 
 The pages read the user from `/my-user-account`. Two rules decide what a gate sees:
 
-- `roleBriefs` lists only the regular roles that the user can `VIEW` (`UserResourceDTOConverter._toRoleBriefs` in `headless-admin-user-impl`). Each regular role that a gate reads needs a self `VIEW` grant. Finance Administrator (`L1093`), Liferay Staff (`L1102`), and Provisioning Administrator (`L1111`) have one. Administrator needs none.
-- `roleBriefs` comes from `UserBag.getRoles()`, which includes the roles of the user's user groups. So Liferay Staff through the Employees group does appear, when its self grant exists.
+- `roleBriefs` lists only the regular roles that the user can `VIEW` (`UserResourceDTOConverter._toRoleBriefs` in `headless-admin-user-impl`). Each regular role that a gate reads needs a self `VIEW` grant. Finance Administrator, Liferay Staff, Provisioning Administrator, and Provisioning Worker have one. Administrator needs none.
+- `roleBriefs` comes from `UserBag.getRoles()`, which includes the roles of the user's user groups and organizations. So Liferay Staff through the Employees organization does appear, when its self grant exists.
 
 All paths in this table are in `client-extensions/liferay-one-custom-element/src/`, except the last row.
 
 | Gate | Condition | Depends On |
 | --- | --- | --- |
-| `UserAccountModel.isAdmin`, `isFinanceAdministrator`, `isProvisioningAdministrator`, `isLiferayStaff` (`services/models/UserAccountModel.ts:52`) | The regular role is in `roleBriefs` | `roleBriefs` and the self `VIEW` grant |
+| `UserAccountModel.isAdmin`, `isFinanceAdministrator`, `isProvisioningAdministrator`, `isProvisioningWorker`, `isLiferayStaff` (`services/models/UserAccountModel.ts:52`) | The regular role is in `roleBriefs` | `roleBriefs` and the self `VIEW` grant |
 | `UserAccountModel.canManageAllAccounts` (`services/models/UserAccountModel.ts:32`) | Administrator or Provisioning Administrator | `roleBriefs` |
-| `UserAccountModel.canViewAllAccounts` (`services/models/UserAccountModel.ts:36`) | Administrator, Finance Administrator, or Provisioning Administrator | `roleBriefs` |
+| `UserAccountModel.canViewAllAccounts` (`services/models/UserAccountModel.ts:36`) | Administrator, Finance Administrator, Liferay Staff, Provisioning Administrator, or Provisioning Worker | `roleBriefs` |
 | `UserAccountModel.hasAccountRoleName` (`services/models/UserAccountModel.ts:80`) | The account role is held in the current account | `accountBriefs` and `Liferay.CommerceContext.account` |
 | `UserAccountModel.isSSAAdmin`, `isSSAUser` (`services/models/UserAccountModel.ts:72`) | The SSA role in the SSA account. Administrator is also an SSA administrator. | `accountBriefs` |
 | `useHasAdminPermissions` (`hooks/useHasAdminPermissions.ts:21`), used by `SyncToJSMButton.tsx:20` and `PubSub.tsx:31` | Administrator or Provisioning Administrator | `roleBriefs` |
@@ -341,14 +337,14 @@ All paths in this table are in `client-extensions/liferay-one-custom-element/src
 | `useProjectsWithOrders` with no projects, used by `BusinessEvents.tsx:437`, `TicketAttachmentsList.tsx:160`, and `TicketAttachmentsAdd.tsx:87` | The user sees no project with a placed order, after the membership filter | `/o/c/projects`, `/o/c/projectmemberships`, placed orders |
 | `useUserProjects` with no projects, used by `TicketAttachmentsUploaderOutlet.tsx:65` | The user sees no project, after the membership filter | `/o/c/projects`, `/o/c/projectmemberships` |
 | `ProjectMembers.canManageProject` (`pages/MyAccount/ProjectMembers/ProjectMembers.tsx:66`) | An account manager, or the project's Project Admin | `accountBriefs`, memberships |
-| `useHasActivationPermission` (`pages/MyAccount/Projects/hooks/useHasActivationPermission.ts:92`) | Account Administrator, `canManageAllAccounts`, Liferay Staff, or the project's Project Admin | `accountBriefs`, `roleBriefs`, memberships |
+| `useHasActivationPermission` (`pages/MyAccount/Projects/hooks/useHasActivationPermission.ts:92`) | Account Administrator, `canManageAllAccounts`, Provisioning Worker, or the project's Project Admin | `accountBriefs`, `roleBriefs`, memberships |
 | `useHasLicenseKeyPermission` (`useHasActivationPermission.ts:107`) | The activation roles, Partner Manager, or a license key manager role for a key with no project | `accountBriefs`, `roleBriefs` |
-| `useHasAllEventsPermissions` (`pages/BusinessEvents/hooks/useHasAllEventsPermissions.ts:28`) | Administrator, Liferay Staff, Account Administrator, or a Project Admin or Project Requester membership | `roleBriefs`, `accountBriefs`, memberships |
+| `useHasAllEventsPermissions` (`pages/BusinessEvents/hooks/useHasAllEventsPermissions.ts:28`) | Administrator, Account Administrator, or a Project Admin or Project Requester membership | `roleBriefs`, `accountBriefs`, memberships |
 | `useCanViewTickets` (`pages/BusinessEvents/hooks/useCanViewTickets.ts:16`) | The service returns a Jira object key for the project | `GET /projects/{erc}/jira/object-key` |
-| `TicketAttachmentsList.canManageAttachments` (`pages/TicketAttachments/TicketAttachmentsList/TicketAttachmentsList.tsx:73`) | Administrator, Liferay Staff, or Account Administrator | `roleBriefs`, `accountBriefs` |
+| `TicketAttachmentsList.canManageAttachments` (`pages/TicketAttachments/TicketAttachmentsList/TicketAttachmentsList.tsx:73`) | Administrator or Account Administrator | `roleBriefs`, `accountBriefs` |
 | `ActivationKeyDownload.isAccountAdministrator` (`pages/MyAccount/Projects/components/ActivationKeyDownload/ActivationKeyDownload.tsx:134`) | Account Administrator | `accountBriefs` |
 | `MarketplaceUserAccount` (`services/models/MarketplaceUserAccount.ts:27`) | Administrator, Account Solution Publisher, SSA Administrator, or SSA User | `roleBriefs`, `accountBriefs` |
-| Primary navigation (`client-extensions/liferay-one-site-initializer/site-initializer/ddm-templates/navigation-primary/ddm-template.ftl:37`) | `canBypassMyAccount` for Administrator or Liferay Staff | `User.getRoles()`, which holds only the roles assigned to the user directly |
+| Primary navigation (`client-extensions/liferay-one-site-initializer/site-initializer/ddm-templates/navigation-primary/ddm-template.ftl:37`) | `canBypassMyAccount` for Administrator | `User.getRoles()`, which holds only the roles assigned to the user directly |
 
 ## Spring Boot Service Checks
 
@@ -359,12 +355,12 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 | Class | Global Roles That Pass | Other Rules |
 | --- | --- | --- |
 | `AdminPermission` (line 30) | Administrator, Provisioning Administrator | None |
-| `AccountPermission` (line 46) | Administrator, Liferay Staff, Provisioning Administrator | `VIEW`: any member of the account. `ASSIGN_MEMBERS`: Account Administrator or SSA Administrator, or a partner manager when the account has the partner entitlement. `UPDATE`: Account Administrator, a partner manager with the entitlement, or any member of an organization linked to the account. |
-| `ProjectPermission` (line 52) | Administrator, Liferay Staff, Provisioning Administrator | Account Administrator of the project's account: every action. Account Member: `VIEW`. Partner roles: `VIEW`, and `UPDATE` for partner managers, with the partner entitlement. Project Admin: `ASSIGN_MEMBERS`. Every project role: `VIEW`. Project Admin and Project Requester: `UPDATE`. A member of a linked organization: `VIEW` and `UPDATE`. |
-| `CommerceOrderPermission` (line 42) | Administrator, Liferay Staff, Provisioning Administrator | Any member of the order's account |
-| `LicenseKeyPermission` (line 47) | Administrator, Provisioning Administrator, Provisioning Member. Liferay Staff for `VIEW` only. | `UPDATE`: Liferay Sales or Partner Manager in the account. `VIEW`: any member of the account, or a member of a linked organization. |
-| `CommonLicenseKeyPermission` (line 39) | Administrator, Provisioning Administrator | An active entitlement definition of the product family in one of the user's accounts |
-| `EnvironmentActivationPermission` (line 137) | Administrator, Liferay Staff, Provisioning Administrator | Account Administrator of the project's account, Partner Manager where allowed, or the project's Project Admin |
+| `AccountPermission` (line 46) | Administrator, Provisioning Administrator. Liferay Staff and Provisioning Worker for `VIEW` only. | `VIEW`: any member of the account. `ASSIGN_MEMBERS`: Account Administrator or SSA Administrator, or a partner manager when the account has the partner entitlement. `UPDATE`: Account Administrator, a partner manager with the entitlement, or any member of an organization linked to the account. |
+| `ProjectPermission` (line 52) | Administrator, Provisioning Administrator. Liferay Staff and Provisioning Worker for `VIEW` only. | Account Administrator of the project's account: every action. Account Member: `VIEW`. Partner roles: `VIEW`, and `UPDATE` for partner managers, with the partner entitlement. Project Admin: `ASSIGN_MEMBERS`. Every project role: `VIEW`. Project Admin and Project Requester: `UPDATE`. A member of a linked organization: `VIEW` and `UPDATE`. |
+| `CommerceOrderPermission` (line 42) | Administrator, Provisioning Administrator | Any member of the order's account |
+| `LicenseKeyPermission` (line 47) | Administrator, Provisioning Administrator, Provisioning Worker. Liferay Staff for `VIEW` only. | `UPDATE`: Liferay Sales or Partner Manager in the account. `VIEW`: any member of the account, or a member of a linked organization. |
+| `CommonLicenseKeyPermission` (line 39) | Administrator, Provisioning Administrator, Provisioning Worker | An active entitlement definition of the product family in one of the user's accounts |
+| `EnvironmentActivationPermission` (line 137) | Administrator, Provisioning Administrator, Provisioning Worker | Account Administrator of the project's account, Partner Manager where allowed, or the project's Project Admin |
 
 ### Endpoint Table
 
@@ -468,13 +464,13 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 | `DELETE /projects/{projectId}/user-accounts/{userId}/contact-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:113` |
 | `POST /projects/{projectId}/user-accounts/{userId}/contact-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:298` |
 | `GET /ready` | None. Public path. | no | `ReadyRestController.java:21` |
-| `GET /ticket-attachments/by-external-reference-code/{externalReferenceCode}/download` | ProjectPermission (VIEW). Provisioning Member skips it. | yes | `TicketAttachmentsRestController.java:113` |
-| `GET /ticket-attachments/by-id/{id}/download` | ProjectPermission (VIEW). Provisioning Member skips it. | yes | `TicketAttachmentsRestController.java:125` |
-| `POST /ticket-attachments/initiate-upload` | ProjectPermission (UPDATE). Provisioning Member skips it. | yes | `TicketAttachmentsRestController.java:271` |
-| `DELETE /ticket-attachments/{ticketAttachmentId}` | ProjectPermission (UPDATE). Provisioning Member skips it. | yes | `TicketAttachmentsRestController.java:79` |
-| `POST /ticket-attachments/{ticketAttachmentId}/complete-upload` | ProjectPermission (UPDATE). Provisioning Member skips it. | yes | `TicketAttachmentsRestController.java:232` |
-| `GET /tickets/{ticketId}/ticket-attachments/download-access-check` | ProjectPermission (VIEW). Provisioning Member skips it. | yes | `TicketsTicketAttachmentsRestController.java:45` |
-| `GET /tickets/{ticketId}/ticket-attachments/upload-access-check` | ProjectPermission (UPDATE). Provisioning Member skips it. | yes | `TicketsTicketAttachmentsRestController.java:54` |
+| `GET /ticket-attachments/by-external-reference-code/{externalReferenceCode}/download` | ProjectPermission (VIEW). Provisioning Worker skips it. | yes | `TicketAttachmentsRestController.java:113` |
+| `GET /ticket-attachments/by-id/{id}/download` | ProjectPermission (VIEW). Provisioning Worker skips it. | yes | `TicketAttachmentsRestController.java:125` |
+| `POST /ticket-attachments/initiate-upload` | ProjectPermission (UPDATE). Provisioning Worker skips it. | yes | `TicketAttachmentsRestController.java:271` |
+| `DELETE /ticket-attachments/{ticketAttachmentId}` | ProjectPermission (UPDATE). Provisioning Worker skips it. | yes | `TicketAttachmentsRestController.java:79` |
+| `POST /ticket-attachments/{ticketAttachmentId}/complete-upload` | ProjectPermission (UPDATE). Provisioning Worker skips it. | yes | `TicketAttachmentsRestController.java:232` |
+| `GET /tickets/{ticketId}/ticket-attachments/download-access-check` | ProjectPermission (VIEW). Provisioning Worker skips it. | yes | `TicketsTicketAttachmentsRestController.java:45` |
+| `GET /tickets/{ticketId}/ticket-attachments/upload-access-check` | ProjectPermission (UPDATE). Provisioning Worker skips it. | yes | `TicketsTicketAttachmentsRestController.java:54` |
 | `GET /trial/availability` | None | no | `TrialRestController.java:113` |
 | `GET /trial/domain-availability/{projectPrefix}` | None | no | `TrialRestController.java:134` |
 | `POST /trial/expire/{orderId}` | None | no | `TrialRestController.java:165` |
@@ -530,13 +526,11 @@ Each finding names the file and line. The findings are ordered by risk.
 
 ### Medium
 
-1. **Provisioning Member has no self `VIEW` grant, so its checks never pass.** `LicenseKeyPermission.java:106` and the ticket attachment bypass (`TicketAttachmentsRestController.java:546`, `TicketsTicketAttachmentsRestController.java:99`) look for Provisioning Member in `roleBriefs`, which omits a role that the user cannot view. Add a scope 4 `VIEW` grant on `[$ROLE_ID:Provisioning Member$]` beside `L1111`.
-
 1. **The project role grants are inert.** The 4 scope 3 grants to Project Admin and Project Requester (`L1000`, `L1009`, `L1036`, `L1045`) and the account grant to Project Admin (`L391`) apply only to a user who holds the role as a Liferay account role. The code stores project roles on `ProjectMembership` and never assigns them as account roles (`UserAssignmentService.java:194`). So a Project Admin or a Project Requester with no account role cannot record a DXP authorization (`Congratulations.tsx:47`), against REQ-ACCESS-027.
 
 1. **Pages write to objects that the user cannot add to.** `POST /o/c/trialextensionrequests` (`ExtendSSATrialModal.tsx:106`) and its `PATCH` (`ExtendRequestModal.tsx:239`) have no `ADD_OBJECT_ENTRY` or `UPDATE` grant for the SSA roles. `POST /o/c/publisheraccountrequests` (`RequestAccount.tsx:84`) has no grant for Guest or User. `POST /o/c/getappinformations` (`GetAppInformations.ts:20`) has no grant. Each call works only for an administrator.
 
-1. **SSA users cannot open the SSA pages.** The SSA routes live under `/admin` (`adminRoutes.tsx:142`), but the `/admin` page grants `VIEW` only to Finance Administrator, Liferay Staff, and Provisioning Administrator (`05_admin/page.json`). An SSA Administrator or SSA User without one of those roles gets no page. Liferay Staff has the page but no route.
+1. **SSA users cannot open the SSA pages.** The SSA routes live under `/admin` (`adminRoutes.tsx:142`), but the `/admin` page grants `VIEW` only to Finance Administrator and Provisioning Administrator (`05_admin/page.json`). An SSA Administrator or SSA User without one of those roles gets no page.
 
 1. **The restricted pages use two conditions.** REQ-ACCESS-091 asks for one shared condition, the account's projects. Account Members uses `useHasProject` (`AccountMembers.tsx:76`), and Project Members counts the account's projects with a placed order (`ProjectMembers.tsx:90`). Business Events and Ticket Attachments use the membership filtered `useProjectsWithOrders` (`BusinessEvents.tsx:437`, `TicketAttachmentsList.tsx:160`, `TicketAttachmentsAdd.tsx:87`), and the attachment uploader uses the membership filtered `useUserProjects` (`TicketAttachmentsUploaderOutlet.tsx:65`). A user in an account with projects and no membership sees "not included in your current plan" on those pages.
 
@@ -545,8 +539,6 @@ Each finding names the file and line. The findings are ordered by risk.
 1. **An account restricted entry with no account is open to every user.** Liferay passes every action when the restricting field is `0` (`ObjectEntryModelResourcePermission.java:222` in `modules/apps/object/object-service`). Seed data or code that leaves the account field empty on Project, ProjectMembership, LicenseKey, or another of the 12 objects makes that entry readable and writable by every signed in user. Make the account relationship field required on these objects.
 
 ### Low
-
-1. **The primary navigation misses Liferay Staff from the Employees group.** `navigation-primary/ddm-template.ftl:37` reads `User.getRoles()`, which holds only directly assigned roles. Liferay Staff comes from the Employees user group, so `canBypassMyAccount` stays false for most staff.
 
 1. **10 custom objects have no grant.** AIHubBetaPrivateAccessRequest, EntitlementDefinitionSku, EnvironmentAdmin, GetAppInformation, ProductFeedback, PublisherAccountRequest, PublisherAssetAttachment, Report, and SalesRequest are readable only by the owner and an administrator. PublisherAsset is restricted to the account, so the members of its account can read it. Confirm that only the service reads the other 9.
 
@@ -560,16 +552,16 @@ Each finding names the file and line. The findings are ordered by risk.
 
 - The User `VIEW` grant on EntitlementDefinition is present (`L82`). LiferayBundle no longer exists in the batch, so its old grant is not needed.
 - No `UNASSIGN_USERS` action appears in `resource-permissions.json`.
-- Liferay Staff through the Employees group does appear in `roleBriefs`, because `UserBagFactoryUtil` reads the roles of the user's groups. The earlier note that group roles never appear is wrong for `roleBriefs`. It is correct for `User.getRoles()`, which the navigation template uses.
+- Liferay Staff through the Employees organization does appear in `roleBriefs`, because `UserBagFactoryUtil` reads the roles of the user's groups. The earlier note that group roles never appear is wrong for `roleBriefs`. It is correct for `User.getRoles()`, which the navigation template uses.
 - The memory note that LPD-92707 moved Business Events and Ticket Attachments to `useHasProject` is wrong. Only Account Members and Project Members use it.
 
 ## Open Questions
 
-1. Who adds users to the Customers, Employees, and Partners user groups? No workspace code does, so Liferay Staff, Customer, and Partner depend on a manual step or an Okta provisioning flow outside the workspace.
+1. Who adds users to the Customers and Partners user groups? No workspace code does, so Customer and Partner depend on a manual step or an Okta provisioning flow outside the workspace.
 
-1. Who assigns Marketplace Publisher, Account Solution Publisher, Finance Administrator, Provisioning Administrator, and Provisioning Member? The Publisher Dashboard page needs the regular role Marketplace Publisher, while the pages check the account role Account Solution Publisher.
+1. Who assigns Marketplace Publisher, Account Solution Publisher, Finance Administrator, Provisioning Administrator, and Provisioning Worker? The Publisher Dashboard page needs the regular role Marketplace Publisher, while the pages check the account role Account Solution Publisher.
 
-1. Are the 9 roles that no code reads still needed: Account Supplier, Dashboard Viewer, Marketplace Account Administrator, Provisioning Contact Worker, Provisioning Subscription Worker, Provisioning Watcher, Provisioning Worker, SSA, and Analytics Cloud Owner?
+1. Are the 5 roles that no code reads still needed: Account Supplier, Dashboard Viewer, Marketplace Account Administrator, SSA, and Analytics Cloud Owner?
 
 1. Which caller is meant to use the trial and provisioning endpoints: the browser, a Liferay workflow, or an external application? The answer decides between an order check and an application allow list.
 

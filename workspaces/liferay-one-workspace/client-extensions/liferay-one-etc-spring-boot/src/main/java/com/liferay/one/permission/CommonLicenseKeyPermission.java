@@ -102,7 +102,9 @@ public class CommonLicenseKeyPermission {
 
 			if (StringUtil.equals(name, RoleConstants.NAME_ADMINISTRATOR) ||
 				StringUtil.equals(
-					name, RoleConstants.NAME_PROVISIONING_ADMINISTRATOR)) {
+					name, RoleConstants.NAME_PROVISIONING_ADMINISTRATOR) ||
+				StringUtil.equals(
+					name, RoleConstants.NAME_PROVISIONING_WORKER)) {
 
 				return true;
 			}

@@ -93,7 +93,7 @@ export function useHasActivationPermission(
 		Boolean(
 			userAccountModel?.isAccountAdministrator ||
 				userAccountModel?.canManageAllAccounts ||
-				userAccountModel?.isLiferayStaff
+				userAccountModel?.isProvisioningWorker
 		),
 		projectExternalReferenceCode
 	);
@@ -110,7 +110,7 @@ export function useHasLicenseKeyPermission(
 		Boolean(
 			userAccountModel?.isAccountAdministrator ||
 				userAccountModel?.canManageAllAccounts ||
-				userAccountModel?.isLiferayStaff ||
+				userAccountModel?.isProvisioningWorker ||
 				userAccountModel?.hasAccountRoleName(PARTNER_MANAGER) ||
 				(unassigned &&
 					LICENSE_KEY_MANAGER_ROLES.some((roleName) =>

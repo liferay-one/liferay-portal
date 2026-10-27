@@ -126,7 +126,7 @@
 		},
 		"Liferay Staff": {
 			"group": "staff",
-			"purpose": "A Liferay employee. The sidecar gives it every action on every account."
+			"purpose": "A Liferay employee in the Employees organization, which the Okta group Employees fills. It views every account, its projects, and its keys, and changes nothing."
 		},
 		"Marketplace Account Administrator": {
 			"group": "unused",
@@ -196,25 +196,9 @@
 			"group": "staff",
 			"purpose": "Administers provisioning: accounts, orders, license keys, activation keys, and the objects. The sidecar gives it every action on every account."
 		},
-		"Provisioning Contact Worker": {
-			"group": "unused",
-			"purpose": "A regular role that no code or grant reads."
-		},
-		"Provisioning Member": {
-			"group": "staff",
-			"purpose": "A member of the provisioning team. It reads users and ticket attachments."
-		},
-		"Provisioning Subscription Worker": {
-			"group": "unused",
-			"purpose": "A regular role that no code or grant reads."
-		},
-		"Provisioning Watcher": {
-			"group": "unused",
-			"purpose": "A regular role that no code or grant reads."
-		},
 		"Provisioning Worker": {
-			"group": "unused",
-			"purpose": "A regular role that no code or grant reads."
+			"group": "staff",
+			"purpose": "Support and provisioning staff. It views every account and its keys, generates, renews, activates, and deactivates keys, changes account custom fields and account notes in the Control Panel, and reads users and ticket attachments. It cannot generate a new virtual cluster key."
 		},
 		"SSA": {
 			"group": "unused",

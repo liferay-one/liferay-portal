@@ -35,7 +35,7 @@
 	<#assign currentUser = themeDisplay.getUser() />
 
 	<#list currentUser.getRoles() as userRole>
-		<#if stringUtil.equals(userRole.getName(), "Administrator") || stringUtil.equals(userRole.getName(), "Liferay Staff")>
+		<#if stringUtil.equals(userRole.getName(), "Administrator")>
 			<#assign canBypassMyAccount = true />
 		</#if>
 	</#list>

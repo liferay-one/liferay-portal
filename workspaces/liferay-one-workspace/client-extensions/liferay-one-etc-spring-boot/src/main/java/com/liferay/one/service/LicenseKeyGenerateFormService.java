@@ -273,7 +273,7 @@ public class LicenseKeyGenerateFormService {
 
 		return _getGenerateFormJSONObject(
 			admin, ActivationKeyScope.of(account), provisionable,
-			renewedActivationKeyExternalReferenceCode);
+			renewedActivationKeyExternalReferenceCode, admin);
 	}
 
 	public JSONObject getGenerateForm(
@@ -281,9 +281,25 @@ public class LicenseKeyGenerateFormService {
 			String renewedActivationKeyExternalReferenceCode)
 		throws Exception {
 
+		return getGenerateForm(
+			admin, project, provisionable,
+			renewedActivationKeyExternalReferenceCode, admin);
+	}
+
+	/**
+	 * Offers the virtual cluster variant of a key type only when
+	 * virtualClusterAllowed is true. An admin can always generate a virtual
+	 * cluster key. A Provisioning Worker can only renew one.
+	 */
+	public JSONObject getGenerateForm(
+			boolean admin, Project project, boolean provisionable,
+			String renewedActivationKeyExternalReferenceCode,
+			boolean virtualClusterAllowed)
+		throws Exception {
+
 		return _getGenerateFormJSONObject(
 			admin, ActivationKeyScope.of(project), provisionable,
-			renewedActivationKeyExternalReferenceCode);
+			renewedActivationKeyExternalReferenceCode, virtualClusterAllowed);
 	}
 
 	/**
@@ -524,7 +540,8 @@ public class LicenseKeyGenerateFormService {
 	private JSONObject _getGenerateFormJSONObject(
 			boolean admin, ActivationKeyScope activationKeyScope,
 			boolean provisionable,
-			String renewedActivationKeyExternalReferenceCode)
+			String renewedActivationKeyExternalReferenceCode,
+			boolean virtualClusterAllowed)
 		throws Exception {
 
 		List<Entitlement> entitlements =
@@ -617,7 +634,8 @@ public class LicenseKeyGenerateFormService {
 				admin, allowComplimentary, allowPermanentLicenses,
 				hasComplimentaryActivationKey, hasLicenseEntries,
 				licenseKeyCounts, entitledProduct.getLicenseKeyFamily(),
-				licenseKeyTypeEntitlements, productVersions, provisionable);
+				licenseKeyTypeEntitlements, productVersions, provisionable,
+				virtualClusterAllowed);
 
 			if (entitledProduct.isGeneratesActivationKey()) {
 				bundleProductsJSONArray.put(
@@ -709,7 +727,8 @@ public class LicenseKeyGenerateFormService {
 		boolean hasLicenseEntries, Map<Long, Integer> licenseKeyCounts,
 		String licenseKeyFamily,
 		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements,
-		List<ProductVersion> productVersions, boolean provisionable) {
+		List<ProductVersion> productVersions, boolean provisionable,
+		boolean virtualClusterAllowed) {
 
 		JSONArray jsonArray = new JSONArray();
 
@@ -760,7 +779,7 @@ public class LicenseKeyGenerateFormService {
 
 			boolean virtualCluster = false;
 
-			if (admin && !complimentary &&
+			if (virtualClusterAllowed && !complimentary &&
 				licenseKeyType.isVirtualClusterSupported()) {
 
 				LicenseEntry virtualClusterLicenseEntry = _fetchLicenseEntry(

@@ -96,7 +96,7 @@ public class TicketsTicketAttachmentsRestController
 		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
 			String roleBriefName = roleBrief.getName();
 
-			if (roleBriefName.equals(RoleConstants.NAME_PROVISIONING_MEMBER)) {
+			if (roleBriefName.equals(RoleConstants.NAME_PROVISIONING_WORKER)) {
 				return;
 			}
 		}

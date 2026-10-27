@@ -119,8 +119,10 @@ An object action whose executor key names a client extension entry that does not
 | `list-type-definitions/` | `addOrUpdateListTypeDefinitions` | nothing |
 | `notification-templates/` | `addOrUpdateNotificationTemplates` | `publishObjectDefinitions` |
 | `object-actions/` | `addOrUpdateObjectActions` | account entry restrictions |
+| `organizations.json` | `addOrUpdateOrganizations` | expando columns |
 | `plo-entries.json` | `setPLOEntries` | nothing |
 | `resource-permissions.json` | `addOrUpdateResourcePermissions` | segments experiences, workflow definitions |
+| `roles-assignments.json` | `addRolesAssignments` | roles, user accounts, user groups. User accounts run after organizations. The handler replaces every group of the role with the groups in the file. |
 | `site-navigation-menus.json` | inside `addOrUpdateLayoutsContent` | the layouts |
 | `style-books/` | `addStyleBookEntries` | depot entries |
 | `taxonomy-vocabularies/` | `addOrUpdateTaxonomyVocabularies` | DDM structures |
@@ -147,10 +149,10 @@ The table lists every file in `client-extensions/liferay-one-batch/batch/`. REST
 | `09-commerce-option` | `Option` | 3 | `UPSERT`, `PARTIAL_UPDATE` | false | nothing |
 | `10-commerce-specification` | `Specification` | 55 | `UPSERT`, `PARTIAL_UPDATE` | false | `08` (5 option categories) |
 | `12-commerce-order-type` | `OrderType` | 19 | `UPSERT`, `PARTIAL_UPDATE` | false | nothing |
-| `13-role` | `Role` | 49 | `UPSERT`, `PARTIAL_UPDATE` | false | nothing |
+| `13-role` | `Role` | 43 | `UPSERT`, `PARTIAL_UPDATE` | false | nothing |
 | `14-taxonomy-vocabulary` | `TaxonomyVocabulary`, site `L_GLOBAL` | 10 | `UPSERT`, `UPDATE` | false | nothing |
 | `15-taxonomy-category` | `TaxonomyCategory`, site `L_GLOBAL` | 128 | `UPSERT`, `UPDATE` | false | `14` (10 vocabularies) |
-| `16-user-group` | `UserGroup` | 4 | `UPSERT`, `PARTIAL_UPDATE` | false | `13` (3 roles) |
+| `16-user-group` | `UserGroup` | 4 | `UPSERT`, `PARTIAL_UPDATE` | false | `13` (2 roles) |
 | `17-sxp-blueprint` | `SXPBlueprint` | 1 | `UPSERT`, `UPDATE` | false | nothing |
 
 ### Dependency Graph

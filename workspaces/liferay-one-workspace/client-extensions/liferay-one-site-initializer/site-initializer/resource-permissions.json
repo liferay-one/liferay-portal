@@ -9,6 +9,15 @@
 	},
 	{
 		"actionIds": [
+			"VIEW_CONTROL_PANEL"
+		],
+		"primKey": "0",
+		"resourceName": "90",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
 			"VIEW"
 		],
 		"primKey": "0",
@@ -18,11 +27,31 @@
 	},
 	{
 		"actionIds": [
+			"UPDATE",
 			"VIEW"
 		],
 		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:AccountNote$]",
 		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:AccountNote$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ActivationKey$]",
+		"roleName": "Liferay Staff",
 		"scope": "1"
 	},
 	{
@@ -39,8 +68,26 @@
 			"VIEW"
 		],
 		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ActivationKey$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:CommonLicenseKey$]",
 		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:CommonLicenseKey$]",
+		"roleName": "Provisioning Worker",
 		"scope": "1"
 	},
 	{
@@ -103,7 +150,25 @@
 		],
 		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LicenseKey$]",
+		"roleName": "Liferay Staff",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LicenseKey$]",
 		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LicenseKey$]",
+		"roleName": "Provisioning Worker",
 		"scope": "1"
 	},
 	{
@@ -139,7 +204,25 @@
 		],
 		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Project$]",
+		"roleName": "Liferay Staff",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Project$]",
 		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Project$]",
+		"roleName": "Provisioning Worker",
 		"scope": "1"
 	},
 	{
@@ -241,7 +324,7 @@
 		],
 		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:TicketAttachment$]",
-		"roleName": "Provisioning Member",
+		"roleName": "Provisioning Worker",
 		"scope": "1"
 	},
 	{
@@ -295,6 +378,26 @@
 			"VIEW"
 		],
 		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_PORTLET_ID:AccountNote$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ACCESS_IN_CONTROL_PANEL",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_PORTLET_ID:AccountNote$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ACCESS_IN_CONTROL_PANEL",
+			"VIEW"
+		],
+		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_PORTLET_ID:ActivationKey$]",
 		"roleName": "Provisioning Administrator",
 		"scope": "1"
@@ -336,6 +439,16 @@
 		"primKey": "0",
 		"resourceName": "com.liferay.account.model.AccountEntry",
 		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_ADDRESSES"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Liferay Staff",
 		"scope": "1"
 	},
 	{
@@ -432,6 +545,17 @@
 		"primKey": "0",
 		"resourceName": "com.liferay.account.model.AccountEntry",
 		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"UPDATE",
+			"VIEW",
+			"VIEW_ADDRESSES"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Provisioning Worker",
 		"scope": "1"
 	},
 	{
@@ -798,6 +922,16 @@
 	},
 	{
 		"actionIds": [
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.expando.kernel.model.ExpandoColumn",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
 			"VIEW"
 		],
 		"primKey": "0",
@@ -984,6 +1118,24 @@
 			"ADD_OBJECT_ENTRY"
 		],
 		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:AccountNote$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:AccountNote$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
 		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:DSRRequest$]",
 		"roleName": "User",
 		"scope": "1"
@@ -1084,7 +1236,7 @@
 		],
 		"primKey": "0",
 		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:TicketAttachment$]",
-		"roleName": "Provisioning Member",
+		"roleName": "Provisioning Worker",
 		"scope": "1"
 	},
 	{
@@ -1148,6 +1300,15 @@
 		"actionIds": [
 			"VIEW"
 		],
+		"primKey": "[$ROLE_ID:Provisioning Worker$]",
+		"resourceName": "com.liferay.portal.kernel.model.Role",
+		"roleName": "Provisioning Worker",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
 		"primKey": "0",
 		"resourceName": "com.liferay.portal.kernel.model.User",
 		"roleName": "Provisioning Administrator",
@@ -1159,7 +1320,7 @@
 		],
 		"primKey": "0",
 		"resourceName": "com.liferay.portal.kernel.model.User",
-		"roleName": "Provisioning Member",
+		"roleName": "Provisioning Worker",
 		"scope": "1"
 	},
 	{
@@ -1170,6 +1331,16 @@
 		"primKey": "0",
 		"resourceName": "com_liferay_account_admin_web_internal_portlet_AccountEntriesAdminPortlet",
 		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ACCESS_IN_CONTROL_PANEL",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com_liferay_account_admin_web_internal_portlet_AccountEntriesAdminPortlet",
+		"roleName": "Provisioning Worker",
 		"scope": "1"
 	},
 	{

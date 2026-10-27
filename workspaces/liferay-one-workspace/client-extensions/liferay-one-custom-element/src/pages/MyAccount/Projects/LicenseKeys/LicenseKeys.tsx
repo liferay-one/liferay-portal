@@ -29,6 +29,7 @@ import FilterableListCard, {
 	ListColumn,
 	ListFilter,
 } from '../components/FilterableListCard/FilterableListCard';
+import {useCanRenewVirtualCluster} from '../hooks/useCanRenewVirtualCluster';
 import {useHasLicenseKeyPermission} from '../hooks/useHasActivationPermission';
 import {useHasAdminPermission} from '../hooks/useHasAdminPermission';
 import {
@@ -165,6 +166,7 @@ function stopAnd(callback: () => void) {
 
 type KebabActionsProps = {
 	admin: boolean;
+	canRenewVirtualCluster: boolean;
 	hasActivationPermission: boolean;
 	onDeactivate: () => void;
 	onDownload: () => void;
@@ -177,6 +179,7 @@ type KebabActionsProps = {
 
 function KebabActions({
 	admin,
+	canRenewVirtualCluster,
 	hasActivationPermission,
 	onDeactivate,
 	onDownload,
@@ -215,7 +218,7 @@ function KebabActions({
 
 				{hasActivationPermission &&
 					!row.complimentary &&
-					isRenewableKey(row, admin, unassigned) && (
+					isRenewableKey(row, canRenewVirtualCluster, unassigned) && (
 						<ClayDropDown.Item onClick={stopAnd(onRenew)}>
 							{translate('renew')}
 						</ClayDropDown.Item>
@@ -292,6 +295,7 @@ export default function LicenseKeys() {
 	const {hasActivationPermission, hasGeneratePermission} =
 		useHasLicenseKeyPermission(projectId);
 	const admin = useHasAdminPermission();
+	const canRenewVirtualCluster = useCanRenewVirtualCluster();
 	const scope = useActivationKeyScope();
 	const {
 		error: summaryError,
@@ -430,6 +434,7 @@ export default function LicenseKeys() {
 				return (
 					<KebabActions
 						admin={admin}
+						canRenewVirtualCluster={canRenewVirtualCluster}
 						hasActivationPermission={hasActivationPermission}
 						onDeactivate={() => handleDeactivate(row)}
 						onDownload={() => handleDownload(row)}

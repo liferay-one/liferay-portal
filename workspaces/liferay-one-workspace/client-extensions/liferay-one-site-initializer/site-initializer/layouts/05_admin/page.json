@@ -26,13 +26,6 @@
 			"actionIds": [
 				"VIEW"
 			],
-			"roleName": "Liferay Staff",
-			"scope": 4
-		},
-		{
-			"actionIds": [
-				"VIEW"
-			],
 			"roleName": "Provisioning Administrator",
 			"scope": 4
 		},

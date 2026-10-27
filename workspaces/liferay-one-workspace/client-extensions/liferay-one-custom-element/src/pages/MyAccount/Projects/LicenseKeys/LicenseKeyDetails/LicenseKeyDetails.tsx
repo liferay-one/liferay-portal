@@ -22,6 +22,7 @@ import {Word, translate} from '~/i18n';
 import DetailsCard, {
 	DetailsRow,
 } from '~/pages/MyAccount/Projects/components/DetailsCard/DetailsCard';
+import {useCanRenewVirtualCluster} from '~/pages/MyAccount/Projects/hooks/useCanRenewVirtualCluster';
 import {useHasLicenseKeyPermission} from '~/pages/MyAccount/Projects/hooks/useHasActivationPermission';
 import {useHasAdminPermission} from '~/pages/MyAccount/Projects/hooks/useHasAdminPermission';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
@@ -42,6 +43,7 @@ export default function LicenseKeyDetails() {
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
 	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
 	const admin = useHasAdminPermission();
+	const canRenewVirtualCluster = useCanRenewVirtualCluster();
 
 	const {handleDeactivate, handleDownload, handleReactivate, handleRenew} =
 		useActivationKeyActions({generatePath: '../generate', revalidate});
@@ -68,6 +70,7 @@ export default function LicenseKeyDetails() {
 				<LicenseKeyDetailsContent
 					activationKey={activationKey}
 					admin={admin}
+					canRenewVirtualCluster={canRenewVirtualCluster}
 					hasActivationPermission={hasActivationPermission}
 					licenseKeys={
 						unaggregatedLicenseKey
@@ -92,6 +95,7 @@ export default function LicenseKeyDetails() {
 type LicenseKeyDetailsContentProps = {
 	activationKey: ProjectActivationKey;
 	admin: boolean;
+	canRenewVirtualCluster: boolean;
 	hasActivationPermission: boolean;
 	licenseKeys: ActivationKeyLicenseKey[];
 	onDeactivate: () => void;
@@ -104,6 +108,7 @@ type LicenseKeyDetailsContentProps = {
 function LicenseKeyDetailsContent({
 	activationKey,
 	admin,
+	canRenewVirtualCluster,
 	hasActivationPermission,
 	licenseKeys,
 	onDeactivate,
@@ -172,7 +177,7 @@ function LicenseKeyDetailsContent({
 							!activationKey.complimentary &&
 							isRenewableKey(
 								activationKey,
-								admin,
+								canRenewVirtualCluster,
 								unassigned
 							) && (
 								<ClayButton

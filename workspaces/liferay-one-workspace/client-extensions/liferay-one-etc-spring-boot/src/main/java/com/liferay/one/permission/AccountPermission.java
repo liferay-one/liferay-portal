@@ -60,7 +60,10 @@ public class AccountPermission {
 			UserAccount userAccount)
 		throws Exception {
 
-		if (_isPortalManager(userAccount)) {
+		if (_isPortalManager(userAccount) ||
+			(actionId.equals(ActionKeys.VIEW) &&
+			 _canViewAllAccounts(userAccount))) {
+
 			return true;
 		}
 
@@ -157,12 +160,25 @@ public class AccountPermission {
 		return false;
 	}
 
+	private boolean _canViewAllAccounts(UserAccount userAccount) {
+		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
+			String roleBriefName = roleBrief.getName();
+
+			if (roleBriefName.equals(RoleConstants.NAME_LIFERAY_STAFF) ||
+				roleBriefName.equals(RoleConstants.NAME_PROVISIONING_WORKER)) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private boolean _isPortalManager(UserAccount userAccount) {
 		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
 			String roleBriefName = roleBrief.getName();
 
 			if (roleBriefName.equals(RoleConstants.NAME_ADMINISTRATOR) ||
-				roleBriefName.equals(RoleConstants.NAME_LIFERAY_STAFF) ||
 				roleBriefName.equals(
 					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR)) {
 
