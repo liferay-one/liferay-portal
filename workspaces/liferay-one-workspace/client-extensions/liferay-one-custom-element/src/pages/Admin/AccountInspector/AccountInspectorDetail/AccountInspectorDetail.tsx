@@ -23,6 +23,7 @@ import {openAccountDashboard} from './utils/accountDashboardUtils';
 import {getOrderItemCollection} from './utils/accountFindingUtils';
 import buildAccountTree from './utils/buildAccountTree';
 import getAccountFindings from './utils/getAccountFindings';
+import isSalesforceAccountId from './utils/isSalesforceAccountId';
 import syncAccountFromSalesforce from './utils/syncAccountFromSalesforce';
 import syncRecordToJSM from './utils/syncRecordToJSM';
 
@@ -182,7 +183,9 @@ function AccountInspectorContent({
 
 			<JSMRecords inspection={inspection} />
 
-			<SalesforceRecords inspection={inspection} />
+			{isSalesforceAccountId(account.externalReferenceCode) && (
+				<SalesforceRecords inspection={inspection} />
+			)}
 
 			<h3 className="mb-3">{i18n.translate('related-records')}</h3>
 
@@ -267,10 +270,15 @@ export default function AccountInspectorDetail() {
 										onClick: () =>
 											syncAccountToJSM(data.account),
 									},
+								]
+							: []),
+						...(data &&
+						isSalesforceAccountId(
+							data.account.externalReferenceCode
+						)
+							? [
 									{
-										disabled:
-											syncing ||
-											!data.account.externalReferenceCode,
+										disabled: syncing,
 										label: 'sync-from-salesforce' as const,
 										onClick: () =>
 											syncFromSalesforce(data.account),

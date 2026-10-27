@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.SortedMap;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +45,12 @@ import org.springframework.web.util.UriComponentsBuilder;
  * newer Salesforce value in that time.
  * </p>
  *
+ * <p>
+ * Salesforce is not queried for an account whose external reference code is
+ * not a Salesforce account ID, so every record of that account is missing in
+ * Salesforce.
+ * </p>
+ *
  * @author Ryan Schuhler
  */
 @Component
@@ -56,21 +63,8 @@ public class SalesforceSyncService extends OneBaseService {
 		List<SalesforceRecordComparison> salesforceRecordComparisons =
 			new ArrayList<>();
 
-		String salesforceAccountId = _escapeSOQLString(
+		List<List<JSONObject>> recordsLists = _getRecordsLists(
 			account.getExternalReferenceCode());
-
-		List<List<JSONObject>> recordsLists =
-			_salesforceService.getRecordsLists(
-				List.of(
-					new SalesforceQuery(
-						"Account", _accountFields,
-						"Id = '" + salesforceAccountId + "'"),
-					new SalesforceQuery(
-						"Contract", _contractFields,
-						"AccountId = '" + salesforceAccountId + "'"),
-					new SalesforceQuery(
-						"Project__c", _projectFields,
-						"Account__c = '" + salesforceAccountId + "'")));
 
 		salesforceRecordComparisons.addAll(
 			SalesforceRecordComparisonUtil.compare(
@@ -121,14 +115,6 @@ public class SalesforceSyncService extends OneBaseService {
 		return count;
 	}
 
-	private String _escapeSOQLString(String value) {
-		return value.replace(
-			"\\", "\\\\"
-		).replace(
-			"'", "\\'"
-		);
-	}
-
 	private JSONObject _fetchJSONObject(
 			String path, String externalReferenceCode)
 		throws Exception {
@@ -146,6 +132,31 @@ public class SalesforceSyncService extends OneBaseService {
 		}
 
 		return new JSONObject(response);
+	}
+
+	private List<List<JSONObject>> _getRecordsLists(
+			String accountExternalReferenceCode)
+		throws Exception {
+
+		if ((accountExternalReferenceCode == null) ||
+			!_salesforceAccountIdPattern.matcher(
+				accountExternalReferenceCode
+			).matches()) {
+
+			return List.of(List.of(), List.of(), List.of());
+		}
+
+		return _salesforceService.getRecordsLists(
+			List.of(
+				new SalesforceQuery(
+					"Account", _accountFields,
+					"Id = '" + accountExternalReferenceCode + "'"),
+				new SalesforceQuery(
+					"Contract", _contractFields,
+					"AccountId = '" + accountExternalReferenceCode + "'"),
+				new SalesforceQuery(
+					"Project__c", _projectFields,
+					"Account__c = '" + accountExternalReferenceCode + "'")));
 	}
 
 	private boolean _isUnchangedInLiferay(
@@ -300,6 +311,8 @@ public class SalesforceSyncService extends OneBaseService {
 		"AI_Hub_Account_Name__c", "Account__c", "Allowed_Email_Domains__c",
 		"Data_Center_Location__c", "Friendly_Workspace_URL__c", "Id",
 		"Liferay_Version__c", "Name", "Security_Contact_Email_Address__c");
+	private static final Pattern _salesforceAccountIdPattern = Pattern.compile(
+		"001[A-Za-z0-9]{12}([A-Za-z0-9]{3})?");
 
 	@Autowired
 	private AccountService _accountService;
