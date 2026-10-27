@@ -24,6 +24,12 @@ const ACTIVATION_SECTION = 'activation';
 
 const MY_ACCOUNT_ROUTE = 'my-account';
 
+const PROJECT_LIST_ROUTES = new Set(['business-events', 'ticket-attachments']);
+
+const TICKET_ATTACHMENTS_PROJECT_LIST_PATHS = new Set(['', 'new']);
+
+const TICKET_ATTACHMENTS_ROUTE = 'ticket-attachments';
+
 const preloadedRoutes = new Set<string>();
 
 function parseHash() {
@@ -40,6 +46,17 @@ function parseHash() {
 			section === 'project' ? projectExternalReferenceCode : '',
 		projectSection,
 	};
+}
+
+function getHashPath() {
+	return window.location.hash.replace(/^#\/?/, '').replace(/\/$/, '');
+}
+
+function hasProjectOrders(route: string) {
+	return (
+		route !== TICKET_ATTACHMENTS_ROUTE ||
+		TICKET_ATTACHMENTS_PROJECT_LIST_PATHS.has(getHashPath())
+	);
 }
 
 function getContractScopedProjectExternalReferenceCode(): string {
@@ -88,6 +105,16 @@ export default function preloadAppData(route: string) {
 	});
 	const currentAccount = preloadDataQuery(currentAccountQuery(accountId));
 	preloadDataQuery(accountsQuery(accountId));
+
+	if (PROJECT_LIST_ROUTES.has(route)) {
+		preloadDataQuery(userProjectsQuery(accountId));
+
+		if (hasProjectOrders(route)) {
+			preloadDataQuery(projectOrdersQuery(accountId));
+		}
+
+		return;
+	}
 
 	if (route !== MY_ACCOUNT_ROUTE) {
 		return;

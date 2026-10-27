@@ -39,6 +39,7 @@ export function userProjectsQuery(
 }
 
 export function useUserProjects(): {
+	accountProjects: UserProject[];
 	hasAccountProjects: boolean;
 	loading: boolean;
 	projects: UserProject[];
@@ -72,23 +73,26 @@ export function useUserProjects(): {
 		)
 	);
 
-	const projects: UserProject[] = (projectData?.items ?? [])
-		.filter(
-			(item) =>
-				showAllAccountProjects ||
-				memberProjectExternalReferenceCodes.has(
-					item.externalReferenceCode
-				)
-		)
-		.map((item) => ({
+	const accountProjects: UserProject[] = (projectData?.items ?? []).map(
+		(item) => ({
 			externalReferenceCode: item.externalReferenceCode,
 			id: item.id,
 			liferayVersion: item.liferayVersion,
 			name: item.name,
-		}));
+		})
+	);
+
+	const projects = accountProjects.filter(
+		(project) =>
+			showAllAccountProjects ||
+			memberProjectExternalReferenceCodes.has(
+				project.externalReferenceCode
+			)
+	);
 
 	return {
-		hasAccountProjects: !!(projectData?.items ?? []).length,
+		accountProjects,
+		hasAccountProjects: !!accountProjects.length,
 		loading: membershipsLoading || projectsLoading,
 		projects,
 	};

@@ -4,12 +4,9 @@
  */
 
 import {useMemo} from 'react';
-import {
-	getProjectExternalReferenceCode,
-	getProjectName,
-	useProjectOrders,
-} from '~/hooks/useProjectOrders';
+import {useProjectOrders} from '~/hooks/useProjectOrders';
 
+import {getProjectsWithOrders} from '../utils/getProjectsWithOrders';
 import {useUserProjects} from './useUserProjects';
 
 export function useProjectsWithOrders() {
@@ -19,37 +16,34 @@ export function useProjectsWithOrders() {
 		placedOrders,
 	} = useProjectOrders();
 
-	const {loading: projectsLoading, projects} = useUserProjects();
+	const {
+		accountProjects,
+		hasAccountProjects,
+		loading: projectsLoading,
+		projects,
+	} = useUserProjects();
 
-	const projectsWithOrders = useMemo(() => {
-		if (ordersError) {
-			return projects;
-		}
+	const projectsWithOrders = useMemo(
+		() =>
+			ordersError
+				? projects
+				: getProjectsWithOrders(projects, placedOrders),
+		[ordersError, placedOrders, projects]
+	);
 
-		const projectExternalReferenceCodes = new Set<string>();
-		const projectNames = new Set<string>();
-
-		placedOrders.forEach((order) => {
-			const projectExternalReferenceCode =
-				getProjectExternalReferenceCode(order);
-
-			if (projectExternalReferenceCode) {
-				projectExternalReferenceCodes.add(projectExternalReferenceCode);
-			}
-			else {
-				projectNames.add(getProjectName(order));
-			}
-		});
-
-		return projects.filter(
-			(project) =>
-				projectExternalReferenceCodes.has(
-					project.externalReferenceCode
-				) || projectNames.has(project.name)
-		);
-	}, [ordersError, placedOrders, projects]);
+	const hasAccountProjectsWithOrders = useMemo(
+		() =>
+			ordersError
+				? hasAccountProjects
+				: Boolean(
+						getProjectsWithOrders(accountProjects, placedOrders)
+							.length
+					),
+		[accountProjects, hasAccountProjects, ordersError, placedOrders]
+	);
 
 	return {
+		hasAccountProjects: hasAccountProjectsWithOrders,
 		loading: ordersLoading || projectsLoading,
 		projects: projectsWithOrders,
 	};

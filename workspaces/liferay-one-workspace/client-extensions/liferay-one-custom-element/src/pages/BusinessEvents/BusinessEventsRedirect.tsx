@@ -14,7 +14,7 @@ import {
 	getSelectedAccountId,
 	resolveProjectERC,
 	setLastViewedProjectCookie,
-	useUserProjects,
+	useProjectsWithOrders,
 } from '~/pages/MyAccount/Projects/projects';
 
 const BusinessEventsRedirect = () => {
@@ -22,7 +22,7 @@ const BusinessEventsRedirect = () => {
 
 	const {projectERC} = useParams<{projectERC: string}>();
 
-	const {hasAccountProjects, loading, projects} = useUserProjects();
+	const {hasAccountProjects, loading, projects} = useProjectsWithOrders();
 
 	const userId = getCurrentUserId();
 	const accountId = getSelectedAccountId();

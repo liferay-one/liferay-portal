@@ -17,7 +17,7 @@ import Loading from '~/components/Loading/Loading';
 import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';
 import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {Word, sub, translate} from '~/i18n';
-import {useUserProjects} from '~/pages/MyAccount/Projects/projects';
+import {useProjectsWithOrders} from '~/pages/MyAccount/Projects/projects';
 import {Liferay} from '~/services/liferay/liferay';
 import getKebabCase from '~/utils/getKebabCase';
 
@@ -77,7 +77,7 @@ const BusinessEvents = () => {
 
 	const {isSaasOnly} = useIsSaasOnly();
 
-	const {loading: projectsLoading, projects} = useUserProjects();
+	const {loading: projectsLoading, projects} = useProjectsWithOrders();
 
 	const navigate = useNavigate();
 
