@@ -124,7 +124,7 @@ export const OPTION_COLUMNS: InspectorTableColumn<OptionRow>[] = [
 
 export function getSKUColumns(
 	index: CatalogIndex,
-	productId: number
+	productExternalReferenceCode: string | undefined
 ): InspectorTableColumn<InspectedSKU>[] {
 	const getSKUEntitlementDefinitions = ({
 		externalReferenceCode,
@@ -155,8 +155,8 @@ export function getSKUColumns(
 
 							<Link
 								to={getEntitlementDefinitionPath(
-									entitlementDefinition.id,
-									productId
+									entitlementDefinition.externalReferenceCode,
+									productExternalReferenceCode
 								)}
 							>
 								{getEntitlementDefinitionName(

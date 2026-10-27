@@ -194,9 +194,11 @@ async function getRelatedCollections(account: Account) {
 }
 
 async function getAccountInspection(
-	accountId: number | string
+	externalReferenceCode: string
 ): Promise<AccountInspection> {
-	const account = await HeadlessAdminUser.getAccount(accountId);
+	const account = await HeadlessAdminUser.getAccountByExternalReferenceCode(
+		encodeURIComponent(externalReferenceCode)
+	);
 
 	const [orders, postalAddresses, related, users] = await Promise.all([
 		getOrders(account),
@@ -219,15 +221,19 @@ async function getAccountInspection(
 	};
 }
 
-function isAccountId(accountId?: number | string) {
-	return /^\d+$/.test(String(accountId ?? ''));
+function isExternalReferenceCode(externalReferenceCode?: string) {
+	return (
+		Boolean(externalReferenceCode) && !/^\.+$/.test(externalReferenceCode!)
+	);
 }
 
 export function accountInspectionQuery(
-	accountId?: number | string
+	externalReferenceCode?: string
 ): DataQuery<AccountInspection> {
 	return {
-		fetcher: () => getAccountInspection(accountId!),
-		key: isAccountId(accountId) ? `/account-inspection/${accountId}` : null,
+		fetcher: () => getAccountInspection(externalReferenceCode!),
+		key: isExternalReferenceCode(externalReferenceCode)
+			? `/account-inspection/${externalReferenceCode}`
+			: null,
 	};
 }

@@ -195,9 +195,9 @@ function AccountInspectorContent({
 }
 
 export default function AccountInspectorDetail() {
-	const {accountId} = useParams();
+	const {externalReferenceCode} = useParams();
 
-	const query = accountInspectionQuery(accountId);
+	const query = accountInspectionQuery(externalReferenceCode);
 
 	const {data, error, isLoading, isValidating, mutate} = useDataQuery(query, {
 		revalidateOnFocus: false,

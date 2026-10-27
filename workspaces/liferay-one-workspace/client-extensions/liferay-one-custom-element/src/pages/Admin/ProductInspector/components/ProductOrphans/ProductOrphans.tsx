@@ -43,23 +43,19 @@ const ENTITLEMENT_DEFINITION_SKU_COLUMNS: InspectorTableColumn<InspectedEntitlem
 		{
 			label: 'entitlement-definition',
 			render: (entitlementDefinitionSKU) => {
-				const entitlementDefinitionId =
-					entitlementDefinitionSKU.r_entitlementDefinitionToSku_c_entitlementDefinitionId;
-				const externalReferenceCode = String(
-					entitlementDefinitionSKU.r_entitlementDefinitionToSku_c_entitlementDefinitionERC ||
-						'-'
-				);
+				const externalReferenceCode =
+					entitlementDefinitionSKU.r_entitlementDefinitionToSku_c_entitlementDefinitionERC;
 
-				return entitlementDefinitionId ? (
+				return externalReferenceCode ? (
 					<Link
 						to={getEntitlementDefinitionPath(
-							entitlementDefinitionId
+							String(externalReferenceCode)
 						)}
 					>
-						{externalReferenceCode}
+						{String(externalReferenceCode)}
 					</Link>
 				) : (
-					externalReferenceCode
+					'-'
 				);
 			},
 			sortable: true,
@@ -78,7 +74,7 @@ const SKU_COLUMNS: InspectorTableColumn<OrphanedSKU>[] = [
 	{
 		label: 'product',
 		render: ({product}) => (
-			<Link to={getProductPath(product.id)}>
+			<Link to={getProductPath(product.externalReferenceCode)}>
 				{getProductName(product)}
 			</Link>
 		),
