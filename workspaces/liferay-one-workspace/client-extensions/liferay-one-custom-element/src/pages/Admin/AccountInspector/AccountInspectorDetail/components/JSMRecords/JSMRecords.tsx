@@ -158,7 +158,7 @@ export default function JSMRecords({inspection}: JSMRecordsProps) {
 
 	if (isLoading) {
 		return (
-			<InspectorSection defaultExpanded title={i18n.translate('jsm')}>
+			<InspectorSection title={i18n.translate('jsm')}>
 				<Loading size="sm" />
 			</InspectorSection>
 		);
@@ -167,6 +167,7 @@ export default function JSMRecords({inspection}: JSMRecordsProps) {
 	return (
 		<InspectorTable
 			columns={COLUMNS}
+			defaultExpanded={false}
 			entries={records}
 			error={error ? toErrorMessage(error) : undefined}
 			flaggedIds={flaggedIds}

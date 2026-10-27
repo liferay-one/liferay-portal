@@ -65,7 +65,7 @@ type InspectorTableProps<Entry extends InspectedEntry> = {
 export default function InspectorTable<Entry extends InspectedEntry>({
 	bare = false,
 	columns: allColumns,
-	defaultExpanded = false,
+	defaultExpanded,
 	defaultPageSize = PAGE_SIZES[0],
 	entries: allEntries,
 	error,
@@ -385,7 +385,7 @@ export default function InspectorTable<Entry extends InspectedEntry>({
 				</>
 			}
 			defaultExpanded={
-				defaultExpanded ||
+				defaultExpanded ??
 				Boolean(error || notice || truncated || flaggedIds.size)
 			}
 			id={id}
