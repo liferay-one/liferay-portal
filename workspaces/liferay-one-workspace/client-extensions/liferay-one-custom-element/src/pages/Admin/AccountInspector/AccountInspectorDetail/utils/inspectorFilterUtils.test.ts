@@ -7,8 +7,8 @@ import {describe, expect, it} from 'vitest';
 
 import {
 	EMPTY_FILTER,
-	filterAccountTree,
 	filterInspectedEntries,
+	filterInspectorTree,
 	formatInspectedValue,
 	getFilterOptions,
 	getTreeKeys,
@@ -111,12 +111,12 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-INSPECTORFILTERUTIL
 	it('keeps tree matches with their ancestors, and a matching node keeps its children', () => {
 		expect(
 			getTreeKeys(
-				filterAccountTree(TREE, {...EMPTY_FILTER, search: 'dxp'})
+				filterInspectorTree(TREE, {...EMPTY_FILTER, search: 'dxp'})
 			)
 		).toEqual(['Main Project', 'Contract C-1', 'DXP']);
 		expect(
 			getTreeKeys(
-				filterAccountTree(TREE, {...EMPTY_FILTER, search: 'main'})
+				filterInspectorTree(TREE, {...EMPTY_FILTER, search: 'main'})
 			)
 		).toEqual(['Main Project', 'Contract C-1', 'DXP']);
 	});
@@ -124,7 +124,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-INSPECTORFILTERUTIL
 	it('keeps only flagged branches when flagged only is on', () => {
 		expect(
 			getTreeKeys(
-				filterAccountTree(TREE, {...EMPTY_FILTER, flaggedOnly: true})
+				filterInspectorTree(TREE, {...EMPTY_FILTER, flaggedOnly: true})
 			)
 		).toEqual(['Users', 'Bob']);
 	});
@@ -141,7 +141,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-INSPECTORFILTERUTIL
 	it('treats an info finding as flagged in the tree, like the tables do', () => {
 		expect(
 			getTreeKeys(
-				filterAccountTree(
+				filterInspectorTree(
 					[node('Orders', [node('#50', [], 'info')], 'info')],
 					{
 						...EMPTY_FILTER,
