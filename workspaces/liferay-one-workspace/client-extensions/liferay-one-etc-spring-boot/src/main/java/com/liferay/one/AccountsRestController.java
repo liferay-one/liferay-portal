@@ -29,6 +29,7 @@ import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.permission.ProjectPermission;
+import com.liferay.one.salesforce.model.SalesforceRecordComparison;
 import com.liferay.one.service.AccountInvitationEmailService;
 import com.liferay.one.service.AccountInvitationService;
 import com.liferay.one.service.AccountRoleService;
@@ -44,6 +45,7 @@ import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningEmailService;
+import com.liferay.one.service.SalesforceSyncService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
 import com.liferay.one.util.DeliveryProductUtil;
@@ -347,6 +349,31 @@ public class AccountsRestController extends OneBaseRestController {
 		);
 	}
 
+	@GetMapping("/{externalReferenceCode}/salesforce/records")
+	public ResponseEntity<String> getSalesforceRecords(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_adminPermission.check(jwt);
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (SalesforceRecordComparison salesforceRecordComparison :
+				_salesforceSyncService.getSalesforceRecordComparisons(
+					_accountService.getAccount(externalReferenceCode))) {
+
+			jsonArray.put(salesforceRecordComparison.toJSONObject());
+		}
+
+		return new ResponseEntity<>(
+			new JSONObject(
+			).put(
+				"records", jsonArray
+			).toString(),
+			HttpStatus.OK);
+	}
+
 	@PostMapping
 	public Account postAccounts(
 			@AuthenticationPrincipal Jwt jwt,
@@ -546,6 +573,25 @@ public class AccountsRestController extends OneBaseRestController {
 				account, renewedAccountInvitation, inviterUserAccount.getName(),
 				_projectService.fetchProject(projectExternalReferenceCode));
 		}
+	}
+
+	@PostMapping("/{externalReferenceCode}/sync-from-salesforce")
+	public ResponseEntity<String> postSyncFromSalesforce(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_adminPermission.check(jwt);
+
+		int count = _salesforceSyncService.syncAccount(
+			_accountService.getAccount(externalReferenceCode));
+
+		return new ResponseEntity<>(
+			new JSONObject(
+			).put(
+				"count", count
+			).toString(),
+			HttpStatus.OK);
 	}
 
 	@PostMapping("/{externalReferenceCode}/sync-to-jsm")
@@ -1153,6 +1199,9 @@ public class AccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private ProvisioningEmailService _provisioningEmailService;
+
+	@Autowired
+	private SalesforceSyncService _salesforceSyncService;
 
 	@Autowired
 	private UserAccountService _userAccountService;

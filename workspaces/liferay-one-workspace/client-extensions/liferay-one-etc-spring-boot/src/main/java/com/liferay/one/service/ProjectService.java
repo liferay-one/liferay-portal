@@ -60,13 +60,13 @@ public class ProjectService extends OneBaseService {
 			Project::new);
 	}
 
-	public void upsertProject(SalesforceProject salesforceProject)
+	public boolean upsertProject(SalesforceProject salesforceProject)
 		throws Exception {
 
-		upsertProject(null, salesforceProject);
+		return upsertProject(null, salesforceProject);
 	}
 
-	public void upsertProject(
+	public boolean upsertProject(
 			String accountExternalReferenceCode,
 			SalesforceProject salesforceProject)
 		throws Exception {
@@ -87,7 +87,7 @@ public class ProjectService extends OneBaseService {
 						" without an ID, name, and account");
 			}
 
-			return;
+			return false;
 		}
 
 		JSONObject jsonObject = new JSONObject();
@@ -155,6 +155,8 @@ public class ProjectService extends OneBaseService {
 
 			put(getAuthorization(), jsonObject.toString(), uri);
 		}
+
+		return true;
 	}
 
 	private Project _fetchProject(

@@ -7,7 +7,11 @@ import zodSchema, {z} from '~/schemas/zodSchema';
 
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
-import type {JiraAssets} from '~/types/accountInspection';
+import type {
+	JiraAssets,
+	SalesforceRecords,
+	SalesforceSyncResult,
+} from '~/types/accountInspection';
 import type {Account} from '~/types/accounts';
 import type {APIResponse} from '~/types/api';
 import type {DeliveryProduct} from '~/types/product';
@@ -57,6 +61,12 @@ class AccountsOAuth2 extends OneSpringBootOAuth2 {
 	async getProducts(accountExternalReferenceCode: string) {
 		return this.get<APIResponse<DeliveryProduct>>(
 			`/${accountExternalReferenceCode}/products`
+		);
+	}
+
+	async getSalesforceRecords(accountExternalReferenceCode: string) {
+		return this.get<SalesforceRecords>(
+			`/${accountExternalReferenceCode}/salesforce/records`
 		);
 	}
 
@@ -120,6 +130,12 @@ class AccountsOAuth2 extends OneSpringBootOAuth2 {
 		return this.post(
 			`/${accountExternalReferenceCode}/invitations/${accountInvitationId}` +
 				'/resend'
+		);
+	}
+
+	async postSyncFromSalesforce(accountExternalReferenceCode: string) {
+		return this.post<SalesforceSyncResult>(
+			`/${accountExternalReferenceCode}/sync-from-salesforce`
 		);
 	}
 
