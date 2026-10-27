@@ -68,7 +68,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 		expect(buildAccountTree(buildInspection({}), [])).toEqual([]);
 	});
 
-	it('nests contracts, their entitlements, and project orders under the project', () => {
+	it('nests projects under contracts, entitlements under order items, and license keys under entitlements', () => {
 		const inspection = buildInspection(
 			{
 				contracts: [
@@ -84,6 +84,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 					{
 						id: 40,
 						name: 'DXP',
+						r_commerceOrderItemToEntitlement_commerceOrderItemId: 501,
 						r_contractToEntitlement_c_contractId: 30,
 						r_projectToEntitlement_c_projectId: 20,
 					},
@@ -94,12 +95,26 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 						r_projectToEntitlement_c_projectId: 20,
 					},
 				],
+				licenseKeys: [
+					{
+						externalReferenceCode: 'LK-1',
+						id: 70,
+						r_entitlementToLicenseKey_c_entitlementId: 40,
+						r_projectToLicenseKey_c_projectId: 20,
+					},
+					{
+						externalReferenceCode: 'LK-2',
+						id: 71,
+						r_entitlementToLicenseKey_c_entitlementId: 99,
+						r_projectToLicenseKey_c_projectId: 20,
+					},
+				],
 				projects: [PROJECT],
 			},
 			{
 				orders: toCollection([
 					{
-						customFields: {projectName: 'Main'},
+						customFields: {contractId: 30, projectName: 'Main'},
 						externalReferenceCode: 'ORDER-1',
 						id: 50,
 						orderItems: [
@@ -116,33 +131,73 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 					{
 						children: [
 							{
-								children: [{label: 'DXP'}],
-								count: 1,
-								label: 'Entitlements',
+								children: [
+									{
+										children: [
+											{
+												children: [
+													{
+														children: [
+															{
+																children: [
+																	{
+																		children:
+																			[
+																				{
+																					children:
+																						[
+																							{
+																								children:
+																									[
+																										{
+																											label: 'LK-1',
+																										},
+																									],
+																								count: 1,
+																								label: 'License Keys',
+																							},
+																						],
+																					label: 'DXP',
+																				},
+																			],
+																		count: 1,
+																		label: 'Entitlements',
+																	},
+																],
+																label: 'DXP',
+															},
+														],
+														count: 1,
+														label: 'Order Items',
+													},
+												],
+												label: 'ORDER-1',
+											},
+										],
+										count: 1,
+										label: 'Orders',
+									},
+								],
+								label: 'Main',
 							},
 						],
 						label: 'C-1 2026-01-01 - 2027-01-01',
 					},
+				],
+				count: 1,
+				label: 'Contracts',
+			},
+			{
+				children: [
 					{
 						children: [{label: 'Support'}],
 						count: 1,
 						label: 'Entitlements',
 					},
 					{
-						children: [
-							{
-								children: [
-									{
-										children: [{label: 'DXP'}],
-										count: 1,
-										label: 'Order Items',
-									},
-								],
-								label: 'ORDER-1',
-							},
-						],
+						children: [{label: 'LK-2'}],
 						count: 1,
-						label: 'Orders',
+						label: 'License Keys',
 					},
 				],
 				label: 'Main',
@@ -174,12 +229,12 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 		expect(summarize([accountLevel])).toEqual([
 			{
 				children: [
+					{children: [{label: '#50'}], count: 1, label: 'Orders'},
 					{
 						children: [{label: 'Orphan'}],
 						count: 1,
 						label: 'Environments',
 					},
-					{children: [{label: '#50'}], count: 1, label: 'Orders'},
 				],
 				label: 'No Project (Account Level)',
 			},
@@ -269,7 +324,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 		});
 	});
 
-	it('shows an entitlement under its contract when the contract sits at account level', () => {
+	it('lists each project that holds a record in an account level contract under that contract', () => {
 		const inspection = buildInspection({
 			contracts: [{externalReferenceCode: 'C-ACCOUNT', id: 30}],
 			entitlements: [
@@ -280,25 +335,64 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 					r_projectToEntitlement_c_projectId: 20,
 				},
 			],
+			environments: [
+				{
+					id: 60,
+					name: 'Shared',
+					r_contractToEnvironment_c_contractId: 30,
+				},
+			],
 			projects: [PROJECT],
 		});
 
-		const [projectNode, accountLevel] = buildAccountTree(inspection, []);
+		const [contractsNode, projectNode, ...rest] = buildAccountTree(
+			inspection,
+			[]
+		);
 
-		expect(summarize(projectNode.children)).toEqual([
+		expect(summarize(contractsNode.children)).toEqual([
 			{
 				children: [
 					{
-						children: [{label: 'DXP'}],
+						children: [
+							{
+								children: [{label: 'DXP'}],
+								count: 1,
+								label: 'Entitlements',
+							},
+						],
+						label: 'Main',
+					},
+					{
+						children: [{label: 'Shared'}],
 						count: 1,
-						label: 'Entitlements',
+						label: 'Environments',
 					},
 				],
 				label: 'C-ACCOUNT',
 			},
 		]);
-		expect(summarize(accountLevel.children)).toEqual([
-			{label: 'C-ACCOUNT'},
+		expect(projectNode.children).toEqual([]);
+		expect(rest).toEqual([]);
+	});
+
+	it('keeps an entitlement at project level when its order item did not load', () => {
+		const inspection = buildInspection({
+			entitlements: [
+				{
+					id: 40,
+					name: 'DXP',
+					r_commerceOrderItemToEntitlement_commerceOrderItemId: 501,
+					r_projectToEntitlement_c_projectId: 20,
+				},
+			],
+			projects: [PROJECT],
+		});
+
+		const [projectNode] = buildAccountTree(inspection, []);
+
+		expect(summarize(projectNode.children)).toEqual([
+			{children: [{label: 'DXP'}], count: 1, label: 'Entitlements'},
 		]);
 	});
 
