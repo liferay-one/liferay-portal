@@ -128,6 +128,54 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 		]);
 	});
 
+	it.each(['business-events', 'ticket-attachments'])(
+		'adds the project and order queries for %s',
+		async (route) => {
+			const preloadAppData = await loadPreloadAppData();
+
+			preloadAppData(route);
+
+			expect(getPreloadedKeys()).toEqual([
+				'/my-user-account',
+				'currentAccount:101',
+				'accounts:101',
+				'userProjects:101',
+				'projectOrders:101',
+			]);
+		}
+	);
+
+	it.each(['#/new', '#/'])(
+		'adds the order query for the ticket attachments page at %s',
+		async (hash) => {
+			window.location.hash = hash;
+
+			const preloadAppData = await loadPreloadAppData();
+
+			preloadAppData('ticket-attachments');
+
+			expect(getPreloadedKeys()).toContain('projectOrders:101');
+		}
+	);
+
+	it.each(['#/12345', '#/new/12345', '#/erc/ATTACHMENT-1'])(
+		'skips the order query for the ticket attachments page at %s',
+		async (hash) => {
+			window.location.hash = hash;
+
+			const preloadAppData = await loadPreloadAppData();
+
+			preloadAppData('ticket-attachments');
+
+			expect(getPreloadedKeys()).toEqual([
+				'/my-user-account',
+				'currentAccount:101',
+				'accounts:101',
+				'userProjects:101',
+			]);
+		}
+	);
+
 	it('does nothing when the route was already preloaded', async () => {
 		const preloadAppData = await loadPreloadAppData();
 

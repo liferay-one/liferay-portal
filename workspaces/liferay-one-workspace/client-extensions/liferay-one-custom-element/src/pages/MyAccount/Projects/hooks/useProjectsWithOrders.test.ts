@@ -23,9 +23,12 @@ const alpha = {externalReferenceCode: 'PRJCT-ALPHA', id: 1, name: 'Alpha'};
 const beta = {externalReferenceCode: 'PRJCT-BETA', id: 2, name: 'Beta'};
 
 function mockState({
+	accountProjects = [alpha, beta] as unknown[],
+	hasAccountProjects = true,
 	ordersError = undefined as unknown,
 	ordersLoading = false,
 	placedOrders = [] as unknown[],
+	projects = [alpha, beta] as unknown[],
 	projectsLoading = false,
 } = {}) {
 	vi.mocked(useProjectOrders).mockReturnValue({
@@ -34,8 +37,10 @@ function mockState({
 		placedOrders,
 	} as unknown as ReturnType<typeof useProjectOrders>);
 	vi.mocked(useUserProjects).mockReturnValue({
+		accountProjects,
+		hasAccountProjects,
 		loading: projectsLoading,
-		projects: [alpha, beta],
+		projects,
 	} as unknown as ReturnType<typeof useUserProjects>);
 }
 
@@ -75,6 +80,37 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEPROJECTSWITHORDERS] useProjectsWithOrders'
 		const {result} = renderHook(() => useProjectsWithOrders());
 
 		expect(result.current.projects).toEqual([alpha, beta]);
+	});
+
+	it('reports no account projects when no project of the account has a placed order', () => {
+		mockState({placedOrders: [{customFields: {projectName: 'Gamma'}}]});
+
+		const {result} = renderHook(() => useProjectsWithOrders());
+
+		expect(result.current.hasAccountProjects).toBe(false);
+	});
+
+	it('reports account projects when a project the user is not a member of has a placed order', () => {
+		mockState({
+			placedOrders: [{customFields: {projectName: 'Beta'}}],
+			projects: [alpha],
+		});
+
+		const {result} = renderHook(() => useProjectsWithOrders());
+
+		expect(result.current.hasAccountProjects).toBe(true);
+		expect(result.current.projects).toEqual([]);
+	});
+
+	it('reports the account projects as read when the orders cannot be read', () => {
+		mockState({
+			hasAccountProjects: true,
+			ordersError: new Error('Unable to read orders'),
+		});
+
+		const {result} = renderHook(() => useProjectsWithOrders());
+
+		expect(result.current.hasAccountProjects).toBe(true);
 	});
 
 	it.each([
