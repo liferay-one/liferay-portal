@@ -48,9 +48,9 @@ public interface AccountConstants {
 	public static final String ATTRIBUTE_NAME_POSTAL_ADDRESSES =
 		"Postal Addresses";
 
-	public static final String ATTRIBUTE_NAME_STATUS = "Status";
+	public static final String ATTRIBUTE_NAME_REGION = "Region";
 
-	public static final String ATTRIBUTE_NAME_SUPPORT_REGION = "Support Region";
+	public static final String ATTRIBUTE_NAME_STATUS = "Status";
 
 	public static final String ATTRIBUTE_NAME_TIER = "Tier";
 

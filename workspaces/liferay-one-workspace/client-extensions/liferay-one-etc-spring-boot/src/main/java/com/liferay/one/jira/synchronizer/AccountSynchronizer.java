@@ -470,7 +470,7 @@ public class AccountSynchronizer {
 				postalAddress -> String.valueOf(postalAddress.getId()),
 				_postalAddressConverter::toAssetObject));
 		jiraAssetObject.setAttributeValue(
-			AccountConstants.ATTRIBUTE_NAME_SUPPORT_REGION,
+			AccountConstants.ATTRIBUTE_NAME_REGION,
 			accountSyncModel.getSupportRegion());
 	}
 
