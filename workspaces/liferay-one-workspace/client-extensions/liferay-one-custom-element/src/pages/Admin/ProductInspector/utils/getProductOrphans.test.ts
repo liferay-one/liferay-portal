@@ -71,7 +71,7 @@ function buildInspection(
 		]),
 		loadedAt: 0,
 		products: toCollection([
-			buildProduct(100, ['SKU-1'], ['project-item-type']),
+			buildProduct(100, ['SKU-1', 'SKU-3'], ['project-item-type']),
 			buildProduct(200, ['SKU-2']),
 		]),
 		specifications: toCollection([
@@ -96,7 +96,7 @@ function getOrphanIds(inspection: ProductCatalogInspection) {
 	return {
 		entitlementDefinitionSKUs: getIds(orphans.entitlementDefinitionSKUs),
 		entitlementDefinitions: getIds(orphans.entitlementDefinitions),
-		products: getIds(orphans.products),
+		skus: getIds(orphans.skus),
 		specifications: getIds(orphans.specifications),
 		usageDefinitions: getIds(orphans.usageDefinitions),
 	};
@@ -107,7 +107,7 @@ describe('[MOD-ADMIN-PRODUCTINSPECTOR-GETPRODUCTORPHANS] getProductOrphans', () 
 		expect(getOrphanIds(buildInspection())).toEqual({
 			entitlementDefinitionSKUs: [2, 3],
 			entitlementDefinitions: [501],
-			products: [200],
+			skus: [1001, 2000],
 			specifications: [2],
 			usageDefinitions: [701],
 		});
@@ -128,13 +128,13 @@ describe('[MOD-ADMIN-PRODUCTINSPECTOR-GETPRODUCTORPHANS] getProductOrphans', () 
 		).toEqual({
 			entitlementDefinitionSKUs: null,
 			entitlementDefinitions: [501],
-			products: [200],
+			skus: [1001, 2000],
 			specifications: null,
 			usageDefinitions: [701],
 		});
 	});
 
-	it('does not check products or specifications when a product collection did not load completely', () => {
+	it('does not check SKUs or specifications when a product collection did not load completely', () => {
 		const products = toCollection([
 			{
 				...buildProduct(100, ['SKU-1']),
@@ -144,7 +144,7 @@ describe('[MOD-ADMIN-PRODUCTINSPECTOR-GETPRODUCTORPHANS] getProductOrphans', () 
 
 		const orphanIds = getOrphanIds(buildInspection({products}));
 
-		expect(orphanIds.products).toBeNull();
+		expect(orphanIds.skus).toBeNull();
 		expect(orphanIds.specifications).toBeNull();
 	});
 });
