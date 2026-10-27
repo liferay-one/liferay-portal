@@ -31,6 +31,7 @@ import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
 import com.liferay.one.permission.ProjectPermission;
+import com.liferay.one.salesforce.model.SalesforceRecordComparison;
 import com.liferay.one.service.AccountInvitationEmailService;
 import com.liferay.one.service.AccountInvitationService;
 import com.liferay.one.service.AccountRoleService;
@@ -45,6 +46,7 @@ import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.ProvisioningEmailService;
+import com.liferay.one.service.SalesforceSyncService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
 import com.liferay.one.util.LocaleUtil;
@@ -926,6 +928,95 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testGetSalesforceRecordsRejectsNonadministrator()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.doThrow(
+			PrincipalException.class
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.getSalesforceRecords(
+				null, _EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verifyNoInteractions(_salesforceSyncService);
+	}
+
+	@Test
+	public void testGetSalesforceRecordsReturnsTheComparisonsForAdministrator()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = _createAccount();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			account
+		);
+
+		Mockito.when(
+			_salesforceSyncService.getSalesforceRecordComparisons(account)
+		).thenReturn(
+			List.of(
+				new SalesforceRecordComparison(
+					List.of(
+						new JSONObject(
+						).put(
+							"fieldName", "name"
+						).put(
+							"liferayValue", "Old"
+						).put(
+							"salesforceValue", "New"
+						)),
+					_EXTERNAL_REFERENCE_CODE, new JSONObject(), "Old",
+					new JSONObject(), SalesforceRecordComparison.STATUS_DIFFERS,
+					SalesforceRecordComparison.TYPE_ACCOUNT))
+		);
+
+		ResponseEntity<String> responseEntity =
+			accountsRestController.getSalesforceRecords(
+				null, _EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(
+			responseEntity.getBody()
+		).getJSONArray(
+			"records"
+		).getJSONObject(
+			0
+		);
+
+		Assertions.assertEquals(
+			"New",
+			jsonObject.getJSONArray(
+				"differences"
+			).getJSONObject(
+				0
+			).getString(
+				"salesforceValue"
+			));
+		Assertions.assertEquals(
+			_EXTERNAL_REFERENCE_CODE,
+			jsonObject.getString("externalReferenceCode"));
+		Assertions.assertEquals(
+			SalesforceRecordComparison.STATUS_DIFFERS,
+			jsonObject.getString("status"));
+		Assertions.assertEquals(
+			SalesforceRecordComparison.TYPE_ACCOUNT,
+			jsonObject.getString("type"));
+	}
+
+	@Test
 	public void testPostAccountsAssignsCreatorAsAdministrator()
 		throws Exception {
 
@@ -1784,6 +1875,63 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testPostSyncFromSalesforceRejectsNonadministrator()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.doThrow(
+			PrincipalException.class
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.postSyncFromSalesforce(
+				null, _EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verifyNoInteractions(_salesforceSyncService);
+	}
+
+	@Test
+	public void testPostSyncFromSalesforceReturnsTheCountForAdministrator()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = _createAccount();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			account
+		);
+
+		Mockito.when(
+			_salesforceSyncService.syncAccount(account)
+		).thenReturn(
+			2
+		);
+
+		ResponseEntity<String> responseEntity =
+			accountsRestController.postSyncFromSalesforce(
+				null, _EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Assertions.assertEquals(
+			2,
+			new JSONObject(
+				responseEntity.getBody()
+			).getInt(
+				"count"
+			));
+	}
+
+	@Test
 	public void testPostSyncToJSMRejectsNonadministrator() throws Exception {
 		AccountsRestController accountsRestController = _createController();
 
@@ -2426,6 +2574,9 @@ public class AccountsRestControllerTest {
 			accountsRestController, "_provisioningEmailService",
 			_provisioningEmailService);
 		ReflectionTestUtils.setField(
+			accountsRestController, "_salesforceSyncService",
+			_salesforceSyncService);
+		ReflectionTestUtils.setField(
 			accountsRestController, "_userAccountService", _userAccountService);
 		ReflectionTestUtils.setField(
 			accountsRestController, "_userAssignmentService",
@@ -2667,6 +2818,8 @@ public class AccountsRestControllerTest {
 		ProjectService.class);
 	private final ProvisioningEmailService _provisioningEmailService =
 		Mockito.mock(ProvisioningEmailService.class);
+	private final SalesforceSyncService _salesforceSyncService = Mockito.mock(
+		SalesforceSyncService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
 	private final UserAssignmentService _userAssignmentService = Mockito.mock(
