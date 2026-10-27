@@ -126,10 +126,8 @@ function ProductInspectorContent({
 
 			<ProductOrphans
 				entitlementDefinitionFindings={entitlementDefinitionFindings}
-				getProductActions={getProductActions}
 				index={index}
 				orphans={orphans}
-				productColumns={productColumns}
 			/>
 		</>
 	);

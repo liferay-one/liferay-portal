@@ -7,23 +7,26 @@ import {Link} from 'react-router';
 import i18n from '~/i18n';
 import InspectorTable from '~/pages/Admin/components/InspectorTable/InspectorTable';
 
-import {getLocalizedValue} from '../../utils/productCatalogUtils';
+import {
+	getLocalizedValue,
+	getProductName,
+} from '../../utils/productCatalogUtils';
 import {
 	getEntitlementDefinitionColumns,
 	getEntitlementDefinitionPath,
+	getProductPath,
 } from '../../utils/productInspectorColumnsUtils';
 
-import type {RowAction} from '~/components/RowActionsMenu/RowActionsMenu';
 import type {Word} from '~/i18n';
 import type {InspectorTableColumn} from '~/pages/Admin/components/InspectorTable/InspectorTable';
 import type {InspectedEntry} from '~/types/accountInspection';
 import type {
 	InspectedEntitlementDefinitionSKU,
-	InspectedProduct,
 	InspectorFinding,
 } from '~/types/productInspection';
 
 import type {
+	OrphanedSKU,
 	ProductOrphans as ProductOrphanLists,
 	UnusedSpecification,
 } from '../../utils/getProductOrphans';
@@ -70,6 +73,33 @@ const ENTITLEMENT_DEFINITION_SKU_COLUMNS: InspectorTableColumn<InspectedEntitlem
 		},
 	];
 
+const SKU_COLUMNS: InspectorTableColumn<OrphanedSKU>[] = [
+	{label: 'sku', sortable: true, value: ({sku}) => sku},
+	{
+		label: 'product',
+		render: ({product}) => (
+			<Link to={getProductPath(product.id)}>
+				{getProductName(product)}
+			</Link>
+		),
+		sortable: true,
+		value: ({product}) => getProductName(product),
+	},
+	{
+		hidden: true,
+		label: 'external-reference-code',
+		sortable: true,
+		value: ({externalReferenceCode}) => externalReferenceCode,
+	},
+	{label: 'published', sortable: true, value: ({published}) => published},
+	{
+		label: 'purchasable',
+		sortable: true,
+		value: ({purchasable}) => purchasable,
+	},
+	{label: 'id', sortable: true, value: ({id}) => id},
+];
+
 const SPECIFICATION_COLUMNS: InspectorTableColumn<UnusedSpecification>[] = [
 	{label: 'key', sortable: true, value: ({key}) => key},
 	{
@@ -103,10 +133,8 @@ const USAGE_DEFINITION_COLUMNS: InspectorTableColumn<InspectedEntry>[] = [
 
 type ProductOrphansProps = {
 	entitlementDefinitionFindings: Map<number, InspectorFinding[]>;
-	getProductActions: (product: InspectedProduct) => RowAction[];
 	index: CatalogIndex;
 	orphans: ProductOrphanLists;
-	productColumns: InspectorTableColumn<InspectedProduct>[];
 };
 
 function getListProps<Entry>(entries: Entry[] | null) {
@@ -122,10 +150,8 @@ function getListProps<Entry>(entries: Entry[] | null) {
 
 export default function ProductOrphans({
 	entitlementDefinitionFindings,
-	getProductActions,
 	index,
 	orphans,
-	productColumns,
 }: ProductOrphansProps) {
 	const title = (label: Word) => i18n.translate(label);
 
@@ -153,11 +179,10 @@ export default function ProductOrphans({
 			/>
 
 			<InspectorTable
-				columns={productColumns}
-				getRowActions={getProductActions}
-				id="product-inspector-orphaned-products"
-				title={title('products-without-entitlement-definitions')}
-				{...getListProps(orphans.products)}
+				columns={SKU_COLUMNS}
+				id="product-inspector-orphaned-skus"
+				title={title('skus-without-entitlement-definitions')}
+				{...getListProps(orphans.skus)}
 			/>
 
 			<InspectorTable
