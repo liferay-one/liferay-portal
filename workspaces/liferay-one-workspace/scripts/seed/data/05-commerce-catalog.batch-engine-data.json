@@ -12,8 +12,8 @@
 	"items": [
 		{
 			"currencyCode": "USD",
-			"externalReferenceCode": "TEST_SUPPLIER_CATALOG",
-			"name": "Test Supplier"
+			"externalReferenceCode": "a1fcb2bc-7571-0ebe-4722-3547f58689ac",
+			"name": "IGNEK - Liferay Boutique Company"
 		}
 	]
 }

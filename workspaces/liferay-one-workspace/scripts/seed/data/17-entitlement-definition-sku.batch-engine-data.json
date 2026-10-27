@@ -61,14 +61,19 @@
 			"skuExternalReferenceCode": "01tVO00000TVrlhYAD"
 		},
 		{
+			"externalReferenceCode": "C_ENT_DEF_AI_BLOG_WORKSPACE_450b1d15-46c1-4fbc-3625-e68e6ca78c51",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AI_BLOG_WORKSPACE",
+			"skuExternalReferenceCode": "450b1d15-46c1-4fbc-3625-e68e6ca78c51"
+		},
+		{
 			"externalReferenceCode": "C_ENT_DEF_ANALYTICS_CLOUD_01t4u00000fKEejAAG",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ANALYTICS_CLOUD",
 			"skuExternalReferenceCode": "01t4u00000fKEejAAG"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_APP_PRDCT-APP",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_APP",
-			"skuExternalReferenceCode": "PRDCT-APP"
+			"externalReferenceCode": "C_ENT_DEF_BATCH_CX_GENERATOR_33c2caab-b935-e7b8-71a2-2ce2e9bd2350",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_BATCH_CX_GENERATOR",
+			"skuExternalReferenceCode": "33c2caab-b935-e7b8-71a2-2ce2e9bd2350"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_01tVO00000QYrl1YAD",
@@ -116,6 +121,11 @@
 			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
 		},
 		{
+			"externalReferenceCode": "C_ENT_DEF_COLLECTION_GRID_12aafef6-bede-31dc-90a7-22a9d04a73e9",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_COLLECTION_GRID",
+			"skuExternalReferenceCode": "12aafef6-bede-31dc-90a7-22a9d04a73e9"
+		},
+		{
 			"externalReferenceCode": "C_ENT_DEF_COMMERCE_01t4u00000dIUqlAAG",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_COMMERCE",
 			"skuExternalReferenceCode": "01t4u00000dIUqlAAG"
@@ -136,119 +146,109 @@
 			"skuExternalReferenceCode": "01t0g00000OLxDvAAL"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_01tVO00000UccNzYAJ",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CONTENT_MARKETING",
-			"skuExternalReferenceCode": "01tVO00000UccNzYAJ"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_DEVELOPER_01tVO00000UccNzYAJ",
+			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_DEVELOPER_KOR-17691542",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CONTENT_MARKETING_DEVELOPER",
-			"skuExternalReferenceCode": "01tVO00000UccNzYAJ"
+			"skuExternalReferenceCode": "KOR-17691542"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_PRODUCTION_01tVO00000UccNzYAJ",
+			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_KOR-16671415",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CONTENT_MARKETING",
+			"skuExternalReferenceCode": "KOR-16671415"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_PRODUCTION_KOR-16671415",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CONTENT_MARKETING_PRODUCTION",
-			"skuExternalReferenceCode": "01tVO00000UccNzYAJ"
+			"skuExternalReferenceCode": "KOR-16671415"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_TRIAL_PRDCT-CONTENT-MARKETING-TRIAL",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_CONTENT_MARKETING_TRIAL",
-			"skuExternalReferenceCode": "PRDCT-CONTENT-MARKETING-TRIAL"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_01tVO00000UccNxYAJ",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_ACTIVE_BATCH_SEGMENTS_01tVO00000UccNxYAJ",
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_ACTIVE_BATCH_SEGMENTS_KOR-17691626",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_ACTIVE_BATCH_SEGMENTS",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
+			"skuExternalReferenceCode": "KOR-17691626"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_ACTIVE_REAL_TIME_SEGMENTS_01tVO00000UccNxYAJ",
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_ACTIVE_REAL_TIME_SEGMENTS_KOR-17691626",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_ACTIVE_REAL_TIME_SEGMENTS",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
+			"skuExternalReferenceCode": "KOR-17691626"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_API_REQUESTS_01tVO00000UccNxYAJ",
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_API_REQUESTS_KOR-17691626",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_API_REQUESTS",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
+			"skuExternalReferenceCode": "KOR-17691626"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_CONNECTORS_01tVO00000UccNxYAJ",
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_CONNECTORS_KOR-17691626",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_CONNECTORS",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
+			"skuExternalReferenceCode": "KOR-17691626"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_EVENTS_01tVO00000UccNxYAJ",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_EVENTS",
-			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET_PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET",
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET_KOR-17691654",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET",
-			"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET"
+			"skuExternalReferenceCode": "KOR-17691654"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET_PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET",
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_EVENTS_KOR-17691626",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_EVENTS",
+			"skuExternalReferenceCode": "KOR-17691626"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET_KOR-17691682",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET",
-			"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET"
+			"skuExternalReferenceCode": "KOR-17691682"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DSR_01tVO00000UccNyYAJ",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DSR",
-			"skuExternalReferenceCode": "01tVO00000UccNyYAJ"
+			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM_KOR-17691626",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DATA_PLATFORM",
+			"skuExternalReferenceCode": "KOR-17691626"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DSR_DEVELOPER_01tVO00000UccNyYAJ",
+			"externalReferenceCode": "C_ENT_DEF_DSR_DEVELOPER_KOR-17691514",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DSR_DEVELOPER",
-			"skuExternalReferenceCode": "01tVO00000UccNyYAJ"
+			"skuExternalReferenceCode": "KOR-17691514"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DSR_TRIAL_PRDCT-DSR-TRIAL",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DSR_TRIAL",
-			"skuExternalReferenceCode": "PRDCT-DSR-TRIAL"
+			"externalReferenceCode": "C_ENT_DEF_DSR_KOR-17676139",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DSR",
+			"skuExternalReferenceCode": "KOR-17676139"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DXP_BACKUP_PRDCT-DXP",
+			"externalReferenceCode": "C_ENT_DEF_DXP_BACKUP_marketplace-product-32654011-default",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_BACKUP",
-			"skuExternalReferenceCode": "PRDCT-DXP"
+			"skuExternalReferenceCode": "marketplace-product-32654011-default"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DXP_COMPLIMENTARY_PRDCT-DXP",
+			"externalReferenceCode": "C_ENT_DEF_DXP_COMPLIMENTARY_marketplace-product-32654011-default",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_COMPLIMENTARY",
-			"skuExternalReferenceCode": "PRDCT-DXP"
+			"skuExternalReferenceCode": "marketplace-product-32654011-default"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DXP_DEVELOPER_PRDCT-DXP",
+			"externalReferenceCode": "C_ENT_DEF_DXP_DEVELOPER_CLUSTER_marketplace-product-32654011-default",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_DEVELOPER_CLUSTER",
+			"skuExternalReferenceCode": "marketplace-product-32654011-default"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_DXP_DEVELOPER_marketplace-product-32654011-default",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_DEVELOPER",
-			"skuExternalReferenceCode": "PRDCT-DXP"
+			"skuExternalReferenceCode": "marketplace-product-32654011-default"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DXP_FREE_PRDCT-DXP",
+			"externalReferenceCode": "C_ENT_DEF_DXP_FREE_marketplace-product-32654011-default",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_FREE",
-			"skuExternalReferenceCode": "PRDCT-DXP"
+			"skuExternalReferenceCode": "marketplace-product-32654011-default"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DXP_NON_PRODUCTION_PRDCT-DXP",
+			"externalReferenceCode": "C_ENT_DEF_DXP_NON_PRODUCTION_marketplace-product-32654011-default",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_NON_PRODUCTION",
-			"skuExternalReferenceCode": "PRDCT-DXP"
+			"skuExternalReferenceCode": "marketplace-product-32654011-default"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DXP_PRDCT-DXP",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP",
-			"skuExternalReferenceCode": "PRDCT-DXP"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_DXP_PRODUCTION_PRDCT-DXP",
+			"externalReferenceCode": "C_ENT_DEF_DXP_PRODUCTION_marketplace-product-32654011-default",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_PRODUCTION",
-			"skuExternalReferenceCode": "PRDCT-DXP"
+			"skuExternalReferenceCode": "marketplace-product-32654011-default"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_DXP_TRIAL_PRDCT-DXP-TRIAL",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP_TRIAL",
-			"skuExternalReferenceCode": "PRDCT-DXP-TRIAL"
+			"externalReferenceCode": "C_ENT_DEF_DXP_marketplace-product-32654011-default",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_DXP",
+			"skuExternalReferenceCode": "marketplace-product-32654011-default"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_DYNATRACE_PAAS_S_01t0g00000UvVqAAAV",
@@ -261,6 +261,11 @@
 			"skuExternalReferenceCode": "01t7000000QIzKyAAL"
 		},
 		{
+			"externalReferenceCode": "C_ENT_DEF_EMAIL_MFA_523bb257-36fb-d32d-4956-ae84a49bf8a9",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_EMAIL_MFA",
+			"skuExternalReferenceCode": "523bb257-36fb-d32d-4956-ae84a49bf8a9"
+		},
+		{
 			"externalReferenceCode": "C_ENT_DEF_ENTERPRISE_SEARCH_01t4u00000dIUt6AAG",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ENTERPRISE_SEARCH",
 			"skuExternalReferenceCode": "01t4u00000dIUt6AAG"
@@ -271,9 +276,49 @@
 			"skuExternalReferenceCode": "01t0g00000aN0VrAAK"
 		},
 		{
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_DATABASE_OVERAGE_01tVO00000QiCQ2YAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_EXPERIENCE_DATABASE_OVERAGE",
+			"skuExternalReferenceCode": "01tVO00000QiCQ2YAN"
+		},
+		{
 			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_DISASTER_RECOVERY_01tVO00000QYrkdYAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_EXPERIENCE_DISASTER_RECOVERY",
 			"skuExternalReferenceCode": "01tVO00000QYrkdYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_EXTENSIONS_RAM_OVERAGE_01tVO00000QiCPzYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_EXPERIENCE_EXTENSIONS_RAM_OVERAGE",
+			"skuExternalReferenceCode": "01tVO00000QiCPzYAN"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_EXTENSIONS_VCPUS_OVERAGE_01tVO00000QiCQ0YAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_EXPERIENCE_EXTENSIONS_VCPUS_OVERAGE",
+			"skuExternalReferenceCode": "01tVO00000QiCQ0YAN"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_LOGS_OVERAGE_01tVO00000QiCQ4YAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_EXPERIENCE_LOGS_OVERAGE",
+			"skuExternalReferenceCode": "01tVO00000QiCQ4YAN"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_STORAGE_OVERAGE_01tVO00000QiCQ1YAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_EXPERIENCE_STORAGE_OVERAGE",
+			"skuExternalReferenceCode": "01tVO00000QiCQ1YAN"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_TRAFFIC_NETWORKING_OVERAGE_01tVO00000QiCQ3YAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_EXPERIENCE_TRAFFIC_NETWORKING_OVERAGE",
+			"skuExternalReferenceCode": "01tVO00000QiCQ3YAN"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_HUBSPOT_LEAD_CAPTURE_a0be80e3-f51b-19b1-467f-661c424688eb",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_HUBSPOT_LEAD_CAPTURE",
+			"skuExternalReferenceCode": "a0be80e3-f51b-19b1-467f-661c424688eb"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_INSURANCE_AGENT_PORTAL_e3bbeeea-9a1e-b0e1-2d1f-a480f2befd9d",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_INSURANCE_AGENT_PORTAL",
+			"skuExternalReferenceCode": "e3bbeeea-9a1e-b0e1-2d1f-a480f2befd9d"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_LIFERAY_PAAS_BUSINESS_01t4u00000dchPoAAI",
@@ -306,9 +351,14 @@
 			"skuExternalReferenceCode": "01tVO000005HfYYYA0"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_OPENSEARCH_PRDCT-OPENSEARCH",
+			"externalReferenceCode": "C_ENT_DEF_MINIUM_THEME_e4313820-500a-f500-81ad-0b56b37acce2",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_MINIUM_THEME",
+			"skuExternalReferenceCode": "e4313820-500a-f500-81ad-0b56b37acce2"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_OPENSEARCH_78d431c1-c40a-367c-a393-ac3705732d5f",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_OPENSEARCH",
-			"skuExternalReferenceCode": "PRDCT-OPENSEARCH"
+			"skuExternalReferenceCode": "78d431c1-c40a-367c-a393-ac3705732d5f"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_OVERAGE_APV_01t4u00000f7jyGAAQ",
@@ -336,11 +386,6 @@
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_PAAS_DATABASE_OVERAGE_PRDCT-PAAS-DATABASE-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_DATABASE_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-PAAS-DATABASE-OVERAGE"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_PAAS_DISASTER_RECOVERY_01t4u00000dIUs3AAG",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_DISASTER_RECOVERY",
 			"skuExternalReferenceCode": "01t4u00000dIUs3AAG"
@@ -351,19 +396,9 @@
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_RAM_OVERAGE_PRDCT-PAAS-EXTENSIONS-RAM-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_EXTENSIONS_RAM_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-PAAS-EXTENSIONS-RAM-OVERAGE"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_VCPUS_01tVO00000QYrkpYAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_EXTENSIONS_VCPUS",
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_VCPUS_OVERAGE_PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_EXTENSIONS_VCPUS_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_PAAS_LEGACY_01t4u00000dIUryAAG",
@@ -376,19 +411,9 @@
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_PAAS_LOGS_OVERAGE_PRDCT-PAAS-LOGS-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_LOGS_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-PAAS-LOGS-OVERAGE"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_PAAS_STORAGE_01tVO00000QYrkpYAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_STORAGE",
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_PAAS_STORAGE_OVERAGE_PRDCT-PAAS-STORAGE-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_STORAGE_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-PAAS-STORAGE-OVERAGE"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_PAAS_TRAFFIC_NETWORKING_01tVO00000QYrkpYAD",
@@ -396,34 +421,24 @@
 			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_PAAS_TRAFFIC_NETWORKING_OVERAGE_PRDCT-PAAS-TRAFFIC-NETWORKING-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PAAS_TRAFFIC_NETWORKING_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-PAAS-TRAFFIC-NETWORKING-OVERAGE"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_BASIC_RESELLER_01t7000000Py0lQAAR",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_BASIC_RESELLER",
-			"skuExternalReferenceCode": "01t7000000Py0lQAAR"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_DISTRIBUTION_01t7000000Py0lGAAR",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_DISTRIBUTION",
 			"skuExternalReferenceCode": "01t7000000Py0lGAAR"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_RESELLER_01t4u00000dZ1xZAAS",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_RESELLER",
-			"skuExternalReferenceCode": "01t4u00000dZ1xZAAS"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_SERVICE_01t70000001AeqPAAS",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_SERVICE",
-			"skuExternalReferenceCode": "01t70000001AeqPAAS"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_SOLUTION_RESELLER_01t70000002lsiNAAQ",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_SOLUTION_RESELLER",
 			"skuExternalReferenceCode": "01t70000002lsiNAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_TECHNOLOGY_01tVO00000Psx7xYAB",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_TECHNOLOGY",
+			"skuExternalReferenceCode": "01tVO00000Psx7xYAB"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_TECHNOLOGY_01tVO00000QYrkiYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PARTNERSHIP_TECHNOLOGY",
+			"skuExternalReferenceCode": "01tVO00000QYrkiYAD"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_TRAINING_01t7000000HvFTkAAN",
@@ -451,6 +466,11 @@
 			"skuExternalReferenceCode": "01t70000002ljneAAA"
 		},
 		{
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_DEVELOPER_CLUSTER_01t70000002ljneAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_DEVELOPER_CLUSTER",
+			"skuExternalReferenceCode": "01t70000002ljneAAA"
+		},
+		{
 			"externalReferenceCode": "C_ENT_DEF_PORTAL_EWSA_01t70000002mUasAAE",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_EWSA",
 			"skuExternalReferenceCode": "01t70000002mUasAAE"
@@ -469,6 +489,16 @@
 			"externalReferenceCode": "C_ENT_DEF_PORTAL_PRODUCTION_01t70000002ljneAAA",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_PRODUCTION",
 			"skuExternalReferenceCode": "01t70000002ljneAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PUNCHOUT2GO_APP_KOR-12177073",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PUNCHOUT2GO_APP",
+			"skuExternalReferenceCode": "KOR-12177073"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_PUNCHOUT2GO_APP_KOR-12177091",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PUNCHOUT2GO_APP",
+			"skuExternalReferenceCode": "KOR-12177091"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_PUNCHOUT_01t4u00000dkXqyAAE",
@@ -521,11 +551,6 @@
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_SAAS_DATABASE_OVERAGE_PRDCT-SAAS-DATABASE-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_DATABASE_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-SAAS-DATABASE-OVERAGE"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_DOCUMENT_LIBRARY_SIZE_01t4u00000f7jP6AAI",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_ENTERPRISE_DOCUMENT_LIBRARY_SIZE",
 			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
@@ -561,19 +586,9 @@
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTENSIONS_RAM_OVERAGE_PRDCT-SAAS-EXTENSIONS-RAM-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_EXTENSIONS_RAM_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-SAAS-EXTENSIONS-RAM-OVERAGE"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTENSIONS_VCPUS_01tVO00000QYrkoYAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_EXTENSIONS_VCPUS",
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTENSIONS_VCPUS_OVERAGE_PRDCT-SAAS-EXTENSIONS-VCPUS-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_EXTENSIONS_VCPUS_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-SAAS-EXTENSIONS-VCPUS-OVERAGE"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTRA_STORAGE_DL_01t4u00000dZBxHAAW",
@@ -589,11 +604,6 @@
 			"externalReferenceCode": "C_ENT_DEF_SAAS_LOGS_01tVO00000QYrkoYAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_LOGS",
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_SAAS_LOGS_OVERAGE_PRDCT-SAAS-LOGS-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_LOGS_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-SAAS-LOGS-OVERAGE"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_SAAS_MALU_5000_01t4u00000f7jPfAAI",
@@ -631,29 +641,9 @@
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_SAAS_STORAGE_OVERAGE_PRDCT-SAAS-STORAGE-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_STORAGE_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-SAAS-STORAGE-OVERAGE"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_SAAS_TRAFFIC_NETWORKING_01tVO00000QYrkoYAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_TRAFFIC_NETWORKING",
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_SAAS_TRAFFIC_NETWORKING_OVERAGE_PRDCT-SAAS-TRAFFIC-NETWORKING-OVERAGE",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAAS_TRAFFIC_NETWORKING_OVERAGE",
-			"skuExternalReferenceCode": "PRDCT-SAAS-TRAFFIC-NETWORKING-OVERAGE"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_SAMPLE_APP_PRDCT-SAMPLE-APP",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAMPLE_APP",
-			"skuExternalReferenceCode": "PRDCT-SAMPLE-APP"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_SAMPLE_CLOUD_APP_PRDCT-SAMPLE-CLOUD-APP",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SAMPLE_CLOUD_APP",
-			"skuExternalReferenceCode": "PRDCT-SAMPLE-CLOUD-APP"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_01t0g00000c8fFYAAY",
@@ -676,6 +666,11 @@
 			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
 		},
 		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_CLUSTER_01t0g00000c8fFYAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_CLUSTER",
+			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
+		},
+		{
 			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_ENTERPRISE_01t0g00000c8fFiAAI",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_ENTERPRISE",
 			"skuExternalReferenceCode": "01t0g00000c8fFiAAI"
@@ -691,9 +686,19 @@
 			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_SSA_TRIAL_PRDCT-SSA-TRIAL",
+			"externalReferenceCode": "C_ENT_DEF_SSA_TRIAL_403e04e1-1b1b-87bc-f368-50c8ed15d05e",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SSA_TRIAL",
-			"skuExternalReferenceCode": "PRDCT-SSA-TRIAL"
+			"skuExternalReferenceCode": "403e04e1-1b1b-87bc-f368-50c8ed15d05e"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_STICKY_NOTES_66bca28c-9e2e-60ce-b120-e96eb857527d",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_STICKY_NOTES",
+			"skuExternalReferenceCode": "66bca28c-9e2e-60ce-b120-e96eb857527d"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SUGARCRM_PORTAL_daea804a-1bdc-a39a-56cf-97795fe40ff6",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SUGARCRM_PORTAL",
+			"skuExternalReferenceCode": "daea804a-1bdc-a39a-56cf-97795fe40ff6"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_SUPPORT_GOLD_01tVO00000MWE86YAH",
@@ -706,49 +711,14 @@
 			"skuExternalReferenceCode": "01tVO00000MWE87YAH"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_TEST_APP_PRDCT-TEST-APP",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_APP",
-			"skuExternalReferenceCode": "PRDCT-TEST-APP"
+			"externalReferenceCode": "C_ENT_DEF_UPS_CONNECTOR_5b03ba3b-1299-89dc-fbee-c85c83c4e56c",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_UPS_CONNECTOR",
+			"skuExternalReferenceCode": "5b03ba3b-1299-89dc-fbee-c85c83c4e56c"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_TEST_CLIENT_EXTENSION_PRDCT-TEST-CLIENT-EXTENSION",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_CLIENT_EXTENSION",
-			"skuExternalReferenceCode": "PRDCT-TEST-CLIENT-EXTENSION"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_TEST_COMPOSITE_APP_PRDCT-TEST-COMPOSITE-APP",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_COMPOSITE_APP",
-			"skuExternalReferenceCode": "PRDCT-TEST-COMPOSITE-APP"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_TEST_CRM_ACCELERATOR_PRDCT-TEST-CRM-ACCELERATOR",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_CRM_ACCELERATOR",
-			"skuExternalReferenceCode": "PRDCT-TEST-CRM-ACCELERATOR"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_TEST_LOW_CODE_CONFIGURATION_PRDCT-TEST-LOW-CODE-CONFIGURATION",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_LOW_CODE_CONFIGURATION",
-			"skuExternalReferenceCode": "PRDCT-TEST-LOW-CODE-CONFIGURATION"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_TEST_PARTNER_PORTAL_PRDCT-TEST-PARTNER-PORTAL",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_PARTNER_PORTAL",
-			"skuExternalReferenceCode": "PRDCT-TEST-PARTNER-PORTAL"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_TEST_SLACK_CONNECTOR_PRDCT-TEST-SLACK-CONNECTOR",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_SLACK_CONNECTOR",
-			"skuExternalReferenceCode": "PRDCT-TEST-SLACK-CONNECTOR"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_TEST_THEME_PACK_PRDCT-TEST-THEME-PACK",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_THEME_PACK",
-			"skuExternalReferenceCode": "PRDCT-TEST-THEME-PACK"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_ZENDESK_PRDCT-ZENDESK",
+			"externalReferenceCode": "C_ENT_DEF_ZENDESK_f7cd2285-4dea-1712-5df9-bc5077310740",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ZENDESK",
-			"skuExternalReferenceCode": "PRDCT-ZENDESK"
+			"skuExternalReferenceCode": "f7cd2285-4dea-1712-5df9-bc5077310740"
 		}
 	]
 }

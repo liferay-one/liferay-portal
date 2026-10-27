@@ -5,12 +5,12 @@
 			"externalReferenceCode": "C_ENT_NO_PROJECT_APP",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Test Application",
+			"name": "Liferay Commerce Connector to PunchOut2Go",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-022",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_NO_PROJECT_APP",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_NO_PROJECT",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_APP",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_PUNCHOUT2GO_APP",
 			"startDate": "2026-08-09T00:00:00Z"
 		}
 	],
@@ -29,9 +29,9 @@
 					"startDate": "2026-08-09T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_NO_PROJECT_APP",
-				"name": "Test Application",
+				"name": "Liferay Commerce Connector to PunchOut2Go",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-APP",
+				"skuExternalReferenceCode": "KOR-12177091",
 				"unitPrice": 0
 			}
 		],

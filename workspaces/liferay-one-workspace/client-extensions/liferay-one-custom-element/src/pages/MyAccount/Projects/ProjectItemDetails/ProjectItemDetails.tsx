@@ -51,6 +51,7 @@ import {
 	getOrderStatusToken,
 } from '~/utils/orderUtils';
 import {
+	getProductPublisherName,
 	getProductSpecificationValue,
 	getProductSpecificationValues,
 } from '~/utils/productUtils';
@@ -126,7 +127,7 @@ export default function ProjectItemDetails({
 
 	const iconCategory =
 		getProductSpecificationValues(
-			'liferay-products-categories',
+			'liferay-product-categories',
 			product
 		)[0] ?? getProductSpecificationValue('price-model', product);
 
@@ -258,12 +259,7 @@ export default function ProjectItemDetails({
 					logoColor={getLogoColor(product.name)}
 					logoSrc={isAIHub ? aiHubIconUrl : undefined}
 					name={product.name}
-					publisher={
-						getProductSpecificationValue(
-							'publisher-name',
-							product
-						) || product.catalogName
-					}
+					publisher={getProductPublisherName(product)}
 					showByPrefix={itemType === 'product' && !isAIHub}
 					status={orderInfo.status || 'active'}
 				/>

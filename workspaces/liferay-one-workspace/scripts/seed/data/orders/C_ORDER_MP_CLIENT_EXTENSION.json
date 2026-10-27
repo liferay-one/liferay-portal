@@ -5,11 +5,11 @@
 			"externalReferenceCode": "C_ENT_MP_CLIENT_EXTENSION",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Test Client Extension",
+			"name": "Liferay Commerce Connector to PunchOut2Go",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_MP_CLIENT_EXTENSION",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_CLIENT_EXTENSION",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_PUNCHOUT2GO_APP",
 			"startDate": "2026-01-15T00:00:00Z"
 		}
 	],
@@ -27,14 +27,14 @@
 					"startDate": "2026-01-15T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_MP_CLIENT_EXTENSION",
-				"name": "Test Client Extension",
+				"name": "Liferay Commerce Connector to PunchOut2Go",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-TEST-CLIENT-EXTENSION",
-				"unitPrice": 1200
+				"skuExternalReferenceCode": "KOR-12177073",
+				"unitPrice": 2000
 			}
 		],
 		"orderStatus": 0,
-		"orderTypeExternalReferenceCode": "CLIENT_EXTENSION",
+		"orderTypeExternalReferenceCode": "DXP_APP",
 		"publisherSalesSummaryExternalReferenceCode": "PSS_LIFERAY_SUPPLIER_Q1_2026"
 	},
 	"paymentStatus": 0,

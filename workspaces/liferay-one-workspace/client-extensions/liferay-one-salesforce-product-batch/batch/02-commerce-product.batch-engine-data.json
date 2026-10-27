@@ -116,9 +116,21 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
 					}
 				}
 			],
@@ -980,9 +992,21 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
 					}
 				}
 			],
@@ -1996,6 +2020,12 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
@@ -2005,6 +2035,12 @@
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
 					}
 				}
 			],
@@ -2208,6 +2244,12 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
@@ -2217,6 +2259,12 @@
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
 					}
 				}
 			],
@@ -3195,15 +3243,87 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
 					}
 				},
 				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "status"
+					}
+				},
+				{
+					"specificationKey": "project-contacts-role-ercs",
+					"value": {
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "analytics"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "analytics-cloud"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "publisher-web-site-url",
+					"value": {
+						"en_US": "https://www.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-email-address",
+					"value": {
+						"en_US": "support@liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-phone",
+					"value": {
+						"en_US": "+1 877 437 3329"
+					}
+				},
+				{
+					"specificationKey": "support-url",
+					"value": {
+						"en_US": "https://www.liferay.com/support"
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "analytics-cloud"
 					}
 				}
 			],
@@ -3558,15 +3678,57 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "primary"
 					}
 				},
 				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "cloud-native"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "dates-status"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "cloud-native"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "cloud"
 					}
 				}
 			],
@@ -3980,6 +4142,18 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
@@ -4001,6 +4175,42 @@
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "publisher-web-site-url",
+					"value": {
+						"en_US": "https://www.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-email-address",
+					"value": {
+						"en_US": "support@liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-phone",
+					"value": {
+						"en_US": "+1 877 437 3329"
+					}
+				},
+				{
+					"specificationKey": "support-url",
+					"value": {
+						"en_US": "https://www.liferay.com/support"
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "commerce"
 					}
 				}
 			],
@@ -4649,6 +4859,24 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "app-documentation-url",
+					"value": {
+						"en_US": "https://learn.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "app-usage-terms-url",
+					"value": {
+						"en_US": "https://www.liferay.com/legal/customer-agreements"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
@@ -4657,7 +4885,43 @@
 				{
 					"specificationKey": "project-item-type",
 					"value": {
-						"en_US": "product"
+						"en_US": "application"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "publisher-web-site-url",
+					"value": {
+						"en_US": "https://www.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-email-address",
+					"value": {
+						"en_US": "support@liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-phone",
+					"value": {
+						"en_US": "+1 877 437 3329"
+					}
+				},
+				{
+					"specificationKey": "support-url",
+					"value": {
+						"en_US": "https://www.liferay.com/support"
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "dxp"
 					}
 				}
 			],
@@ -4952,6 +5216,24 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "app-documentation-url",
+					"value": {
+						"en_US": "https://learn.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "app-usage-terms-url",
+					"value": {
+						"en_US": "https://www.liferay.com/legal/customer-agreements"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
@@ -4960,7 +5242,43 @@
 				{
 					"specificationKey": "project-item-type",
 					"value": {
-						"en_US": "product"
+						"en_US": "application"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "publisher-web-site-url",
+					"value": {
+						"en_US": "https://www.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-email-address",
+					"value": {
+						"en_US": "support@liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-phone",
+					"value": {
+						"en_US": "+1 877 437 3329"
+					}
+				},
+				{
+					"specificationKey": "support-url",
+					"value": {
+						"en_US": "https://www.liferay.com/support"
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "dxp"
 					}
 				}
 			],
@@ -5259,6 +5577,24 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "app-documentation-url",
+					"value": {
+						"en_US": "https://learn.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "app-usage-terms-url",
+					"value": {
+						"en_US": "https://www.liferay.com/legal/customer-agreements"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
@@ -5267,7 +5603,43 @@
 				{
 					"specificationKey": "project-item-type",
 					"value": {
-						"en_US": "product"
+						"en_US": "application"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "publisher-web-site-url",
+					"value": {
+						"en_US": "https://www.liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-email-address",
+					"value": {
+						"en_US": "support@liferay.com"
+					}
+				},
+				{
+					"specificationKey": "support-phone",
+					"value": {
+						"en_US": "+1 877 437 3329"
+					}
+				},
+				{
+					"specificationKey": "support-url",
+					"value": {
+						"en_US": "https://www.liferay.com/support"
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "dxp"
 					}
 				}
 			],
@@ -5555,6 +5927,18 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
@@ -5567,9 +5951,27 @@
 					}
 				},
 				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "dates-status"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "search"
 					}
 				}
 			],
@@ -5924,9 +6326,57 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "status"
+					}
+				},
+				{
+					"specificationKey": "project-contacts-role-ercs",
+					"value": {
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "paas"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "paas"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "cloud"
 					}
 				}
 			],
@@ -6326,6 +6776,12 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
@@ -6335,6 +6791,12 @@
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
 					}
 				}
 			],
@@ -6965,15 +7427,69 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "primary"
 					}
 				},
 				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "status"
+					}
+				},
+				{
+					"specificationKey": "project-contacts-role-ercs",
+					"value": {
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "paas"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "paas"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "project-utilization-profile",
+					"value": {
+						"en_US": "experience-dashboard"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "cloud"
 					}
 				}
 			],
@@ -7531,15 +8047,69 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "primary"
 					}
 				},
 				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "status"
+					}
+				},
+				{
+					"specificationKey": "project-contacts-role-ercs",
+					"value": {
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_PAAS_USER"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "paas"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "paas"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "project-utilization-profile",
+					"value": {
+						"en_US": "experience-dashboard"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "cloud"
 					}
 				}
 			],
@@ -7593,15 +8163,51 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "primary"
 					}
 				},
 				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "dxp-portal"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "env-instance"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "dxp"
 					}
 				}
 			],
@@ -8729,9 +9335,27 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "primary"
+					}
+				},
+				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "dxp-portal"
 					}
 				},
 				{
@@ -8744,6 +9368,18 @@
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "dxp"
 					}
 				}
 			],
@@ -11016,15 +11652,69 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "primary"
 					}
 				},
 				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "status"
+					}
+				},
+				{
+					"specificationKey": "project-contacts-role-ercs",
+					"value": {
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_DATA_BREACH_CONTACT,C_SECURITY_INCIDENT_CONTACT"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "project-utilization-profile",
+					"value": {
+						"en_US": "saas-plan-dashboard"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "cloud"
 					}
 				}
 			],
@@ -11323,6 +12013,12 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
@@ -11332,6 +12028,12 @@
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
 					}
 				}
 			],
@@ -11567,15 +12269,69 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "primary"
 					}
 				},
 				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "status"
+					}
+				},
+				{
+					"specificationKey": "project-contacts-role-ercs",
+					"value": {
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_DATA_BREACH_CONTACT,C_SECURITY_INCIDENT_CONTACT"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "project-utilization-profile",
+					"value": {
+						"en_US": "experience-dashboard"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "cloud"
 					}
 				}
 			],
@@ -12000,6 +12756,12 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "primary"
@@ -12009,6 +12771,12 @@
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
 					}
 				}
 			],
@@ -13430,9 +14198,45 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "dxp-portal"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "env-instance"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "dxp"
 					}
 				}
 			],
@@ -14749,15 +15553,51 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "primary"
 					}
 				},
 				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "dxp-portal"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "env-instance"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "dxp"
 					}
 				}
 			],
@@ -14849,15 +15689,51 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "primary"
 					}
 				},
 				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "dxp-portal"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "env-instance"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "dxp"
 					}
 				}
 			],
@@ -15570,6 +16446,12 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
@@ -15579,6 +16461,18 @@
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "solution-type",
+					"value": {
+						"en_US": "lr-tokens"
 					}
 				}
 			],
@@ -15726,6 +16620,12 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "product-type",
 					"value": {
 						"en_US": "addOn"
@@ -15735,6 +16635,12 @@
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
 					}
 				}
 			],
@@ -16081,9 +16987,21 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
 					}
 				}
 			],
@@ -16128,33 +17046,6 @@
 				"en_US": "PaaS & SaaS Experience - Infrastructure & Sizing"
 			},
 			"productOptions": [
-				{
-					"facetable": false,
-					"fieldType": "select",
-					"key": "machinetype",
-					"name": {
-						"en_US": "Machine Type"
-					},
-					"optionExternalReferenceCode": "MACHINE_TYPE",
-					"productOptionValues": [
-						{
-							"key": "high",
-							"name": {
-								"en_US": "High"
-							},
-							"priority": 1
-						},
-						{
-							"key": "standard",
-							"name": {
-								"en_US": "Standard"
-							},
-							"priority": 2
-						}
-					],
-					"required": false,
-					"skuContributor": false
-				},
 				{
 					"facetable": false,
 					"fieldType": "select",
@@ -16300,9 +17191,42 @@
 					],
 					"required": false,
 					"skuContributor": true
+				},
+				{
+					"facetable": false,
+					"fieldType": "select",
+					"key": "machinetype",
+					"name": {
+						"en_US": "Machine Type"
+					},
+					"optionExternalReferenceCode": "MACHINE_TYPE",
+					"productOptionValues": [
+						{
+							"key": "high",
+							"name": {
+								"en_US": "High"
+							},
+							"priority": 1
+						},
+						{
+							"key": "standard",
+							"name": {
+								"en_US": "Standard"
+							},
+							"priority": 2
+						}
+					],
+					"required": false,
+					"skuContributor": false
 				}
 			],
 			"productSpecifications": [
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
 				{
 					"specificationKey": "product-type",
 					"value": {
@@ -16313,6 +17237,12 @@
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
 					}
 				}
 			],
@@ -16691,9 +17621,27 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "partner-product",
+					"value": {
+						"en_US": "true"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
 					"specificationKey": "project-item-type",
 					"value": {
 						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
 					}
 				}
 			],
@@ -16946,6 +17894,25 @@
 					],
 					"required": false,
 					"skuContributor": true
+				},
+				{
+					"fieldType": "radio",
+					"key": "consumption-role",
+					"name": {
+						"en_US": "Consumption Role"
+					},
+					"optionExternalReferenceCode": "LO_OPTION_CONSUMPTION_ROLE",
+					"productOptionValues": [
+						{
+							"key": "overage",
+							"name": {
+								"en_US": "Overage Bucket"
+							},
+							"priority": 2
+						}
+					],
+					"required": false,
+					"skuContributor": true
 				}
 			],
 			"productSpecifications": [
@@ -16968,6 +17935,10 @@
 					"sku": "01tVO00000QiCPzYAN",
 					"skuOptions": [
 						{
+							"key": "consumption-role",
+							"value": "overage"
+						},
+						{
 							"key": "pay-as-you-go-usage",
 							"value": "01tvo00000qicpzyan"
 						}
@@ -16981,6 +17952,10 @@
 					"purchasable": false,
 					"sku": "01tVO00000QiCQ0YAN",
 					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						},
 						{
 							"key": "pay-as-you-go-usage",
 							"value": "01tvo00000qicq0yan"
@@ -16996,6 +17971,10 @@
 					"sku": "01tVO00000QiCQ1YAN",
 					"skuOptions": [
 						{
+							"key": "consumption-role",
+							"value": "overage"
+						},
+						{
 							"key": "pay-as-you-go-usage",
 							"value": "01tvo00000qicq1yan"
 						}
@@ -17009,6 +17988,10 @@
 					"purchasable": false,
 					"sku": "01tVO00000QiCQ2YAN",
 					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						},
 						{
 							"key": "pay-as-you-go-usage",
 							"value": "01tvo00000qicq2yan"
@@ -17024,6 +18007,10 @@
 					"sku": "01tVO00000QiCQ3YAN",
 					"skuOptions": [
 						{
+							"key": "consumption-role",
+							"value": "overage"
+						},
+						{
 							"key": "pay-as-you-go-usage",
 							"value": "01tvo00000qicq3yan"
 						}
@@ -17037,6 +18024,10 @@
 					"purchasable": false,
 					"sku": "01tVO00000QiCQ4YAN",
 					"skuOptions": [
+						{
+							"key": "consumption-role",
+							"value": "overage"
+						},
 						{
 							"key": "pay-as-you-go-usage",
 							"value": "01tvo00000qicq4yan"

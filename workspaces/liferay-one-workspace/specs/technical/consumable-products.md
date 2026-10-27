@@ -43,9 +43,9 @@ A consumable product has one SKU per role, told apart by the `consumption-role` 
 
 | Role | Meaning | Example SKU |
 |---|---|---|
-| `allotment` | The base cap the subscription includes. Also where overage pricing lives. | `PRDCT-DATA-PLATFORM` |
-| `add-on` | Prepaid extra buckets bought up front. Quantity is a bucket count. | `PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET` |
-| `overage` | Buckets billed after the fact on an overage order. Never counts toward a cap. | `PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET` |
+| `allotment` | The base cap the subscription includes. Also where overage pricing lives. | `KOR-17691626` (LIFERAY DATA PLATFORM) |
+| `add-on` | Prepaid extra buckets bought up front. Quantity is a bucket count. | `KOR-17691654` (ADDITIONAL EVENTS) |
+| `overage` | Buckets billed after the fact on an overage order. Never counts toward a cap. | `KOR-17691682` (OVERAGE EVENTS) |
 
 Every SKU that grants an entitlement linked to a metric must set its role, including the plain subscription SKU. When one of a project's SKUs has no `consumption-role` option, the generator skips that project and logs an error naming the SKU, because guessing the role risks a wrong cap on a bill. A SKU with a role value outside this table is ignored.
 
@@ -64,9 +64,9 @@ This is the join. An entitlement definition says what one SKU grants and which m
 	"grantType": "fixed",
 	"name": "events",
 	"overageRate": 20,
-	"overageSkuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET",
+	"overageSkuExternalReferenceCode": "KOR-17691682",
 	"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "events-monthly",
-	"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM",
+	"skuExternalReferenceCode": "KOR-17691626",
 	"unit": "count"
 }
 ```
@@ -150,7 +150,7 @@ SaaS Experience and PaaS Experience each sell six metrics: client extension RAM,
 
 1. One mock route for the composable usage API, with a month under every allotment and a month over all six.
 
-Each metric has one overage SKU per product, for example `PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE` and `PRDCT-SAAS-EXTENSIONS-VCPUS-OVERAGE`. The twelve SKU codes are placeholders until product management supplies the Salesforce product IDs. Each allotment definition sets `overageSkuExternalReferenceCode` to its overage SKU and leaves `overageRate` unset. Each overage SKU also has its own entitlement definition, `C_ENT_DEF_<PAAS|SAAS>_<METRIC>_OVERAGE`, so an overage order item creates its entitlement as the Liferay Data Platform overage bucket does. Every Experience usage definition has an `overageBucketSize` of 1, so one bucket is one GiB or one vCPU. A report with overage therefore carries the overage SKU and the bucket count, and leaves the amount empty. BizOps prices the overage order in Salesforce. The bucket size of 1 also measures the Additional vCPU add on, whose entitlement quantity is 4 vCPUs.
+Each metric has one overage SKU, which PaaS Experience and SaaS Experience share: the six supplemental SKUs of `salesforce-product-pay-as-you-go-usage`, for example `01tVO00000QiCQ0YAN`, Client Extensions vCPU's (1 vCPU) - Supplemental. Each allotment definition sets `overageSkuExternalReferenceCode` to its overage SKU and leaves `overageRate` unset. Each overage SKU also has one entitlement definition, `C_ENT_DEF_EXPERIENCE_<METRIC>_OVERAGE`, so an overage order item creates its entitlement as the Liferay Data Platform overage bucket does. UAT does not give these SKUs the `overage` consumption role yet, so the seed adds it in the overlay of `scripts/seed/uat_products.json`. Every Experience usage definition has an `overageBucketSize` of 1, so one bucket is one GiB or one vCPU. A report with overage therefore carries the overage SKU and the bucket count, and leaves the amount empty. BizOps prices the overage order in Salesforce. The bucket size of 1 also measures the Additional vCPU add on, whose entitlement quantity is 4 vCPUs.
 
 **A usage definition is one metric from one source.** `storage-gb` already counted the SaaS plan document library, the storage add on, and PaaS storage, all as seed data with no source. Pointing it at the composable usage API would read Experience storage for the SaaS plan projects too, which is a different number from a different product. So Experience storage has its own definition, and `C_ENT_DEF_PAAS_STORAGE` and `C_ENT_DEF_SAAS_STORAGE` moved to it. When a metric name already has a usage definition, check every entitlement definition linked to it before you give it a source.
 

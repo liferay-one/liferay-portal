@@ -5,12 +5,12 @@
 			"externalReferenceCode": "C_ENT_OMNI_TEST_APP",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Test App",
+			"name": "AI Blog Workspace",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_TEST_APP",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_APP",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_AI_BLOG_WORKSPACE",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
 			"startDate": "2026-08-09T00:00:00Z"
 		},
@@ -19,12 +19,12 @@
 			"externalReferenceCode": "C_ENT_OMNI_TEST_CRM_ACCELERATOR",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Test Supplier CRM Accelerator",
+			"name": "SugarCRM Customer Portal",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_TEST_CRM_ACCELERATOR",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_CRM_ACCELERATOR",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SUGARCRM_PORTAL",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
 			"startDate": "2026-08-09T00:00:00Z"
 		},
@@ -33,12 +33,12 @@
 			"externalReferenceCode": "C_ENT_OMNI_TEST_PARTNER_PORTAL",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Test Supplier Partner Portal",
+			"name": "Insurance Agent Portal Accelerator",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_TEST_PARTNER_PORTAL",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_PARTNER_PORTAL",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_INSURANCE_AGENT_PORTAL",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
 			"startDate": "2026-08-09T00:00:00Z"
 		},
@@ -47,12 +47,12 @@
 			"externalReferenceCode": "C_ENT_OMNI_TEST_SLACK_CONNECTOR",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Test Supplier Slack Connector",
+			"name": "Email MFA for Liferay CE",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_TEST_SLACK_CONNECTOR",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_SLACK_CONNECTOR",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_EMAIL_MFA",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
 			"startDate": "2026-08-09T00:00:00Z"
 		},
@@ -61,12 +61,12 @@
 			"externalReferenceCode": "C_ENT_OMNI_TEST_THEME_PACK",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Test Supplier Theme Pack",
+			"name": "Collection display grid view with Item Highlight",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_TEST_THEME_PACK",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_OMNI",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_THEME_PACK",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_COLLECTION_GRID",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-001",
 			"startDate": "2026-08-09T00:00:00Z"
 		}
@@ -86,9 +86,9 @@
 					"startDate": "2026-08-09T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_TEST_APP",
-				"name": "Test App",
+				"name": "AI Blog Workspace",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-TEST-APP",
+				"skuExternalReferenceCode": "450b1d15-46c1-4fbc-3625-e68e6ca78c51",
 				"unitPrice": 0
 			},
 			{
@@ -99,9 +99,9 @@
 					"startDate": "2026-08-09T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_TEST_CRM_ACCELERATOR",
-				"name": "Test Supplier CRM Accelerator",
+				"name": "SugarCRM Customer Portal",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-TEST-CRM-ACCELERATOR",
+				"skuExternalReferenceCode": "daea804a-1bdc-a39a-56cf-97795fe40ff6",
 				"unitPrice": 0
 			},
 			{
@@ -112,9 +112,9 @@
 					"startDate": "2026-08-09T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_TEST_PARTNER_PORTAL",
-				"name": "Test Supplier Partner Portal",
+				"name": "Insurance Agent Portal Accelerator",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-TEST-PARTNER-PORTAL",
+				"skuExternalReferenceCode": "e3bbeeea-9a1e-b0e1-2d1f-a480f2befd9d",
 				"unitPrice": 0
 			},
 			{
@@ -125,9 +125,9 @@
 					"startDate": "2026-08-09T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_TEST_SLACK_CONNECTOR",
-				"name": "Test Supplier Slack Connector",
+				"name": "Email MFA for Liferay CE",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-TEST-SLACK-CONNECTOR",
+				"skuExternalReferenceCode": "523bb257-36fb-d32d-4956-ae84a49bf8a9",
 				"unitPrice": 0
 			},
 			{
@@ -138,9 +138,9 @@
 					"startDate": "2026-08-09T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_TEST_THEME_PACK",
-				"name": "Test Supplier Theme Pack",
+				"name": "Collection display grid view with Item Highlight",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-TEST-THEME-PACK",
+				"skuExternalReferenceCode": "12aafef6-bede-31dc-90a7-22a9d04a73e9",
 				"unitPrice": 0
 			}
 		],

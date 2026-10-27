@@ -231,6 +231,15 @@ export function getProductPriceModel(product: DeliveryProduct) {
 	};
 }
 
+export function getProductPublisherName(product: DeliveryProduct) {
+	return (
+		getProductSpecificationValue('publisher-name', product) ||
+		getProductSpecificationValue('developer-name', product) ||
+		product.catalogName ||
+		''
+	);
+}
+
 export const CONTACT_SALES_URL = 'https://www.liferay.com/contact-sales';
 
 const CONTACT_SALES_SOLUTION_TYPES: string[] = [

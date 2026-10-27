@@ -92,7 +92,7 @@ Liferay system Organization, migrated from support.liferay for FLS (First Line S
 | Field | Type | Notes |
 |---|---|---|
 | PK `CProductId` | long | |
-| `externalReferenceCode` | string | Source-specific (`PRDCT-*` for seeded and Marketplace products). Not a lookup key; the Salesforce key lives on the SKU. Salesforce events never create products; they only update the SKU carrying the Salesforce ID |
+| `externalReferenceCode` | string | Source-specific (`marketplace-product-<Marketplace ID>` for the migrated Marketplace products, `salesforce-product-<family>` for the Salesforce products). The seed uses the same codes, because it holds only copies of UAT products. Not a lookup key; the Salesforce key lives on the SKU. Salesforce events never create products; they only update the SKU carrying the Salesforce ID |
 | `catalog` | string | `Liferay` · `AccountEntry` |
 | `name` | string | |
 | `description` | string | |
@@ -122,8 +122,8 @@ Defined in `client-extensions/liferay-one-batch/batch/10-commerce-specification.
 | `latest-version` | Latest Version | PRICING_LICENSING_TERMS |
 | `license-term` | License Term | PRICING_LICENSING_TERMS |
 | `license-type` | License Type | PRICING_LICENSING_TERMS |
-| `liferay-products-capabilities` | Liferay Products Capabilities | PRODUCT_METADATA |
-| `liferay-products-categories` | Liferay Products Categories | PRODUCT_METADATA |
+| `liferay-product-capabilities` | Liferay Product Capabilities | PRODUCT_METADATA |
+| `liferay-product-categories` | Liferay Product Categories | PRODUCT_METADATA |
 | `liferay-version` | Liferay Version | PRODUCT_METADATA |
 | `lifetime-license` | Lifetime License | PRICING_LICENSING_TERMS |
 | `number-of-cpus` | Number of CPUs | RESOURCE_REQUIREMENTS |
@@ -189,7 +189,7 @@ The sellable unit. A product has one or more SKUs; each SKU maps one to one to a
 |---|---|---|
 | PK `CPInstanceId` | long | |
 | FK `CProductId` | long | Parent product |
-| `externalReferenceCode` | string | The only cross-system key; order items, price entries, and entitlement definitions reference the SKU by this value. Salesforce `Product2.Id` (18-char) for Salesforce products, which includes the seeded SKUs that mirror them; `PRDCT-*` for Marketplace apps and for seeded SKUs that have no Salesforce counterpart |
+| `externalReferenceCode` | string | The only cross-system key; order items, price entries, and entitlement definitions reference the SKU by this value. Salesforce `Product2.Id` (18-char) for Salesforce products; a `KOR-*` code or a UUID for the migrated Marketplace products. The seed uses the UAT codes |
 | `sku` | string | SKU code |
 | `skuOptions` | list | Plan, sizing, and license options that distinguish SKUs of one product |
 
@@ -352,15 +352,15 @@ Capability-level entitlement template. Many SKUs ↔ many EntitlementDefinitions
 | `generatesActivationKey` | boolean | Whether this SKU leads an activation key. A SKU carrying a `*-license-usage-type` option leads one regardless |
 | FK `usageDefinitionId` | long | Nullable; only for metered/usage-type entitlements |
 | `overageRate` | double | Price of one overage bucket; empty when the overage is priced downstream or cannot be billed |
-| `overageSkuExternalReferenceCode` | string | Overage bucket SKU, e.g. `PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET` |
+| `overageSkuExternalReferenceCode` | string | Overage bucket SKU, e.g. `KOR-17691682`, the OVERAGE EVENTS SKU of Liferay Data Platform |
 | `productOptions` | string | JSON map of SKU option key/value pairs the order item must carry for this definition to apply; empty matches any |
 | `active` | boolean | Default `true`; set `false` to deprecate without deleting |
 
 **Several definitions per metric.** One product can sell a metric several ways, each its own EntitlementDefinition under the same UsageDefinition. For LDP, `events-monthly` parents:
 
-- `C_ENT_DEF_DATA_PLATFORM_EVENTS`: the base allotment, granted by the Liferay Data Platform SKU `01tVO00000UccNxYAJ`. The only one with overage pricing.
-- `C_ENT_DEF_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET`: one 200,000 event bucket per unit, granted by `PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET`.
-- `C_ENT_DEF_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET`: granted by `PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET` on overage orders. `UsageAllotment` ignores it, because its SKU carries the `overage` consumption role.
+- `C_ENT_DEF_DATA_PLATFORM_EVENTS`: the base allotment, granted by the LIFERAY DATA PLATFORM SKU `KOR-17691626`. The only one with overage pricing.
+- `C_ENT_DEF_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET`: one 200,000 event bucket per unit, granted by the ADDITIONAL EVENTS SKU `KOR-17691654`.
+- `C_ENT_DEF_DATA_PLATFORM_EVENTS_OVERAGE_BUCKET`: granted by the OVERAGE EVENTS SKU `KOR-17691682` on overage orders. `UsageAllotment` ignores it, because its SKU carries the `overage` consumption role.
 
 **Bucket priced overage.** Entitlements copy `overageRate` and `overageSkuExternalReferenceCode` from their definition at grant time, so a later definition change never reprices a grant. The SKU makes an overage orderable and the rate makes it priceable. A SKU without a rate is valid: the report carries the SKU and the bucket count, and the amount stays empty for BizOps to price downstream. A rate without a SKU is refused by the `*_OVERAGE_PRICING_PAIR` validation rule on both objects. A rate of 0 or less counts as unset, since Liferay stores an unset decimal as 0. Bucket size belongs to the metric (`UsageDefinition.overageBucketSize`) and also measures add-on buckets. Overage bills in whole buckets: 300,000 events over with a 200,000 event bucket bills two. Currency is not stored; the overage order takes it from its Commerce channel.
 
@@ -436,7 +436,7 @@ Aggregated periodic report over UsageEvents. The report target is polymorphic �
 | `overageSkuQuantity` | double | Order line quantity: `ceil(overageQuantity ÷ overageBucketSize)`. Empty when unpriced |
 | `overageAmount` | double | `overageSkuQuantity` × `overageRate`. Empty when unpriced, or when the overage SKU has no rate |
 | `overageCurrency` | string | Not populated; the order's Commerce channel sets the currency |
-| `productExternalReferenceCode` | string | Denormalized; the product whose SKU granted the allotment the report measures against, e.g. `PRDCT-SAAS`. Downstream consumers read it rather than re-deriving which product a project's overage belongs to |
+| `productExternalReferenceCode` | string | Denormalized; the product whose SKU granted the allotment the report measures against, e.g. `salesforce-product-liferay-saas-experience`. Downstream consumers read it rather than re-deriving which product a project's overage belongs to |
 | `productName` | string | Denormalized; the product's name at generation time, e.g. `SaaS Experience`, for the reviewer |
 | `targetType` | string | `project` · `contract` · `order` · `environment` |
 | `targetClassName` | string | Denormalized class name of the report target |

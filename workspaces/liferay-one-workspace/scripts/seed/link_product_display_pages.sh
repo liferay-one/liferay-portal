@@ -20,13 +20,13 @@ source ../_common.sh
 # Each entry below is "templateName|productERC". Keep sorted.
 
 PRODUCT_DISPLAY_PAGES=(
-	"AI Hub Product Details|PRDCT-AI-HUB"
-	"CMP Product Details|PRDCT-CONTENT-MARKETING"
-	"CMS Product Details|PRDCT-CMS"
-	"DSR Product Details|PRDCT-DSR"
-	"DXP Free Tier Product Details|PRDCT-DXP"
-	"LDP Product Details|PRDCT-DATA-PLATFORM"
-	"SEO Studio|PRDCT-SEO"
+	"AI Hub Product Details|marketplace-product-32915366"
+	"CMP Product Details|marketplace-product-32653971"
+	"CMS Product Details|563fbcce-665e-3037-6700-0a663b4870f3"
+	"DSR Product Details|marketplace-product-33597098"
+	"DXP Free Tier Product Details|marketplace-product-32654011"
+	"LDP Product Details|marketplace-product-32336518"
+	"SEO Studio|marketplace-product-34997892"
 )
 
 CHANNEL_EXTERNAL_REFERENCE_CODE="LIFERAY_ONE_CHANNEL"

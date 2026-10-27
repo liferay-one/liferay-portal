@@ -58,7 +58,7 @@ export function resolveDetailsProfile({
 	}
 
 	const categories = getProductSpecificationValues(
-		'liferay-products-categories',
+		'liferay-product-categories',
 		product
 	);
 

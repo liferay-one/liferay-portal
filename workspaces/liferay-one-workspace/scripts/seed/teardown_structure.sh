@@ -119,7 +119,7 @@ function _delete_commerce_catalogs {
 	_delete_from_collection "commerce catalogs" \
 		"${LIFERAY_URL}/o/headless-commerce-admin-catalog/v1.0/catalogs" \
 		"${LIFERAY_URL}/o/headless-commerce-admin-catalog/v1.0/catalog" \
-		"LIFERAY_INC_CATALOG" "SALESFORCE_CATALOG" "TEST_SUPPLIER_CATALOG"
+		"LIFERAY_INC_CATALOG" "SALESFORCE_CATALOG" "a1fcb2bc-7571-0ebe-4722-3547f58689ac"
 }
 
 function _delete_commerce_price_lists {

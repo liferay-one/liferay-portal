@@ -214,9 +214,9 @@ The file order respects all 10 edges. No file references an entity that a later 
 | `02-user-account` | `UserAccount` | 16 | `UPSERT`, `UPDATE` |
 | `03-project` | `C_PROJECT` | 36 | `UPSERT`, `UPDATE` |
 | `04-contract` | `C_CONTRACT` | 37 | `UPSERT`, `UPDATE` |
-| `05-commerce-catalog` | `Catalog` (`TEST_SUPPLIER_CATALOG`) | 1 | `UPSERT`, `PARTIAL_UPDATE` |
-| `05-commerce-option` | `Option` (`MACHINE_TYPE`) | 1 | `UPSERT`, `PARTIAL_UPDATE` |
-| `06-commerce-product` | `Product` | 46 | `UPSERT`, `PARTIAL_UPDATE` |
+| `05-commerce-catalog` | `Catalog` (`a1fcb2bc-7571-0ebe-4722-3547f58689ac`, IGNEK) | 1 | `UPSERT`, `PARTIAL_UPDATE` |
+| `05-commerce-option` | `Option` (the 5 options of the seed products that the batch does not define) | 5 | `UPSERT`, `PARTIAL_UPDATE` |
+| `06-commerce-product` | `Product` (copies of 24 UAT products, written by `export_uat_products.sh`) | 24 | `UPSERT`, `PARTIAL_UPDATE` |
 | `07-license-key` | `C_LICENSE_KEY` | 17 | `UPSERT`, `UPDATE` |
 | `08-project-membership` | `C_PROJECT_MEMBERSHIP` | 73 | `UPSERT`, `UPDATE` |
 | `09-publisher-account-request` | `C_PUBLISHER_ACCOUNT_REQUEST` | 4 | `UPSERT`, `UPDATE` |
@@ -224,9 +224,9 @@ The file order respects all 10 edges. No file references an entity that a later 
 | `11-publisher-details` | `C_PUBLISHER_DETAILS` | 1 | `UPSERT`, `UPDATE` |
 | `13-usage-definition` | `C_USAGE_DEFINITION` | 12 | `UPSERT`, `UPDATE` |
 | `14-environment` | `C_ENVIRONMENT` | 25 | `UPSERT`, `UPDATE` |
-| `15-entitlement-definition` | `C_ENTITLEMENT_DEFINITION` | 149 | `UPSERT`, `UPDATE` |
+| `15-entitlement-definition` | `C_ENTITLEMENT_DEFINITION` | 138 | `UPSERT`, `UPDATE` |
 | `16-oauth2-dxp-authorization` | `C_OAUTH2_DXP_AUTHORIZATION` | 3 | `UPSERT`, `UPDATE` |
-| `17-entitlement-definition-sku` | `C_ENTITLEMENT_DEFINITION_SKU` | 149 | `UPSERT`, `UPDATE` |
+| `17-entitlement-definition-sku` | `C_ENTITLEMENT_DEFINITION_SKU` | 137 | `UPSERT`, `UPDATE` |
 
 The import URLs pass `createStrategy` but not `updateStrategy` (`scripts/seed/seed_test_data.sh:84`, `:92`). So every seed file updates with `UPDATE`, and the `PARTIAL_UPDATE` in `05` and `06` has no effect. See finding 9.
 
@@ -247,10 +247,10 @@ The workspace rule is: the batch client extension holds definitions, configurati
 | Custom fields (expando, 81 columns on 7 models) | site initializer `expando-columns.json` | site initializer `expando-values.json` | none | migration |
 | Commerce channel | site initializer `commerce-channel.json` | none | none | none |
 | Channel payment methods | none | bootstrap `set_payment_methods.sh` | none | none |
-| Commerce catalogs | batch `06` (`LIFERAY_INC_CATALOG`) | none | seed `05` (`TEST_SUPPLIER_CATALOG`) | migration (marketplace publishers) |
+| Commerce catalogs | batch `06` (`LIFERAY_INC_CATALOG`) | none | seed `05` (the IGNEK publisher catalog) | migration (marketplace publishers) |
 | Currency `SGD` | batch `07` | none | none | migration (account currencies) |
 | Option categories, specifications | batch `08`, `10` | none | none | none |
-| Options | batch `09` (3); seed `05` (`MACHINE_TYPE`), finding 8 | none | none | migration creates `MACHINE_TYPE` when it is missing |
+| Options | batch `09` (3); seed `05` (the 5 options of the seed products that the batch does not define), finding 8; the Salesforce product batch `00` (`MACHINE_TYPE` and one option per Salesforce product family) | none | none | migration creates `MACHINE_TYPE` when it is missing |
 | Commerce products and SKUs | none | none | seed `06` (46), `ensure_product_skus.sh` | migration (Salesforce and Marketplace products) |
 | Order types | batch `12` | none | none | none |
 | Roles, user groups | batch `13`, `16` | none | role and group memberships in seed | migration (memberships) |

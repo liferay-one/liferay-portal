@@ -9,7 +9,7 @@
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-002",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_MP_SAMPLE_CLOUD_APP",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SAMPLE_CLOUD_APP",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_UPS_CONNECTOR",
 			"startDate": "2026-01-15T00:00:00Z"
 		}
 	],
@@ -27,9 +27,9 @@
 					"startDate": "2026-01-15T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_MP_SAMPLE_CLOUD_APP",
-				"name": "Sample Cloud App",
+				"name": "Liferay Commerce Connector to UPS",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-SAMPLE-CLOUD-APP",
+				"skuExternalReferenceCode": "5b03ba3b-1299-89dc-fbee-c85c83c4e56c",
 				"unitPrice": 0
 			}
 		],

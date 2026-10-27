@@ -11,6 +11,7 @@ import {
 	getProjectItemStatusToken,
 } from '~/utils/orderUtils';
 import {
+	getProductPublisherName,
 	getProductSpecificationValue,
 	getProductSpecificationValues,
 } from '~/utils/productUtils';
@@ -59,14 +60,14 @@ function toProjectProduct(
 		externalReferenceCode: product.externalReferenceCode,
 		id: String(product.productId ?? product.id),
 		name: product.name,
-		publisher: getProductSpecificationValue('publisher-name', product),
+		publisher: getProductPublisherName(product),
 		saleType: getProductSpecificationValue('price-model', product),
 		specifications: product.productSpecifications ?? [],
 		startDate: formatStartDate(order, placedOrderItems),
 		status: getProjectItemStatusToken(itemType, order, placedOrderItems),
 		type:
 			getProductSpecificationValues(
-				'liferay-products-categories',
+				'liferay-product-categories',
 				product
 			)[0] ?? getProductSpecificationValue('price-model', product),
 	};

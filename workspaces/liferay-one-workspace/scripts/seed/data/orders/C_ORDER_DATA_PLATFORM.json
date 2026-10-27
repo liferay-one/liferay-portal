@@ -81,7 +81,7 @@
 			"maxQuantity": 1000000,
 			"name": "events",
 			"overageRate": 20,
-			"overageSkuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET",
+			"overageSkuExternalReferenceCode": "KOR-17691682",
 			"quantity": 1000000,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-028",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_DATA_PLATFORM",
@@ -132,7 +132,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_DATA_PLATFORM",
 				"name": "Liferay Data Platform",
 				"quantity": 1,
-				"skuExternalReferenceCode": "01tVO00000UccNxYAJ",
+				"skuExternalReferenceCode": "KOR-17691626",
 				"unitPrice": 0
 			},
 			{
@@ -145,7 +145,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_DATA_PLATFORM_EVENTS_ADD_ON_BUCKET",
 				"name": "Liferay Data Platform Events Add-On Bucket",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-ADD-ON-BUCKET",
+				"skuExternalReferenceCode": "KOR-17691654",
 				"unitPrice": 20
 			}
 		],

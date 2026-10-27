@@ -64,7 +64,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_DXP",
 				"name": "DXP",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-DXP",
+				"skuExternalReferenceCode": "marketplace-product-32654011-default",
 				"unitPrice": 0
 			}
 		],

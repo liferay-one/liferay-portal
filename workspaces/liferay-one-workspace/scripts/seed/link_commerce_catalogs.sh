@@ -17,7 +17,7 @@ source ../_common.sh
 
 CATALOG_ACCOUNTS=(
 	"LIFERAY_INC_CATALOG ACCNT-020"
-	"TEST_SUPPLIER_CATALOG ACCNT-021"
+	"a1fcb2bc-7571-0ebe-4722-3547f58689ac ACCNT-021"
 )
 
 function main {

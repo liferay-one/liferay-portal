@@ -5,11 +5,11 @@
 			"externalReferenceCode": "C_ENT_MP_COMPOSITE_APP",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Test Composite App",
+			"name": "Hubspot Lead Capture",
 			"quantity": 2,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-002",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_MP_COMPOSITE_APP",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_COMPOSITE_APP",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_HUBSPOT_LEAD_CAPTURE",
 			"startDate": "2026-01-15T00:00:00Z"
 		}
 	],
@@ -27,9 +27,9 @@
 					"startDate": "2026-01-15T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_MP_COMPOSITE_APP",
-				"name": "Test Composite App",
+				"name": "Hubspot Lead Capture",
 				"quantity": 2,
-				"skuExternalReferenceCode": "PRDCT-TEST-COMPOSITE-APP",
+				"skuExternalReferenceCode": "a0be80e3-f51b-19b1-467f-661c424688eb",
 				"unitPrice": 750
 			}
 		],

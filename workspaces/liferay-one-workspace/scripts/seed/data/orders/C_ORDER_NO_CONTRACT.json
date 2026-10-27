@@ -5,7 +5,7 @@
 			"externalReferenceCode": "C_ENT_NO_CONTRACT_AIHUB",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Liferay AI Hub",
+			"name": "AI Hub",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-030",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_NO_CONTRACT_AIHUB",
@@ -67,7 +67,7 @@
 					"startDate": "2026-08-09T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_NO_CONTRACT_AIHUB",
-				"name": "Liferay AI Hub",
+				"name": "AI Hub",
 				"quantity": 1,
 				"skuExternalReferenceCode": "01tVO00000TVrlhYAD",
 				"unitPrice": 0
@@ -82,7 +82,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_NO_CONTRACT_DXP",
 				"name": "Liferay DXP",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-DXP",
+				"skuExternalReferenceCode": "marketplace-product-32654011-default",
 				"unitPrice": 0
 			}
 		],

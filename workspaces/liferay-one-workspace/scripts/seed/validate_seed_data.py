@@ -62,7 +62,7 @@ def _check_chain(report, scope):
 	memberships = scope["memberships"]
 	environments = scope["environments"]
 	order_items = scope["order_items"]
-	definitions = scope["definitions"]
+	definition_skus = scope["definition_skus"]
 
 	project_accounts = {
 		project["externalReferenceCode"]: project.get(
@@ -177,12 +177,14 @@ def _check_chain(report, scope):
 		order_item["externalReferenceCode"]: order_item.get("skuExternalReferenceCode")
 		for order_item in order_items
 	}
-	definition_skus = {
-		definition["externalReferenceCode"]: definition.get(
-			"skuExternalReferenceCode"
-		)
-		for definition in definitions
-	}
+	skus_by_definition = defaultdict(set)
+
+	for definition_sku in definition_skus:
+		skus_by_definition[
+			definition_sku[
+				"r_entitlementDefinitionToSku_c_entitlementDefinitionERC"
+			]
+		].add(definition_sku["skuExternalReferenceCode"])
 
 	pairs = Counter()
 
@@ -251,14 +253,20 @@ def _check_chain(report, scope):
 		if (
 			definition
 			and sku
-			and definition_skus.get(definition)
-			and definition_skus[definition] != sku
+			and skus_by_definition.get(definition)
+			and sku not in skus_by_definition[definition]
 		):
 			report.error(
 				"Entitlement definition is not on the ordered SKU",
-				"entitlement %s uses definition %s from SKU %s but its order item "
-				"%s sells SKU %s"
-				% (erc, definition, definition_skus[definition], order_item, sku),
+				"entitlement %s uses definition %s from SKUs %s but its order "
+				"item %s sells SKU %s"
+				% (
+					erc,
+					definition,
+					", ".join(sorted(skus_by_definition[definition])),
+					order_item,
+					sku,
+				),
 			)
 
 	for (order_item, definition), count in sorted(

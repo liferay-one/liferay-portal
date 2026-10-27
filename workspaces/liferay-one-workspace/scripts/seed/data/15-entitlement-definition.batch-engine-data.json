@@ -55,7 +55,7 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Liferay AI Hub",
+			"displayName": "AI Hub",
 			"externalReferenceCode": "C_ENT_DEF_AIHUB",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
@@ -66,7 +66,7 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Liferay AI Hub",
+			"displayName": "AI Hub",
 			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
@@ -88,7 +88,7 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Liferay AI Hub",
+			"displayName": "AI Hub",
 			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
@@ -121,6 +121,17 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "AI Blog Workspace",
+			"externalReferenceCode": "C_ENT_DEF_AI_BLOG_WORKSPACE",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Analytics Cloud",
 			"externalReferenceCode": "C_ENT_DEF_ANALYTICS_CLOUD",
 			"generatesActivationKey": true,
@@ -132,8 +143,8 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Test Application",
-			"externalReferenceCode": "C_ENT_DEF_APP",
+			"displayName": "Batch Client Extension Generator",
+			"externalReferenceCode": "C_ENT_DEF_BATCH_CX_GENERATOR",
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
@@ -240,6 +251,17 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "Collection display grid view with Item Highlight",
+			"externalReferenceCode": "C_ENT_DEF_COLLECTION_GRID",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Commerce",
 			"externalReferenceCode": "C_ENT_DEF_COMMERCE",
 			"grantType": "fixed",
@@ -255,6 +277,26 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Consulting - Architect",
+			"externalReferenceCode": "C_ENT_DEF_CONSULTING_ARCHITECT",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "consulting-architect",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Consulting - Pre-paid Consulting",
+			"externalReferenceCode": "C_ENT_DEF_CONSULTING_PREPAID",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "consulting-pre-paid-consulting",
 			"unit": "boolean"
 		},
 		{
@@ -291,19 +333,6 @@
 			"grantType": "fixed",
 			"licenseKeyFamily": "CMP",
 			"licenseKeyType": "production",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Content Marketing Platform Trial",
-			"externalReferenceCode": "C_ENT_DEF_CONTENT_MARKETING_TRIAL",
-			"generatesActivationKey": true,
-			"grantType": "fixed",
-			"licenseKeyDurationDays": 30,
-			"licenseKeyFamily": "CMP",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
 			"unit": "boolean"
@@ -369,7 +398,7 @@
 			"maxQuantity": 1000000,
 			"name": "events",
 			"overageRate": 20,
-			"overageSkuExternalReferenceCode": "PRDCT-DATA-PLATFORM-EVENTS-OVERAGE-BUCKET",
+			"overageSkuExternalReferenceCode": "KOR-17691682",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "events-monthly",
 			"unit": "count"
 		},
@@ -416,19 +445,6 @@
 			"grantType": "fixed",
 			"licenseKeyFamily": "DSR",
 			"licenseKeyType": "developer",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Digital Sales Room Trial",
-			"externalReferenceCode": "C_ENT_DEF_DSR_TRIAL",
-			"generatesActivationKey": true,
-			"grantType": "fixed",
-			"licenseKeyDurationDays": 30,
-			"licenseKeyFamily": "DSR",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
 			"unit": "boolean"
@@ -540,13 +556,30 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Liferay DXP Trial",
-			"externalReferenceCode": "C_ENT_DEF_DXP_TRIAL",
+			"displayName": "Dynatrace for Liferay PaaS - S",
+			"externalReferenceCode": "C_ENT_DEF_DYNATRACE_PAAS_S",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "dynatrace-for-liferay-paas-s",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Elastic Subscription Liferay Self-Hosted - Sizing 1",
+			"externalReferenceCode": "C_ENT_DEF_ELASTIC_SELF_HOSTED_SIZING_1",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "elastic-subscription-liferay-self-hosted-sizing-1",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Email MFA for Liferay CE",
+			"externalReferenceCode": "C_ENT_DEF_EMAIL_MFA",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
-			"licenseKeyDurationDays": 30,
-			"licenseKeyFamily": "DXP",
-			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
 			"unit": "boolean"
@@ -574,11 +607,198 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "Database Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_DATABASE_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "database-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Disaster Recovery",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_DISASTER_RECOVERY",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "disasterRecovery",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Extensions RAM Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_EXTENSIONS_RAM_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "extensions-ram-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Extensions vCPUs Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_EXTENSIONS_VCPUS_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "extensions-vcpus-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Logs Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_LOGS_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "logs-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Storage Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_STORAGE_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "storage-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Traffic Networking Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_TRAFFIC_NETWORKING_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "traffic-networking-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Hubspot Lead Capture",
+			"externalReferenceCode": "C_ENT_DEF_HUBSPOT_LEAD_CAPTURE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Insurance Agent Portal Accelerator",
+			"externalReferenceCode": "C_ENT_DEF_INSURANCE_AGENT_PORTAL",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay PaaS - Business Solution Bundle",
+			"externalReferenceCode": "C_ENT_DEF_LIFERAY_PAAS_BUSINESS",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-paas-business-solution-bundle",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 20000,
+			"displayName": "AI Token Block",
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_20000",
+			"grantType": "fixed",
+			"maxQuantity": 20000,
+			"name": "aiTokenBlock",
+			"unit": "tokens"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5000,
+			"displayName": "AI Token Block",
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_5000",
+			"grantType": "fixed",
+			"maxQuantity": 5000,
+			"name": "aiTokenBlock",
+			"unit": "tokens"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 50000,
+			"displayName": "AI Token Block",
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_50000",
+			"grantType": "fixed",
+			"maxQuantity": 50000,
+			"name": "aiTokenBlock",
+			"unit": "tokens"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Managed Services - Base Package",
+			"externalReferenceCode": "C_ENT_DEF_MANAGED_SERVICES_BASE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "managed-services-base-package",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Managed Services - Additional UAT Environment",
+			"externalReferenceCode": "C_ENT_DEF_MANAGED_SERVICES_UAT",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "managed-services-additional-uat-environment",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Minium Theme",
+			"externalReferenceCode": "C_ENT_DEF_MINIUM_THEME",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Connector to OpenSearch 2",
 			"externalReferenceCode": "C_ENT_DEF_OPENSEARCH",
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - APV Overage Fee",
+			"externalReferenceCode": "C_ENT_DEF_OVERAGE_APV",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-apv-overage-fee",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - MALU Overage Fee",
+			"externalReferenceCode": "C_ENT_DEF_OVERAGE_MALU",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-malu-overage-fee",
 			"unit": "boolean"
 		},
 		{
@@ -594,12 +814,22 @@
 		{
 			"active": true,
 			"defaultQuantity": 100,
+			"displayName": "Storage",
+			"externalReferenceCode": "C_ENT_DEF_PAAS_ADDON_STORAGE",
+			"grantType": "fixed",
+			"maxQuantity": 100,
+			"name": "storage",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
 			"displayName": "Database",
 			"externalReferenceCode": "C_ENT_DEF_PAAS_DATABASE",
 			"grantType": "fixed",
 			"maxQuantity": 100,
 			"name": "database",
-			"overageSkuExternalReferenceCode": "PRDCT-PAAS-DATABASE-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ2YAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
 			"unit": "GiB"
@@ -607,13 +837,12 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Database Overage",
-			"externalReferenceCode": "C_ENT_DEF_PAAS_DATABASE_OVERAGE",
+			"displayName": "Disaster Recovery",
+			"externalReferenceCode": "C_ENT_DEF_PAAS_DISASTER_RECOVERY",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "database-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
-			"unit": "count"
+			"name": "disasterRecovery",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
@@ -623,21 +852,10 @@
 			"grantType": "fixed",
 			"maxQuantity": 2,
 			"name": "extensions-ram",
-			"overageSkuExternalReferenceCode": "PRDCT-PAAS-EXTENSIONS-RAM-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCPzYAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
 			"unit": "GiB"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Extensions RAM Overage",
-			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_RAM_OVERAGE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "extensions-ram-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
-			"unit": "count"
 		},
 		{
 			"active": true,
@@ -647,21 +865,10 @@
 			"grantType": "fixed",
 			"maxQuantity": 3,
 			"name": "extensions-vcpus",
-			"overageSkuExternalReferenceCode": "PRDCT-PAAS-EXTENSIONS-VCPUS-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ0YAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
 			"unit": "vCPU"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Extensions vCPUs Overage",
-			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_VCPUS_OVERAGE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "extensions-vcpus-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
-			"unit": "count"
 		},
 		{
 			"active": true,
@@ -681,21 +888,10 @@
 			"grantType": "fixed",
 			"maxQuantity": 300,
 			"name": "logs",
-			"overageSkuExternalReferenceCode": "PRDCT-PAAS-LOGS-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ4YAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
 			"unit": "GiB"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Logs Overage",
-			"externalReferenceCode": "C_ENT_DEF_PAAS_LOGS_OVERAGE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "logs-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
-			"unit": "count"
 		},
 		{
 			"active": true,
@@ -705,21 +901,10 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "storage",
-			"overageSkuExternalReferenceCode": "PRDCT-PAAS-STORAGE-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ1YAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
 			"unit": "TiB"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Storage Overage",
-			"externalReferenceCode": "C_ENT_DEF_PAAS_STORAGE_OVERAGE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "storage-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
-			"unit": "count"
 		},
 		{
 			"active": true,
@@ -729,31 +914,10 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "traffic-networking",
-			"overageSkuExternalReferenceCode": "PRDCT-PAAS-TRAFFIC-NETWORKING-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ3YAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
 			"unit": "TiB"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Traffic Networking Overage",
-			"externalReferenceCode": "C_ENT_DEF_PAAS_TRAFFIC_NETWORKING_OVERAGE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "traffic-networking-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
-			"unit": "count"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Basic Reseller Partnership",
-			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_BASIC_RESELLER",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
 		},
 		{
 			"active": true,
@@ -768,28 +932,18 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Reseller Partnership",
-			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_RESELLER",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Service Partnership",
-			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_SERVICE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
 			"displayName": "Solution Partnership - Reseller Program",
 			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_SOLUTION_RESELLER",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Technology Partnership",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_TECHNOLOGY",
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "licenseGeneration",
@@ -928,6 +1082,16 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Connector to PunchOut2Go",
+			"externalReferenceCode": "C_ENT_DEF_PUNCHOUT2GO_APP",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "SaaS",
 			"externalReferenceCode": "C_ENT_DEF_SAAS",
 			"grantType": "fixed",
@@ -1014,21 +1178,10 @@
 			"grantType": "fixed",
 			"maxQuantity": 100,
 			"name": "database",
-			"overageSkuExternalReferenceCode": "PRDCT-SAAS-DATABASE-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ2YAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
 			"unit": "GiB"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Database Overage",
-			"externalReferenceCode": "C_ENT_DEF_SAAS_DATABASE_OVERAGE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "database-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
-			"unit": "count"
 		},
 		{
 			"active": true,
@@ -1098,21 +1251,10 @@
 			"grantType": "fixed",
 			"maxQuantity": 2,
 			"name": "extensions-ram",
-			"overageSkuExternalReferenceCode": "PRDCT-SAAS-EXTENSIONS-RAM-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCPzYAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
 			"unit": "GiB"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Extensions RAM Overage",
-			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTENSIONS_RAM_OVERAGE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "extensions-ram-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
-			"unit": "count"
 		},
 		{
 			"active": true,
@@ -1122,21 +1264,10 @@
 			"grantType": "fixed",
 			"maxQuantity": 3,
 			"name": "extensions-vcpus",
-			"overageSkuExternalReferenceCode": "PRDCT-SAAS-EXTENSIONS-VCPUS-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ0YAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
 			"unit": "vCPU"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Extensions vCPUs Overage",
-			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTENSIONS_VCPUS_OVERAGE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "extensions-vcpus-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
-			"unit": "count"
 		},
 		{
 			"active": true,
@@ -1167,21 +1298,10 @@
 			"grantType": "fixed",
 			"maxQuantity": 300,
 			"name": "logs",
-			"overageSkuExternalReferenceCode": "PRDCT-SAAS-LOGS-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ4YAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
 			"unit": "GiB"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Logs Overage",
-			"externalReferenceCode": "C_ENT_DEF_SAAS_LOGS_OVERAGE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "logs-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
-			"unit": "count"
 		},
 		{
 			"active": true,
@@ -1251,21 +1371,10 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "storage",
-			"overageSkuExternalReferenceCode": "PRDCT-SAAS-STORAGE-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ1YAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
 			"unit": "TiB"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Storage Overage",
-			"externalReferenceCode": "C_ENT_DEF_SAAS_STORAGE_OVERAGE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "storage-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
-			"unit": "count"
 		},
 		{
 			"active": true,
@@ -1275,196 +1384,10 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "traffic-networking",
-			"overageSkuExternalReferenceCode": "PRDCT-SAAS-TRAFFIC-NETWORKING-OVERAGE",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ3YAN",
 			"productOptions": "{\"machineType\": \"standard\"}",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
 			"unit": "TiB"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Traffic Networking Overage",
-			"externalReferenceCode": "C_ENT_DEF_SAAS_TRAFFIC_NETWORKING_OVERAGE",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "traffic-networking-overage",
-			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
-			"unit": "count"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Sample Marketplace App",
-			"externalReferenceCode": "C_ENT_DEF_SAMPLE_APP",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Sample Cloud App",
-			"externalReferenceCode": "C_ENT_DEF_SAMPLE_CLOUD_APP",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "SSA - SaaS Trial",
-			"externalReferenceCode": "C_ENT_DEF_SSA_TRIAL",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Gold Support",
-			"externalReferenceCode": "C_ENT_DEF_SUPPORT_GOLD",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Platinum Support",
-			"externalReferenceCode": "C_ENT_DEF_SUPPORT_PLATINUM",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Test App",
-			"externalReferenceCode": "C_ENT_DEF_TEST_APP",
-			"generatesActivationKey": true,
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Test Client Extension",
-			"externalReferenceCode": "C_ENT_DEF_TEST_CLIENT_EXTENSION",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Test Composite App",
-			"externalReferenceCode": "C_ENT_DEF_TEST_COMPOSITE_APP",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Test Supplier CRM Accelerator",
-			"externalReferenceCode": "C_ENT_DEF_TEST_CRM_ACCELERATOR",
-			"generatesActivationKey": true,
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Test Low-Code Configuration",
-			"externalReferenceCode": "C_ENT_DEF_TEST_LOW_CODE_CONFIGURATION",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Test Supplier Partner Portal",
-			"externalReferenceCode": "C_ENT_DEF_TEST_PARTNER_PORTAL",
-			"generatesActivationKey": true,
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Test Supplier Slack Connector",
-			"externalReferenceCode": "C_ENT_DEF_TEST_SLACK_CONNECTOR",
-			"generatesActivationKey": true,
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Test Supplier Theme Pack",
-			"externalReferenceCode": "C_ENT_DEF_TEST_THEME_PACK",
-			"generatesActivationKey": true,
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Click to Chat Integration for Zendesk",
-			"externalReferenceCode": "C_ENT_DEF_ZENDESK",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "licenseGeneration",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 5000,
-			"displayName": "AI Token Block",
-			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_5000",
-			"grantType": "fixed",
-			"maxQuantity": 5000,
-			"name": "aiTokenBlock",
-			"unit": "tokens"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 20000,
-			"displayName": "AI Token Block",
-			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_20000",
-			"grantType": "fixed",
-			"maxQuantity": 20000,
-			"name": "aiTokenBlock",
-			"unit": "tokens"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 50000,
-			"displayName": "AI Token Block",
-			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_50000",
-			"grantType": "fixed",
-			"maxQuantity": 50000,
-			"name": "aiTokenBlock",
-			"unit": "tokens"
 		},
 		{
 			"active": true,
@@ -1533,6 +1456,16 @@
 		},
 		{
 			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted - Enterprise Solution",
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_ENTERPRISE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-enterprise-solution",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
 			"defaultQuantity": 5,
 			"displayName": "Liferay Self-Hosted Non-Production",
 			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_NON_PRODUCTION",
@@ -1560,132 +1493,73 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Liferay Self-Hosted - Enterprise Solution",
-			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_ENTERPRISE",
+			"displayName": "SSA - SaaS Trial",
+			"externalReferenceCode": "C_ENT_DEF_SSA_TRIAL",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "liferay-self-hosted-enterprise-solution",
+			"name": "licenseGeneration",
 			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Elastic Subscription Liferay Self-Hosted - Sizing 1",
-			"externalReferenceCode": "C_ENT_DEF_ELASTIC_SELF_HOSTED_SIZING_1",
+			"displayName": "Sticky Notes for the Portal",
+			"externalReferenceCode": "C_ENT_DEF_STICKY_NOTES",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "elastic-subscription-liferay-self-hosted-sizing-1",
+			"name": "licenseGeneration",
 			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Liferay PaaS - Business Solution Bundle",
-			"externalReferenceCode": "C_ENT_DEF_LIFERAY_PAAS_BUSINESS",
+			"displayName": "SugarCRM Customer Portal",
+			"externalReferenceCode": "C_ENT_DEF_SUGARCRM_PORTAL",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "liferay-paas-business-solution-bundle",
+			"name": "licenseGeneration",
 			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Dynatrace for Liferay PaaS - S",
-			"externalReferenceCode": "C_ENT_DEF_DYNATRACE_PAAS_S",
+			"displayName": "Gold Support",
+			"externalReferenceCode": "C_ENT_DEF_SUPPORT_GOLD",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "dynatrace-for-liferay-paas-s",
+			"name": "licenseGeneration",
 			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Liferay SaaS - MALU Overage Fee",
-			"externalReferenceCode": "C_ENT_DEF_OVERAGE_MALU",
+			"displayName": "Platinum Support",
+			"externalReferenceCode": "C_ENT_DEF_SUPPORT_PLATINUM",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "liferay-saas-malu-overage-fee",
+			"name": "licenseGeneration",
 			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Liferay SaaS - APV Overage Fee",
-			"externalReferenceCode": "C_ENT_DEF_OVERAGE_APV",
+			"displayName": "Liferay Commerce Connector to UPS",
+			"externalReferenceCode": "C_ENT_DEF_UPS_CONNECTOR",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "liferay-saas-apv-overage-fee",
+			"name": "licenseGeneration",
 			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Managed Services - Base Package",
-			"externalReferenceCode": "C_ENT_DEF_MANAGED_SERVICES_BASE",
+			"displayName": "Click to Chat Integration for Zendesk",
+			"externalReferenceCode": "C_ENT_DEF_ZENDESK",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "managed-services-base-package",
+			"name": "licenseGeneration",
 			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Managed Services - Additional UAT Environment",
-			"externalReferenceCode": "C_ENT_DEF_MANAGED_SERVICES_UAT",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "managed-services-additional-uat-environment",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Consulting - Architect",
-			"externalReferenceCode": "C_ENT_DEF_CONSULTING_ARCHITECT",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "consulting-architect",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Consulting - Pre-paid Consulting",
-			"externalReferenceCode": "C_ENT_DEF_CONSULTING_PREPAID",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "consulting-pre-paid-consulting",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Disaster Recovery",
-			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_DISASTER_RECOVERY",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "disasterRecovery",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "Disaster Recovery",
-			"externalReferenceCode": "C_ENT_DEF_PAAS_DISASTER_RECOVERY",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "disasterRecovery",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 100,
-			"displayName": "Storage",
-			"externalReferenceCode": "C_ENT_DEF_PAAS_ADDON_STORAGE",
-			"grantType": "fixed",
-			"maxQuantity": 100,
-			"name": "storage",
-			"unit": "GB"
 		}
 	]
 }

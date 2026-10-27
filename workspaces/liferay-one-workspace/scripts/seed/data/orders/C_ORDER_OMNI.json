@@ -9,7 +9,7 @@
 			"externalReferenceCode": "C_ENT_OMNI_AI_HUB",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Liferay AI Hub",
+			"name": "AI Hub",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-001",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_OMNI_AI_HUB",
@@ -559,7 +559,7 @@
 					"startDate": "2026-08-09T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_AI_HUB",
-				"name": "Liferay AI Hub",
+				"name": "AI Hub",
 				"quantity": 1,
 				"skuExternalReferenceCode": "01tVO00000TVrlhYAD",
 				"unitPrice": 0
@@ -626,7 +626,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_CONTENT_MARKETING",
 				"name": "Content Marketing Platform",
 				"quantity": 1,
-				"skuExternalReferenceCode": "01tVO00000UccNzYAJ",
+				"skuExternalReferenceCode": "KOR-16671415",
 				"unitPrice": 0
 			},
 			{
@@ -639,7 +639,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_DATA_PLATFORM",
 				"name": "Liferay Data Platform",
 				"quantity": 1,
-				"skuExternalReferenceCode": "01tVO00000UccNxYAJ",
+				"skuExternalReferenceCode": "KOR-17691626",
 				"unitPrice": 0
 			},
 			{
@@ -652,7 +652,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_DSR",
 				"name": "Digital Sales Room",
 				"quantity": 1,
-				"skuExternalReferenceCode": "01tVO00000UccNyYAJ",
+				"skuExternalReferenceCode": "KOR-17676139",
 				"unitPrice": 0
 			},
 			{
@@ -665,7 +665,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_DXP",
 				"name": "Liferay DXP - Free Tier",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-DXP",
+				"skuExternalReferenceCode": "marketplace-product-32654011-default",
 				"unitPrice": 0
 			},
 			{

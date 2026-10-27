@@ -11,32 +11,117 @@
 	},
 	"items": [
 		{
-			"externalReferenceCode": "MACHINE_TYPE",
-			"fieldType": "select",
-			"key": "machinetype",
+			"externalReferenceCode": "44abb9fb-81f2-ef8b-97b6-6b05d07aa28a",
+			"facetable": false,
+			"fieldType": "radio",
+			"key": "cms-license-usage-type",
 			"name": {
-				"en_US": "Machine Type"
+				"en_US": "CMS License Usage Type"
 			},
 			"optionValues": [
 				{
-					"externalReferenceCode": "MACHINE_TYPE_HIGH",
-					"key": "high",
-					"name": {
-						"en_US": "High"
-					},
-					"priority": 1
-				},
-				{
-					"externalReferenceCode": "MACHINE_TYPE_STANDARD",
+					"externalReferenceCode": "fffb26e1-2606-e673-636a-8e91df87da36",
 					"key": "standard",
 					"name": {
 						"en_US": "Standard"
 					},
-					"priority": 2
+					"priority": 0
 				}
 			],
 			"required": false,
-			"skuContributor": false
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "LO_OPTION_CLOUD_LICENSE_USAGE",
+			"facetable": false,
+			"fieldType": "radio",
+			"key": "cloud-license-usage-type",
+			"name": {
+				"en_US": "Cloud License Usage Type"
+			},
+			"optionValues": [
+				{
+					"externalReferenceCode": "LO_OPTION_CLOUD_LICENSE_USAGE_STANDARD",
+					"key": "standard",
+					"name": {
+						"en_US": "Standard"
+					},
+					"priority": 0
+				},
+				{
+					"externalReferenceCode": "LO_OPTION_CLOUD_LICENSE_USAGE_TRIAL",
+					"key": "trial",
+					"name": {
+						"en_US": "Trial"
+					},
+					"priority": 1
+				}
+			],
+			"required": true,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "LO_OPTION_DXP_LICENSE_USAGE",
+			"facetable": false,
+			"fieldType": "radio",
+			"key": "dxp-license-usage-type",
+			"name": {
+				"en_US": "DXP License Usage Type"
+			},
+			"optionValues": [
+				{
+					"externalReferenceCode": "LO_OPTION_DXP_LICENSE_USAGE_DEVELOPER",
+					"key": "developer",
+					"name": {
+						"en_US": "Developer"
+					},
+					"priority": 0
+				},
+				{
+					"externalReferenceCode": "LO_OPTION_DXP_LICENSE_USAGE_STANDARD",
+					"key": "standard",
+					"name": {
+						"en_US": "Standard"
+					},
+					"priority": 1
+				},
+				{
+					"externalReferenceCode": "LO_OPTION_DXP_LICENSE_USAGE_TRIAL",
+					"key": "trial",
+					"name": {
+						"en_US": "Trial"
+					},
+					"priority": 2
+				}
+			],
+			"required": true,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "cf4abec7-b672-068a-6590-a8cbf2835374",
+			"facetable": false,
+			"fieldType": "radio",
+			"key": "ldp-license-usage-type",
+			"name": {
+				"en_US": "LDP License Usage Type"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
+			"externalReferenceCode": "e3c42f80-8f72-f1d0-7e92-04d76056c736",
+			"facetable": false,
+			"fieldType": "radio",
+			"key": "trial",
+			"name": {
+				"en_US": "Trial"
+			},
+			"optionValues": [
+			],
+			"required": true,
+			"skuContributor": true
 		}
 	]
 }

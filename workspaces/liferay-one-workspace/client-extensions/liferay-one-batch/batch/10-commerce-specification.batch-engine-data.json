@@ -64,6 +64,16 @@
 		},
 		{
 			"description": {
+				"en_US": "The settings of the app, such as whether it is downloadable, as a JSON object."
+			},
+			"facetable": false,
+			"key": "app-settings",
+			"title": {
+				"en_US": "App Settings"
+			}
+		},
+		{
+			"description": {
 				"en_US": ""
 			},
 			"facetable": false,
@@ -142,6 +152,16 @@
 		},
 		{
 			"description": {
+				"en_US": "The external reference code of the SKU that the product page selects first."
+			},
+			"facetable": false,
+			"key": "default-sku-ref",
+			"title": {
+				"en_US": "Default SKU Ref"
+			}
+		},
+		{
+			"description": {
 				"en_US": "This is the developer name."
 			},
 			"facetable": true,
@@ -181,6 +201,16 @@
 		},
 		{
 			"description": {
+				"en_US": "The license terms of the app, as HTML."
+			},
+			"facetable": false,
+			"key": "license",
+			"title": {
+				"en_US": "License"
+			}
+		},
+		{
+			"description": {
 				"en_US": "This is the length of the trial."
 			},
 			"facetable": false,
@@ -210,12 +240,12 @@
 				"en_US": ""
 			},
 			"facetable": true,
-			"key": "liferay-products-capabilities",
+			"key": "liferay-product-capabilities",
 			"optionCategory": {
 				"externalReferenceCode": "PRODUCT_METADATA"
 			},
 			"title": {
-				"en_US": "Liferay Products Capabilities"
+				"en_US": "Liferay Product Capabilities"
 			}
 		},
 		{
@@ -223,12 +253,12 @@
 				"en_US": ""
 			},
 			"facetable": true,
-			"key": "liferay-products-categories",
+			"key": "liferay-product-categories",
 			"optionCategory": {
 				"externalReferenceCode": "PRODUCT_METADATA"
 			},
 			"title": {
-				"en_US": "Liferay Products Categories"
+				"en_US": "Liferay Product Categories"
 			}
 		},
 		{
@@ -294,6 +324,16 @@
 			},
 			"title": {
 				"en_US": "Partner Product"
+			}
+		},
+		{
+			"description": {
+				"en_US": "The partnership between Liferay and the publisher of the app."
+			},
+			"facetable": false,
+			"key": "partnership-type",
+			"title": {
+				"en_US": "Partnership Type"
 			}
 		},
 		{
@@ -645,6 +685,16 @@
 			},
 			"title": {
 				"en_US": "Solution Header Video Description"
+			}
+		},
+		{
+			"description": {
+				"en_US": "Whether the header video of the solution plays in the page."
+			},
+			"facetable": false,
+			"key": "solution-header-video-embedded",
+			"title": {
+				"en_US": "Solution Header Video Embedded"
 			}
 		},
 		{

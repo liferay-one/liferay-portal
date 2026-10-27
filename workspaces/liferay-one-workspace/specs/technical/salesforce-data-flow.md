@@ -18,7 +18,7 @@ Paths in this file are relative to `client-extensions/liferay-one-etc-spring-boo
 | 9 | Model classes that read Salesforce fields, with 102 field reads in total (the account model reads some fields in each of its 2 constructors) |
 | 15 | Liferay record types that the inbound flow writes: account, account channel currency, project, contract, order, order item, product, SKU, price list, price entry, user, project membership, environment, property, and entitlement (contract and project links only) |
 | 1 | Outbound request to Salesforce: the opportunity `POST` for an AI Hub order |
-| 0 | Prefixes that the code adds to a Salesforce ID. The `ACCNT-`, `PRJCT-`, and `PRDCT-` prefixes exist only in seed data. |
+| 0 | Prefixes that the code adds to a Salesforce ID. The `ACCNT-` and `PRJCT-` prefixes exist only in seed data. |
 | 17 | Findings |
 
 ## Diagram
@@ -138,7 +138,7 @@ The code uses the Salesforce ID as the external reference code (ERC) with no pre
 | Product option value | lowercase Product2 `Id` | Product2 | `01t…` | `service/CommerceProductService.java:273` |
 | User | none. The code matches a user by email address. | `Contact__r.Email` | `jane@example.com` | `service/ProvisioningContactService.java:78` |
 
-The seed data uses `ACCNT-`, `PRJCT-`, and `PRDCT-` for accounts, projects, and products, and `C_` prefixes for contracts, orders, and entitlements. No Java code under `liferay-one-etc-spring-boot/src/main` contains these prefixes. A record that Salesforce creates never has them.
+The seed data uses `ACCNT-` and `PRJCT-` for accounts and projects, and `C_` prefixes for contracts, orders, and entitlements. No Java code under `liferay-one-etc-spring-boot/src/main` contains these prefixes. A record that Salesforce creates never has them.
 
 ## Opportunity Message
 

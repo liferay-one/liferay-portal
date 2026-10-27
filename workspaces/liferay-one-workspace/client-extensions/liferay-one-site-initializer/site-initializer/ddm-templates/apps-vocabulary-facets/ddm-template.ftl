@@ -12,7 +12,7 @@
 			<#case "category"><#return "カテゴリ" />
 			<#case "deployment-method"><#return "デプロイ方法" />
 			<#case "type"><#return "タイプ" />
-			<#case "liferay-products-categories"><#return "Liferay製品カテゴリ" />
+			<#case "liferay-product-categories"><#return "Liferay製品カテゴリ" />
 			<#case "liferay-version"><#return "Liferayバージョン" />
 			<#case "our-selection"><#return "おすすめ" />
 			<#case "price-model"><#return "価格モデル" />
@@ -27,7 +27,7 @@
 			<#case "category"><#return "Categoría" />
 			<#case "deployment-method"><#return "Método de implementación" />
 			<#case "type"><#return "Tipo" />
-			<#case "liferay-products-categories"><#return "Categorías de productos de Liferay" />
+			<#case "liferay-product-categories"><#return "Categorías de productos de Liferay" />
 			<#case "liferay-version"><#return "Versión de Liferay" />
 			<#case "our-selection"><#return "Nuestra selección" />
 			<#case "price-model"><#return "Modelo de precios" />
@@ -42,7 +42,7 @@
 			<#case "category"><#return "Categoria" />
 			<#case "deployment-method"><#return "Método de implantação" />
 			<#case "type"><#return "Tipo" />
-			<#case "liferay-products-categories"><#return "Categorias de produtos Liferay" />
+			<#case "liferay-product-categories"><#return "Categorias de produtos Liferay" />
 			<#case "liferay-version"><#return "Versão do Liferay" />
 			<#case "our-selection"><#return "Nossa seleção" />
 			<#case "price-model"><#return "Modelo de preço" />

@@ -18,7 +18,7 @@ source ../_common.sh
 
 PUBLISHER_DETAILS=(
 	"PUBDET-LIFERAY-INC LIFERAY_INC_CATALOG data/11-publisher-details.batch-engine-data.json"
-	"PUBDET-TEST-SUPPLIER TEST_SUPPLIER_CATALOG data/publisher-details/test-supplier.json"
+	"PUBDET-TEST-SUPPLIER a1fcb2bc-7571-0ebe-4722-3547f58689ac data/publisher-details/test-supplier.json"
 )
 
 function main {

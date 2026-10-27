@@ -44,7 +44,7 @@
 				"externalReferenceCode": "C_ORDER_ITEM_OMNI_NO_PROJECT_DXP",
 				"name": "Liferay DXP",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-DXP",
+				"skuExternalReferenceCode": "marketplace-product-32654011-default",
 				"unitPrice": 0
 			}
 		],

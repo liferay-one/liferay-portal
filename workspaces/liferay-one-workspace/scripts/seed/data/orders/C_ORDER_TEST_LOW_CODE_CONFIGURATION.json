@@ -8,12 +8,12 @@
 			"externalReferenceCode": "C_ENT_TEST_LOW_CODE_CONFIGURATION",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "Test Low-Code Configuration",
+			"name": "Sticky Notes for the Portal",
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-006",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_TEST_LOW_CODE_CONFIGURATION",
 			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_DXP",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_TEST_LOW_CODE_CONFIGURATION",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_STICKY_NOTES",
 			"startDate": "2026-08-09T00:00:00Z"
 		}
 	],
@@ -32,9 +32,9 @@
 					"startDate": "2026-08-09T00:00:00Z"
 				},
 				"externalReferenceCode": "C_ORDER_ITEM_TEST_LOW_CODE_CONFIGURATION",
-				"name": "Test Low-Code Configuration",
+				"name": "Sticky Notes for the Portal",
 				"quantity": 1,
-				"skuExternalReferenceCode": "PRDCT-TEST-LOW-CODE-CONFIGURATION",
+				"skuExternalReferenceCode": "66bca28c-9e2e-60ce-b120-e96eb857527d",
 				"unitPrice": 0
 			}
 		],

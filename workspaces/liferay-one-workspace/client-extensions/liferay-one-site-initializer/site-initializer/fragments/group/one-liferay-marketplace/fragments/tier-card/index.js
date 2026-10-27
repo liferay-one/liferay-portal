@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-const AI_HUB_PRODUCT_EXTERNAL_REFERENCE_CODE = 'PRDCT-AI-HUB';
+const AI_HUB_PRODUCT_EXTERNAL_REFERENCE_CODE = 'marketplace-product-32915366';
 
 const available = configuration.available;
 const buttonLink = configuration.buttonLink;
