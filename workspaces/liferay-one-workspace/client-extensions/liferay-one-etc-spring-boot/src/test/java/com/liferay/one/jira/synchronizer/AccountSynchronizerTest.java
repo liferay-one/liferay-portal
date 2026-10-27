@@ -667,7 +667,7 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
-	public void testSyncProjectSkipsProjectWhenEntitlementFails()
+	public void testSyncProjectSkipsProjectOutsideJSMWhenEntitlementFails()
 		throws Exception {
 
 		Mockito.when(
@@ -687,14 +687,47 @@ public class AccountSynchronizerTest {
 
 		Mockito.verify(
 			_jiraAssetService, Mockito.never()
-		).fetchReferenceObjectId(
+		).upsert(
 			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testSyncProjectSyncsProjectInJSMWhenEntitlementFails()
+		throws Exception {
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createAccount()
+		);
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(Mockito.anyString())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		Mockito.when(
+			_jiraAssetService.fetchReferenceObjectId(
+				Mockito.any(), Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE))
+		).thenReturn(
+			"project-object-id"
+		);
+
+		Assertions.assertTrue(
+			_accountSynchronizer.syncProject(_createProject()));
+
+		Mockito.verify(
+			_jiraAssetObject
+		).removeAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_STATUS
 		);
 
 		Mockito.verify(
-			_jiraAssetService, Mockito.never()
-		).upsert(
-			Mockito.any(), Mockito.any()
+			_jiraAssetObject, Mockito.never()
+		).setAttributeValue(
+			Mockito.eq(AccountConstants.ATTRIBUTE_NAME_STATUS), Mockito.any()
 		);
 	}
 
