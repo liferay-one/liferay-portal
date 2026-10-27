@@ -5,17 +5,29 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductOption;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductOptionValue;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
 import com.liferay.headless.commerce.admin.catalog.client.pagination.Page;
 import com.liferay.headless.commerce.admin.catalog.client.pagination.Pagination;
 import com.liferay.headless.commerce.admin.catalog.client.problem.Problem;
+import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductOptionResource;
+import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.ProductOptionValueResource;
 import com.liferay.headless.commerce.admin.catalog.client.resource.v1_0.SkuResource;
 import com.liferay.one.constants.SkuOptionConstants;
 import com.liferay.one.util.CommerceOrderUtil;
+import com.liferay.petra.string.StringBundler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -96,6 +108,72 @@ public class CommerceSkuService extends OneBaseService {
 		}
 	}
 
+	/**
+	 * Returns the options of the SKU as order item options JSON, with the
+	 * name of each option and option value. An order item that sets its own
+	 * options replaces the options that Liferay derives from the SKU, so the
+	 * caller sends these with its own to keep the SKU option value names.
+	 */
+	@Cacheable("skuOptionsJSON")
+	public String getSkuOptionsJSON(String skuExternalReferenceCode)
+		throws Exception {
+
+		JSONArray jsonArray = new JSONArray();
+
+		Sku sku = _commerceSkuService.fetchSku(skuExternalReferenceCode);
+
+		if ((sku == null) || (sku.getSkuOptions() == null)) {
+			return jsonArray.toString();
+		}
+
+		ProductOptionResource productOptionResource =
+			buildProductOptionResource();
+		ProductOptionValueResource productOptionValueResource =
+			buildProductOptionValueResource();
+
+		for (SkuOption skuOption : sku.getSkuOptions()) {
+			ProductOptionValue productOptionValue = _fetchProductOptionValue(
+				productOptionValueResource, skuOption.getOptionValueId());
+
+			if (productOptionValue == null) {
+				if (_log.isWarnEnabled()) {
+					_log.warn(
+						StringBundler.concat(
+							"Unable to find the value of option ",
+							skuOption.getKey(), " for SKU ",
+							skuExternalReferenceCode));
+				}
+
+				continue;
+			}
+
+			ProductOption productOption =
+				productOptionResource.getProductOption(skuOption.getOptionId());
+
+			jsonArray.put(
+				new JSONObject(
+				).put(
+					"key", skuOption.getKey()
+				).put(
+					"skuOptionName", _getName(productOption.getName())
+				).put(
+					"skuOptionValueNames",
+					new JSONArray(
+					).put(
+						_getName(productOptionValue.getName())
+					)
+				).put(
+					"value",
+					new JSONArray(
+					).put(
+						skuOption.getValue()
+					)
+				));
+		}
+
+		return jsonArray.toString();
+	}
+
 	public List<Sku> getSkus(long productId) throws Exception {
 		SkuResource skuResource = _buildSkuResource();
 
@@ -105,7 +183,7 @@ public class CommerceSkuService extends OneBaseService {
 		return new ArrayList<>(skusPage.getItems());
 	}
 
-	@CacheEvict(allEntries = true, cacheNames = "sku")
+	@CacheEvict(allEntries = true, cacheNames = {"sku", "skuOptionsJSON"})
 	public Sku patchSku(String externalReferenceCode, Sku sku)
 		throws Exception {
 
@@ -126,6 +204,24 @@ public class CommerceSkuService extends OneBaseService {
 		}
 	}
 
+	protected ProductOptionResource buildProductOptionResource() {
+		return ProductOptionResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
+	}
+
+	protected ProductOptionValueResource buildProductOptionValueResource() {
+		return ProductOptionValueResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).build();
+	}
+
 	private SkuResource _buildSkuResource() {
 		return SkuResource.builder(
 		).endpoint(
@@ -135,7 +231,53 @@ public class CommerceSkuService extends OneBaseService {
 		).build();
 	}
 
+	private ProductOptionValue _fetchProductOptionValue(
+			ProductOptionValueResource productOptionValueResource,
+			Long productOptionValueId)
+		throws Exception {
+
+		if (productOptionValueId == null) {
+			return null;
+		}
+
+		try {
+			return productOptionValueResource.getProductOptionValue(
+				productOptionValueId);
+		}
+		catch (Problem.ProblemException problemException) {
+			Problem problem = problemException.getProblem();
+
+			if ((problem != null) && isNotFound(problem.getStatus())) {
+				return null;
+			}
+
+			throw problemException;
+		}
+	}
+
+	private String _getName(Map<String, String> nameMap) {
+		if (nameMap == null) {
+			return null;
+		}
+
+		String name = nameMap.get("en_US");
+
+		if (name != null) {
+			return name;
+		}
+
+		for (String value : nameMap.values()) {
+			if (value != null) {
+				return value;
+			}
+		}
+
+		return null;
+	}
+
 	private static final int _PAGE_SIZE = 500;
+
+	private static final Log _log = LogFactory.getLog(CommerceSkuService.class);
 
 	@Autowired
 	@Lazy

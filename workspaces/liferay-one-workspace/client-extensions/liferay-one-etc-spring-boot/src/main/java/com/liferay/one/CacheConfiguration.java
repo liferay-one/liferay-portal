@@ -186,6 +186,15 @@ public class CacheConfiguration {
 				1000
 			).build());
 
+		caffeineCacheManager.registerCustomCache(
+			"skuOptionsJSON",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(1)
+			).maximumSize(
+				1000
+			).build());
+
 		return caffeineCacheManager;
 	}
 

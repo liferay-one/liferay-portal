@@ -34,6 +34,7 @@ import java.util.Map;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 
@@ -165,6 +166,8 @@ public class CommerceOrderItemService extends OneBaseService {
 
 			String options = CommerceOrderItemUtil.toOptionsJSON(
 				"machinetype",
+				_getSkuOptionsJSON(
+					salesforceOpportunityLineItem.getProduct2Id()),
 				StringUtil.toLowerCase(
 					salesforceOpportunityLineItem.getMachineType(),
 					Locale.ROOT));
@@ -293,6 +296,23 @@ public class CommerceOrderItemService extends OneBaseService {
 		return "On Hold";
 	}
 
+	private String _getSkuOptionsJSON(String skuExternalReferenceCode) {
+		try {
+			return _commerceSkuService.getSkuOptionsJSON(
+				skuExternalReferenceCode);
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to get the options of SKU " +
+						skuExternalReferenceCode,
+					exception);
+			}
+
+			return "[]";
+		}
+	}
+
 	private OrderItem _postOrderItem(Order order, OrderItem orderItem)
 		throws Exception {
 
@@ -353,5 +373,8 @@ public class CommerceOrderItemService extends OneBaseService {
 	private static final Map<String, String> _stageNameCustomStatuses = Map.of(
 		"Closed", "Canceled", "Closed Lost", "Canceled", "Closed Won",
 		"Approved", "Disqualified", "Canceled", "Rejected", "Canceled");
+
+	@Autowired
+	private CommerceSkuService _commerceSkuService;
 
 }

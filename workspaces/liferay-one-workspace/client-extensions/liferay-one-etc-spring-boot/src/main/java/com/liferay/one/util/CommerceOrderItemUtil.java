@@ -156,7 +156,14 @@ public class CommerceOrderItemUtil {
 	}
 
 	public static String toOptionsJSON(String key, String value) {
+		return toOptionsJSON(key, "[]", value);
+	}
+
+	public static String toOptionsJSON(
+		String key, String optionsJSON, String value) {
+
 		return new JSONArray(
+			optionsJSON
 		).put(
 			new JSONObject(
 			).put(
