@@ -68,7 +68,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 		expect(buildAccountTree(buildInspection({}), [])).toEqual([]);
 	});
 
-	it('nests projects under contracts, entitlements under order items, and license keys under entitlements', () => {
+	it('nests contracts, orders, order items, entitlements, and license keys under the project', () => {
 		const inspection = buildInspection(
 			{
 				contracts: [
@@ -88,11 +88,12 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 						r_contractToEntitlement_c_contractId: 30,
 						r_projectToEntitlement_c_projectId: 20,
 					},
+				],
+				environments: [
 					{
-						id: 41,
-						name: 'Support',
-						r_contractToEntitlement_c_contractId: 0,
-						r_projectToEntitlement_c_projectId: 20,
+						id: 60,
+						name: 'Production',
+						r_projectToEnvironment_c_projectId: 20,
 					},
 				],
 				licenseKeys: [
@@ -102,11 +103,13 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 						r_entitlementToLicenseKey_c_entitlementId: 40,
 						r_projectToLicenseKey_c_projectId: 20,
 					},
+				],
+				projectMemberships: [
 					{
-						externalReferenceCode: 'LK-2',
-						id: 71,
-						r_entitlementToLicenseKey_c_entitlementId: 99,
-						r_projectToLicenseKey_c_projectId: 20,
+						id: 11,
+						r_projectToProjectMembership_c_projectId: 20,
+						r_userToProjectMembership_userId: 1,
+						roleExternalReferenceCode: 'C_PROJECT_ADMIN',
 					},
 				],
 				projects: [PROJECT],
@@ -122,8 +125,30 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 						],
 					},
 				]),
+				users: toCollection([{emailAddress: 'a@b.com', id: 1}]),
 			}
 		);
+
+		const licenseKeys = {
+			children: [{label: 'LK-1'}],
+			count: 1,
+			label: 'License Keys',
+		};
+		const entitlements = {
+			children: [{children: [licenseKeys], label: 'DXP'}],
+			count: 1,
+			label: 'Entitlements',
+		};
+		const orderItems = {
+			children: [{children: [entitlements], label: 'DXP'}],
+			count: 1,
+			label: 'Order Items',
+		};
+		const orders = {
+			children: [{children: [orderItems], label: 'ORDER-1'}],
+			count: 1,
+			label: 'Orders',
+		};
 
 		expect(summarize(buildAccountTree(inspection, []))).toEqual([
 			{
@@ -133,86 +158,110 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 							{
 								children: [
 									{
-										children: [
-											{
-												children: [
-													{
-														children: [
-															{
-																children: [
-																	{
-																		children:
-																			[
-																				{
-																					children:
-																						[
-																							{
-																								children:
-																									[
-																										{
-																											label: 'LK-1',
-																										},
-																									],
-																								count: 1,
-																								label: 'License Keys',
-																							},
-																						],
-																					label: 'DXP',
-																				},
-																			],
-																		count: 1,
-																		label: 'Entitlements',
-																	},
-																],
-																label: 'DXP',
-															},
-														],
-														count: 1,
-														label: 'Order Items',
-													},
-												],
-												label: 'ORDER-1',
-											},
-										],
-										count: 1,
-										label: 'Orders',
+										children: [orders],
+										label: 'C-1 2026-01-01 - 2027-01-01',
 									},
 								],
-								label: 'Main',
+								count: 1,
+								label: 'Contracts',
+							},
+							{
+								children: [{label: 'User 1 C_PROJECT_ADMIN'}],
+								count: 1,
+								label: 'Project Memberships',
 							},
 						],
-						label: 'C-1 2026-01-01 - 2027-01-01',
+						label: 'Main',
+					},
+				],
+				count: 1,
+				label: 'Projects',
+			},
+			{
+				children: [{label: 'Production'}],
+				count: 1,
+				label: 'Environments',
+			},
+			{children: [{label: 'a@b.com'}], count: 1, label: 'Users'},
+		]);
+	});
+
+	it('shows an account level contract under each project that holds a record in it', () => {
+		const inspection = buildInspection({
+			contracts: [{externalReferenceCode: 'C-ACCOUNT', id: 30}],
+			entitlements: [
+				{
+					id: 40,
+					name: 'DXP',
+					r_contractToEntitlement_c_contractId: 30,
+					r_projectToEntitlement_c_projectId: 20,
+				},
+			],
+			projects: [PROJECT],
+		});
+
+		const [projectsNode, accountLevel] = buildAccountTree(inspection, []);
+
+		expect(summarize(projectsNode.children[0].children)).toEqual([
+			{
+				children: [
+					{
+						children: [
+							{
+								children: [{label: 'DXP'}],
+								count: 1,
+								label: 'Entitlements',
+							},
+						],
+						label: 'C-ACCOUNT',
 					},
 				],
 				count: 1,
 				label: 'Contracts',
 			},
-			{
-				children: [
-					{
-						children: [{label: 'Support'}],
-						count: 1,
-						label: 'Entitlements',
-					},
-					{
-						children: [{label: 'LK-2'}],
-						count: 1,
-						label: 'License Keys',
-					},
-				],
-				label: 'Main',
-			},
+		]);
+		expect(summarize(accountLevel.children)).toEqual([
+			{children: [{label: 'C-ACCOUNT'}], count: 1, label: 'Contracts'},
+		]);
+	});
+
+	it('keeps records whose parent did not load under the project', () => {
+		const inspection = buildInspection({
+			entitlements: [
+				{
+					id: 40,
+					name: 'DXP',
+					r_commerceOrderItemToEntitlement_commerceOrderItemId: 501,
+					r_projectToEntitlement_c_projectId: 20,
+				},
+			],
+			licenseKeys: [
+				{
+					externalReferenceCode: 'LK-1',
+					id: 70,
+					r_entitlementToLicenseKey_c_entitlementId: 99,
+					r_projectToLicenseKey_c_projectId: 20,
+				},
+			],
+			projects: [PROJECT],
+		});
+
+		const [projectsNode] = buildAccountTree(inspection, []);
+
+		expect(summarize(projectsNode.children[0].children)).toEqual([
+			{children: [{label: 'DXP'}], count: 1, label: 'Entitlements'},
+			{children: [{label: 'LK-1'}], count: 1, label: 'License Keys'},
 		]);
 	});
 
 	it('puts records with no project, or a project outside the account, at account level', () => {
 		const inspection = buildInspection(
 			{
-				environments: [
+				activationKeys: [
 					{
-						id: 60,
-						name: 'Orphan',
-						r_projectToEnvironment_c_projectId: 99,
+						externalReferenceCode: 'AK-1',
+						id: 80,
+						r_projectToActivationKey_c_projectId: 99,
 					},
 				],
 				projects: [PROJECT],
@@ -224,17 +273,48 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 			}
 		);
 
-		const [, accountLevel] = buildAccountTree(inspection, []);
+		const accountLevel = buildAccountTree(inspection, []).find(
+			({key}) => key === 'account-level'
+		);
 
-		expect(summarize([accountLevel])).toEqual([
+		expect(summarize(accountLevel ? [accountLevel] : [])).toEqual([
 			{
 				children: [
 					{children: [{label: '#50'}], count: 1, label: 'Orders'},
 					{
-						children: [{label: 'Orphan'}],
+						children: [{label: 'AK-1'}],
 						count: 1,
-						label: 'Environments',
+						label: 'Activation Keys',
 					},
+				],
+				label: 'No Project (Account Level)',
+			},
+		]);
+	});
+
+	it('puts orders that name an ambiguous project at account level', () => {
+		const inspection = buildInspection(
+			{
+				projects: [
+					{id: 20, name: 'Production'},
+					{id: 21, name: 'Production'},
+				],
+			},
+			{
+				orders: toCollection([
+					{customFields: {projectName: 'Production'}, id: 50},
+				]),
+			}
+		);
+
+		const accountLevel = buildAccountTree(inspection, []).find(
+			({key}) => key === 'account-level'
+		);
+
+		expect(summarize(accountLevel ? [accountLevel] : [])).toEqual([
+			{
+				children: [
+					{children: [{label: '#50'}], count: 1, label: 'Orders'},
 				],
 				label: 'No Project (Account Level)',
 			},
@@ -270,11 +350,14 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 			},
 		];
 
-		const [projectNode, brokenLinks] = buildAccountTree(
+		const [projectsNode, brokenLinks] = buildAccountTree(
 			inspection,
 			findings
 		);
 
+		const [projectNode] = projectsNode.children;
+
+		expect(projectsNode.severity).toBe('danger');
 		expect(projectNode.severity).toBe('danger');
 		expect(projectNode.children[0].children[0]).toMatchObject({
 			collection: 'projectMemberships',
@@ -304,127 +387,6 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 		]);
 	});
 
-	it('lists the account users as the first group', () => {
-		const [usersNode] = buildAccountTree(
-			buildInspection(
-				{},
-				{users: toCollection([{emailAddress: 'a@b.com', id: 1}])}
-			),
-			[]
-		);
-
-		expect(usersNode).toMatchObject({
-			collection: 'users',
-			count: 1,
-			key: 'root/users',
-		});
-		expect(usersNode.children[0]).toMatchObject({
-			label: 'a@b.com',
-			recordId: 1,
-		});
-	});
-
-	it('lists each project that holds a record in an account level contract under that contract', () => {
-		const inspection = buildInspection({
-			contracts: [{externalReferenceCode: 'C-ACCOUNT', id: 30}],
-			entitlements: [
-				{
-					id: 40,
-					name: 'DXP',
-					r_contractToEntitlement_c_contractId: 30,
-					r_projectToEntitlement_c_projectId: 20,
-				},
-			],
-			environments: [
-				{
-					id: 60,
-					name: 'Shared',
-					r_contractToEnvironment_c_contractId: 30,
-				},
-			],
-			projects: [PROJECT],
-		});
-
-		const [contractsNode, projectNode, ...rest] = buildAccountTree(
-			inspection,
-			[]
-		);
-
-		expect(summarize(contractsNode.children)).toEqual([
-			{
-				children: [
-					{
-						children: [
-							{
-								children: [{label: 'DXP'}],
-								count: 1,
-								label: 'Entitlements',
-							},
-						],
-						label: 'Main',
-					},
-					{
-						children: [{label: 'Shared'}],
-						count: 1,
-						label: 'Environments',
-					},
-				],
-				label: 'C-ACCOUNT',
-			},
-		]);
-		expect(projectNode.children).toEqual([]);
-		expect(rest).toEqual([]);
-	});
-
-	it('keeps an entitlement at project level when its order item did not load', () => {
-		const inspection = buildInspection({
-			entitlements: [
-				{
-					id: 40,
-					name: 'DXP',
-					r_commerceOrderItemToEntitlement_commerceOrderItemId: 501,
-					r_projectToEntitlement_c_projectId: 20,
-				},
-			],
-			projects: [PROJECT],
-		});
-
-		const [projectNode] = buildAccountTree(inspection, []);
-
-		expect(summarize(projectNode.children)).toEqual([
-			{children: [{label: 'DXP'}], count: 1, label: 'Entitlements'},
-		]);
-	});
-
-	it('puts orders that name an ambiguous project at account level', () => {
-		const inspection = buildInspection(
-			{
-				projects: [
-					{id: 20, name: 'Production'},
-					{id: 21, name: 'Production'},
-				],
-			},
-			{
-				orders: toCollection([
-					{customFields: {projectName: 'Production'}, id: 50},
-				]),
-			}
-		);
-
-		const accountLevel = buildAccountTree(inspection, []).find(
-			({key}) => key === 'account-level'
-		);
-
-		expect(summarize(accountLevel ? [accountLevel] : [])).toEqual([
-			{
-				children: [
-					{children: [{label: '#50'}], count: 1, label: 'Orders'},
-				],
-				label: 'No Project (Account Level)',
-			},
-		]);
-	});
-
 	it('gives the same record a different key in each place it appears', () => {
 		const inspection = buildInspection({projects: [PROJECT]});
 
@@ -439,7 +401,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 
 		const brokenLinks = nodes.find(({key}) => key === 'broken');
 
-		expect(nodes[0].key).toBe('root/projects/20');
+		expect(nodes[0].children[0].key).toBe('root/projects/projects/20');
 		expect(brokenLinks?.children[0].children[0].key).toBe(
 			'broken/projects/projects-have-no-members/projects/20'
 		);
