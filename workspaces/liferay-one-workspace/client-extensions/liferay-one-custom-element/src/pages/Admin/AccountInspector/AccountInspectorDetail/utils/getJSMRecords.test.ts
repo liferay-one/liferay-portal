@@ -4,54 +4,10 @@
  */
 
 import {describe, expect, it} from 'vitest';
-import {RELATED_COLLECTION_KEYS} from '~/types/accountInspection';
 
 import getJSMRecords from './getJSMRecords';
 
-import type {
-	AccountInspection,
-	InspectedCollection,
-	InspectedEntry,
-	InspectedUser,
-	JiraAsset,
-} from '~/types/accountInspection';
-
-function collection<Entry>(items: Entry[]): InspectedCollection<Entry> {
-	return {items, totalCount: items.length};
-}
-
-function createInspection({
-	projects = [],
-	users = [],
-}: {
-	projects?: InspectedEntry[];
-	users?: InspectedUser[];
-}): AccountInspection {
-	return {
-		account: {
-			dateCreated: '2026-01-01T00:00:00Z',
-			description: '',
-			emailAddress: '',
-			externalReferenceCode: 'ACCNT-001',
-			id: 100,
-			name: 'Omni',
-			numberOfUsers: 0,
-			status: 0,
-			taxId: '',
-			type: 'business',
-		},
-		loadedAt: 1,
-		orders: collection([]),
-		postalAddresses: collection([]),
-		related: Object.fromEntries(
-			RELATED_COLLECTION_KEYS.map((key) => [
-				key,
-				collection(key === 'projects' ? projects : []),
-			])
-		) as AccountInspection['related'],
-		users: collection(users),
-	};
-}
+import type {JiraAsset} from '~/types/accountInspection';
 
 function jiraAsset(
 	externalKey: string,
@@ -67,172 +23,82 @@ function jiraAsset(
 }
 
 describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-GETJSMRECORDS] getJSMRecords', () => {
-	it('lists the account, then its projects, then its users, and matches each to its JSM asset by ERC', () => {
-		const accountAsset = jiraAsset('ACCNT-001', {Name: ['Omni']});
+	it('lists each project and matches it to its JSM Account asset by ERC', () => {
 		const projectAsset = jiraAsset('PRJCT-001', {Name: ['Omni Prod']});
-		const userAsset = jiraAsset('USER-001', {
-			'Email Address': ['ada@omni.com'],
-			'Name': ['Ada Lovelace'],
-		});
 
 		expect(
 			getJSMRecords(
-				createInspection({
-					projects: [
-						{
-							externalReferenceCode: 'PRJCT-001',
-							id: 20,
-							name: 'Omni Prod',
-						},
+				[
+					{
+						externalReferenceCode: 'PRJCT-001',
+						id: 20,
+						name: 'Omni Prod',
+					},
+				],
+				{
+					accounts: [
+						jiraAsset('ACCNT-001', {Name: ['Omni']}),
+						projectAsset,
 					],
-					users: [
-						{
-							emailAddress: 'ada@omni.com',
-							externalReferenceCode: 'USER-001',
-							id: 30,
-							name: 'Ada Lovelace',
-						},
-					],
-				}),
-				{accounts: [projectAsset, accountAsset], contacts: [userAsset]}
+					contacts: [],
+				}
 			)
 		).toEqual([
 			{
 				drift: [],
-				externalReferenceCode: 'ACCNT-001',
-				id: 1,
-				jiraAsset: accountAsset,
-				name: 'Omni',
-				recordId: 100,
-				type: 'account',
-			},
-			{
-				drift: [],
 				externalReferenceCode: 'PRJCT-001',
-				id: 2,
+				id: 20,
 				jiraAsset: projectAsset,
 				name: 'Omni Prod',
 				recordId: 20,
 				type: 'project',
 			},
-			{
-				drift: [],
-				externalReferenceCode: 'USER-001',
-				id: 3,
-				jiraAsset: userAsset,
-				name: 'Ada Lovelace',
-				recordId: 30,
-				type: 'user',
-			},
 		]);
 	});
 
-	it('reports a record that has no JSM asset as missing', () => {
-		const [account, project] = getJSMRecords(
-			createInspection({
-				projects: [
-					{externalReferenceCode: 'PRJCT-001', id: 20, name: 'Prod'},
-				],
-			}),
+	it('reports a project that has no JSM asset as missing', () => {
+		const [project] = getJSMRecords(
+			[{externalReferenceCode: 'PRJCT-001', id: 20, name: 'Prod'}],
 			{accounts: [], contacts: []}
 		);
 
-		expect(account.drift).toEqual(['missing-in-jsm']);
-		expect(account.jiraAsset).toBeUndefined();
 		expect(project.drift).toEqual(['missing-in-jsm']);
+		expect(project.jiraAsset).toBeUndefined();
 	});
 
-	it('does not match a user to an Account asset or a project to a Contact asset', () => {
-		const [, project, user] = getJSMRecords(
-			createInspection({
-				projects: [{externalReferenceCode: 'KEY-1', id: 20, name: 'A'}],
-				users: [
-					{
-						emailAddress: 'b@omni.com',
-						externalReferenceCode: 'KEY-2',
-						id: 30,
-						name: 'B',
-					},
-				],
-			}),
-			{
-				accounts: [jiraAsset('KEY-2', {Name: ['B']})],
-				contacts: [jiraAsset('KEY-1', {Name: ['A']})],
-			}
+	it('does not match a project to a Contact asset', () => {
+		const [project] = getJSMRecords(
+			[{externalReferenceCode: 'KEY-1', id: 20, name: 'A'}],
+			{accounts: [], contacts: [jiraAsset('KEY-1', {Name: ['A']})]}
 		);
 
 		expect(project.drift).toEqual(['missing-in-jsm']);
-		expect(user.drift).toEqual(['missing-in-jsm']);
 	});
 
 	it('reports a name that differs, ignoring surrounding spaces', () => {
-		const [account, project] = getJSMRecords(
-			createInspection({
-				projects: [
-					{externalReferenceCode: 'PRJCT-001', id: 20, name: 'Prod'},
-				],
-			}),
+		const [matching, differing] = getJSMRecords(
+			[
+				{externalReferenceCode: 'PRJCT-001', id: 20, name: 'Prod'},
+				{externalReferenceCode: 'PRJCT-002', id: 21, name: 'Dev'},
+			],
 			{
 				accounts: [
-					jiraAsset('ACCNT-001', {Name: [' Omni ']}),
-					jiraAsset('PRJCT-001', {Name: ['Production']}),
+					jiraAsset('PRJCT-001', {Name: [' Prod ']}),
+					jiraAsset('PRJCT-002', {Name: ['Development']}),
 				],
 				contacts: [],
-			}
-		);
-
-		expect(account.drift).toEqual([]);
-		expect(project.drift).toEqual(['name-differs-in-jsm']);
-	});
-
-	it('reports a user email address that differs, ignoring case', () => {
-		const [, matching, differing] = getJSMRecords(
-			createInspection({
-				users: [
-					{
-						emailAddress: 'Ada@Omni.com',
-						externalReferenceCode: 'USER-001',
-						id: 30,
-						name: 'Ada',
-					},
-					{
-						emailAddress: 'bob@omni.com',
-						externalReferenceCode: 'USER-002',
-						id: 31,
-						name: 'Bob',
-					},
-				],
-			}),
-			{
-				accounts: [jiraAsset('ACCNT-001', {Name: ['Omni']})],
-				contacts: [
-					jiraAsset('USER-001', {
-						'Email Address': ['ada@omni.com'],
-						'Name': ['Ada'],
-					}),
-					jiraAsset('USER-002', {
-						'Email Address': ['robert@omni.com'],
-						'Name': ['Robert'],
-					}),
-				],
 			}
 		);
 
 		expect(matching.drift).toEqual([]);
-		expect(differing.drift).toEqual([
-			'name-differs-in-jsm',
-			'email-address-differs-in-jsm',
-		]);
+		expect(differing.drift).toEqual(['name-differs-in-jsm']);
 	});
 
-	it('reports a record without an ERC as missing, because JSM keys every asset by ERC', () => {
-		const [, project] = getJSMRecords(
-			createInspection({projects: [{id: 20, name: 'Prod'}]}),
-			{
-				accounts: [jiraAsset('ACCNT-001', {Name: ['Omni']})],
-				contacts: [],
-			}
-		);
+	it('reports a project without an ERC as missing, because JSM keys every asset by ERC', () => {
+		const [project] = getJSMRecords([{id: 20, name: 'Prod'}], {
+			accounts: [jiraAsset('PRJCT-001', {Name: ['Prod']})],
+			contacts: [],
+		});
 
 		expect(project.drift).toEqual(['missing-in-jsm']);
 	});
