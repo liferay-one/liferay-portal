@@ -428,7 +428,13 @@ public class AccountSynchronizer {
 	private void _setProjectStatus(
 		JiraAssetObject jiraAssetObject, ProjectSyncModel projectSyncModel) {
 
-		if (Boolean.FALSE.equals(projectSyncModel.isSupported())) {
+		Boolean supported = projectSyncModel.isSupported();
+
+		if (supported == null) {
+			jiraAssetObject.removeAttributeValue(
+				AccountConstants.ATTRIBUTE_NAME_STATUS);
+		}
+		else if (!supported) {
 			jiraAssetObject.setAttributeValue(
 				AccountConstants.ATTRIBUTE_NAME_STATUS,
 				AccountConstants.STATUS_CLOSED);

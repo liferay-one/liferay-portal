@@ -93,6 +93,10 @@ public class JiraAssetObject {
 		return _jsonObject.getString("name");
 	}
 
+	public void removeAttributeValue(String attributeName) {
+		_values.remove(_getAttributeId(attributeName));
+	}
+
 	public void setAttributeValue(String attributeName, Object value) {
 		String attributeId = _getAttributeId(attributeName);
 
