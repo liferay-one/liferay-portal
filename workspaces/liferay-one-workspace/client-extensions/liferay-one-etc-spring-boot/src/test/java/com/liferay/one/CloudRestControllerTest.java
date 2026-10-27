@@ -25,6 +25,7 @@ import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.Environment;
 import com.liferay.one.model.Project;
+import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CloudActivationRequestService;
@@ -95,6 +96,7 @@ public class CloudRestControllerTest {
 		_cloudRestController = new CloudRestController();
 
 		_accountService = Mockito.mock(AccountService.class);
+		_adminPermission = Mockito.mock(AdminPermission.class);
 		_cloudActivationRequestService = Mockito.mock(
 			CloudActivationRequestService.class);
 		_commerceProductService = Mockito.mock(CommerceProductService.class);
@@ -161,6 +163,8 @@ public class CloudRestControllerTest {
 
 		ReflectionTestUtils.setField(
 			_cloudRestController, "_accountService", _accountService);
+		ReflectionTestUtils.setField(
+			_cloudRestController, "_adminPermission", _adminPermission);
 		ReflectionTestUtils.setField(
 			_cloudRestController, "_cloudNativeSignatureValidator",
 			_cloudNativeSignatureValidator);
@@ -1262,6 +1266,97 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
+	public void testPostEnvironmentsManualActivationActivatesPendingEnvironment()
+		throws Exception {
+
+		_mockManualActivationEnvironment(
+			EnvironmentConstants.ACTIVATION_STATUS_PENDING,
+			EnvironmentConstants.OFFERING_SAAS);
+
+		ResponseEntity<Void> responseEntity =
+			_cloudRestController.postEnvironmentsManualActivation(
+				null, _ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+				"{\"hostName\": \"acme.liferay.net\"}");
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_environmentService
+		).updateEnvironmentActivationStatus(
+			EnvironmentConstants.ACTIVATION_STATUS_ACTIVE, "acme.liferay.net",
+			_ENVIRONMENT_ID
+		);
+	}
+
+	@Test
+	public void testPostEnvironmentsManualActivationPropagatesPermissionDenied()
+		throws Exception {
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _cloudRestController.postEnvironmentsManualActivation(
+				null, _ENVIRONMENT_EXTERNAL_REFERENCE_CODE, "{}"));
+
+		Mockito.verifyNoInteractions(_environmentService);
+	}
+
+	@Test
+	public void testPostEnvironmentsManualActivationRejectsActiveEnvironment()
+		throws Exception {
+
+		_mockManualActivationEnvironment(
+			EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
+			EnvironmentConstants.OFFERING_PAAS);
+
+		Assertions.assertThrows(
+			EnvironmentAlreadyActivatedException.class,
+			() -> _cloudRestController.postEnvironmentsManualActivation(
+				null, _ENVIRONMENT_EXTERNAL_REFERENCE_CODE, "{}"));
+
+		_assertEnvironmentNotManuallyActivated();
+	}
+
+	@Test
+	public void testPostEnvironmentsManualActivationRejectsCloudNativeEnvironment()
+		throws Exception {
+
+		_mockManualActivationEnvironment(
+			EnvironmentConstants.ACTIVATION_STATUS_PENDING,
+			EnvironmentConstants.OFFERING_CLOUD_NATIVE);
+
+		ResponseEntity<Void> responseEntity =
+			_cloudRestController.postEnvironmentsManualActivation(
+				null, _ENVIRONMENT_EXTERNAL_REFERENCE_CODE, "{}");
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+
+		_assertEnvironmentNotManuallyActivated();
+	}
+
+	@Test
+	public void testPostEnvironmentsManualActivationReturnsNotFound()
+		throws Exception {
+
+		ResponseEntity<Void> responseEntity =
+			_cloudRestController.postEnvironmentsManualActivation(
+				null, _ENVIRONMENT_EXTERNAL_REFERENCE_CODE, "{}");
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+
+		_assertEnvironmentNotManuallyActivated();
+	}
+
+	@Test
 	public void testPostEnvironmentsOfflineActivationBundleRejectsUnentitledSubscriptions()
 		throws Exception {
 
@@ -1849,6 +1944,14 @@ public class CloudRestControllerTest {
 		);
 	}
 
+	private void _assertEnvironmentNotManuallyActivated() throws Exception {
+		Mockito.verify(
+			_environmentService, Mockito.never()
+		).updateEnvironmentActivationStatus(
+			Mockito.anyString(), Mockito.any(), Mockito.anyLong()
+		);
+	}
+
 	private void _assertVirtualEntryNotServed() throws Exception {
 		Mockito.verify(
 			_commerceProductVirtualSettingsService, Mockito.never()
@@ -2170,6 +2273,29 @@ public class CloudRestControllerTest {
 		return environment;
 	}
 
+	private void _mockManualActivationEnvironment(
+			String activationStatus, String offering)
+		throws Exception {
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			new Environment(
+				new JSONObject(
+				).put(
+					"activationStatus", activationStatus
+				).put(
+					"externalReferenceCode",
+					_ENVIRONMENT_EXTERNAL_REFERENCE_CODE
+				).put(
+					"id", _ENVIRONMENT_ID
+				).put(
+					"offering", offering
+				))
+		);
+	}
+
 	private void _mockVirtualEntryDownload() throws Exception {
 		_mockCloudEnabledProduct();
 
@@ -2296,6 +2422,7 @@ public class CloudRestControllerTest {
 		"https://cdn.example.com/add-ons/addon-1.0.lpkg?signature=1";
 
 	private AccountService _accountService;
+	private AdminPermission _adminPermission;
 	private CloudActivationRequestService _cloudActivationRequestService;
 	private CloudNativeSignatureValidator _cloudNativeSignatureValidator;
 	private CloudRestController _cloudRestController;

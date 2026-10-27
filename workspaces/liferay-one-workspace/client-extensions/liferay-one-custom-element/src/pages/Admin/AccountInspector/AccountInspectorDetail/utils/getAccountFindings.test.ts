@@ -426,6 +426,49 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-GETACCOUNTFINDINGS]
 		);
 	});
 
+	it('reports, as info, the cloud environments that wait to be set to active', () => {
+		const inspection = buildInspection({
+			environments: toCollection([
+				{
+					activationStatus: 'pending',
+					externalReferenceCode: 'ENV-1',
+					id: 60,
+					offering: 'SaaS',
+				},
+				{
+					activationStatus: 'pending',
+					externalReferenceCode: 'ENV-2',
+					id: 61,
+					offering: 'Analytics Cloud',
+				},
+				{
+					activationStatus: 'active',
+					externalReferenceCode: 'ENV-3',
+					id: 62,
+					offering: 'PaaS',
+				},
+				{
+					activationStatus: 'pending',
+					externalReferenceCode: 'ENV-4',
+					id: 63,
+					offering: 'Cloud Native',
+				},
+			]),
+		});
+
+		expect(
+			getAccountFindings(inspection).find(
+				({message}) =>
+					message === 'environments-are-waiting-to-be-set-to-active'
+			)
+		).toEqual({
+			collection: 'environments',
+			ids: [60, 61],
+			message: 'environments-are-waiting-to-be-set-to-active',
+			severity: 'info',
+		});
+	});
+
 	it('reports projects that share a name and ignores projects with no name', () => {
 		const inspection = buildInspection({
 			projectMemberships: toCollection(

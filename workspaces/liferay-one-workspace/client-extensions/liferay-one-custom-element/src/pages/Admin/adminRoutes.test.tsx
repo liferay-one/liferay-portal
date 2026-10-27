@@ -88,6 +88,9 @@ const financeUser = {isFinanceAdministrator: true} as UserAccountModel;
 const ssaAdminUser = {isSSAAdmin: true} as UserAccountModel;
 const ssaUser = {isSSAUser: true} as UserAccountModel;
 const plainUser = {} as UserAccountModel;
+const provisioningUser = {
+	isProvisioningAdministrator: true,
+} as UserAccountModel;
 
 function AdminRoutesUnderTest() {
 	return useRoutes(toRouteObjects(adminRoutes));
@@ -120,6 +123,7 @@ function usersAllowed(path: string) {
 		adminUser,
 		financeUser,
 		plainUser,
+		provisioningUser,
 		ssaAdminUser,
 		ssaUser,
 	})
@@ -134,7 +138,7 @@ const navRoutes = [
 		label: 'account-inspector',
 		page: 'AccountInspector page',
 		path: 'account-inspector',
-		users: ['adminUser'],
+		users: ['adminUser', 'provisioningUser'],
 	},
 	{
 		icon: 'password-policies',
@@ -142,7 +146,7 @@ const navRoutes = [
 		label: 'activation-key-uploads',
 		page: 'LicenseKeyUploads page',
 		path: 'activation-key-uploads',
-		users: ['adminUser'],
+		users: ['adminUser', 'provisioningUser'],
 	},
 	{
 		icon: 'users',
@@ -214,7 +218,7 @@ const navRoutes = [
 		label: 'product-inspector',
 		page: 'ProductInspector page',
 		path: 'product-inspector',
-		users: ['adminUser'],
+		users: ['adminUser', 'provisioningUser'],
 	},
 	{
 		icon: 'message-boards',
@@ -222,7 +226,7 @@ const navRoutes = [
 		label: 'pub-sub',
 		page: 'PubSub page',
 		path: 'pub-sub',
-		users: ['adminUser'],
+		users: ['adminUser', 'provisioningUser'],
 	},
 	{
 		icon: 'order-form',
@@ -264,7 +268,7 @@ const detailRoutes = [
 		page: 'AccountInspectorDetail page',
 		path: 'account-inspector/:externalReferenceCode',
 		url: '/account-inspector/ACCNT-001',
-		users: ['adminUser'],
+		users: ['adminUser', 'provisioningUser'],
 	},
 	{
 		id: 'ROUTE-ADMIN-DETAILS-ORDERID',
@@ -299,14 +303,14 @@ const detailRoutes = [
 		page: 'EntitlementDefinitionDetail page',
 		path: 'product-inspector/entitlement-definitions/:externalReferenceCode',
 		url: '/product-inspector/entitlement-definitions/C_ENTITLEMENT_DEFINITION_001',
-		users: ['adminUser'],
+		users: ['adminUser', 'provisioningUser'],
 	},
 	{
 		id: 'ROUTE-ADMIN-PRODUCT-INSPECTOR-EXTERNALREFERENCECODE',
 		page: 'ProductInspectorDetail page',
 		path: 'product-inspector/:externalReferenceCode',
 		url: '/product-inspector/PRDCT-001',
-		users: ['adminUser'],
+		users: ['adminUser', 'provisioningUser'],
 	},
 	{
 		id: 'ROUTE-ADMIN-MP-SOLUTIONS-PRODUCTID',
