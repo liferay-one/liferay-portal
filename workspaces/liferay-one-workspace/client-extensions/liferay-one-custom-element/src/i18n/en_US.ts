@@ -657,6 +657,8 @@ export default {
 	'environment-selection': 'Environment Selection',
 	'environment-type': 'Environment Type',
 	'environments': 'Environments',
+	'environments-are-waiting-to-be-set-to-active':
+		'Environments are waiting to be set to active. Set each one to active after its workspace is provisioned.',
 	'environments-reference-contracts-outside-the-account':
 		'Environments reference a contract that is not in this account.',
 	'environments-reference-projects-outside-the-account':
@@ -1699,9 +1701,13 @@ export default {
 	'seo-studio-requirements': 'SEO&AEO Studio Beta Requirements',
 	'set-the-users-role-ssa-users-can-create-trials-while-ssa-admins-can-manage-users-roles-and-trials':
 		'Set the user’s role: SSA Users can create trials, while SSA Admins can manage users, roles, and trials.',
+	'set-this-environment-to-active-after-its-workspace-is-provisioned':
+		'Set this environment to active after its workspace is provisioned. The customer then sees it as active.',
+	'set-to-active': 'Set to Active',
 	'set-up-analytics-cloud': 'Set up Analytics Cloud',
 	'set-up-liferay-paas': 'Set up Liferay PaaS',
 	'set-up-liferay-saas': 'Set up Liferay SaaS',
+	'set-x-to-active': 'Set {0} to Active',
 	'setting-up-your-free-version-ldp': 'Setting up your Free Version LDP 🚀',
 	'settings': 'Settings',
 	'share-beta-feedback': 'Share Beta Feedback',
@@ -1872,6 +1878,8 @@ export default {
 		'The Cloud app is client extension based and is compatible with Liferay’s Self-Managed offering.',
 	'the-cloud-native-environment-was-not-found':
 		'The Cloud Native environment was not found.',
+	'the-customer-uses-the-host-name-to-open-their-liferay-saas-workspace':
+		'The customer uses the host name to open their Liferay SaaS workspace.',
 	'the-daily-view-is-limited-to-the-current-and-previous-month':
 		'The daily view is limited to the current and previous month.',
 	'the-data-source-token-is-not-available-yet-please-try-again-in-a-few-minutes':
@@ -2272,6 +2280,7 @@ export default {
 	'x-solutions-available': '{0} solutions available',
 	'x-tickets': '{0} Tickets',
 	'x-tokens': '{0} tokens',
+	'x-was-set-to-active': '{0} was set to active.',
 	'x-was-synced-to-jsm': '{0} was synced to JSM.',
 	'x-was-uploaded-successfully': '{0} was uploaded successfully.',
 	'x-will-be-deleted-and-this-action-cant-be-undone-are-you-sure-you-want-to-delete-it':

@@ -84,6 +84,15 @@
 			"VIEW"
 		],
 		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:EntitlementDefinitionSku$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Environment$]",
 		"roleName": "Provisioning Administrator",
 		"scope": "1"
@@ -94,6 +103,15 @@
 		],
 		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LicenseKey$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:OAuth2DxpAuthorization$]",
 		"roleName": "Provisioning Administrator",
 		"scope": "1"
 	},
@@ -147,8 +165,26 @@
 			"VIEW"
 		],
 		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherAsset$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetail$]",
 		"roleName": "Guest",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetail$]",
+		"roleName": "Provisioning Administrator",
 		"scope": "1"
 	},
 	{
@@ -168,6 +204,15 @@
 		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherSalesSummary$]",
 		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherSalesSummary$]",
+		"roleName": "Provisioning Administrator",
 		"scope": "1"
 	},
 	{

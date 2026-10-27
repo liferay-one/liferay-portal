@@ -260,6 +260,22 @@ public class EnvironmentService extends OneBaseService {
 			));
 	}
 
+	public void updateEnvironmentActivationStatus(
+			String activationStatus, String hostName, long id)
+		throws Exception {
+
+		JSONObject environmentJSONObject = new JSONObject(
+		).put(
+			"activationStatus", activationStatus
+		);
+
+		if (Validator.isNotNull(hostName)) {
+			environmentJSONObject.put("hostName", hostName);
+		}
+
+		_patchEnvironment(id, environmentJSONObject);
+	}
+
 	public void updateEnvironmentOfflineBundle(
 			Collection<Long> bundledEntitlementIds, long id,
 			String requestedVersion)

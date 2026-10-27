@@ -1,0 +1,18 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+import type {InspectedEntry} from '~/types/accountInspection';
+
+const MANUAL_ACTIVATION_OFFERINGS = ['Analytics Cloud', 'PaaS', 'SaaS'];
+
+function isEnvironmentAwaitingActivation(environment: InspectedEntry) {
+	return (
+		!!environment.externalReferenceCode &&
+		environment.activationStatus === 'pending' &&
+		MANUAL_ACTIVATION_OFFERINGS.includes(environment.offering as string)
+	);
+}
+
+export default isEnvironmentAwaitingActivation;

@@ -30,6 +30,7 @@ type InspectedCollectionTableProps = {
 	entries: InspectedEntry[];
 	flaggedIds: Set<number | string>;
 	focusedId?: number;
+	onRecordChange: () => void;
 };
 
 export default function InspectedCollectionTable({
@@ -39,6 +40,7 @@ export default function InspectedCollectionTable({
 	entries,
 	flaggedIds,
 	focusedId,
+	onRecordChange,
 }: InspectedCollectionTableProps) {
 	const [expandedId, setExpandedId] = useState<number | null>(null);
 
@@ -98,6 +100,7 @@ export default function InspectedCollectionTable({
 									collection={collectionKey}
 									entry={entry}
 									jsonVisible={expandedId === entry.id}
+									onRecordChange={onRecordChange}
 									onToggleJSON={() =>
 										setExpandedId(
 											expandedId === entry.id

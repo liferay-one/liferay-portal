@@ -144,6 +144,21 @@ class CloudOAuth2 extends OneSpringBootOAuth2 {
 		}
 	}
 
+	async postEnvironmentsManualActivation(
+		environmentId: string,
+		hostName: string
+	) {
+		const response = await this.post<Response>(
+			`/environments/${environmentId}/manual-activation`,
+			{hostName},
+			{earlyReturn: true}
+		);
+
+		if (!response.ok) {
+			throw this.toFetcherError(response);
+		}
+	}
+
 	async postEnvironmentsOfflineActivationTokenValidation(token: string) {
 		const response = await this.post<Response>(
 			'/environments/offline-activation/token-validation',

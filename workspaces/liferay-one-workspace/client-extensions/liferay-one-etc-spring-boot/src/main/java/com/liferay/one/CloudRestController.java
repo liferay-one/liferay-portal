@@ -33,6 +33,7 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.Environment;
 import com.liferay.one.model.EnvironmentQuota;
 import com.liferay.one.model.Project;
+import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CloudActivationRequestService;
@@ -490,6 +491,46 @@ public class CloudRestController extends OneBaseRestController {
 			dxpVersion, Collections.emptySet(), environment);
 
 		return ResponseEntity.ok(jsonObject.toString());
+	}
+
+	@PostMapping("/environments/{environmentId}/manual-activation")
+	public ResponseEntity<Void> postEnvironmentsManualActivation(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable String environmentId, @RequestBody String json)
+		throws Exception {
+
+		_adminPermission.check(jwt);
+
+		Environment environment =
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				environmentId);
+
+		if (environment == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
+		if (!_manualActivationOfferings.contains(environment.getOffering())) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		}
+
+		if (!Objects.equals(
+				environment.getActivationStatus(),
+				EnvironmentConstants.ACTIVATION_STATUS_PENDING)) {
+
+			throw new EnvironmentAlreadyActivatedException(environmentId);
+		}
+
+		JSONObject jsonObject = new JSONObject(json);
+
+		_environmentService.updateEnvironmentActivationStatus(
+			EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
+			jsonObject.optString("hostName"), environment.getId());
+
+		if (_log.isInfoEnabled()) {
+			_log.info("Manually activating environment " + environmentId);
+		}
+
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@PostMapping("/environments/offline-activation")
@@ -1523,8 +1564,15 @@ public class CloudRestController extends OneBaseRestController {
 	private static final Log _log = LogFactory.getLog(
 		CloudRestController.class);
 
+	private static final Set<String> _manualActivationOfferings = Set.of(
+		EnvironmentConstants.OFFERING_ANALYTICS_CLOUD,
+		EnvironmentConstants.OFFERING_PAAS, EnvironmentConstants.OFFERING_SAAS);
+
 	@Autowired
 	private AccountService _accountService;
+
+	@Autowired
+	private AdminPermission _adminPermission;
 
 	@Autowired
 	private CloudActivationRequestService _cloudActivationRequestService;

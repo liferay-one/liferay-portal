@@ -5,11 +5,14 @@
 
 import {ClayButtonWithIcon} from '@clayui/button';
 import {ClayDropDownWithItems} from '@clayui/drop-down';
-import {ComponentProps} from 'react';
+import {useModal} from '@clayui/modal';
+import {ComponentProps, useState} from 'react';
 import i18n from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
 
+import {canActivateEnvironment} from '../../utils/activateEnvironment';
 import getRecordActions from '../../utils/getRecordActions';
+import ActivateEnvironmentModal from '../ActivateEnvironmentModal/ActivateEnvironmentModal';
 
 import type {
 	InspectedCollectionKey,
@@ -60,6 +63,7 @@ type RecordActionsMenuProps = {
 	collection: InspectedCollectionKey;
 	entry: InspectedEntry;
 	jsonVisible: boolean;
+	onRecordChange: () => void;
 	onToggleJSON: () => void;
 };
 
@@ -68,32 +72,59 @@ export default function RecordActionsMenu({
 	collection,
 	entry,
 	jsonVisible,
+	onRecordChange,
 	onToggleJSON,
 }: RecordActionsMenuProps) {
+	const [activateModalVisible, setActivateModalVisible] = useState(false);
+
+	const {observer, onClose} = useModal({
+		onClose: () => setActivateModalVisible(false),
+	});
+
 	return (
-		<ClayDropDownWithItems
-			items={[
-				{
-					label: i18n.translate(
-						jsonVisible ? 'hide-json' : 'view-json'
+		<>
+			<ClayDropDownWithItems
+				items={[
+					...(canActivateEnvironment(collection, entry)
+						? [
+								{
+									label: i18n.translate('set-to-active'),
+									onClick: () =>
+										setActivateModalVisible(true),
+								},
+								{type: 'divider' as const},
+							]
+						: []),
+					{
+						label: i18n.translate(
+							jsonVisible ? 'hide-json' : 'view-json'
+						),
+						onClick: onToggleJSON,
+					},
+					{type: 'divider'},
+					...getRecordActions(account, collection, entry).map(
+						toDropDownItem
 					),
-					onClick: onToggleJSON,
-				},
-				{type: 'divider'},
-				...getRecordActions(account, collection, entry).map(
-					toDropDownItem
-				),
-			]}
-			trigger={
-				<ClayButtonWithIcon
-					aria-label={i18n.translate('actions')}
-					borderless
-					displayType="secondary"
-					size="sm"
-					symbol="ellipsis-v"
-					title={i18n.translate('actions')}
-				/>
-			}
-		/>
+				]}
+				trigger={
+					<ClayButtonWithIcon
+						aria-label={i18n.translate('actions')}
+						borderless
+						displayType="secondary"
+						size="sm"
+						symbol="ellipsis-v"
+						title={i18n.translate('actions')}
+					/>
+				}
+			/>
+
+			<ActivateEnvironmentModal
+				entry={entry}
+				observer={observer}
+				onActivated={onRecordChange}
+				onClose={onClose}
+				visible={activateModalVisible}
+			/>
+		</>
 	);
 }

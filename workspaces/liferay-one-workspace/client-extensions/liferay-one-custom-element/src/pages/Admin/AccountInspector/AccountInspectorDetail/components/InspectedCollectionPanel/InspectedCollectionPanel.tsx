@@ -43,6 +43,7 @@ type InspectedCollectionPanelProps = {
 	collectionKey: InspectedCollectionKey;
 	flaggedIds: Set<number | string>;
 	focus?: AccountInspectorFocus;
+	onRecordChange: () => void;
 };
 
 export default function InspectedCollectionPanel({
@@ -51,6 +52,7 @@ export default function InspectedCollectionPanel({
 	collectionKey,
 	flaggedIds,
 	focus,
+	onRecordChange,
 }: InspectedCollectionPanelProps) {
 	const [expanded, setExpanded] = useState(
 		Boolean(collection.error || collection.truncated || flaggedIds.size)
@@ -233,6 +235,7 @@ export default function InspectedCollectionPanel({
 					)}
 					flaggedIds={flaggedIds}
 					focusedId={focusedId}
+					onRecordChange={onRecordChange}
 				/>
 			)}
 

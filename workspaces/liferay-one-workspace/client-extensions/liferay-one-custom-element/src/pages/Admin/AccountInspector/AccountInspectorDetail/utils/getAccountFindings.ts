@@ -14,6 +14,7 @@ import {
 	toNumber,
 } from './accountFindingUtils';
 import {getEntitlementChecks, getOrderChecks} from './commerceFindingUtils';
+import isEnvironmentAwaitingActivation from './isEnvironmentAwaitingActivation';
 
 import type {
 	AccountFinding,
@@ -240,6 +241,17 @@ function getProjectAndContractReferenceChecks({
 	];
 }
 
+function getEnvironmentChecks({
+	related: {environments},
+}: AccountInspection): AccountFinding[] {
+	return toFinding(
+		'environments',
+		getIds(environments.items, isEnvironmentAwaitingActivation),
+		'environments-are-waiting-to-be-set-to-active',
+		'info'
+	);
+}
+
 function getLoadErrorChecks(inspection: AccountInspection): AccountFinding[] {
 	return getInspectedCollections(inspection).flatMap(
 		([collection, {error, truncated}]): AccountFinding[] => {
@@ -305,6 +317,7 @@ function getAccountFindings(inspection: AccountInspection): AccountFinding[] {
 		...getProjectAndContractReferenceChecks(inspection),
 		...getOrderChecks(inspection),
 		...getEntitlementChecks(inspection),
+		...getEnvironmentChecks(inspection),
 	].sort(
 		(finding1, finding2) =>
 			SEVERITY_ORDER.indexOf(finding1.severity) -

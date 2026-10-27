@@ -100,8 +100,10 @@ function getFlaggedIdsByCollection(
 
 function AccountInspectorContent({
 	inspection,
+	onRecordChange,
 }: {
 	inspection: AccountInspection;
+	onRecordChange: () => void;
 }) {
 	const findings = useMemo(
 		() => getAccountFindings(inspection),
@@ -188,6 +190,7 @@ function AccountInspectorContent({
 					flaggedIds={flaggedIdsByCollection.get(collectionKey)!}
 					focus={focus}
 					key={collectionKey}
+					onRecordChange={onRecordChange}
 				/>
 			))}
 		</>
@@ -269,6 +272,7 @@ export default function AccountInspectorDetail() {
 					<AccountInspectorContent
 						inspection={data}
 						key={data.loadedAt}
+						onRecordChange={() => mutate()}
 					/>
 				)}
 			</PageRenderer>
