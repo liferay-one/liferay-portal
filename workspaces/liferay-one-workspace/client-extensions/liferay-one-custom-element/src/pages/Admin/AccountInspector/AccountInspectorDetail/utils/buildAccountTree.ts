@@ -15,7 +15,6 @@ import {
 	getWorstSeverity,
 	toGroupNode,
 	toRecordNode,
-	toSeverityKey,
 } from './accountTreeNodeUtils';
 import {INSPECTED_COLLECTION_LABELS} from './inspectedCollectionConstants';
 
@@ -89,18 +88,6 @@ function buildTreeIndex(inspection: AccountInspection) {
 	const byProject = (entries: InspectedEntry[], fieldName: string) =>
 		groupBy(entries, (entry) => toProjectId(entry[fieldName]));
 
-	const byPlacement = (
-		entries: InspectedEntry[],
-		contractFieldName: string,
-		projectFieldName: string
-	) =>
-		groupBy(entries, (entry) =>
-			toPlacementKey(
-				toContractId(entry[contractFieldName]),
-				toProjectId(entry[projectFieldName])
-			)
-		);
-
 	const getOrderItemId = (entitlement: InspectedEntry) =>
 		toNumber(
 			entitlement.r_commerceOrderItemToEntitlement_commerceOrderItemId
@@ -120,21 +107,21 @@ function buildTreeIndex(inspection: AccountInspection) {
 			related.activationKeys.items,
 			'r_projectToActivationKey_c_projectId'
 		),
-		entitlements: byPlacement(
+		entitlements: groupBy(
 			related.entitlements.items.filter(
 				(entitlement) => !isUnderOrderItem(entitlement)
 			),
-			'r_contractToEntitlement_c_contractId',
-			'r_projectToEntitlement_c_projectId'
+			(entitlement) =>
+				toPlacementKey(
+					toContractId(
+						entitlement.r_contractToEntitlement_c_contractId
+					),
+					toProjectId(entitlement.r_projectToEntitlement_c_projectId)
+				)
 		),
 		entitlementsByOrderItem: groupBy(
 			related.entitlements.items.filter(isUnderOrderItem),
 			getOrderItemId
-		),
-		environments: byPlacement(
-			related.environments.items,
-			'r_contractToEnvironment_c_contractId',
-			'r_projectToEnvironment_c_projectId'
 		),
 		licenseKeys: byProject(
 			related.licenseKeys.items.filter(
@@ -225,67 +212,42 @@ function buildPlacementChildren(
 			index,
 			severityIndex
 		),
-		...toGroupNode(
-			parentKey,
-			'environments',
-			index.environments(placementKey),
-			severityIndex
-		),
-	];
-}
-
-function buildContractChildren(
-	contract: InspectedEntry,
-	contractKey: string,
-	projects: InspectedEntry[],
-	index: TreeIndex,
-	severityIndex: SeverityIndex
-): AccountTreeNode[] {
-	const ownerProjectId = index.toProjectId(
-		contract.r_projectToContract_c_projectId
-	);
-
-	const projectNodes = projects.flatMap((project) => {
-		const children = buildPlacementChildren(
-			`${contractKey}/${toSeverityKey('projects', project.id)}`,
-			contract.id,
-			project.id,
-			index,
-			severityIndex
-		);
-
-		return children.length || project.id === ownerProjectId
-			? [
-					toRecordNode(
-						contractKey,
-						'projects',
-						project,
-						severityIndex,
-						children
-					),
-				]
-			: [];
-	});
-
-	return [
-		...projectNodes,
-		...buildPlacementChildren(
-			contractKey,
-			contract.id,
-			NO_PROJECT_ID,
-			index,
-			severityIndex
-		),
 	];
 }
 
 function buildProjectChildren(
 	projectKey: string,
 	projectId: number,
+	contracts: InspectedEntry[],
 	index: TreeIndex,
 	severityIndex: SeverityIndex
 ): AccountTreeNode[] {
+	const projectContracts = contracts.filter((contract) => {
+		const placementKey = toPlacementKey(contract.id, projectId);
+
+		return (
+			index.toProjectId(contract.r_projectToContract_c_projectId) ===
+				projectId ||
+			index.orders(placementKey).length ||
+			index.entitlements(placementKey).length
+		);
+	});
+
 	return [
+		...toGroupNode(
+			projectKey,
+			'contracts',
+			projectContracts,
+			severityIndex,
+			(contract, contractKey) =>
+				buildPlacementChildren(
+					contractKey,
+					contract.id,
+					projectId,
+					index,
+					severityIndex
+				)
+		),
 		...toGroupNode(
 			projectKey,
 			'projectMemberships',
@@ -384,48 +346,39 @@ function buildAccountTree(
 ): AccountTreeNode[] {
 	const severityIndex = buildSeverityIndex(findings);
 
+	const contracts = inspection.related.contracts.items;
 	const index = buildTreeIndex(inspection);
-	const projects = inspection.related.projects.items;
-
-	const projectNodes = projects.map((project) =>
-		toRecordNode(
-			'root',
-			'projects',
-			project,
-			severityIndex,
-			buildProjectChildren(
-				`root/${toSeverityKey('projects', project.id)}`,
-				project.id,
-				index,
-				severityIndex
-			)
-		)
-	);
 
 	const accountLevelChildren = buildProjectChildren(
 		'account-level',
 		NO_PROJECT_ID,
+		contracts,
 		index,
 		severityIndex
 	);
 
 	return [
-		...toGroupNode('root', 'users', inspection.users.items, severityIndex),
 		...toGroupNode(
 			'root',
-			'contracts',
-			inspection.related.contracts.items,
+			'projects',
+			inspection.related.projects.items,
 			severityIndex,
-			(contract, contractKey) =>
-				buildContractChildren(
-					contract,
-					contractKey,
-					projects,
+			(project, projectKey) =>
+				buildProjectChildren(
+					projectKey,
+					project.id,
+					contracts,
 					index,
 					severityIndex
 				)
 		),
-		...projectNodes,
+		...toGroupNode(
+			'root',
+			'environments',
+			inspection.related.environments.items,
+			severityIndex
+		),
+		...toGroupNode('root', 'users', inspection.users.items, severityIndex),
 		...(accountLevelChildren.length
 			? [
 					{
