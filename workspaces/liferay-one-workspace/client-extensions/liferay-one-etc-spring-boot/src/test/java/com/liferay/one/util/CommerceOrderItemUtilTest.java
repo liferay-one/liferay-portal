@@ -208,6 +208,46 @@ public class CommerceOrderItemUtilTest {
 	}
 
 	@Test
+	public void testToOptionsJSONKeepsExistingOptions() {
+		OrderItem orderItem = _createOrderItem();
+
+		JSONObject skuOptionJSONObject = new JSONObject(
+		).put(
+			"key", "support-plans"
+		).put(
+			"skuOptionValueNames",
+			new JSONArray(
+			).put(
+				"Global 24/7 Support"
+			)
+		).put(
+			"value",
+			new JSONArray(
+			).put(
+				"global"
+			)
+		);
+
+		orderItem.setOptions(
+			CommerceOrderItemUtil.toOptionsJSON(
+				"machinetype",
+				new JSONArray(
+				).put(
+					skuOptionJSONObject
+				).toString(),
+				"standard"));
+
+		Assertions.assertEquals(
+			Map.of("machinetype", "standard", "support-plans", "global"),
+			CommerceOrderItemUtil.getProductOptions(orderItem));
+
+		JSONArray optionsJSONArray = new JSONArray(orderItem.getOptions());
+
+		Assertions.assertTrue(
+			skuOptionJSONObject.similar(optionsJSONArray.getJSONObject(0)));
+	}
+
+	@Test
 	public void testToOptionsJSONRoundTrips() {
 		OrderItem orderItem = _createOrderItem();
 
