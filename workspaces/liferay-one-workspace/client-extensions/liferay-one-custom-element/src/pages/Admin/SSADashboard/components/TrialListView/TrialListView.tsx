@@ -107,6 +107,7 @@ export default function TrialListView({
 				emptyStateProps={{title: i18n.translate('no-trials-yet')}}
 				id="ssa-trials"
 				managementToolbarProps={{
+					filterIconOnly: true,
 					filterSchema: 'administratorSSATrials',
 					...managementToolbarProps,
 				}}

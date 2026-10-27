@@ -24,6 +24,7 @@ export default function Publishers() {
 				}}
 				id="administrator-publishers"
 				managementToolbarProps={{
+					filterIconOnly: true,
 					filterSchema: 'administratorPublishers',
 					searchVisible: true,
 					visible: true,

@@ -56,6 +56,7 @@ const MPFinanceOrders = () => {
 				emptyStateProps={{title: i18n.translate('no-orders-yet')}}
 				id="finance-dashboard-orders"
 				managementToolbarProps={{
+					filterIconOnly: true,
 					filterSchema: 'financeDashboardOrders',
 					searchVisible: true,
 					visible: true,
