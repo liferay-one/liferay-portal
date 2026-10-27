@@ -373,13 +373,7 @@ public class AccountSynchronizer {
 	}
 
 	private boolean _isSyncable(ProjectSyncModel projectSyncModel) {
-		Boolean supported = projectSyncModel.isSupported();
-
-		if (supported == null) {
-			return false;
-		}
-
-		if (supported) {
+		if (Boolean.TRUE.equals(projectSyncModel.isSupported())) {
 			return true;
 		}
 
