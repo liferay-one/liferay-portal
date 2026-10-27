@@ -1425,8 +1425,6 @@ export default {
 	'production': 'Production',
 	'products': 'Products',
 	'products-with-problems': 'Products with Problems',
-	'products-without-entitlement-definitions':
-		'Products without Entitlement Definitions',
 	'profile': 'Profile',
 	'project': 'Project',
 	'project-admin-email': 'Project Admin Email',
@@ -1728,6 +1726,8 @@ export default {
 		'are not published or not purchasable.',
 	'skus-have-no-entitlement-definition': 'have no entitlement definition.',
 	'skus-match-no-product': 'match no product SKU.',
+	'skus-without-entitlement-definitions':
+		'SKUs without Entitlement Definitions',
 	'solution': 'Solution',
 	'solution-deleted-successfully': 'Solution deleted successfully.',
 	'solution-details': 'Solution Details',

@@ -13,17 +13,20 @@ import type {
 	InspectedEntitlementDefinition,
 	InspectedEntitlementDefinitionSKU,
 	InspectedProduct,
+	InspectedSKU,
 	ProductCatalogInspection,
 } from '~/types/productInspection';
 
 import type {CatalogIndex} from './productCatalogUtils';
+
+export type OrphanedSKU = InspectedSKU & {product: InspectedProduct};
 
 export type UnusedSpecification = InspectedEntry & Specification & {id: number};
 
 export type ProductOrphans = {
 	entitlementDefinitionSKUs: InspectedEntitlementDefinitionSKU[] | null;
 	entitlementDefinitions: InspectedEntitlementDefinition[] | null;
-	products: InspectedProduct[] | null;
+	skus: OrphanedSKU[] | null;
 	specifications: UnusedSpecification[] | null;
 	usageDefinitions: InspectedEntry[] | null;
 };
@@ -113,7 +116,7 @@ function getUnusedSpecifications(inspection: ProductCatalogInspection) {
 	);
 }
 
-function getProductsWithoutEntitlementDefinitions(
+function getSKUsWithoutEntitlementDefinitions(
 	inspection: ProductCatalogInspection,
 	{entitlementDefinitionsBySKU}: CatalogIndex
 ) {
@@ -124,11 +127,15 @@ function getProductsWithoutEntitlementDefinitions(
 		return null;
 	}
 
-	return inspection.products.items.filter(
-		({skus}) =>
-			!(skus ?? []).some(({externalReferenceCode}) =>
-				entitlementDefinitionsBySKU.has(externalReferenceCode ?? '')
+	return inspection.products.items.flatMap((product) =>
+		(product.skus ?? [])
+			.filter(
+				({externalReferenceCode}) =>
+					!entitlementDefinitionsBySKU.has(
+						externalReferenceCode ?? ''
+					)
 			)
+			.map((sku) => ({...sku, product}))
 	);
 }
 
@@ -145,7 +152,7 @@ function getProductOrphans(
 			inspection.entitlementDefinitions.items,
 			index
 		),
-		products: getProductsWithoutEntitlementDefinitions(inspection, index),
+		skus: getSKUsWithoutEntitlementDefinitions(inspection, index),
 		specifications: getUnusedSpecifications(inspection),
 		usageDefinitions: getUnusedUsageDefinitions(inspection),
 	};
