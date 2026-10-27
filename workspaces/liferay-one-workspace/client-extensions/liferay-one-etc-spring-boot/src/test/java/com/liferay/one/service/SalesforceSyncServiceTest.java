@@ -58,31 +58,13 @@ public class SalesforceSyncServiceTest {
 
 	@Test
 	public void testGetSalesforceRecordComparisons() throws Exception {
-		Mockito.doReturn(
+		_mockGetAllItems(
 			List.of(
 				new JSONObject(
 				).put(
 					"externalReferenceCode", "800A"
-				))
-		).when(
-			_salesforceSyncService
-		).getAllItems(
-			ArgumentMatchers.eq("/o/c/contracts"),
-			ArgumentMatchers.eq(
-				"r_accountEntryToContract_accountEntryId eq '7'"),
-			ArgumentMatchers.any()
-		);
-
-		Mockito.doReturn(
-			List.of()
-		).when(
-			_salesforceSyncService
-		).getAllItems(
-			ArgumentMatchers.eq("/o/c/projects"),
-			ArgumentMatchers.eq(
-				"r_accountEntryToProject_accountEntryId eq '7'"),
-			ArgumentMatchers.any()
-		);
+				)),
+			List.of());
 
 		Mockito.when(
 			_salesforceService.getRecordsLists(ArgumentMatchers.anyList())
@@ -93,7 +75,7 @@ public class SalesforceSyncServiceTest {
 					).put(
 						"Account_Tier__c", "Gold"
 					).put(
-						"Id", "001'A"
+						"Id", "0015g00000ABCDE"
 					).put(
 						"Name", "Acme"
 					)),
@@ -134,17 +116,17 @@ public class SalesforceSyncServiceTest {
 				0
 			).getObject());
 		Assertions.assertEquals(
-			"Id = '001\\'A'",
+			"Id = '0015g00000ABCDE'",
 			salesforceQueries.get(
 				0
 			).getWhere());
 		Assertions.assertEquals(
-			"AccountId = '001\\'A'",
+			"AccountId = '0015g00000ABCDE'",
 			salesforceQueries.get(
 				1
 			).getWhere());
 		Assertions.assertEquals(
-			"Account__c = '001\\'A'",
+			"Account__c = '0015g00000ABCDE'",
 			salesforceQueries.get(
 				2
 			).getWhere());
@@ -166,6 +148,87 @@ public class SalesforceSyncServiceTest {
 			salesforceRecordComparisons.get(
 				2
 			).getStatus());
+	}
+
+	@Test
+	public void testGetSalesforceRecordComparisonsDoesNotQuerySalesforceWithoutASalesforceAccountId()
+		throws Exception {
+
+		_mockGetAllItems(
+			List.of(
+				new JSONObject(
+				).put(
+					"externalReferenceCode", "800A"
+				)),
+			List.of());
+
+		Account account = _createAccount("Gold");
+
+		account.setExternalReferenceCode(() -> "ACCNT-001");
+
+		List<SalesforceRecordComparison> salesforceRecordComparisons =
+			_salesforceSyncService.getSalesforceRecordComparisons(account);
+
+		Mockito.verifyNoInteractions(_salesforceService);
+
+		Assertions.assertEquals(2, salesforceRecordComparisons.size());
+
+		for (SalesforceRecordComparison salesforceRecordComparison :
+				salesforceRecordComparisons) {
+
+			Assertions.assertEquals(
+				SalesforceRecordComparison.STATUS_MISSING_IN_SALESFORCE,
+				salesforceRecordComparison.getStatus());
+		}
+
+		Assertions.assertEquals(0, _salesforceSyncService.syncAccount(account));
+
+		Mockito.verifyNoInteractions(
+			_contractService, _projectService, _salesforceService);
+	}
+
+	@Test
+	public void testGetSalesforceRecordComparisonsReportsAnAccountThatIsMissingInSalesforce()
+		throws Exception {
+
+		_mockGetAllItems(
+			List.of(),
+			List.of(
+				new JSONObject(
+				).put(
+					"externalReferenceCode", "a0P1"
+				)));
+
+		Mockito.when(
+			_salesforceService.getRecordsLists(ArgumentMatchers.anyList())
+		).thenReturn(
+			List.of(List.of(), List.of(), List.of())
+		);
+
+		List<SalesforceRecordComparison> salesforceRecordComparisons =
+			_salesforceSyncService.getSalesforceRecordComparisons(
+				_createAccount("Gold"));
+
+		Assertions.assertEquals(2, salesforceRecordComparisons.size());
+
+		Assertions.assertEquals(
+			SalesforceRecordComparison.TYPE_ACCOUNT,
+			salesforceRecordComparisons.get(
+				0
+			).getType());
+		Assertions.assertEquals(
+			SalesforceRecordComparison.TYPE_PROJECT,
+			salesforceRecordComparisons.get(
+				1
+			).getType());
+
+		for (SalesforceRecordComparison salesforceRecordComparison :
+				salesforceRecordComparisons) {
+
+			Assertions.assertEquals(
+				SalesforceRecordComparison.STATUS_MISSING_IN_SALESFORCE,
+				salesforceRecordComparison.getStatus());
+		}
 	}
 
 	@Test
@@ -216,7 +279,7 @@ public class SalesforceSyncServiceTest {
 					),
 					new JSONObject(
 					).put(
-						"AccountId", "001'A"
+						"AccountId", "0015g00000ABCDE"
 					).put(
 						"EndDate", "2027-01-31"
 					).put(
@@ -274,7 +337,7 @@ public class SalesforceSyncServiceTest {
 					).put(
 						"Active_Subscription__c", "false"
 					).put(
-						"Id", "001'A"
+						"Id", "0015g00000ABCDE"
 					),
 					SalesforceRecordComparison.TYPE_ACCOUNT))
 		).when(
@@ -284,7 +347,7 @@ public class SalesforceSyncServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.getAccount("001'A")
+			_accountService.getAccount("0015g00000ABCDE")
 		).thenReturn(
 			account
 		);
@@ -325,7 +388,7 @@ public class SalesforceSyncServiceTest {
 					).put(
 						"Active_Subscription__c", "true"
 					).put(
-						"Id", "001'A"
+						"Id", "0015g00000ABCDE"
 					).put(
 						"Name", "Acme Corporation"
 					),
@@ -334,7 +397,7 @@ public class SalesforceSyncServiceTest {
 					contractJSONObject,
 					new JSONObject(
 					).put(
-						"AccountId", "001'A"
+						"AccountId", "0015g00000ABCDE"
 					).put(
 						"Id", "800A"
 					),
@@ -371,7 +434,7 @@ public class SalesforceSyncServiceTest {
 		);
 
 		Mockito.when(
-			_accountService.getAccount("001'A")
+			_accountService.getAccount("0015g00000ABCDE")
 		).thenReturn(
 			account
 		);
@@ -402,7 +465,7 @@ public class SalesforceSyncServiceTest {
 		Mockito.verify(
 			_accountService
 		).getAccount(
-			"001'A"
+			"0015g00000ABCDE"
 		);
 
 		Mockito.verify(
@@ -475,7 +538,7 @@ public class SalesforceSyncServiceTest {
 
 		account.setCustomFields(() -> new CustomField[] {customField});
 
-		account.setExternalReferenceCode(() -> "001'A");
+		account.setExternalReferenceCode(() -> "0015g00000ABCDE");
 		account.setId(() -> 7L);
 		account.setName(() -> "Acme");
 
@@ -507,12 +570,40 @@ public class SalesforceSyncServiceTest {
 		);
 	}
 
+	private void _mockGetAllItems(
+			List<JSONObject> contractJSONObjects,
+			List<JSONObject> projectJSONObjects)
+		throws Exception {
+
+		Mockito.doReturn(
+			contractJSONObjects
+		).when(
+			_salesforceSyncService
+		).getAllItems(
+			ArgumentMatchers.eq("/o/c/contracts"),
+			ArgumentMatchers.eq(
+				"r_accountEntryToContract_accountEntryId eq '7'"),
+			ArgumentMatchers.any()
+		);
+
+		Mockito.doReturn(
+			projectJSONObjects
+		).when(
+			_salesforceSyncService
+		).getAllItems(
+			ArgumentMatchers.eq("/o/c/projects"),
+			ArgumentMatchers.eq(
+				"r_accountEntryToProject_accountEntryId eq '7'"),
+			ArgumentMatchers.any()
+		);
+	}
+
 	private JSONObject _toLiferayJSONObject(String accountTier) {
 		return new JSONObject(
 		).put(
 			"accountTier", accountTier
 		).put(
-			"externalReferenceCode", "001'A"
+			"externalReferenceCode", "0015g00000ABCDE"
 		).put(
 			"name", "Acme"
 		);
