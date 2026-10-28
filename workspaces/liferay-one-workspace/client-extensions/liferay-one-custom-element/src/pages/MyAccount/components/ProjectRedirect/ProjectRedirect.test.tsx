@@ -83,4 +83,22 @@ describe('[ROUTE-MY-ACCOUNT-PROJECT] ProjectRedirect', () => {
 
 		expect(screen.getByTestId('location').textContent).toBe(expected);
 	});
+
+	it.each([
+		['/project', '/ACCNT-1/project/one-time-purchases'],
+		['/project/activation', '/ACCNT-1/project/one-time-purchases/activation'],
+	])(
+		'redirects %s to %s when the account has no project with orders',
+		(pathname, expected) => {
+			vi.mocked(useProjectsWithOrders).mockReturnValue({
+				loading: false,
+				projects: [],
+			} as unknown as ReturnType<typeof useProjectsWithOrders>);
+			vi.mocked(resolveDefaultProject).mockReturnValue(undefined);
+
+			renderAt(pathname);
+
+			expect(screen.getByTestId('location').textContent).toBe(expected);
+		}
+	);
 });
