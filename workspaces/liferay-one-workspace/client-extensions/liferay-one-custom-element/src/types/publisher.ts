@@ -15,9 +15,6 @@ export type PublisherDetailsEntry = {
 	fullName?: string;
 	id?: number;
 	location?: string;
-	paypalAccount?: string;
-	phone?: string;
-	privateEmail?: string;
 	publisherName?: string;
 	publisherProfileImageURL?: string;
 	role?: string;
