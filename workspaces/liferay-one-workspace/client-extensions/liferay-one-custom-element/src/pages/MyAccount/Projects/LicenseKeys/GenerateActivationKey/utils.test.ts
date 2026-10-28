@@ -9,6 +9,7 @@ import {sub} from '~/i18n';
 import {
 	buildEmptyServer,
 	findMatchingVersion,
+	getBundleProductUnavailableReason,
 	getBundleProducts,
 	getComplimentaryDescription,
 	getComplimentaryDurationDays,
@@ -65,6 +66,84 @@ function toProduct(externalReferenceCode: string, licenseKeyFamily = '') {
 }
 
 describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () => {
+	describe('getBundleProductUnavailableReason', () => {
+		const usedBundleProduct = {
+			availableCount: 0,
+			licensable: true,
+			licensedVersions: ['2026.Q3'],
+		} as GenerateFormBundleProduct;
+
+		it('blocks an add on with no key activations left', () => {
+			expect(
+				getBundleProductUnavailableReason(
+					usedBundleProduct,
+					false,
+					false,
+					false,
+					'2026.Q3'
+				)
+			).toBe('no-key-activations-are-available-for-this-product');
+		});
+
+		it('does not count the activations of the required product', () => {
+			expect(
+				getBundleProductUnavailableReason(
+					usedBundleProduct,
+					false,
+					false,
+					true,
+					'2026.Q3'
+				)
+			).toBeNull();
+		});
+
+		it('does not count the activations of a developer key or a renewal', () => {
+			expect(
+				getBundleProductUnavailableReason(
+					usedBundleProduct,
+					true,
+					false,
+					false,
+					'2026.Q3'
+				)
+			).toBeNull();
+
+			expect(
+				getBundleProductUnavailableReason(
+					usedBundleProduct,
+					false,
+					true,
+					false,
+					'2026.Q3'
+				)
+			).toBeNull();
+		});
+
+		it('blocks a product that has no license', () => {
+			expect(
+				getBundleProductUnavailableReason(
+					{...usedBundleProduct, licensable: false},
+					false,
+					false,
+					true,
+					'2026.Q3'
+				)
+			).toBe('no-license-is-available-for-this-product');
+		});
+
+		it('blocks an add on that is not licensed for the version', () => {
+			expect(
+				getBundleProductUnavailableReason(
+					{...usedBundleProduct, availableCount: 1},
+					false,
+					false,
+					false,
+					'2025.Q4'
+				)
+			).toBe('this-product-is-not-available-for-the-selected-version');
+		});
+	});
+
 	describe('getBundleProducts', () => {
 		const generateForm = {
 			bundleProducts: [

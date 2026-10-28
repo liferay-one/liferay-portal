@@ -1895,6 +1895,29 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyLicensesTheLeadingProductOnce()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(1L, 0.0, "PRDCT-SELF-HOSTED"),
+			_toEntitlement(2L, 5.0, "PRDCT-DXP"),
+			_toEntitlement(3L, 5.0, "PRDCT-DSR"));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toGenerateRequest(Arrays.asList(1L, 3L), 2L));
+
+		Assertions.assertEquals(
+			Arrays.asList(2L, 3L),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 9));
+	}
+
+	@Test
 	public void testGenerateActivationKeyLimitsAProductionKeyToOneServer()
 		throws Exception {
 
@@ -3572,6 +3595,8 @@ public class LicenseKeyGenerationServiceTest {
 			"PRDCT-DXP", "DXP"
 		).put(
 			"PRDCT-PORTAL", "Portal"
+		).put(
+			"PRDCT-SELF-HOSTED", "DXP"
 		).build();
 
 	private ActivationKeyService _activationKeyService;
