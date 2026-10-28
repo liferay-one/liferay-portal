@@ -55,8 +55,8 @@ const product = {
 	name: {en_US: 'My App'},
 	productSpecifications: [
 		{specificationKey: 'type', value: {en_US: 'cloud'}},
-		{specificationKey: 'cpu', value: {en_US: '2'}},
-		{specificationKey: 'ram', value: {en_US: '4'}},
+		{specificationKey: 'number-of-cpus', value: {en_US: '2'}},
+		{specificationKey: 'ram-in-gb', value: {en_US: '4'}},
 		{specificationKey: 'license-type', value: {en_US: 'Subscription'}},
 		{specificationKey: 'price-model', value: {en_US: 'Paid'}},
 		{
