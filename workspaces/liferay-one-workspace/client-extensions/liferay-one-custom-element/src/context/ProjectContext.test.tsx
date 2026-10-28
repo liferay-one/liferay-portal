@@ -281,7 +281,7 @@ describe('[CTX-PROJECTCONTEXT] ProjectProvider', () => {
 	});
 
 	it('does not save an inaccessible project as the last project', () => {
-		mockState({projects: []});
+		mockState({projectsLoading: true});
 
 		renderProvider('/ACCNT-1/project/PRJCT-UNKNOWN');
 
@@ -291,6 +291,28 @@ describe('[CTX-PROJECTCONTEXT] ProjectProvider', () => {
 			'/ACCNT-1/project/PRJCT-UNKNOWN'
 		);
 	});
+
+	it.each([
+		['no project', {placedOrders: [], projects: []}],
+		['no project with orders', {placedOrders: []}],
+	])(
+		'offers only One Time Purchases when the account has %s',
+		(_label, state) => {
+			mockState(state);
+
+			renderProvider('/ACCNT-1/project/PRJCT-UNKNOWN');
+
+			expect(projectValue.projects).toEqual([
+				expect.objectContaining({
+					externalReferenceCode: ONE_TIME_PURCHASES,
+					unassigned: true,
+				}),
+			]);
+			expect(screen.getByTestId('location')).toHaveTextContent(
+				`/ACCNT-1/project/${ONE_TIME_PURCHASES}`
+			);
+		}
+	);
 
 	it.each([
 		['account', {accountLoading: true}],
