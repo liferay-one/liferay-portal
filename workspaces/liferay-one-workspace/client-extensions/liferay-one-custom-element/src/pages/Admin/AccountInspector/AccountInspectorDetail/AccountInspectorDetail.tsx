@@ -302,7 +302,7 @@ export default function AccountInspectorDetail() {
 					<AccountInspectorContent
 						inspection={data}
 						key={data.loadedAt}
-						onRecordChange={() => mutate()}
+						onRecordChange={() => window.location.reload()}
 					/>
 				)}
 			</PageRenderer>
