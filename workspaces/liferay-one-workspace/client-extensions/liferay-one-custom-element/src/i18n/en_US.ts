@@ -1623,6 +1623,8 @@ export default {
 	'saas-trials': 'SaaS Trials',
 	'sales-email': 'Sales Email',
 	'salesforce': 'Salesforce',
+	'salesforce-did-not-complete-the-comparison-in-time':
+		'Salesforce did not complete the comparison in time. Try again later.',
 	'save': 'Save',
 	'save-and-download-package': 'Save and Download Package',
 	'save-as-a-draft-exit': 'Save as a Draft & Exit',

@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.headless.admin.user.client.custom.field.CustomField;
 import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.one.exception.SalesforceQueryJobException;
 import com.liferay.one.salesforce.model.SalesforceAccount;
 import com.liferay.one.salesforce.model.SalesforceContract;
 import com.liferay.one.salesforce.model.SalesforceProject;
@@ -46,6 +47,13 @@ import org.springframework.web.util.UriComponentsBuilder;
  * </p>
  *
  * <p>
+ * A comparison takes two steps, because Salesforce can take longer to run a
+ * query than a request can stay open. The first step creates the Salesforce
+ * query jobs. The second step returns the comparison when the query jobs are
+ * complete, and the caller repeats it until then.
+ * </p>
+ *
+ * <p>
  * Salesforce is not queried for an account whose external reference code is
  * not a Salesforce account ID, so every record of that account is missing in
  * Salesforce.
@@ -56,15 +64,26 @@ import org.springframework.web.util.UriComponentsBuilder;
 @Component
 public class SalesforceSyncService extends OneBaseService {
 
+	/**
+	 * Returns the comparison of the account with Salesforce, or
+	 * <code>null</code> when a Salesforce query job is not complete.
+	 */
 	public List<SalesforceRecordComparison> getSalesforceRecordComparisons(
-			Account account)
+			String accountExternalReferenceCode, List<String> queryJobIds)
 		throws Exception {
+
+		List<List<JSONObject>> recordsLists = _getRecordsLists(
+			accountExternalReferenceCode, queryJobIds);
+
+		if (recordsLists == null) {
+			return null;
+		}
+
+		Account account = _accountService.getAccount(
+			accountExternalReferenceCode);
 
 		List<SalesforceRecordComparison> salesforceRecordComparisons =
 			new ArrayList<>();
-
-		List<List<JSONObject>> recordsLists = _getRecordsLists(
-			account.getExternalReferenceCode());
 
 		salesforceRecordComparisons.addAll(
 			SalesforceRecordComparisonUtil.compare(
@@ -95,11 +114,25 @@ public class SalesforceSyncService extends OneBaseService {
 		return salesforceRecordComparisons;
 	}
 
-	public int syncAccount(Account account) throws Exception {
+	public List<String> postSalesforceQueryJobs(Account account)
+		throws Exception {
+
+		if (!_isSalesforceAccountId(account.getExternalReferenceCode())) {
+			return List.of();
+		}
+
+		return _salesforceService.postQueryJobs(
+			_getSalesforceQueries(account.getExternalReferenceCode()));
+	}
+
+	public int syncSalesforceRecordComparisons(
+			List<SalesforceRecordComparison> salesforceRecordComparisons)
+		throws Exception {
+
 		int count = 0;
 
 		for (SalesforceRecordComparison salesforceRecordComparison :
-				getSalesforceRecordComparisons(account)) {
+				salesforceRecordComparisons) {
 
 			if (!Objects.equals(
 					salesforceRecordComparison.getStatus(),
@@ -135,28 +168,93 @@ public class SalesforceSyncService extends OneBaseService {
 	}
 
 	private List<List<JSONObject>> _getRecordsLists(
-			String accountExternalReferenceCode)
+			String accountExternalReferenceCode, List<String> queryJobIds)
 		throws Exception {
 
-		if ((accountExternalReferenceCode == null) ||
-			!_salesforceAccountIdPattern.matcher(
-				accountExternalReferenceCode
-			).matches()) {
+		for (String queryJobId : queryJobIds) {
+			if (!_queryJobIdPattern.matcher(
+					queryJobId
+				).matches()) {
 
+				throw new SalesforceQueryJobException(
+					"Salesforce query job ID " + queryJobId + " is not valid");
+			}
+		}
+
+		if (!_isSalesforceAccountId(accountExternalReferenceCode)) {
 			return List.of(List.of(), List.of(), List.of());
 		}
 
-		return _salesforceService.getRecordsLists(
-			List.of(
-				new SalesforceQuery(
-					"Account", _accountFields,
-					"Id = '" + accountExternalReferenceCode + "'"),
-				new SalesforceQuery(
-					"Contract", _contractFields,
-					"AccountId = '" + accountExternalReferenceCode + "'"),
-				new SalesforceQuery(
-					"Project__c", _projectFields,
-					"Account__c = '" + accountExternalReferenceCode + "'")));
+		if (queryJobIds.size() != _accountIdFieldNames.size()) {
+			throw new SalesforceQueryJobException(
+				StringBundler.concat(
+					"Account ", accountExternalReferenceCode, " needs ",
+					_accountIdFieldNames.size(), " Salesforce query jobs"));
+		}
+
+		List<List<JSONObject>> recordsLists =
+			_salesforceService.getRecordsLists(queryJobIds);
+
+		if (recordsLists == null) {
+			return null;
+		}
+
+		for (int i = 0; i < recordsLists.size(); i++) {
+			for (JSONObject jsonObject : recordsLists.get(i)) {
+				if (!_isSameSalesforceId(
+						accountExternalReferenceCode,
+						jsonObject.optString(_accountIdFieldNames.get(i)))) {
+
+					throw new SalesforceQueryJobException(
+						StringBundler.concat(
+							"Salesforce query job ", queryJobIds.get(i),
+							" is not a query for account ",
+							accountExternalReferenceCode));
+				}
+			}
+		}
+
+		return recordsLists;
+	}
+
+	private List<SalesforceQuery> _getSalesforceQueries(
+		String accountExternalReferenceCode) {
+
+		return List.of(
+			new SalesforceQuery(
+				"Account", _accountFields,
+				"Id = '" + accountExternalReferenceCode + "'"),
+			new SalesforceQuery(
+				"Contract", _contractFields,
+				"AccountId = '" + accountExternalReferenceCode + "'"),
+			new SalesforceQuery(
+				"Project__c", _projectFields,
+				"Account__c = '" + accountExternalReferenceCode + "'"));
+	}
+
+	private boolean _isSalesforceAccountId(String externalReferenceCode) {
+		if ((externalReferenceCode != null) &&
+			_salesforceAccountIdPattern.matcher(
+				externalReferenceCode
+			).matches()) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _isSameSalesforceId(
+		String salesforceId1, String salesforceId2) {
+
+		// A Salesforce ID has a case sensitive form of 15 characters and a
+		// case insensitive form of 18 characters that starts with it
+
+		if ((salesforceId1.length() < 15) || (salesforceId2.length() < 15)) {
+			return false;
+		}
+
+		return salesforceId1.regionMatches(0, salesforceId2, 0, 15);
 	}
 
 	private boolean _isUnchangedInLiferay(
@@ -304,6 +402,8 @@ public class SalesforceSyncService extends OneBaseService {
 	private static final List<String> _accountFields = List.of(
 		"Account_Tier__c", "Active_Subscription__c", "Description", "Id",
 		"Name");
+	private static final List<String> _accountIdFieldNames = List.of(
+		"Id", "AccountId", "Account__c");
 	private static final List<String> _contractFields = List.of(
 		"AccountId", "ContractTerm", "EndDate", "Id", "SBQQ__Opportunity__c",
 		"SBQQ__RenewalOpportunity__c", "StartDate");
@@ -311,6 +411,8 @@ public class SalesforceSyncService extends OneBaseService {
 		"AI_Hub_Account_Name__c", "Account__c", "Allowed_Email_Domains__c",
 		"Data_Center_Location__c", "Friendly_Workspace_URL__c", "Id",
 		"Liferay_Version__c", "Name", "Security_Contact_Email_Address__c");
+	private static final Pattern _queryJobIdPattern = Pattern.compile(
+		"[A-Za-z0-9]+");
 	private static final Pattern _salesforceAccountIdPattern = Pattern.compile(
 		"001[A-Za-z0-9]{12}([A-Za-z0-9]{3})?");
 

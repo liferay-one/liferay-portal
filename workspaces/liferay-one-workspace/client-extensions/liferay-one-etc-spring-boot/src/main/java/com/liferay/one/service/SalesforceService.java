@@ -33,11 +33,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,20 +54,58 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class SalesforceService extends BaseService {
 
 	/**
-	 * Runs each query as a query job on the Salesforce gateway and returns the
-	 * records of each query, in the order of the queries. The jobs are created
-	 * first, so that Salesforce runs them at the same time, and one deadline
-	 * applies to all of them.
+	 * Returns the records of each query job, in the order of the query job IDs,
+	 * or <code>null</code> when a query job is not complete.
 	 */
-	public List<List<JSONObject>> getRecordsLists(
-			List<SalesforceQuery> salesforceQueries)
+	public List<List<JSONObject>> getRecordsLists(List<String> queryJobIds)
 		throws Exception {
-
-		List<List<JSONObject>> recordsLists = new ArrayList<>();
 
 		String authorization = _getAuthorization();
 
+		for (String queryJobId : queryJobIds) {
+			JSONObject jsonObject = new JSONObject(
+				get(authorization, _getURI("/v1/jobs/query/" + queryJobId)));
+
+			String state = jsonObject.optString("state");
+
+			if (Objects.equals(state, "Aborted") ||
+				Objects.equals(state, "Failed")) {
+
+				throw new Exception(
+					StringBundler.concat(
+						"Salesforce query job ", queryJobId, " ended in state ",
+						state));
+			}
+
+			if (!Objects.equals(state, "JobComplete")) {
+				return null;
+			}
+		}
+
+		List<List<JSONObject>> recordsLists = new ArrayList<>();
+
+		for (String queryJobId : queryJobIds) {
+			recordsLists.add(
+				SalesforceCSVUtil.toJSONObjects(
+					get(
+						authorization,
+						_getURI("/v1/jobs/query/" + queryJobId + "/results"))));
+		}
+
+		return recordsLists;
+	}
+
+	/**
+	 * Creates a query job on the Salesforce gateway for each query and returns
+	 * the IDs of the query jobs, in the order of the queries. Salesforce runs
+	 * the query jobs at the same time.
+	 */
+	public List<String> postQueryJobs(List<SalesforceQuery> salesforceQueries)
+		throws Exception {
+
 		List<String> queryJobIds = new ArrayList<>();
+
+		String authorization = _getAuthorization();
 
 		for (SalesforceQuery salesforceQuery : salesforceQueries) {
 			JSONObject jsonObject = new JSONObject(
@@ -83,17 +118,7 @@ public class SalesforceService extends BaseService {
 			queryJobIds.add(jsonObject.getString("id"));
 		}
 
-		_waitForQueryJobs(authorization, queryJobIds);
-
-		for (String queryJobId : queryJobIds) {
-			recordsLists.add(
-				SalesforceCSVUtil.toJSONObjects(
-					get(
-						authorization,
-						_getURI("/v1/jobs/query/" + queryJobId + "/results"))));
-		}
-
-		return recordsLists;
+		return queryJobIds;
 	}
 
 	public JSONObject postSalesforceOpportunity(
@@ -452,57 +477,6 @@ public class SalesforceService extends BaseService {
 		).toUri();
 	}
 
-	private void _waitForQueryJobs(
-			String authorization, List<String> queryJobIds)
-		throws Exception {
-
-		long deadline = System.currentTimeMillis() + _queryJobTimeout;
-
-		Set<String> pendingQueryJobIds = new LinkedHashSet<>(queryJobIds);
-
-		while (true) {
-			Iterator<String> iterator = pendingQueryJobIds.iterator();
-
-			while (iterator.hasNext()) {
-				String queryJobId = iterator.next();
-
-				JSONObject jsonObject = new JSONObject(
-					get(
-						authorization,
-						_getURI("/v1/jobs/query/" + queryJobId)));
-
-				String state = jsonObject.optString("state");
-
-				if (Objects.equals(state, "JobComplete")) {
-					iterator.remove();
-
-					continue;
-				}
-
-				if (Objects.equals(state, "Aborted") ||
-					Objects.equals(state, "Failed")) {
-
-					throw new Exception(
-						StringBundler.concat(
-							"Salesforce query job ", queryJobId,
-							" ended in state ", state));
-				}
-			}
-
-			if (pendingQueryJobIds.isEmpty()) {
-				return;
-			}
-
-			if (System.currentTimeMillis() > deadline) {
-				throw new Exception(
-					"Unable to complete Salesforce query jobs " +
-						pendingQueryJobIds);
-			}
-
-			Thread.sleep(_queryJobPollInterval);
-		}
-	}
-
 	private static final Log _log = LogFactory.getLog(SalesforceService.class);
 
 	private static final List<String> _scopes = Collections.singletonList(
@@ -519,11 +493,5 @@ public class SalesforceService extends BaseService {
 
 	private volatile GoogleCredentials _googleCredentials;
 	private volatile IdTokenCredentials _idTokenCredentials;
-
-	@Value("${liferay.one.salesforce.query.job.poll.interval:1000}")
-	private long _queryJobPollInterval;
-
-	@Value("${liferay.one.salesforce.query.job.timeout:60000}")
-	private long _queryJobTimeout;
 
 }

@@ -9,6 +9,7 @@ import {OneSpringBootOAuth2} from './OAuth2Client';
 
 import type {
 	JiraAssets,
+	SalesforceQueryJobs,
 	SalesforceRecords,
 	SalesforceSyncResult,
 } from '~/types/accountInspection';
@@ -64,9 +65,19 @@ class AccountsOAuth2 extends OneSpringBootOAuth2 {
 		);
 	}
 
-	async getSalesforceRecords(accountExternalReferenceCode: string) {
+	async getSalesforceRecords(
+		accountExternalReferenceCode: string,
+		queryJobIds: string[]
+	) {
+		const searchParams = new URLSearchParams();
+
+		for (const queryJobId of queryJobIds) {
+			searchParams.append('queryJobIds', queryJobId);
+		}
+
 		return this.get<SalesforceRecords>(
-			`/${accountExternalReferenceCode}/salesforce/records`
+			`/${accountExternalReferenceCode}/salesforce/records` +
+				`?${searchParams.toString()}`
 		);
 	}
 
@@ -133,9 +144,19 @@ class AccountsOAuth2 extends OneSpringBootOAuth2 {
 		);
 	}
 
-	async postSyncFromSalesforce(accountExternalReferenceCode: string) {
+	async postSalesforceQueryJobs(accountExternalReferenceCode: string) {
+		return this.post<SalesforceQueryJobs>(
+			`/${accountExternalReferenceCode}/salesforce/query-jobs`
+		);
+	}
+
+	async postSyncFromSalesforce(
+		accountExternalReferenceCode: string,
+		queryJobIds: string[]
+	) {
 		return this.post<SalesforceSyncResult>(
-			`/${accountExternalReferenceCode}/sync-from-salesforce`
+			`/${accountExternalReferenceCode}/sync-from-salesforce`,
+			{queryJobIds}
 		);
 	}
 

@@ -6,6 +6,7 @@
 import ClayLabel from '@clayui/label';
 import {useMemo, useState} from 'react';
 import {Navigate, useParams} from 'react-router';
+import {useSWRConfig} from 'swr';
 import BackLink from '~/components/BackLink/BackLink';
 import {PageRenderer} from '~/components/Page/Page';
 import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
@@ -13,6 +14,7 @@ import {useDataQuery} from '~/hooks/useDataQuery';
 import i18n from '~/i18n';
 import InspectorTree from '~/pages/Admin/components/InspectorTree/InspectorTree';
 import {accountInspectionQuery} from '~/services/queries/accountInspectionQuery';
+import {accountSalesforceRecordsQuery} from '~/services/queries/accountSalesforceRecordsQuery';
 
 import AccountFindings from './components/AccountFindings/AccountFindings';
 import AccountSummary from './components/AccountSummary/AccountSummary';
@@ -36,6 +38,7 @@ import type {
 	InspectedCollectionKey,
 	InspectedEntry,
 	RelatedCollectionKey,
+	SalesforceComparison,
 } from '~/types/accountInspection';
 import type {Account} from '~/types/accounts';
 
@@ -213,6 +216,8 @@ export default function AccountInspectorDetail() {
 		revalidateOnFocus: false,
 	});
 
+	const {cache} = useSWRConfig();
+
 	const [syncing, setSyncing] = useState(false);
 
 	const syncAccountToJSM = async (account: Account) => {
@@ -232,10 +237,23 @@ export default function AccountInspectorDetail() {
 		setSyncing(false);
 	};
 
-	const syncFromSalesforce = async (account: Account) => {
+	const syncFromSalesforce = async (inspection: AccountInspection) => {
 		setSyncing(true);
 
-		if (await syncAccountFromSalesforce(account.externalReferenceCode)) {
+		const salesforceComparison: SalesforceComparison | undefined =
+			cache.get(
+				accountSalesforceRecordsQuery(
+					inspection.account.externalReferenceCode,
+					inspection.loadedAt
+				).key!
+			)?.data;
+
+		if (
+			await syncAccountFromSalesforce(
+				inspection.account.externalReferenceCode,
+				salesforceComparison?.queryJobIds
+			)
+		) {
 			mutate();
 		}
 
@@ -280,8 +298,7 @@ export default function AccountInspectorDetail() {
 									{
 										disabled: syncing,
 										label: 'sync-from-salesforce' as const,
-										onClick: () =>
-											syncFromSalesforce(data.account),
+										onClick: () => syncFromSalesforce(data),
 									},
 								]
 							: []),
