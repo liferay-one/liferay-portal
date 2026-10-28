@@ -713,9 +713,33 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "app-api-reference-url",
+					"value": {
+						"en_US": "https://docs.stripe.com/api"
+					}
+				},
+				{
 					"specificationKey": "app-settings",
 					"value": {
 						"en_US": "{\"isDownloadable\": \"true\"}"
+					}
+				},
+				{
+					"specificationKey": "app-storefront-video-description",
+					"value": {
+						"en_US": "See how Liferay Commerce Connector to Stripe takes payments in a Liferay Commerce store."
+					}
+				},
+				{
+					"specificationKey": "app-storefront-video-url",
+					"value": {
+						"en_US": "https://youtube.com/watch?v=3p-V99VCxtQ"
+					}
+				},
+				{
+					"specificationKey": "cloud-enabled",
+					"value": {
+						"en_US": "true"
 					}
 				},
 				{
@@ -773,9 +797,21 @@
 					}
 				},
 				{
+					"specificationKey": "our-selection",
+					"value": {
+						"en_US": "Most Popular"
+					}
+				},
+				{
 					"specificationKey": "price-model",
 					"value": {
 						"en_US": "Free"
+					}
+				},
+				{
+					"specificationKey": "product-notes",
+					"value": {
+						"en_US": "<p>Release notes for <b>Liferay Commerce Connector to Stripe</b>.</p>"
 					}
 				},
 				{
@@ -3210,6 +3246,12 @@
 					}
 				},
 				{
+					"specificationKey": "self-service-trial-product-erc",
+					"value": {
+						"en_US": "marketplace-product-29366953"
+					}
+				},
+				{
 					"specificationKey": "solution-type",
 					"value": {
 						"en_US": "cmp"
@@ -4024,6 +4066,12 @@
 			],
 			"productSpecifications": [
 				{
+					"specificationKey": "app-api-reference-url",
+					"value": {
+						"en_US": "https://docs.opensearch.org/latest/api-reference/"
+					}
+				},
+				{
 					"specificationKey": "app-documentation-url",
 					"value": {
 						"en_US": "https://learn.liferay.com/w/dxp/using-search/installing-and-upgrading-a-search-engine/opensearch"
@@ -4072,9 +4120,21 @@
 					}
 				},
 				{
+					"specificationKey": "our-selection",
+					"value": {
+						"en_US": "Highlights"
+					}
+				},
+				{
 					"specificationKey": "price-model",
 					"value": {
 						"en_US": "Free"
+					}
+				},
+				{
+					"specificationKey": "product-notes",
+					"value": {
+						"en_US": "<p>Release notes for <b>Liferay Connector to OpenSearch 2</b>.</p>"
 					}
 				},
 				{
@@ -4202,6 +4262,12 @@
 					"specificationKey": "developer-name",
 					"value": {
 						"en_US": "IGNEK - Liferay Boutique Company"
+					}
+				},
+				{
+					"specificationKey": "last-updated-by",
+					"value": {
+						"en_US": "{\"name\": \"Test Test\"}"
 					}
 				},
 				{
