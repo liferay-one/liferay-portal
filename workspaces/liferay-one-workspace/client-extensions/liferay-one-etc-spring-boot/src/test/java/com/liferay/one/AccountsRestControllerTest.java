@@ -1968,6 +1968,29 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testPostSyncFromSalesforceReadsNoQueryJobsWithoutABody()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_salesforceSyncService.getSalesforceRecordComparisons(
+				_EXTERNAL_REFERENCE_CODE, List.of())
+		).thenReturn(
+			List.of()
+		);
+
+		accountsRestController.postSyncFromSalesforce(
+			null, _EXTERNAL_REFERENCE_CODE, null);
+
+		Mockito.verify(
+			_salesforceSyncService
+		).getSalesforceRecordComparisons(
+			_EXTERNAL_REFERENCE_CODE, List.of()
+		);
+	}
+
+	@Test
 	public void testPostSyncFromSalesforceRejectsNonadministrator()
 		throws Exception {
 
@@ -2015,29 +2038,6 @@ public class AccountsRestControllerTest {
 			_salesforceSyncService, Mockito.never()
 		).syncSalesforceRecordComparisons(
 			Mockito.any()
-		);
-	}
-
-	@Test
-	public void testPostSyncFromSalesforceReadsNoQueryJobsWithoutABody()
-		throws Exception {
-
-		AccountsRestController accountsRestController = _createController();
-
-		Mockito.when(
-			_salesforceSyncService.getSalesforceRecordComparisons(
-				_EXTERNAL_REFERENCE_CODE, List.of())
-		).thenReturn(
-			List.of()
-		);
-
-		accountsRestController.postSyncFromSalesforce(
-			null, _EXTERNAL_REFERENCE_CODE, null);
-
-		Mockito.verify(
-			_salesforceSyncService
-		).getSalesforceRecordComparisons(
-			_EXTERNAL_REFERENCE_CODE, List.of()
 		);
 	}
 

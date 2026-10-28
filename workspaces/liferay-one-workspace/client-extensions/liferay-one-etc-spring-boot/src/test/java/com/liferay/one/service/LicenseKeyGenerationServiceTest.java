@@ -3423,6 +3423,28 @@ public class LicenseKeyGenerationServiceTest {
 			null, subscriptionEntitlementId, "DXP 7.4", false);
 	}
 
+	private Entitlement _toNamedEntitlement(long entitlementId, String name) {
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"entitlementDefinitionToEntitlement",
+				new JSONObject(
+				).put(
+					"id", entitlementId
+				)
+			).put(
+				"generatesActivationKey", true
+			).put(
+				"id", entitlementId
+			).put(
+				"licenseKeyType", "backup"
+			).put(
+				"maxQuantity", 5.0
+			).put(
+				"name", name
+			));
+	}
+
 	private Product _toProduct(String name, String externalReferenceCode) {
 		Product product = new Product();
 
@@ -3453,28 +3475,6 @@ public class LicenseKeyGenerationServiceTest {
 			new ProductSpecification[] {productSpecification});
 
 		return product;
-	}
-
-	private Entitlement _toNamedEntitlement(long entitlementId, String name) {
-		return new Entitlement(
-			new JSONObject(
-			).put(
-				"entitlementDefinitionToEntitlement",
-				new JSONObject(
-				).put(
-					"id", entitlementId
-				)
-			).put(
-				"generatesActivationKey", true
-			).put(
-				"id", entitlementId
-			).put(
-				"licenseKeyType", "backup"
-			).put(
-				"maxQuantity", 5.0
-			).put(
-				"name", name
-			));
 	}
 
 	private Project _toProject() {

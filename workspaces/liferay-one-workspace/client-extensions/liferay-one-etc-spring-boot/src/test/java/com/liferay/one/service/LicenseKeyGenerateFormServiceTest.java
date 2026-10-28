@@ -1599,6 +1599,36 @@ public class LicenseKeyGenerateFormServiceTest {
 		return Boolean.TRUE.equals(generatable);
 	}
 
+	private Entitlement _toActivationKeyEntitlement(
+		long entitlementId, boolean generatesActivationKey,
+		String licenseKeyFamily, String licenseKeyType,
+		String skuExternalReferenceCode) {
+
+		return new Entitlement(
+			_toActivationKeyEntitlementJSONObject(
+				entitlementId, generatesActivationKey, licenseKeyFamily,
+				licenseKeyType, skuExternalReferenceCode));
+	}
+
+	private JSONObject _toActivationKeyEntitlementJSONObject(
+		long entitlementId, boolean generatesActivationKey,
+		String licenseKeyFamily, String licenseKeyType,
+		String skuExternalReferenceCode) {
+
+		return new JSONObject(
+		).put(
+			"generatesActivationKey", generatesActivationKey
+		).put(
+			"id", entitlementId
+		).put(
+			"licenseKeyFamily", licenseKeyFamily
+		).put(
+			"licenseKeyType", licenseKeyType
+		).put(
+			"skuExternalReferenceCode", skuExternalReferenceCode
+		);
+	}
+
 	private CustomField _toCustomField(String name, Object data) {
 		CustomField customField = new CustomField();
 
@@ -1613,16 +1643,6 @@ public class LicenseKeyGenerateFormServiceTest {
 		return customField;
 	}
 
-	private Entitlement _toEntitlement(long entitlementId, String name) {
-		return new Entitlement(
-			new JSONObject(
-			).put(
-				"id", entitlementId
-			).put(
-				"name", name
-			));
-	}
-
 	private Entitlement _toEntitlement(Double maxQuantity) {
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -1634,6 +1654,16 @@ public class LicenseKeyGenerateFormServiceTest {
 		}
 
 		return new Entitlement(jsonObject);
+	}
+
+	private Entitlement _toEntitlement(long entitlementId, String name) {
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"id", entitlementId
+			).put(
+				"name", name
+			));
 	}
 
 	private JSONObject _toGenerateFormJSONObject(
@@ -1670,36 +1700,6 @@ public class LicenseKeyGenerateFormServiceTest {
 					"startDate", startDate
 				)
 			)
-		);
-	}
-
-	private Entitlement _toActivationKeyEntitlement(
-		long entitlementId, boolean generatesActivationKey,
-		String licenseKeyFamily, String licenseKeyType,
-		String skuExternalReferenceCode) {
-
-		return new Entitlement(
-			_toActivationKeyEntitlementJSONObject(
-				entitlementId, generatesActivationKey, licenseKeyFamily,
-				licenseKeyType, skuExternalReferenceCode));
-	}
-
-	private JSONObject _toActivationKeyEntitlementJSONObject(
-		long entitlementId, boolean generatesActivationKey,
-		String licenseKeyFamily, String licenseKeyType,
-		String skuExternalReferenceCode) {
-
-		return new JSONObject(
-		).put(
-			"generatesActivationKey", generatesActivationKey
-		).put(
-			"id", entitlementId
-		).put(
-			"licenseKeyFamily", licenseKeyFamily
-		).put(
-			"licenseKeyType", licenseKeyType
-		).put(
-			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
 	}
 
