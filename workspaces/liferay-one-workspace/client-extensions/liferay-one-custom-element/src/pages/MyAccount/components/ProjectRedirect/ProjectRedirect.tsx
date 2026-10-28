@@ -7,6 +7,7 @@ import {Navigate, useLocation} from 'react-router';
 import Loading from '~/components/Loading/Loading';
 import {useCurrentAccount} from '~/hooks/useAccounts';
 import {
+	ONE_TIME_PURCHASES,
 	PROJECT_SECTION_PATHS,
 	isUnassignedProject,
 	resolveDefaultProject,
@@ -46,11 +47,8 @@ export default function ProjectRedirect() {
 
 		const projectERC =
 			requestedProjectERC ??
-			resolveDefaultProject(projects)?.externalReferenceCode;
-
-		if (!projectERC) {
-			return <Navigate replace to={`/${accountERC}/project`} />;
-		}
+			resolveDefaultProject(projects)?.externalReferenceCode ??
+			ONE_TIME_PURCHASES;
 
 		const tab = (sectionRequested ? segments : restSegments).join('/');
 

@@ -77,7 +77,11 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 	}, [projectProducts, placedOrders]);
 
 	const projects = useMemo<UserProject[]>(() => {
-		if (!hasUnassignedItems && !hasUnassignedEntitlements) {
+		if (
+			projectsWithOrders.length &&
+			!hasUnassignedItems &&
+			!hasUnassignedEntitlements
+		) {
 			return projectsWithOrders;
 		}
 

@@ -10,7 +10,6 @@ import AppLayout from '~/components/AppLayout/AppLayout';
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb';
 import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';
 import {useProject} from '~/context/ProjectContext';
-import i18n from '~/i18n';
 import {buildNavItems} from '~/utils/routeUtils';
 
 import ProjectHeader from '../../Projects/components/ProjectHeader/ProjectHeader';
@@ -60,14 +59,6 @@ export default function ProjectLayout() {
 		(contractProductsMatch || productsMatch) ? (
 			<ProjectHeader />
 		) : undefined;
-
-	if (!resolvingProjects && !projects.length) {
-		return (
-			<p className="text-neutral-7">
-				{i18n.translate('no-projects-yet')}
-			</p>
-		);
-	}
 
 	if (standaloneMatch) {
 		return (
