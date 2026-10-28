@@ -827,12 +827,6 @@
 					}
 				},
 				{
-					"specificationKey": "support-url",
-					"value": {
-						"en_US": ""
-					}
-				},
-				{
 					"specificationKey": "type",
 					"value": {
 						"en_US": "cloud"
@@ -991,12 +985,6 @@
 					}
 				},
 				{
-					"specificationKey": "support-url",
-					"value": {
-						"en_US": ""
-					}
-				},
-				{
 					"specificationKey": "type",
 					"value": {
 						"en_US": "cloud"
@@ -1116,27 +1104,9 @@
 			],
 			"productSpecifications": [
 				{
-					"specificationKey": "app-documentation-url",
-					"value": {
-						"en_US": ""
-					}
-				},
-				{
-					"specificationKey": "app-installation-guide-url",
-					"value": {
-						"en_US": ""
-					}
-				},
-				{
 					"specificationKey": "app-settings",
 					"value": {
 						"en_US": "{\"isDownloadable\": \"true\"}"
-					}
-				},
-				{
-					"specificationKey": "app-usage-terms-url",
-					"value": {
-						"en_US": ""
 					}
 				},
 				{
@@ -1334,21 +1304,9 @@
 			],
 			"productSpecifications": [
 				{
-					"specificationKey": "app-documentation-url",
-					"value": {
-						"en_US": ""
-					}
-				},
-				{
 					"specificationKey": "app-installation-guide-url",
 					"value": {
 						"en_US": "https://docs.google.com/document/d/1cJzvkgOeHBZ08HMthGBd4pHWJ41Xr-_E_oEog_bUxY8/edit?tab=t.0"
-					}
-				},
-				{
-					"specificationKey": "app-usage-terms-url",
-					"value": {
-						"en_US": ""
 					}
 				},
 				{
@@ -1397,12 +1355,6 @@
 					"specificationKey": "support-phone",
 					"value": {
 						"en_US": "(+91) 635 157 6580"
-					}
-				},
-				{
-					"specificationKey": "support-url",
-					"value": {
-						"en_US": ""
 					}
 				},
 				{
@@ -1517,18 +1469,6 @@
 				}
 			],
 			"productSpecifications": [
-				{
-					"specificationKey": "app-documentation-url",
-					"value": {
-						"en_US": ""
-					}
-				},
-				{
-					"specificationKey": "app-installation-guide-url",
-					"value": {
-						"en_US": ""
-					}
-				},
 				{
 					"specificationKey": "developer-name",
 					"value": {
@@ -1995,12 +1935,6 @@
 				}
 			],
 			"productSpecifications": [
-				{
-					"specificationKey": "app-usage-terms-url",
-					"value": {
-						"en_US": ""
-					}
-				},
 				{
 					"specificationKey": "developer-name",
 					"value": {
@@ -4345,6 +4279,16 @@
 			],
 			"productType": "virtual",
 			"skus": [
+				{
+					"externalReferenceCode": "6392135d-619c-47b5-a496-aa483411470d",
+					"neverExpire": true,
+					"price": 0,
+					"published": true,
+					"purchasable": true,
+					"sku": "default",
+					"skuOptions": [
+					]
+				}
 			],
 			"urls": {
 				"en_US": "teampulse"

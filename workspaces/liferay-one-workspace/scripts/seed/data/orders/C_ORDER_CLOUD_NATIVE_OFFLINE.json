@@ -20,6 +20,7 @@
 			"externalReferenceCode": "C_ENT_CLOUD_NATIVE_OFFLINE_AI_HUB",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "AIHUB",
 			"maxQuantity": 1,
 			"name": "AI Hub",
 			"quantity": 1,

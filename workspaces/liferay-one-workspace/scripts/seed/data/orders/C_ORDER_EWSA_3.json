@@ -5,6 +5,7 @@
 			"externalReferenceCode": "C_ENT_EWSA_DATA_PLATFORM",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "LDP",
 			"maxQuantity": 1,
 			"name": "Liferay Data Platform",
 			"quantity": 1,
