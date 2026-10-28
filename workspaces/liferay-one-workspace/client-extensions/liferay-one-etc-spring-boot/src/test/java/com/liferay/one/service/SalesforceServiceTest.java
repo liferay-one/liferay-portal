@@ -125,29 +125,37 @@ public class SalesforceServiceTest {
 	}
 
 	@Test
-	public void testGetRecordsListsReturnsTheRecordsInQueryOrder()
+	public void testGetRecordsListsReturnsNullWhenAQueryJobIsNotComplete()
 		throws Exception {
 
 		SalesforceService salesforceService = _createSalesforceService(
 			Map.of(
 				"/marketplace-api/v1/jobs/query/750A",
-				new ArrayDeque<>(
-					List.of(
-						"{\"state\": \"InProgress\"}",
-						"{\"state\": \"JobComplete\"}")),
+				new ArrayDeque<>(List.of("{\"state\": \"JobComplete\"}")),
+				"/marketplace-api/v1/jobs/query/750B",
+				new ArrayDeque<>(List.of("{\"state\": \"InProgress\"}"))));
+
+		Assertions.assertNull(
+			salesforceService.getRecordsLists(List.of("750A", "750B")));
+	}
+
+	@Test
+	public void testGetRecordsListsReturnsTheRecordsInQueryJobOrder()
+		throws Exception {
+
+		SalesforceService salesforceService = _createSalesforceService(
+			Map.of(
+				"/marketplace-api/v1/jobs/query/750A",
+				new ArrayDeque<>(List.of("{\"state\": \"JobComplete\"}")),
 				"/marketplace-api/v1/jobs/query/750A/results",
 				new ArrayDeque<>(List.of("\"Id\"\n\"001A\"\n")),
 				"/marketplace-api/v1/jobs/query/750B",
 				new ArrayDeque<>(List.of("{\"state\": \"JobComplete\"}")),
 				"/marketplace-api/v1/jobs/query/750B/results",
-				new ArrayDeque<>(List.of("\"Id\"\n\"800A\"\n\"800B\"\n"))),
-			60000);
+				new ArrayDeque<>(List.of("\"Id\"\n\"800A\"\n\"800B\"\n"))));
 
 		List<List<JSONObject>> recordsLists = salesforceService.getRecordsLists(
-			List.of(
-				new SalesforceQuery("Account", List.of("Id"), "Id = '001A'"),
-				new SalesforceQuery(
-					"Contract", List.of("Id"), "AccountId = '001A'")));
+			List.of("750A", "750B"));
 
 		Assertions.assertEquals(2, recordsLists.size());
 
@@ -172,6 +180,39 @@ public class SalesforceServiceTest {
 			).getString(
 				"Id"
 			));
+	}
+
+	@Test
+	public void testGetRecordsListsWhenAQueryJobFails() {
+		SalesforceService salesforceService = _createSalesforceService(
+			Map.of(
+				"/marketplace-api/v1/jobs/query/750A",
+				new ArrayDeque<>(List.of("{\"state\": \"Failed\"}"))));
+
+		Exception exception = Assertions.assertThrows(
+			Exception.class,
+			() -> salesforceService.getRecordsLists(List.of("750A")));
+
+		Assertions.assertEquals(
+			"Salesforce query job 750A ended in state Failed",
+			exception.getMessage());
+	}
+
+	@Test
+	public void testPostQueryJobsReturnsTheQueryJobIdsInQueryOrder()
+		throws Exception {
+
+		SalesforceService salesforceService = _createSalesforceService(
+			Map.of());
+
+		Assertions.assertEquals(
+			List.of("750A", "750B"),
+			salesforceService.postQueryJobs(
+				List.of(
+					new SalesforceQuery(
+						"Account", List.of("Id"), "Id = '001A'"),
+					new SalesforceQuery(
+						"Contract", List.of("Id"), "AccountId = '001A'"))));
 
 		Assertions.assertEquals(2, _postBodies.size());
 		Assertions.assertEquals(
@@ -190,46 +231,6 @@ public class SalesforceServiceTest {
 			));
 	}
 
-	@Test
-	public void testGetRecordsListsWhenAQueryJobFails() {
-		SalesforceService salesforceService = _createSalesforceService(
-			Map.of(
-				"/marketplace-api/v1/jobs/query/750A",
-				new ArrayDeque<>(List.of("{\"state\": \"Failed\"}"))),
-			60000);
-
-		Exception exception = Assertions.assertThrows(
-			Exception.class,
-			() -> salesforceService.getRecordsLists(
-				List.of(
-					new SalesforceQuery(
-						"Account", List.of("Id"), "Id = '001A'"))));
-
-		Assertions.assertEquals(
-			"Salesforce query job 750A ended in state Failed",
-			exception.getMessage());
-	}
-
-	@Test
-	public void testGetRecordsListsWhenTheDeadlinePasses() {
-		SalesforceService salesforceService = _createSalesforceService(
-			Map.of(
-				"/marketplace-api/v1/jobs/query/750A",
-				new ArrayDeque<>(List.of("{\"state\": \"InProgress\"}"))),
-			-1);
-
-		Exception exception = Assertions.assertThrows(
-			Exception.class,
-			() -> salesforceService.getRecordsLists(
-				List.of(
-					new SalesforceQuery(
-						"Account", List.of("Id"), "Id = '001A'"))));
-
-		Assertions.assertEquals(
-			"Unable to complete Salesforce query jobs [750A]",
-			exception.getMessage());
-	}
-
 	private OrderItem _createOrderItem(
 		int quantity, String skuExternalReferenceCode) {
 
@@ -243,7 +244,7 @@ public class SalesforceServiceTest {
 	}
 
 	private SalesforceService _createSalesforceService(
-		Map<String, Deque<String>> responses, long queryJobTimeout) {
+		Map<String, Deque<String>> responses) {
 
 		Deque<String> queryJobIds = new ArrayDeque<>(List.of("750A", "750B"));
 
@@ -282,10 +283,6 @@ public class SalesforceServiceTest {
 			salesforceService, "_gcfBaseUrl", "https://gcf.liferay.com");
 		ReflectionTestUtils.setField(
 			salesforceService, "_idTokenCredentials", idTokenCredentials);
-		ReflectionTestUtils.setField(
-			salesforceService, "_queryJobPollInterval", 0L);
-		ReflectionTestUtils.setField(
-			salesforceService, "_queryJobTimeout", queryJobTimeout);
 
 		return salesforceService;
 	}

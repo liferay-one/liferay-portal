@@ -19,6 +19,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.DuplicateAccountException;
+import com.liferay.one.exception.SalesforceQueryJobException;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
 import com.liferay.one.license.LicenseKeyCSVExporter;
@@ -928,6 +929,21 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testGetSalesforceRecordsRejectsAnInvalidQueryJob()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		ResponseEntity<?> responseEntity =
+			accountsRestController.handleException(
+				new SalesforceQueryJobException(
+					"Salesforce query job ID ../opportunities is not valid"));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+	}
+
+	@Test
 	public void testGetSalesforceRecordsRejectsNonadministrator()
 		throws Exception {
 
@@ -944,9 +960,34 @@ public class AccountsRestControllerTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> accountsRestController.getSalesforceRecords(
-				null, _EXTERNAL_REFERENCE_CODE));
+				null, _EXTERNAL_REFERENCE_CODE, _QUERY_JOB_IDS));
 
 		Mockito.verifyNoInteractions(_salesforceSyncService);
+	}
+
+	@Test
+	public void testGetSalesforceRecordsReportsQueryJobsThatAreNotComplete()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_salesforceSyncService.getSalesforceRecordComparisons(
+				_EXTERNAL_REFERENCE_CODE, List.of(_QUERY_JOB_IDS))
+		).thenReturn(
+			null
+		);
+
+		ResponseEntity<String> responseEntity =
+			accountsRestController.getSalesforceRecords(
+				null, _EXTERNAL_REFERENCE_CODE, _QUERY_JOB_IDS);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertFalse(jsonObject.getBoolean("complete"));
+		Assertions.assertFalse(jsonObject.has("records"));
 	}
 
 	@Test
@@ -955,16 +996,9 @@ public class AccountsRestControllerTest {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Account account = _createAccount();
-
 		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			account
-		);
-
-		Mockito.when(
-			_salesforceSyncService.getSalesforceRecordComparisons(account)
+			_salesforceSyncService.getSalesforceRecordComparisons(
+				_EXTERNAL_REFERENCE_CODE, List.of(_QUERY_JOB_IDS))
 		).thenReturn(
 			List.of(
 				new SalesforceRecordComparison(
@@ -984,13 +1018,15 @@ public class AccountsRestControllerTest {
 
 		ResponseEntity<String> responseEntity =
 			accountsRestController.getSalesforceRecords(
-				null, _EXTERNAL_REFERENCE_CODE);
+				null, _EXTERNAL_REFERENCE_CODE, _QUERY_JOB_IDS);
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
-		JSONObject jsonObject = new JSONObject(
-			responseEntity.getBody()
-		).getJSONArray(
+		JSONObject bodyJSONObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertTrue(bodyJSONObject.getBoolean("complete"));
+
+		JSONObject jsonObject = bodyJSONObject.getJSONArray(
 			"records"
 		).getJSONObject(
 			0
@@ -1875,6 +1911,63 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testPostSalesforceQueryJobsRejectsNonadministrator()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.doThrow(
+			PrincipalException.class
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.postSalesforceQueryJobs(
+				null, _EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verifyNoInteractions(_salesforceSyncService);
+	}
+
+	@Test
+	public void testPostSalesforceQueryJobsReturnsTheQueryJobIdsForAdministrator()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Account account = _createAccount();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			account
+		);
+
+		Mockito.when(
+			_salesforceSyncService.postSalesforceQueryJobs(account)
+		).thenReturn(
+			List.of(_QUERY_JOB_IDS)
+		);
+
+		ResponseEntity<String> responseEntity =
+			accountsRestController.postSalesforceQueryJobs(
+				null, _EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Assertions.assertEquals(
+			"[\"750A\",\"750B\",\"750C\"]",
+			new JSONObject(
+				responseEntity.getBody()
+			).getJSONArray(
+				"queryJobIds"
+			).toString());
+	}
+
+	@Test
 	public void testPostSyncFromSalesforceRejectsNonadministrator()
 		throws Exception {
 
@@ -1891,9 +1984,61 @@ public class AccountsRestControllerTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> accountsRestController.postSyncFromSalesforce(
-				null, _EXTERNAL_REFERENCE_CODE));
+				null, _EXTERNAL_REFERENCE_CODE, _QUERY_JOB_IDS_JSON));
 
 		Mockito.verifyNoInteractions(_salesforceSyncService);
+	}
+
+	@Test
+	public void testPostSyncFromSalesforceRejectsQueryJobsThatAreNotComplete()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_salesforceSyncService.getSalesforceRecordComparisons(
+				_EXTERNAL_REFERENCE_CODE, List.of(_QUERY_JOB_IDS))
+		).thenReturn(
+			null
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> accountsRestController.postSyncFromSalesforce(
+					null, _EXTERNAL_REFERENCE_CODE, _QUERY_JOB_IDS_JSON));
+
+		Assertions.assertEquals(
+			HttpStatus.CONFLICT, responseStatusException.getStatusCode());
+
+		Mockito.verify(
+			_salesforceSyncService, Mockito.never()
+		).syncSalesforceRecordComparisons(
+			Mockito.any()
+		);
+	}
+
+	@Test
+	public void testPostSyncFromSalesforceReadsNoQueryJobsWithoutABody()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_salesforceSyncService.getSalesforceRecordComparisons(
+				_EXTERNAL_REFERENCE_CODE, List.of())
+		).thenReturn(
+			List.of()
+		);
+
+		accountsRestController.postSyncFromSalesforce(
+			null, _EXTERNAL_REFERENCE_CODE, null);
+
+		Mockito.verify(
+			_salesforceSyncService
+		).getSalesforceRecordComparisons(
+			_EXTERNAL_REFERENCE_CODE, List.of()
+		);
 	}
 
 	@Test
@@ -1902,23 +2047,26 @@ public class AccountsRestControllerTest {
 
 		AccountsRestController accountsRestController = _createController();
 
-		Account account = _createAccount();
+		List<SalesforceRecordComparison> salesforceRecordComparisons =
+			List.of();
 
 		Mockito.when(
-			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE)
+			_salesforceSyncService.getSalesforceRecordComparisons(
+				_EXTERNAL_REFERENCE_CODE, List.of(_QUERY_JOB_IDS))
 		).thenReturn(
-			account
+			salesforceRecordComparisons
 		);
 
 		Mockito.when(
-			_salesforceSyncService.syncAccount(account)
+			_salesforceSyncService.syncSalesforceRecordComparisons(
+				salesforceRecordComparisons)
 		).thenReturn(
 			2
 		);
 
 		ResponseEntity<String> responseEntity =
 			accountsRestController.postSyncFromSalesforce(
-				null, _EXTERNAL_REFERENCE_CODE);
+				null, _EXTERNAL_REFERENCE_CODE, _QUERY_JOB_IDS_JSON);
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
@@ -2770,6 +2918,11 @@ public class AccountsRestControllerTest {
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-1";
 
 	private static final String _PROJECT_ROLE_ERC = "C_PROJECT_ADMIN";
+
+	private static final String[] _QUERY_JOB_IDS = {"750A", "750B", "750C"};
+
+	private static final String _QUERY_JOB_IDS_JSON =
+		"{\"queryJobIds\": [\"750A\", \"750B\", \"750C\"]}";
 
 	private static final String _SKU_EXTERNAL_REFERENCE_CODE =
 		"01tVO00000QYrl1YAD";
