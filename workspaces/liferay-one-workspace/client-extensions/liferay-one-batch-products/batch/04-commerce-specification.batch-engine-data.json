@@ -126,32 +126,6 @@
 		},
 		{
 			"description": {
-				"en_US": "This is the number of CPUs an app needs, read by the app installers."
-			},
-			"facetable": false,
-			"key": "cpu",
-			"optionCategory": {
-				"externalReferenceCode": "RESOURCE_REQUIREMENTS"
-			},
-			"title": {
-				"en_US": "CPU"
-			}
-		},
-		{
-			"description": {
-				"en_US": "This is the latest Liferay version supported."
-			},
-			"facetable": false,
-			"key": "current-requirements",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Current Requirements"
-			}
-		},
-		{
-			"description": {
 				"en_US": "The external reference code of the SKU that the product page selects first."
 			},
 			"facetable": false,
@@ -211,19 +185,6 @@
 		},
 		{
 			"description": {
-				"en_US": "This is the length of the trial."
-			},
-			"facetable": false,
-			"key": "license-term",
-			"optionCategory": {
-				"externalReferenceCode": "PRICING_LICENSING_TERMS"
-			},
-			"title": {
-				"en_US": "License Term"
-			}
-		},
-		{
-			"description": {
 				"en_US": "This is the license type."
 			},
 			"facetable": false,
@@ -272,19 +233,6 @@
 			},
 			"title": {
 				"en_US": "Liferay Version"
-			}
-		},
-		{
-			"description": {
-				"en_US": "This indicates whether a lifetime license is offered."
-			},
-			"facetable": false,
-			"key": "lifetime-license",
-			"optionCategory": {
-				"externalReferenceCode": "PRICING_LICENSING_TERMS"
-			},
-			"title": {
-				"en_US": "Lifetime License"
 			}
 		},
 		{
@@ -338,19 +286,6 @@
 		},
 		{
 			"description": {
-				"en_US": "These are the past versions this product has worked with."
-			},
-			"facetable": false,
-			"key": "past-versions-work-with",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Past Versions Work With"
-			}
-		},
-		{
-			"description": {
 				"en_US": "This indicates whether the app is free, paid, or bundled."
 			},
 			"facetable": true,
@@ -373,19 +308,6 @@
 			},
 			"title": {
 				"en_US": "Product Downloads"
-			}
-		},
-		{
-			"description": {
-				"en_US": ""
-			},
-			"facetable": true,
-			"key": "product-family",
-			"optionCategory": {
-				"externalReferenceCode": "PRODUCT_METADATA"
-			},
-			"title": {
-				"en_US": "Product Family"
 			}
 		},
 		{
@@ -539,19 +461,6 @@
 			},
 			"title": {
 				"en_US": "Publisher Web Site URL"
-			}
-		},
-		{
-			"description": {
-				"en_US": "This is the RAM in GB an app needs, read by the app installers."
-			},
-			"facetable": false,
-			"key": "ram",
-			"optionCategory": {
-				"externalReferenceCode": "RESOURCE_REQUIREMENTS"
-			},
-			"title": {
-				"en_US": "RAM"
 			}
 		},
 		{

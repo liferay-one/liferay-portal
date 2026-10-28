@@ -80,8 +80,8 @@ export type ProductPriceModel =
 	(typeof ProductPriceModel)[keyof typeof ProductPriceModel];
 
 export const ProductSpecificationKey = {
-	APP_BUILD_NUMBER_OF_CPUS: 'cpu',
-	APP_BUILD_RAM_IN_GBS: 'ram',
+	APP_BUILD_NUMBER_OF_CPUS: 'number-of-cpus',
+	APP_BUILD_RAM_IN_GBS: 'ram-in-gb',
 	APP_DEVELOPER_NAME: 'developer-name',
 	APP_ENTRY_UUID: 'app-entry-uuid',
 	APP_LICENSING_TYPE: 'license-type',

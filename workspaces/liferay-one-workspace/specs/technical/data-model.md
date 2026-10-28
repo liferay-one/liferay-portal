@@ -98,7 +98,7 @@ Liferay system Organization, migrated from support.liferay for FLS (First Line S
 | `description` | string | |
 | `isPrimary` | boolean | Default `false` |
 | `licenseKeyProductVersion` | string | Version string in generated keys, e.g. `dxp-7.4`; null for non-key products |
-| `productFamily` | picklist | DXP · Portal · SaaS · PaaS · Commerce · Analytics · EnterpriseSearch · AIHub · CMP · DataPlatform · DSR · Partner · Support · Training · Other. Normalized from SFDC `Product2.Family` (LXC → SaaS, DXP Cloud → PaaS, Commerce/Commerce Cloud → Commerce, Enterprise Search + Cloud → EnterpriseSearch). CMP is the Content Marketing Platform; Data Platform and Digital Sales Room (DSR) are their own families. Seeded as a `product-family` product specification. |
+| `productFamily` | picklist | DXP · Portal · SaaS · PaaS · Commerce · Analytics · EnterpriseSearch · AIHub · CMP · DataPlatform · DSR · Partner · Support · Training · Other. Normalized from SFDC `Product2.Family` (LXC → SaaS, DXP Cloud → PaaS, Commerce/Commerce Cloud → Commerce, Enterprise Search + Cloud → EnterpriseSearch). CMP is the Content Marketing Platform; Data Platform and Digital Sales Room (DSR) are their own families. |
 | `metricCoverage` | string | Rules from SFDC Product Catalog |
 
 **CPSpecificationOption values (product specifications)**
@@ -115,24 +115,18 @@ Defined in `client-extensions/liferay-one-batch-products/batch/04-commerce-speci
 | `app-storefront-video-url` | App Storefront Video URL | PRODUCT_METADATA |
 | `app-usage-terms-url` | App Usage Terms URL | APP_SUPPORT_AND_HELP |
 | `cloud-enabled` | Cloud Enabled | PRODUCT_METADATA |
-| `cpu` | CPU | RESOURCE_REQUIREMENTS |
-| `current-requirements` | Current Requirements | PRODUCT_METADATA |
 | `developer-name` | Developer Name | PRODUCT_METADATA |
 | `last-updated-by` | Last Updated By | PRODUCT_METADATA |
 | `latest-version` | Latest Version | PRICING_LICENSING_TERMS |
-| `license-term` | License Term | PRICING_LICENSING_TERMS |
 | `license-type` | License Type | PRICING_LICENSING_TERMS |
 | `liferay-product-capabilities` | Liferay Product Capabilities | PRODUCT_METADATA |
 | `liferay-product-categories` | Liferay Product Categories | PRODUCT_METADATA |
 | `liferay-version` | Liferay Version | PRODUCT_METADATA |
-| `lifetime-license` | Lifetime License | PRICING_LICENSING_TERMS |
 | `number-of-cpus` | Number of CPUs | RESOURCE_REQUIREMENTS |
 | `our-selection` | Our Selection | PRODUCT_METADATA |
 | `partner-product` | Partner Product | PRODUCT_METADATA |
-| `past-versions-work-with` | Past Versions Work With | PRODUCT_METADATA |
 | `price-model` | Price Model | PRICING_LICENSING_TERMS |
 | `product-downloads` | Product Downloads | PRODUCT_METADATA |
-| `product-family` | Product Family | PRODUCT_METADATA |
 | `product-notes` | Product Notes | PRODUCT_METADATA |
 | `project-activation-profile` | Project Activation Profile | PRODUCT_METADATA |
 | `project-contacts-role-ercs` | Project Contacts Role ERCs | PRODUCT_METADATA |
@@ -144,7 +138,6 @@ Defined in `client-extensions/liferay-one-batch-products/batch/04-commerce-speci
 | `project-utilization-profile` | Project Utilization Profile | PRODUCT_METADATA |
 | `publisher-name` | Publisher Name | PRODUCT_METADATA |
 | `publisher-web-site-url` | Publisher Web Site URL | APP_SUPPORT_AND_HELP |
-| `ram` | RAM | RESOURCE_REQUIREMENTS |
 | `ram-in-gb` | RAM in GB | RESOURCE_REQUIREMENTS |
 | `solution-company-description` | Solution Company Description | SOLUTION_METADATA |
 | `solution-company-email` | Solution Company Email | SOLUTION_METADATA |
