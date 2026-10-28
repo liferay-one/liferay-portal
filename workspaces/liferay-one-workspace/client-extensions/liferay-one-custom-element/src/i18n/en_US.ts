@@ -306,6 +306,7 @@ export default {
 		'Cannot edit canceled or completed events.',
 	'cash': 'Cash',
 	'catalog': 'Catalog',
+	'catalogs-without-products': 'Catalogs without Products',
 	'categories': 'Categories',
 	'category': 'Category',
 	'change': 'Change',
@@ -560,6 +561,8 @@ export default {
 		'Download your activation key file below and upload it to the dedicated portal within your DXP environment to get started.',
 	'draft': 'Draft',
 	'drag-and-drop-to-upload-or': 'Drag and drop to upload or',
+	'duplicate-entitlement-definition-skus':
+		'Duplicate Entitlement Definition SKUs',
 	'duration': 'Duration',
 	'duration-days': 'Duration (days)',
 	'duration-of-the-extension': 'Duration of the Extension',
@@ -631,12 +634,12 @@ export default {
 	'entitlement': 'Entitlement',
 	'entitlement-definition': 'Entitlement Definition',
 	'entitlement-definition-details': 'Entitlement Definition Details',
-	'entitlement-definition-skus-without-a-match':
-		'Entitlement Definition SKUs without a Match',
+	'entitlement-definition-skus-with-a-broken-link':
+		'Entitlement Definition SKUs with a Broken Link',
 	'entitlement-definitions': 'Entitlement Definitions',
 	'entitlement-definitions-are-inactive': 'are inactive.',
-	'entitlement-definitions-without-a-product':
-		'Entitlement Definitions without a Product',
+	'entitlement-definitions-without-a-sku':
+		'Entitlement Definitions without a SKU',
 	'entitlements': 'Entitlements',
 	'entitlements-end-before-they-start':
 		'Entitlements have an end date before their start date.',
@@ -1464,8 +1467,6 @@ export default {
 	'projects': 'Projects',
 	'projects-and-resources': 'Projects and Resources',
 	'projects-have-no-members': 'Projects have no members.',
-	'projects-share-a-name':
-		'Projects share a name. An order that names one of these projects cannot be matched to a project.',
 	'projects-that-do-not-qualify-x': 'Projects that do not qualify: {0}.',
 	'projects-without-an-account': 'Projects without an Account',
 	'prompt': 'Prompt',
@@ -1739,10 +1740,7 @@ export default {
 		'are also used by another product.',
 	'skus-are-not-published-or-not-purchasable':
 		'are not published or not purchasable.',
-	'skus-have-no-entitlement-definition': 'have no entitlement definition.',
 	'skus-match-no-product': 'match no product SKU.',
-	'skus-without-entitlement-definitions':
-		'SKUs without Entitlement Definitions',
 	'solution': 'Solution',
 	'solution-deleted-successfully': 'Solution deleted successfully.',
 	'solution-details': 'Solution Details',
@@ -1900,6 +1898,8 @@ export default {
 		'The DXP app is module-based and is compatible with 7.4 builds of Liferay DXP.',
 	'the-dxp-app-is-module-based-and-is-compatible-with-7-4-builds-of-liferay-dxp-self-managed-liferay-cloud-formerly-dxp-cloud':
 		'The DXP app is module-based and is compatible with 7.4 builds of Liferay Self-Managed.',
+	'the-entitlement-definition-does-not-exist':
+		'The entitlement definition does not exist.',
 	'the-entitlement-definition-generates-activation-keys-but-has-no-license-key-family':
 		'The entitlement definition generates activation keys but has no license key family.',
 	'the-entitlement-definition-has-an-overage-rate-but-no-overage-sku':
@@ -1933,7 +1933,6 @@ export default {
 		'The product has no project item type specification.',
 	'the-product-has-no-skus': 'The product has no SKUs.',
 	'the-product-is-inactive': 'The product is inactive.',
-	'the-product-is-not-approved': 'The product is not approved.',
 	'the-product-was-not-found-in-the-catalog':
 		'The product was not found in the catalog.',
 	'the-published-version-is-x': 'The published version is {0}.',
@@ -1949,6 +1948,7 @@ export default {
 		'The selected DXP version is not supported.',
 	'the-selected-project-does-not-meet-the-necessary-resource-requirements-for-this-app-please-contact-sales-to-request-additional-resources':
 		'The selected project does not meet the necessary resource requirements for this app. Please contact Sales to request additional resources.',
+	'the-sku-matches-no-product': 'The SKU matches no product.',
 	'the-start-and-end-dates-must-be-different':
 		'The start and end dates must be different.',
 	'the-start-date-must-be-before-the-subscription-end-date':

@@ -7,33 +7,45 @@ import {Link} from 'react-router';
 import i18n from '~/i18n';
 import InspectorTable from '~/pages/Admin/components/InspectorTable/InspectorTable';
 
-import {
-	getLocalizedValue,
-	getProductName,
-} from '../../utils/productCatalogUtils';
+import {getLocalizedValue} from '../../utils/productCatalogUtils';
 import {
 	getEntitlementDefinitionColumns,
 	getEntitlementDefinitionPath,
-	getProductPath,
 } from '../../utils/productInspectorColumnsUtils';
 
 import type {Word} from '~/i18n';
 import type {InspectorTableColumn} from '~/pages/Admin/components/InspectorTable/InspectorTable';
 import type {InspectedEntry} from '~/types/accountInspection';
+import type {Catalog} from '~/types/commerce';
 import type {
 	InspectedEntitlementDefinitionSKU,
 	InspectorFinding,
 } from '~/types/productInspection';
 
 import type {
-	OrphanedSKU,
+	BrokenEntitlementDefinitionSKU,
 	ProductOrphans as ProductOrphanLists,
 	UnusedSpecification,
 } from '../../utils/getProductOrphans';
 import type {CatalogIndex} from '../../utils/productCatalogUtils';
 
-const ENTITLEMENT_DEFINITION_SKU_COLUMNS: InspectorTableColumn<InspectedEntitlementDefinitionSKU>[] =
-	[
+const CATALOG_COLUMNS: InspectorTableColumn<Catalog>[] = [
+	{label: 'name', sortable: true, value: ({name}) => name},
+	{
+		label: 'external-reference-code',
+		sortable: true,
+		value: ({externalReferenceCode}) => externalReferenceCode,
+	},
+	{label: 'account-id', sortable: true, value: ({accountId}) => accountId},
+	{label: 'id', sortable: true, value: ({id}) => id},
+];
+
+function getEntitlementDefinitionSKUColumns<
+	Entry extends InspectedEntitlementDefinitionSKU,
+>(
+	hasEntitlementDefinition: (entry: Entry) => boolean
+): InspectorTableColumn<Entry>[] {
+	return [
 		{label: 'id', sortable: true, value: ({id}) => id},
 		{
 			label: 'sku',
@@ -46,7 +58,11 @@ const ENTITLEMENT_DEFINITION_SKU_COLUMNS: InspectorTableColumn<InspectedEntitlem
 				const externalReferenceCode =
 					entitlementDefinitionSKU.r_entitlementDefinitionToSku_c_entitlementDefinitionERC;
 
-				return externalReferenceCode ? (
+				if (!externalReferenceCode) {
+					return '-';
+				}
+
+				return hasEntitlementDefinition(entitlementDefinitionSKU) ? (
 					<Link
 						to={getEntitlementDefinitionPath(
 							String(externalReferenceCode)
@@ -55,7 +71,7 @@ const ENTITLEMENT_DEFINITION_SKU_COLUMNS: InspectorTableColumn<InspectedEntitlem
 						{String(externalReferenceCode)}
 					</Link>
 				) : (
-					'-'
+					String(externalReferenceCode)
 				);
 			},
 			sortable: true,
@@ -68,33 +84,25 @@ const ENTITLEMENT_DEFINITION_SKU_COLUMNS: InspectorTableColumn<InspectedEntitlem
 			value: ({externalReferenceCode}) => externalReferenceCode,
 		},
 	];
+}
 
-const SKU_COLUMNS: InspectorTableColumn<OrphanedSKU>[] = [
-	{label: 'sku', sortable: true, value: ({sku}) => sku},
-	{
-		label: 'product',
-		render: ({product}) => (
-			<Link to={getProductPath(product.externalReferenceCode)}>
-				{getProductName(product)}
-			</Link>
+function getReasons({reasons}: BrokenEntitlementDefinitionSKU) {
+	return reasons.map((reason) => i18n.translate(reason)).join(' ');
+}
+
+const DUPLICATE_ENTITLEMENT_DEFINITION_SKU_COLUMNS =
+	getEntitlementDefinitionSKUColumns<InspectedEntitlementDefinitionSKU>(
+		() => true
+	);
+
+const BROKEN_ENTITLEMENT_DEFINITION_SKU_COLUMNS: InspectorTableColumn<BrokenEntitlementDefinitionSKU>[] =
+	[
+		...getEntitlementDefinitionSKUColumns<BrokenEntitlementDefinitionSKU>(
+			({reasons}) =>
+				!reasons.includes('the-entitlement-definition-does-not-exist')
 		),
-		sortable: true,
-		value: ({product}) => getProductName(product),
-	},
-	{
-		hidden: true,
-		label: 'external-reference-code',
-		sortable: true,
-		value: ({externalReferenceCode}) => externalReferenceCode,
-	},
-	{label: 'published', sortable: true, value: ({published}) => published},
-	{
-		label: 'purchasable',
-		sortable: true,
-		value: ({purchasable}) => purchasable,
-	},
-	{label: 'id', sortable: true, value: ({id}) => id},
-];
+		{label: 'reason', sortable: true, value: getReasons},
+	];
 
 const SPECIFICATION_COLUMNS: InspectorTableColumn<UnusedSpecification>[] = [
 	{label: 'key', sortable: true, value: ({key}) => key},
@@ -163,22 +171,22 @@ export default function ProductOrphans({
 					false
 				)}
 				id="product-inspector-orphaned-entitlement-definitions"
-				title={title('entitlement-definitions-without-a-product')}
+				title={title('entitlement-definitions-without-a-sku')}
 				{...getListProps(orphans.entitlementDefinitions)}
 			/>
 
 			<InspectorTable
-				columns={ENTITLEMENT_DEFINITION_SKU_COLUMNS}
+				columns={BROKEN_ENTITLEMENT_DEFINITION_SKU_COLUMNS}
 				id="product-inspector-orphaned-entitlement-definition-skus"
-				title={title('entitlement-definition-skus-without-a-match')}
+				title={title('entitlement-definition-skus-with-a-broken-link')}
 				{...getListProps(orphans.entitlementDefinitionSKUs)}
 			/>
 
 			<InspectorTable
-				columns={SKU_COLUMNS}
-				id="product-inspector-orphaned-skus"
-				title={title('skus-without-entitlement-definitions')}
-				{...getListProps(orphans.skus)}
+				columns={DUPLICATE_ENTITLEMENT_DEFINITION_SKU_COLUMNS}
+				id="product-inspector-duplicate-entitlement-definition-skus"
+				title={title('duplicate-entitlement-definition-skus')}
+				{...getListProps(orphans.duplicateEntitlementDefinitionSKUs)}
 			/>
 
 			<InspectorTable
@@ -193,6 +201,13 @@ export default function ProductOrphans({
 				id="product-inspector-orphaned-specifications"
 				title={title('unused-specifications')}
 				{...getListProps(orphans.specifications)}
+			/>
+
+			<InspectorTable
+				columns={CATALOG_COLUMNS}
+				id="product-inspector-orphaned-catalogs"
+				title={title('catalogs-without-products')}
+				{...getListProps(orphans.catalogs)}
 			/>
 		</>
 	);

@@ -35,12 +35,6 @@ function getProductChecks(product: InspectedProduct): ProductFinding[] {
 			'the-product-is-inactive',
 			'warning'
 		),
-		...toFinding(
-			'product',
-			isApproved ? [] : [product.id],
-			'the-product-is-not-approved',
-			'info'
-		),
 		...toCollectionFinding(
 			'skus',
 			!product.skus?.length,
@@ -136,27 +130,12 @@ function getSKUChecks(
 ): ProductFinding[] {
 	const skus = product.skus ?? [];
 
-	const {entitlementDefinitionsBySKU, productsBySKU} = index;
+	const {productsBySKU} = index;
 
 	const isApproved =
 		product.workflowStatusInfo?.code === WORKFLOW_STATUS_APPROVED;
 
 	return [
-		...toFinding(
-			'skus',
-			entitlementDefinitionsBySKU
-				? skus
-						.filter(
-							({externalReferenceCode}) =>
-								!entitlementDefinitionsBySKU.has(
-									externalReferenceCode ?? ''
-								)
-						)
-						.map(({id}) => id)
-				: [],
-			'skus-have-no-entitlement-definition',
-			'warning'
-		),
 		...toFinding(
 			'skus',
 			productsBySKU

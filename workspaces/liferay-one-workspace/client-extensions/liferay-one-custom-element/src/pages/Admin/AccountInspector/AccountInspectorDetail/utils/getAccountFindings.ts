@@ -282,30 +282,6 @@ function getLoadErrorChecks(inspection: AccountInspection): AccountFinding[] {
 	);
 }
 
-function getProjectNameChecks({
-	related: {projects},
-}: AccountInspection): AccountFinding[] {
-	const projectIdsByName = new Map<string, number[]>();
-
-	projects.items.forEach(({id, name}) => {
-		if (name) {
-			projectIdsByName.set(String(name), [
-				...(projectIdsByName.get(String(name)) ?? []),
-				id,
-			]);
-		}
-	});
-
-	return toFinding(
-		'projects',
-		[...projectIdsByName.values()]
-			.filter((projectIds) => projectIds.length > 1)
-			.flat(),
-		'projects-share-a-name',
-		'warning'
-	);
-}
-
 const SEVERITY_ORDER: AccountFindingSeverity[] = ['danger', 'warning', 'info'];
 
 function getAccountFindings(inspection: AccountInspection): AccountFinding[] {
@@ -313,7 +289,6 @@ function getAccountFindings(inspection: AccountInspection): AccountFinding[] {
 		...getLoadErrorChecks(inspection),
 		...getAccountChecks(inspection),
 		...getProjectMembershipChecks(inspection),
-		...getProjectNameChecks(inspection),
 		...getProjectAndContractReferenceChecks(inspection),
 		...getOrderChecks(inspection),
 		...getEntitlementChecks(inspection),
