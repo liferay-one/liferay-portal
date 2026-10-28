@@ -63,6 +63,7 @@ Terms used in this file:
 | REQ-ENTITLEMENTS-035 | Each day at 03:00, the system reconciles the definitions of every approved product. Only one reconciliation runs at a time. A failure for one product does not stop the other products. | P1 | LPD-99898, LPD-106163 | `CRON-RECONCILEENTITLEMENTDEFINITIONS` |
 | REQ-ENTITLEMENTS-036 | A change to a catalog product generates definitions only when the product is approved. An event without the product data changes nothing and logs a warning. | P2 | LPD-106163 | `REST-POST-OBJECT-ACTION-COMMERCE-PRODUCT-DEFINITION-UPDATE` |
 | REQ-ENTITLEMENTS-037 | One entitlement definition can link to many SKUs, and one SKU can link to many definitions. An EntitlementDefinitionSku entry holds each link. A definition is the definition of a SKU only when an entry links the two. A definition has no SKU field of its own. | P0 | LPD-109991 | `SVC-ENTITLEMENTDEFINITIONSERVICE`, `SVC-COMMERCEORDERSERVICE` |
+| REQ-ENTITLEMENTS-038 | Every environment holds the entitlement definitions, the EntitlementDefinitionSku entries, and the usage definitions of the Salesforce SKUs. The Salesforce product batch imports them before the catalog, so a catalog import that fails does not stop them. | P0 | LPD-95368 | `FLOW-BATCH-PRODUCTS` |
 
 ## Entitlement Names
 

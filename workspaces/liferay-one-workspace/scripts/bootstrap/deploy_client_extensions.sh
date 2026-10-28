@@ -41,7 +41,7 @@ function main {
 
 	SINCE="$(date +%s)"
 
-	deploy_client_extension "liferay-one-salesforce-product-batch"
+	deploy_client_extension "liferay-one-batch-products"
 
 	wait_for_batch_imports
 

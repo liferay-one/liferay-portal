@@ -1,0 +1,3041 @@
+{
+	"configuration": {
+		"className": "com.liferay.object.rest.dto.v1_0.ObjectEntry",
+		"parameters": {
+			"containsHeaders": "true",
+			"createStrategy": "UPSERT",
+			"onErrorFail": "false",
+			"taskItemDelegateName": "C_EntitlementDefinition",
+			"updateStrategy": "UPDATE"
+		},
+		"taskItemDelegateName": "C_EntitlementDefinition"
+	},
+	"items": [
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 4",
+			"externalReferenceCode": "01t0g00000c8fEuAAI_liferay-self-hosted-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 4",
+			"externalReferenceCode": "01t70000002mp1yAAA_liferay-self-hosted-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01t70000004cXzbAAE_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01t70000004cXzlAAE_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01t70000004cXzqAAE_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 2",
+			"externalReferenceCode": "01t70000004cXzvAAE_liferay-self-hosted-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 3",
+			"externalReferenceCode": "01t70000004cY00AAE_liferay-self-hosted-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 4",
+			"externalReferenceCode": "01t70000004cY05AAE_liferay-self-hosted-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 2",
+			"externalReferenceCode": "01t70000004cY0AAAU_liferay-self-hosted-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 3",
+			"externalReferenceCode": "01t70000004cY0FAAU_liferay-self-hosted-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 4",
+			"externalReferenceCode": "01t70000004cY0KAAU_liferay-self-hosted-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 2",
+			"externalReferenceCode": "01t70000004cY0PAAU_liferay-self-hosted-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 3",
+			"externalReferenceCode": "01t70000004cY0UAAU_liferay-self-hosted-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 4",
+			"externalReferenceCode": "01t70000004cY0ZAAU_liferay-self-hosted-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01t70000004cY0eAAE_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 2",
+			"externalReferenceCode": "01t70000004cY0jAAE_liferay-self-hosted-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 3",
+			"externalReferenceCode": "01t70000004cY0oAAE_liferay-self-hosted-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 4",
+			"externalReferenceCode": "01t70000004cY0tAAE_liferay-self-hosted-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01t70000004cY0yAAE_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 2",
+			"externalReferenceCode": "01t70000004cY13AAE_liferay-self-hosted-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 3",
+			"externalReferenceCode": "01t70000004cY18AAE_liferay-self-hosted-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 4",
+			"externalReferenceCode": "01t70000004cY1DAAU_liferay-self-hosted-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01t70000004cY1IAAU_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 2",
+			"externalReferenceCode": "01t70000004cY1NAAU_liferay-self-hosted-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 3",
+			"externalReferenceCode": "01t70000004cY1SAAU_liferay-self-hosted-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 4",
+			"externalReferenceCode": "01t70000004cY1XAAU_liferay-self-hosted-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 1",
+			"externalReferenceCode": "01t7000000Hvw5lAAB_liferay-portal-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 1",
+			"externalReferenceCode": "01t7000000Hw4OLAAZ_liferay-portal-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 1",
+			"externalReferenceCode": "01t7000000Hw4OfAAJ_liferay-portal-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 1",
+			"externalReferenceCode": "01t7000000Hw4POAAZ_liferay-portal-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 1",
+			"externalReferenceCode": "01t7000000Hw4PTAAZ_liferay-portal-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 2",
+			"externalReferenceCode": "01t7000000Hw4U4AAJ_liferay-portal-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 2",
+			"externalReferenceCode": "01t7000000Hw4UEAAZ_liferay-portal-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 2",
+			"externalReferenceCode": "01t7000000Hw4UJAAZ_liferay-portal-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 3",
+			"externalReferenceCode": "01t7000000Hw4UdAAJ_liferay-portal-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 3",
+			"externalReferenceCode": "01t7000000Hw4UiAAJ_liferay-portal-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 3",
+			"externalReferenceCode": "01t7000000Hw4UnAAJ_liferay-portal-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 4",
+			"externalReferenceCode": "01t7000000Hw4V7AAJ_liferay-portal-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 4",
+			"externalReferenceCode": "01t7000000Hw4VCAAZ_liferay-portal-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer Sizing 4",
+			"externalReferenceCode": "01t7000000Hw4VHAAZ_liferay-portal-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01tVO00000QaVMUYA3_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 2",
+			"externalReferenceCode": "01tVO00000QaVMVYA3_liferay-self-hosted-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 3",
+			"externalReferenceCode": "01tVO00000QaVMWYA3_liferay-self-hosted-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 4",
+			"externalReferenceCode": "01tVO00000QaVMXYA3_liferay-self-hosted-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01tVO00000QaVMYYA3_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 2",
+			"externalReferenceCode": "01tVO00000QaVMZYA3_liferay-self-hosted-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 3",
+			"externalReferenceCode": "01tVO00000QaVMaYAN_liferay-self-hosted-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 4",
+			"externalReferenceCode": "01tVO00000QaVMbYAN_liferay-self-hosted-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01tVO00000QaVMcYAN_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 2",
+			"externalReferenceCode": "01tVO00000QaVMdYAN_liferay-self-hosted-developer-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 3",
+			"externalReferenceCode": "01tVO00000QaVMeYAN_liferay-self-hosted-developer-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 4",
+			"externalReferenceCode": "01tVO00000QaVMfYAN_liferay-self-hosted-developer-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01tVO00000QaVMhYAN_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01tVO00000QaVMlYAN_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer Sizing 1",
+			"externalReferenceCode": "01tVO00000QaVMpYAN_liferay-self-hosted-developer-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Product Recommendations",
+			"externalReferenceCode": "C_ENT_DEF_ADDON_COMMERCE_RECOMMENDATIONS",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "productRecommendations",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Disaster Recovery",
+			"externalReferenceCode": "C_ENT_DEF_ADDON_DISASTER_RECOVERY",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "disasterRecovery",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
+			"displayName": "Additional Storage",
+			"externalReferenceCode": "C_ENT_DEF_ADDON_STORAGE",
+			"grantType": "fixed",
+			"maxQuantity": 100,
+			"name": "storage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 4,
+			"displayName": "Additional vCPU",
+			"externalReferenceCode": "C_ENT_DEF_ADDON_VCPU",
+			"grantType": "fixed",
+			"maxQuantity": 4,
+			"name": "vcpu",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
+			"unit": "vCPU"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Analytics Cloud",
+			"externalReferenceCode": "C_ENT_DEF_ANALYTICS_CLOUD",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "analytics-cloud",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Cloud Native",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE",
+			"grantType": "fixed",
+			"licenseKeyFamily": "Cloud Native",
+			"maxQuantity": 1,
+			"name": "cloud-native",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Cloud Native Developer",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_DEVELOPER",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Cloud Native",
+			"licenseKeyType": "developer",
+			"maxQuantity": 1,
+			"name": "cloud-native-developer",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"displayName": "Non-Production Environments",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_ENV_NONPRODUCTION",
+			"grantType": "unlimited",
+			"name": "non-production-environments",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Production Environments",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_ENV_PRODUCTION",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "production-environments",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "UAT Environments",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_ENV_UAT",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "uat-environments",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Cloud Native Non-Production",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_NON_PRODUCTION",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Cloud Native",
+			"licenseKeyType": "non-production",
+			"maxQuantity": 5,
+			"name": "cloud-native-non-production",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Production Pods",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_PODS",
+			"grantType": "fixed",
+			"maxQuantity": 5,
+			"name": "production-pods",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Cloud Native Production",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_PRODUCTION",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Cloud Native",
+			"licenseKeyType": "production",
+			"maxQuantity": 5,
+			"name": "cloud-native-production",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Cloud Native UAT",
+			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_UAT",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Cloud Native",
+			"licenseKeyType": "uat",
+			"maxQuantity": 5,
+			"name": "cloud-native-uat",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Commerce",
+			"externalReferenceCode": "C_ENT_DEF_COMMERCE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "commerce",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Commerce Cloud",
+			"externalReferenceCode": "C_ENT_DEF_COMMERCE_CLOUD",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "commerce-cloud",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Consulting - Architect",
+			"externalReferenceCode": "C_ENT_DEF_CONSULTING_ARCHITECT",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "consulting-architect",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Consulting - Pre-paid Consulting",
+			"externalReferenceCode": "C_ENT_DEF_CONSULTING_PREPAID",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "consulting-pre-paid-consulting",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Dynatrace for Liferay PaaS - S",
+			"externalReferenceCode": "C_ENT_DEF_DYNATRACE_PAAS_S",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "dynatrace-for-liferay-paas-s",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Elastic Subscription Liferay Self-Hosted - Sizing 1",
+			"externalReferenceCode": "C_ENT_DEF_ELASTIC_SELF_HOSTED_SIZING_1",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "elastic-subscription-liferay-self-hosted-sizing-1",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Enterprise Search",
+			"externalReferenceCode": "C_ENT_DEF_ENTERPRISE_SEARCH",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "enterprise-search",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Enterprise Search Cloud",
+			"externalReferenceCode": "C_ENT_DEF_ENTERPRISE_SEARCH_CLOUD",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "enterprise-search-cloud",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Database Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_DATABASE_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "database-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Disaster Recovery",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_DISASTER_RECOVERY",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "disasterRecovery",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Extensions RAM Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_EXTENSIONS_RAM_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "extensions-ram-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Extensions vCPUs Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_EXTENSIONS_VCPUS_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "extensions-vcpus-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Logs Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_LOGS_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "logs-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Storage Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_STORAGE_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "storage-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-storage-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Traffic Networking Overage",
+			"externalReferenceCode": "C_ENT_DEF_EXPERIENCE_TRAFFIC_NETWORKING_OVERAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "traffic-networking-overage",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay PaaS - Business Solution Bundle",
+			"externalReferenceCode": "C_ENT_DEF_LIFERAY_PAAS_BUSINESS",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-paas-business-solution-bundle",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Managed Services - Base Package",
+			"externalReferenceCode": "C_ENT_DEF_MANAGED_SERVICES_BASE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "managed-services-base-package",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Managed Services - Additional UAT Environment",
+			"externalReferenceCode": "C_ENT_DEF_MANAGED_SERVICES_UAT",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "managed-services-additional-uat-environment",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - APV Overage Fee",
+			"externalReferenceCode": "C_ENT_DEF_OVERAGE_APV",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-apv-overage-fee",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - MALU Overage Fee",
+			"externalReferenceCode": "C_ENT_DEF_OVERAGE_MALU",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-malu-overage-fee",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "PaaS",
+			"externalReferenceCode": "C_ENT_DEF_PAAS",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "paas",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
+			"displayName": "Storage",
+			"externalReferenceCode": "C_ENT_DEF_PAAS_ADDON_STORAGE",
+			"grantType": "fixed",
+			"maxQuantity": 100,
+			"name": "storage",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
+			"displayName": "Database",
+			"externalReferenceCode": "C_ENT_DEF_PAAS_DATABASE",
+			"grantType": "fixed",
+			"maxQuantity": 100,
+			"name": "database",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ2YAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
+			"unit": "GiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Disaster Recovery",
+			"externalReferenceCode": "C_ENT_DEF_PAAS_DISASTER_RECOVERY",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "disasterRecovery",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 2,
+			"displayName": "Extensions RAM",
+			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_RAM",
+			"grantType": "fixed",
+			"maxQuantity": 2,
+			"name": "extensions-ram",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCPzYAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
+			"unit": "GiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 3,
+			"displayName": "Extensions vCPUs",
+			"externalReferenceCode": "C_ENT_DEF_PAAS_EXTENSIONS_VCPUS",
+			"grantType": "fixed",
+			"maxQuantity": 3,
+			"name": "extensions-vcpus",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ0YAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
+			"unit": "vCPU"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "PaaS (Legacy)",
+			"externalReferenceCode": "C_ENT_DEF_PAAS_LEGACY",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "paas-legacy",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 300,
+			"displayName": "Logs",
+			"externalReferenceCode": "C_ENT_DEF_PAAS_LOGS",
+			"grantType": "fixed",
+			"maxQuantity": 300,
+			"name": "logs",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ4YAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
+			"unit": "GiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Storage",
+			"externalReferenceCode": "C_ENT_DEF_PAAS_STORAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "storage",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ1YAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
+			"unit": "TiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Traffic Networking",
+			"externalReferenceCode": "C_ENT_DEF_PAAS_TRAFFIC_NETWORKING",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "traffic-networking",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ3YAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
+			"unit": "TiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Distribution Partnership",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_DISTRIBUTION",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "distribution-partnership",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Solution Partnership - Reseller Program",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_SOLUTION_RESELLER",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "solution-partnership-reseller-program",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Technology Partnership",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_TECHNOLOGY",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "technology-partnership",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Training Partnership",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_TRAINING",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "training-partnership",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Value-Added Reseller Partnership",
+			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_VAR",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "value-added-reseller-partnership",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Portal",
+			"externalReferenceCode": "C_ENT_DEF_PORTAL",
+			"generatesActivationKey": false,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Portal",
+			"maxQuantity": 1,
+			"name": "portal",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Portal Backup",
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_BACKUP",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "backup",
+			"maxQuantity": 5,
+			"name": "portal-backup",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Portal Developer",
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_DEVELOPER",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "developer",
+			"maxQuantity": 5,
+			"name": "portal-developer",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Portal Developer Cluster",
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_DEVELOPER_CLUSTER",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "developer-cluster",
+			"maxQuantity": 5,
+			"name": "portal-developer-cluster",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Portal Enterprise-Wide License",
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_EWSA",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "portal-enterprise-wide-license",
+			"unit": "boolean"
+		},
+		{
+			"active": false,
+			"defaultQuantity": 5,
+			"displayName": "Portal Free",
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_FREE",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "free",
+			"maxQuantity": 5,
+			"name": "portal-free",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Portal Non-Production",
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_NON_PRODUCTION",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "non-production",
+			"maxQuantity": 5,
+			"name": "portal-non-production",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Portal Production",
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_PRODUCTION",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "production",
+			"maxQuantity": 5,
+			"name": "portal-production",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Portal Virtual Cluster",
+			"externalReferenceCode": "C_ENT_DEF_PORTAL_VIRTUAL_CLUSTER",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "virtual-cluster",
+			"maxQuantity": 5,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Punchout",
+			"externalReferenceCode": "C_ENT_DEF_PUNCHOUT",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "punchout",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "SaaS",
+			"externalReferenceCode": "C_ENT_DEF_SAAS",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "saas",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1000000,
+			"displayName": "APV",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_APV_1M",
+			"grantType": "fixed",
+			"maxQuantity": 1000000,
+			"name": "apv",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "page-views-monthly"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
+			"displayName": "Document Library Size",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_DOCUMENT_LIBRARY_SIZE",
+			"grantType": "fixed",
+			"maxQuantity": 100,
+			"name": "document-library-size",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - Business",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_MARKER",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-business",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - Business Plan",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_PLAN",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-business-plan",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 4,
+			"displayName": "RAM",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_RAM",
+			"grantType": "fixed",
+			"maxQuantity": 4,
+			"name": "ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 15,
+			"displayName": "Sites",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_SITES",
+			"grantType": "fixed",
+			"maxQuantity": 15,
+			"name": "sites",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 8,
+			"displayName": "vCPU",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_VCPU",
+			"grantType": "fixed",
+			"maxQuantity": 8,
+			"name": "vcpu",
+			"unit": "vCPU"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
+			"displayName": "Database",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_DATABASE",
+			"grantType": "fixed",
+			"maxQuantity": 100,
+			"name": "database",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ2YAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-database-monthly",
+			"unit": "GiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 300,
+			"displayName": "Document Library Size",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_DOCUMENT_LIBRARY_SIZE",
+			"grantType": "fixed",
+			"maxQuantity": 300,
+			"name": "document-library-size",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - Enterprise",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_MARKER",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-enterprise",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - Enterprise Plan",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_PLAN",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-enterprise-plan",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 6,
+			"displayName": "RAM",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_RAM",
+			"grantType": "fixed",
+			"maxQuantity": 6,
+			"name": "ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"displayName": "Sites",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_SITES",
+			"grantType": "unlimited",
+			"name": "sites",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 12,
+			"displayName": "vCPU",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_VCPU",
+			"grantType": "fixed",
+			"maxQuantity": 12,
+			"name": "vcpu",
+			"unit": "vCPU"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 2,
+			"displayName": "Extensions RAM",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTENSIONS_RAM",
+			"grantType": "fixed",
+			"maxQuantity": 2,
+			"name": "extensions-ram",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCPzYAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-ram-monthly",
+			"unit": "GiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 3,
+			"displayName": "Extensions vCPUs",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTENSIONS_VCPUS",
+			"grantType": "fixed",
+			"maxQuantity": 3,
+			"name": "extensions-vcpus",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ0YAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-extensions-vcpus-monthly",
+			"unit": "vCPU"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
+			"displayName": "Document Library Size",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_EXTRA_STORAGE_DL",
+			"grantType": "fixed",
+			"maxQuantity": 100,
+			"name": "document-library-size",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "SaaS (Legacy)",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_LEGACY",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "saas-legacy",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 300,
+			"displayName": "Logs",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_LOGS",
+			"grantType": "fixed",
+			"maxQuantity": 300,
+			"name": "logs",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ4YAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-logs-monthly",
+			"unit": "GiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5000,
+			"displayName": "MALU",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_MALU_5000",
+			"grantType": "fixed",
+			"maxQuantity": 5000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 50,
+			"displayName": "Document Library Size",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_PRO_DOCUMENT_LIBRARY_SIZE",
+			"grantType": "fixed",
+			"maxQuantity": 50,
+			"name": "document-library-size",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - Pro",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_PRO_MARKER",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-saas-pro",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "RAM",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_PRO_RAM",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 2,
+			"displayName": "Sites",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_PRO_SITES",
+			"grantType": "fixed",
+			"maxQuantity": 2,
+			"name": "sites",
+			"unit": "count"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "vCPU",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_PRO_VCPU",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "vcpu",
+			"unit": "vCPU"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Storage",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_STORAGE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "storage",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ1YAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "storage-gb",
+			"unit": "TiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Traffic Networking",
+			"externalReferenceCode": "C_ENT_DEF_SAAS_TRAFFIC_NETWORKING",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "traffic-networking",
+			"overageSkuExternalReferenceCode": "01tVO00000QiCQ3YAN",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "experience-traffic-networking-monthly",
+			"unit": "TiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted",
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED",
+			"generatesActivationKey": false,
+			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Liferay Self-Hosted Backup",
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_BACKUP",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "backup",
+			"maxQuantity": 5,
+			"name": "liferay-self-hosted-backup",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Complimentary",
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_COMPLIMENTARY",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyDurationDays": 30,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "complimentary",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-complimentary",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Liferay Self-Hosted Developer",
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "developer",
+			"maxQuantity": 5,
+			"name": "liferay-self-hosted-developer",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Liferay Self-Hosted Developer Cluster",
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_CLUSTER",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "developer-cluster",
+			"maxQuantity": 5,
+			"name": "liferay-self-hosted-developer-cluster",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted - Enterprise Solution",
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_ENTERPRISE",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-enterprise-solution",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Liferay Self-Hosted Non-Production",
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_NON_PRODUCTION",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "non-production",
+			"maxQuantity": 5,
+			"name": "liferay-self-hosted-non-production",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Liferay Self-Hosted Production",
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_PRODUCTION",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "production",
+			"maxQuantity": 5,
+			"name": "liferay-self-hosted-production",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Liferay Self-Hosted Virtual Cluster",
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_VIRTUAL_CLUSTER",
+			"generatesActivationKey": true,
+			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "virtual-cluster",
+			"maxQuantity": 5,
+			"name": "licenseGeneration",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "SSA - SaaS Trial",
+			"externalReferenceCode": "C_ENT_DEF_SSA_TRIAL",
+			"grantType": "fixed",
+			"maxQuantity": 1,
+			"name": "ssa-saas-trial",
+			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Active Subscription",
+			"externalReferenceCode": "active-subscription",
+			"maxQuantity": 1,
+			"name": "active-subscription"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_100000",
+			"maxQuantity": 100000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_1000000",
+			"maxQuantity": 1000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 11500000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_11500000",
+			"maxQuantity": 11500000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 120000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_120000000",
+			"maxQuantity": 120000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 14000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_14000000",
+			"maxQuantity": 14000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 160000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_160000000",
+			"maxQuantity": 160000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 17000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_17000000",
+			"maxQuantity": 17000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 2000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_2000000",
+			"maxQuantity": 2000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 20000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_20000000",
+			"maxQuantity": 20000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 200000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_200000000",
+			"maxQuantity": 200000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 25000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_25000000",
+			"maxQuantity": 25000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 250000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_250000000",
+			"maxQuantity": 250000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 30000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_30000000",
+			"maxQuantity": 30000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 300000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_300000000",
+			"maxQuantity": 300000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 3500000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_3500000",
+			"maxQuantity": 3500000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 40000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_40000000",
+			"maxQuantity": 40000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 500000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_500000",
+			"maxQuantity": 500000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_5000000",
+			"maxQuantity": 5000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 60000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_60000000",
+			"maxQuantity": 60000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 7000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_7000000",
+			"maxQuantity": 7000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 80000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_80000000",
+			"maxQuantity": 80000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 9000000,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_9000000",
+			"maxQuantity": 9000000,
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "APV",
+			"externalReferenceCode": "apv_max-none",
+			"name": "apv"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Cloud Native",
+			"externalReferenceCode": "cloud-native",
+			"maxQuantity": 1,
+			"name": "cloud-native"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Content Management System",
+			"externalReferenceCode": "content-management-system",
+			"maxQuantity": 1,
+			"name": "content-management-system"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
+			"displayName": "Database Size",
+			"externalReferenceCode": "database-size_100",
+			"maxQuantity": 100,
+			"name": "database-size",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 50,
+			"displayName": "Database Size",
+			"externalReferenceCode": "database-size_50",
+			"maxQuantity": 50,
+			"name": "database-size",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
+			"displayName": "Database",
+			"externalReferenceCode": "database_high_100",
+			"maxQuantity": 100,
+			"name": "database",
+			"productOptions": "{\"machineType\": \"high\"}",
+			"unit": "GiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
+			"displayName": "Database",
+			"externalReferenceCode": "database_standard_100",
+			"maxQuantity": 100,
+			"name": "database",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"unit": "GiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Developer Tools",
+			"externalReferenceCode": "developer-tools",
+			"maxQuantity": 1,
+			"name": "developer-tools"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Digital Asset Management",
+			"externalReferenceCode": "digital-asset-management",
+			"maxQuantity": 1,
+			"name": "digital-asset-management"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
+			"displayName": "Document Library Size",
+			"externalReferenceCode": "document-library-size_100",
+			"maxQuantity": 100,
+			"name": "document-library-size",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 300,
+			"displayName": "Document Library Size",
+			"externalReferenceCode": "document-library-size_300",
+			"maxQuantity": 300,
+			"name": "document-library-size",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 50,
+			"displayName": "Document Library Size",
+			"externalReferenceCode": "document-library-size_50",
+			"maxQuantity": 50,
+			"name": "document-library-size",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Domains",
+			"externalReferenceCode": "domains",
+			"maxQuantity": 1,
+			"name": "domains"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 10,
+			"displayName": "Domains",
+			"externalReferenceCode": "domains_10",
+			"maxQuantity": 10,
+			"name": "domains"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 15,
+			"displayName": "Domains",
+			"externalReferenceCode": "domains_15",
+			"maxQuantity": 15,
+			"name": "domains"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "DXP",
+			"externalReferenceCode": "dxp",
+			"maxQuantity": 1,
+			"name": "dxp"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "EPS 6.2",
+			"externalReferenceCode": "eps-6-2",
+			"maxQuantity": 1,
+			"name": "eps-6-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "EPS 7.0",
+			"externalReferenceCode": "eps-7-0",
+			"maxQuantity": 1,
+			"name": "eps-7-0"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "EPS 7.1",
+			"externalReferenceCode": "eps-7-1",
+			"maxQuantity": 1,
+			"name": "eps-7-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "EPS 7.2",
+			"externalReferenceCode": "eps-7-2",
+			"maxQuantity": 1,
+			"name": "eps-7-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "EPS 7.3",
+			"externalReferenceCode": "eps-7-3",
+			"maxQuantity": 1,
+			"name": "eps-7-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "EPS Portal",
+			"externalReferenceCode": "eps-portal",
+			"maxQuantity": 1,
+			"name": "eps-portal"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "EPS SS Exception",
+			"externalReferenceCode": "eps-ss-exception",
+			"maxQuantity": 1,
+			"name": "eps-ss-exception"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Extensions RAM",
+			"externalReferenceCode": "extensions-ram",
+			"maxQuantity": 1,
+			"name": "extensions-ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 4,
+			"displayName": "Extensions RAM",
+			"externalReferenceCode": "extensions-ram_high_4",
+			"maxQuantity": 4,
+			"name": "extensions-ram",
+			"productOptions": "{\"machineType\": \"high\"}"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 2,
+			"displayName": "Extensions RAM",
+			"externalReferenceCode": "extensions-ram_standard_2",
+			"maxQuantity": 2,
+			"name": "extensions-ram",
+			"productOptions": "{\"machineType\": \"standard\"}"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Extensions VCPU",
+			"externalReferenceCode": "extensions-vcpu",
+			"maxQuantity": 1,
+			"name": "extensions-vcpu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 6,
+			"displayName": "Extensions VCPUs",
+			"externalReferenceCode": "extensions-vcpus_high_6",
+			"maxQuantity": 6,
+			"name": "extensions-vcpus",
+			"productOptions": "{\"machineType\": \"high\"}"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 3,
+			"displayName": "Extensions VCPUs",
+			"externalReferenceCode": "extensions-vcpus_standard_3",
+			"maxQuantity": 3,
+			"name": "extensions-vcpus",
+			"productOptions": "{\"machineType\": \"standard\"}"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Global 24/7 Support",
+			"externalReferenceCode": "global-24-7-support",
+			"maxQuantity": 1,
+			"name": "global-24-7-support"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Global Support",
+			"externalReferenceCode": "global-support",
+			"maxQuantity": 1,
+			"name": "global-support"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Gold Support",
+			"externalReferenceCode": "gold-support",
+			"maxQuantity": 1,
+			"name": "gold-support"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Analytics Cloud",
+			"externalReferenceCode": "liferay-analytics-cloud",
+			"maxQuantity": 1,
+			"name": "liferay-analytics-cloud"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce",
+			"externalReferenceCode": "liferay-commerce",
+			"maxQuantity": 1,
+			"name": "liferay-commerce"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Backup Sizing 1",
+			"externalReferenceCode": "liferay-commerce-backup-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-backup-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Backup Sizing 2",
+			"externalReferenceCode": "liferay-commerce-backup-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-backup-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Backup Sizing 3",
+			"externalReferenceCode": "liferay-commerce-backup-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-backup-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Backup Sizing 4",
+			"externalReferenceCode": "liferay-commerce-backup-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-backup-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Non-Prod Sizing 1",
+			"externalReferenceCode": "liferay-commerce-non-prod-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-non-prod-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Non-Prod Sizing 2",
+			"externalReferenceCode": "liferay-commerce-non-prod-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-non-prod-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Non-Prod Sizing 3",
+			"externalReferenceCode": "liferay-commerce-non-prod-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-non-prod-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Non-Prod Sizing 4",
+			"externalReferenceCode": "liferay-commerce-non-prod-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-non-prod-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Prod Sizing 1",
+			"externalReferenceCode": "liferay-commerce-prod-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-prod-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Prod Sizing 2",
+			"externalReferenceCode": "liferay-commerce-prod-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-prod-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Prod Sizing 3",
+			"externalReferenceCode": "liferay-commerce-prod-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-prod-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Commerce Prod Sizing 4",
+			"externalReferenceCode": "liferay-commerce-prod-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-commerce-prod-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Enterprise Search",
+			"externalReferenceCode": "liferay-enterprise-search",
+			"maxQuantity": 1,
+			"name": "liferay-enterprise-search"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay PaaS",
+			"externalReferenceCode": "liferay-paas",
+			"maxQuantity": 1,
+			"name": "liferay-paas"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay PaaS Premium Security",
+			"externalReferenceCode": "liferay-paas-premium-security",
+			"maxQuantity": 1,
+			"name": "liferay-paas-premium-security"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal",
+			"externalReferenceCode": "liferay-portal",
+			"maxQuantity": 1,
+			"name": "liferay-portal"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Backup",
+			"externalReferenceCode": "liferay-portal-backup",
+			"maxQuantity": 1,
+			"name": "liferay-portal-backup"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Backup Sizing 1",
+			"externalReferenceCode": "liferay-portal-backup-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-portal-backup-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Backup Sizing 2",
+			"externalReferenceCode": "liferay-portal-backup-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-portal-backup-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Backup Sizing 3",
+			"externalReferenceCode": "liferay-portal-backup-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-portal-backup-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Backup Sizing 4",
+			"externalReferenceCode": "liferay-portal-backup-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-portal-backup-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Developer",
+			"externalReferenceCode": "liferay-portal-developer",
+			"maxQuantity": 1,
+			"name": "liferay-portal-developer"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Enterprise Sizing 4",
+			"externalReferenceCode": "liferay-portal-enterprise-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-portal-enterprise-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Non-Prod Sizing 1",
+			"externalReferenceCode": "liferay-portal-non-prod-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-portal-non-prod-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Non-Prod Sizing 2",
+			"externalReferenceCode": "liferay-portal-non-prod-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-portal-non-prod-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Non-Prod Sizing 3",
+			"externalReferenceCode": "liferay-portal-non-prod-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-portal-non-prod-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Non-Prod Sizing 4",
+			"externalReferenceCode": "liferay-portal-non-prod-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-portal-non-prod-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Non-Production",
+			"externalReferenceCode": "liferay-portal-non-production",
+			"maxQuantity": 1,
+			"name": "liferay-portal-non-production"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal OEM Sizing 4",
+			"externalReferenceCode": "liferay-portal-oem-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-portal-oem-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Prod Sizing 1",
+			"externalReferenceCode": "liferay-portal-prod-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-portal-prod-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Prod Sizing 2",
+			"externalReferenceCode": "liferay-portal-prod-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-portal-prod-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Prod Sizing 3",
+			"externalReferenceCode": "liferay-portal-prod-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-portal-prod-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Prod Sizing 4",
+			"externalReferenceCode": "liferay-portal-prod-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-portal-prod-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Portal Production",
+			"externalReferenceCode": "liferay-portal-production",
+			"maxQuantity": 1,
+			"name": "liferay-portal-production"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS",
+			"externalReferenceCode": "liferay-saas",
+			"maxQuantity": 1,
+			"name": "liferay-saas"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - Business",
+			"externalReferenceCode": "liferay-saas-business",
+			"maxQuantity": 1,
+			"name": "liferay-saas-business"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS Disaster Recovery",
+			"externalReferenceCode": "liferay-saas-disaster-recovery",
+			"maxQuantity": 1,
+			"name": "liferay-saas-disaster-recovery"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - Enterprise",
+			"externalReferenceCode": "liferay-saas-enterprise",
+			"maxQuantity": 1,
+			"name": "liferay-saas-enterprise"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS Flexibility",
+			"externalReferenceCode": "liferay-saas-flexibility",
+			"maxQuantity": 1,
+			"name": "liferay-saas-flexibility"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay SaaS - Pro",
+			"externalReferenceCode": "liferay-saas-pro",
+			"maxQuantity": 1,
+			"name": "liferay-saas-pro"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted",
+			"externalReferenceCode": "liferay-self-hosted",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Backup Sizing 1",
+			"externalReferenceCode": "liferay-self-hosted-backup-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-backup-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Backup Sizing 2",
+			"externalReferenceCode": "liferay-self-hosted-backup-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-backup-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Backup Sizing 3",
+			"externalReferenceCode": "liferay-self-hosted-backup-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-backup-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Backup Sizing 4",
+			"externalReferenceCode": "liferay-self-hosted-backup-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-backup-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer",
+			"externalReferenceCode": "liferay-self-hosted-developer",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "developer",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Enterprise Sizing 4",
+			"externalReferenceCode": "liferay-self-hosted-enterprise-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-enterprise-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Flex Sizing 1",
+			"externalReferenceCode": "liferay-self-hosted-flex-sizing-1",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-flex-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Flex Sizing 2",
+			"externalReferenceCode": "liferay-self-hosted-flex-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-flex-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Flex Sizing 3",
+			"externalReferenceCode": "liferay-self-hosted-flex-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-flex-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Flex Sizing 4",
+			"externalReferenceCode": "liferay-self-hosted-flex-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-flex-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Flex Sizing 5",
+			"externalReferenceCode": "liferay-self-hosted-flex-sizing-5",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-flex-sizing-5"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Flex Sizing 6",
+			"externalReferenceCode": "liferay-self-hosted-flex-sizing-6",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-flex-sizing-6"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Flex Sizing 7",
+			"externalReferenceCode": "liferay-self-hosted-flex-sizing-7",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-flex-sizing-7"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Non-Prod Sizing 1",
+			"externalReferenceCode": "liferay-self-hosted-non-prod-sizing-1",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "non-production",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-non-prod-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Non-Prod Sizing 2",
+			"externalReferenceCode": "liferay-self-hosted-non-prod-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-non-prod-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Non-Prod Sizing 3",
+			"externalReferenceCode": "liferay-self-hosted-non-prod-sizing-3",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-non-prod-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Non-Prod Sizing 4",
+			"externalReferenceCode": "liferay-self-hosted-non-prod-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-non-prod-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted OEM Sizing 4",
+			"externalReferenceCode": "liferay-self-hosted-oem-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-oem-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Prod Sizing 1",
+			"externalReferenceCode": "liferay-self-hosted-prod-sizing-1",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "production",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-prod-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Prod Sizing 2",
+			"externalReferenceCode": "liferay-self-hosted-prod-sizing-2",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-prod-sizing-2"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Prod Sizing 3",
+			"externalReferenceCode": "liferay-self-hosted-prod-sizing-3",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "production",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-prod-sizing-3"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Prod Sizing 4",
+			"externalReferenceCode": "liferay-self-hosted-prod-sizing-4",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-prod-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Limited Support",
+			"externalReferenceCode": "limited-support",
+			"maxQuantity": 1,
+			"name": "limited-support"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Logs",
+			"externalReferenceCode": "logs_high",
+			"maxQuantity": 1,
+			"name": "logs",
+			"productOptions": "{\"machineType\": \"high\"}",
+			"unit": "TiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 300,
+			"displayName": "Logs",
+			"externalReferenceCode": "logs_standard_300",
+			"maxQuantity": 300,
+			"name": "logs",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"unit": "GiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Maintenance Services",
+			"externalReferenceCode": "maintenance-services",
+			"maxQuantity": 1,
+			"name": "maintenance-services"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_100",
+			"maxQuantity": 100,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_1000",
+			"maxQuantity": 1000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 10000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_10000",
+			"maxQuantity": 10000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 100000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_100000",
+			"maxQuantity": 100000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 125000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_125000",
+			"maxQuantity": 125000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 15000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_15000",
+			"maxQuantity": 15000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 175000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_175000",
+			"maxQuantity": 175000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 20000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_20000",
+			"maxQuantity": 20000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 200000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_200000",
+			"maxQuantity": 200000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 30000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_30000",
+			"maxQuantity": 30000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 40000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_40000",
+			"maxQuantity": 40000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_5000",
+			"maxQuantity": 5000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 55000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_55000",
+			"maxQuantity": 55000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 70000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_70000",
+			"maxQuantity": 70000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 85000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_85000",
+			"maxQuantity": 85000,
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_max-none",
+			"name": "malu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Managed Services",
+			"externalReferenceCode": "managed-services",
+			"maxQuantity": 1,
+			"name": "managed-services"
+		},
+		{
+			"active": true,
+			"displayName": "Non-Production Environments",
+			"externalReferenceCode": "non-production-environments",
+			"grantType": "unlimited",
+			"name": "non-production-environments"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Partner",
+			"externalReferenceCode": "partner",
+			"maxQuantity": 1,
+			"name": "partner"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Platinum Support",
+			"externalReferenceCode": "platinum-support",
+			"maxQuantity": 1,
+			"name": "platinum-support"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Premier 24/7 Support",
+			"externalReferenceCode": "premier-24-7-support",
+			"maxQuantity": 1,
+			"name": "premier-24-7-support"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Production Environments",
+			"externalReferenceCode": "production-environments",
+			"maxQuantity": 1,
+			"name": "production-environments"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Production Pods",
+			"externalReferenceCode": "production-pods",
+			"maxQuantity": 1,
+			"name": "production-pods"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 3,
+			"displayName": "Production Pods",
+			"externalReferenceCode": "production-pods_3",
+			"maxQuantity": 3,
+			"name": "production-pods"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Production Pods",
+			"externalReferenceCode": "production-pods_5",
+			"maxQuantity": 5,
+			"name": "production-pods"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 7,
+			"displayName": "Production Pods",
+			"externalReferenceCode": "production-pods_7",
+			"maxQuantity": 7,
+			"name": "production-pods"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 9,
+			"displayName": "Production Pods",
+			"externalReferenceCode": "production-pods_9",
+			"maxQuantity": 9,
+			"name": "production-pods"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Production Pods",
+			"externalReferenceCode": "production-pods_max-none",
+			"name": "production-pods"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Project Workspaces",
+			"externalReferenceCode": "project-workspaces",
+			"maxQuantity": 1,
+			"name": "project-workspaces"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 10,
+			"displayName": "Project Workspaces",
+			"externalReferenceCode": "project-workspaces_10",
+			"maxQuantity": 10,
+			"name": "project-workspaces"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5,
+			"displayName": "Project Workspaces",
+			"externalReferenceCode": "project-workspaces_5",
+			"maxQuantity": 5,
+			"name": "project-workspaces"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "RAM",
+			"externalReferenceCode": "ram",
+			"maxQuantity": 1,
+			"name": "ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 0.5,
+			"displayName": "RAM",
+			"externalReferenceCode": "ram_0.5",
+			"maxQuantity": 0.5,
+			"name": "ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 16,
+			"displayName": "RAM",
+			"externalReferenceCode": "ram_16",
+			"maxQuantity": 16,
+			"name": "ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 2,
+			"displayName": "RAM",
+			"externalReferenceCode": "ram_2",
+			"maxQuantity": 2,
+			"name": "ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 32,
+			"displayName": "RAM",
+			"externalReferenceCode": "ram_32",
+			"maxQuantity": 32,
+			"name": "ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 4,
+			"displayName": "RAM",
+			"externalReferenceCode": "ram_4",
+			"maxQuantity": 4,
+			"name": "ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 6,
+			"displayName": "RAM",
+			"externalReferenceCode": "ram_6",
+			"maxQuantity": 6,
+			"name": "ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 64,
+			"displayName": "RAM",
+			"externalReferenceCode": "ram_64",
+			"maxQuantity": 64,
+			"name": "ram",
+			"unit": "GB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Self-Service Support",
+			"externalReferenceCode": "self-service-support",
+			"maxQuantity": 1,
+			"name": "self-service-support"
+		},
+		{
+			"active": true,
+			"displayName": "Sites",
+			"externalReferenceCode": "sites",
+			"grantType": "unlimited",
+			"name": "sites"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 15,
+			"displayName": "Sites",
+			"externalReferenceCode": "sites_15",
+			"maxQuantity": 15,
+			"name": "sites"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 2,
+			"displayName": "Sites",
+			"externalReferenceCode": "sites_2",
+			"maxQuantity": 2,
+			"name": "sites"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Standard 8/5 Support",
+			"externalReferenceCode": "standard-8-5-support",
+			"maxQuantity": 1,
+			"name": "standard-8-5-support"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Standard Support",
+			"externalReferenceCode": "standard-support",
+			"maxQuantity": 1,
+			"name": "standard-support"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Storage",
+			"externalReferenceCode": "storage_high",
+			"maxQuantity": 1,
+			"name": "storage",
+			"productOptions": "{\"machineType\": \"high\"}",
+			"unit": "TiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Storage",
+			"externalReferenceCode": "storage_standard",
+			"maxQuantity": 1,
+			"name": "storage",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"unit": "TiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Strategic 24/7 Support",
+			"externalReferenceCode": "strategic-24-7-support",
+			"maxQuantity": 1,
+			"name": "strategic-24-7-support"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "TAM Services",
+			"externalReferenceCode": "tam-services",
+			"maxQuantity": 1,
+			"name": "tam-services"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 2,
+			"displayName": "Traffic Networking",
+			"externalReferenceCode": "traffic-networking_high_2",
+			"maxQuantity": 2,
+			"name": "traffic-networking",
+			"productOptions": "{\"machineType\": \"high\"}",
+			"unit": "TiB"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Traffic Networking",
+			"externalReferenceCode": "traffic-networking_standard",
+			"maxQuantity": 1,
+			"name": "traffic-networking",
+			"productOptions": "{\"machineType\": \"standard\"}",
+			"unit": "TiB"
+		},
+		{
+			"active": true,
+			"displayName": "Transactions",
+			"externalReferenceCode": "transactions",
+			"grantType": "unlimited",
+			"name": "transactions"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 500,
+			"displayName": "Transactions",
+			"externalReferenceCode": "transactions_500",
+			"maxQuantity": 500,
+			"name": "transactions"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "UAT Environments",
+			"externalReferenceCode": "uat-environments",
+			"maxQuantity": 1,
+			"name": "uat-environments"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "VCPU",
+			"externalReferenceCode": "vcpu",
+			"maxQuantity": 1,
+			"name": "vcpu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 12,
+			"displayName": "VCPU",
+			"externalReferenceCode": "vcpu_12",
+			"maxQuantity": 12,
+			"name": "vcpu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 16,
+			"displayName": "VCPU",
+			"externalReferenceCode": "vcpu_16",
+			"maxQuantity": 16,
+			"name": "vcpu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 2,
+			"displayName": "VCPU",
+			"externalReferenceCode": "vcpu_2",
+			"maxQuantity": 2,
+			"name": "vcpu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 4,
+			"displayName": "VCPU",
+			"externalReferenceCode": "vcpu_4",
+			"maxQuantity": 4,
+			"name": "vcpu"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 8,
+			"displayName": "VCPU",
+			"externalReferenceCode": "vcpu_8",
+			"maxQuantity": 8,
+			"name": "vcpu"
+		}
+	]
+}

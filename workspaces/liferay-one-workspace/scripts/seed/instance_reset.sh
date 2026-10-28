@@ -77,8 +77,8 @@ function main {
 	echo "Redeploying the Salesforce product batch import."
 	SINCE="$(date +%s)"
 
-	./gradlew ":client-extensions:liferay-one-salesforce-product-batch:clean" \
-		":client-extensions:liferay-one-salesforce-product-batch:deploy" \
+	./gradlew ":client-extensions:liferay-one-batch-products:clean" \
+		":client-extensions:liferay-one-batch-products:deploy" \
 		-Ddeploy.docker.container.id="${container_id}"
 
 	_wait_for_batch_imports

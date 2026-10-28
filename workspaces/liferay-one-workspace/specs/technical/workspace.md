@@ -13,7 +13,7 @@
 | `liferay-one-etc-spring-boot` | Spring Boot REST service for provisioning, GCS, Jira, license gen, Salesforce Pub/Sub subscriber |
 | `liferay-one-global-css` | Shared color tokens + global styles |
 | `liferay-one-instance-settings` | Secrets and external credentials (not checked into repo) |
-| `liferay-one-salesforce-product-batch` | The Salesforce products of UAT, one per Salesforce product family, as UAT holds them: 47 draft products and 1 approved, with all SKUs unpublished except one. `scripts/seed/export_uat_products.sh` writes it from UAT, together with the seed products. Local only: its `LCP.json` keeps `scripts/deploy.sh` from deploying it |
+| `liferay-one-batch-products` | The catalog data that we own: every product specification, and the Salesforce products of UAT with their entitlement definitions, SKU links, and usage definitions. The products are one per Salesforce product family, as UAT holds them: 47 draft products and 1 approved, with all SKUs unpublished except one. The batch files are the source of truth and are edited by hand. No script writes UAT or production data; the batch deploy is the only write. `scripts/deploy.sh` deploys it after `liferay-one-batch` |
 | `liferay-one-site-initializer` | Single site initializer serving Marketplace, Support, Admin page groups |
 
 ### Site-Initializer Structure

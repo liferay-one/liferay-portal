@@ -35,7 +35,7 @@ The metric itself: what is counted, in what unit, how big a bucket is, and where
 - `usageSourceMetricKey` is the field the adapter reads from that API's response.
 - `usageSourceUnit` is the unit that field arrives in when it differs from `unit`, for example `bytes` for a metric sold in `GiB`. Leave it unset when the API already reports in `unit`.
 
-File: `scripts/seed/data/13-usage-definition.batch-engine-data.json`.
+File: `client-extensions/liferay-one-batch-products/batch/00-usage-definition.batch-engine-data.json` for a Salesforce SKU, and `scripts/seed/data/13-usage-definition.batch-engine-data.json` for any other SKU.
 
 ### 2. A Product Whose SKUs Carry a Consumption Role
 
@@ -77,7 +77,7 @@ This is the join. An entitlement definition says what one SKU grants and which m
 - `grantType: unlimited`, or a negative quantity, means the project is skipped: there is nothing to exceed.
 - `productOptions` restricts the definition to order items carrying matching SKU options. This is how one SKU sells several cap tiers: a `{"machineType": "standard"}` row and a `{"machineType": "high"}` row under the same SKU.
 
-Definitions for consumables are seed data; the automatic generation from products only covers paid apps with a license usage type. File: `scripts/seed/data/15-entitlement-definition.batch-engine-data.json`.
+The automatic generation from products only covers paid apps with a license usage type, so a consumable needs a definition from a file. File: `client-extensions/liferay-one-batch-products/batch/01-entitlement-definition.batch-engine-data.json` for a Salesforce SKU, and `scripts/seed/data/15-entitlement-definition.batch-engine-data.json` for any other SKU. Add a Salesforce definition to that batch file, and the next deploy of the batch writes it to each environment.
 
 ### 4. Entitlements, Which You Do Not Write
 
@@ -128,9 +128,9 @@ What development seeds, in this order:
 
 1. The product's SKUs with their `consumption-role` values in `06-commerce-product`.
 
-1. The `UsageDefinition` in `13-usage-definition`, with `usageSource`, `usageSourceMetricKey`, and `usageSourceUnit`.
+1. The `UsageDefinition` in `00-usage-definition` of the Salesforce product batch, or in seed `13-usage-definition`, with `usageSource`, `usageSourceMetricKey`, and `usageSourceUnit`.
 
-1. One `EntitlementDefinition` per SKU in `15-entitlement-definition`, each linked to the metric, with pricing on the allotment row and `productOptions` for tiers.
+1. One `EntitlementDefinition` per SKU in `01-entitlement-definition` of the Salesforce product batch, or in seed `15-entitlement-definition`, each linked to the metric, with pricing on the allotment row and `productOptions` for tiers.
 
 1. Only if the API shape is new: a `UsageSource` implementation and a mock fixture.
 
@@ -150,7 +150,7 @@ SaaS Experience and PaaS Experience each sell six metrics: client extension RAM,
 
 1. One mock route for the composable usage API, with a month under every allotment and a month over all six.
 
-Each metric has one overage SKU, which PaaS Experience and SaaS Experience share: the six supplemental SKUs of `salesforce-product-pay-as-you-go-usage`, for example `01tVO00000QiCQ0YAN`, Client Extensions vCPU's (1 vCPU) - Supplemental. Each allotment definition sets `overageSkuExternalReferenceCode` to its overage SKU and leaves `overageRate` unset. Each overage SKU also has one entitlement definition, `C_ENT_DEF_EXPERIENCE_<METRIC>_OVERAGE`, so an overage order item creates its entitlement as the Liferay Data Platform overage bucket does. UAT does not give these SKUs the `overage` consumption role yet, so the seed adds it in the overlay of `scripts/seed/uat_products.json`. Every Experience usage definition has an `overageBucketSize` of 1, so one bucket is one GiB or one vCPU. A report with overage therefore carries the overage SKU and the bucket count, and leaves the amount empty. BizOps prices the overage order in Salesforce. The bucket size of 1 also measures the Additional vCPU add on, whose entitlement quantity is 4 vCPUs.
+Each metric has one overage SKU, which PaaS Experience and SaaS Experience share: the six supplemental SKUs of `salesforce-product-pay-as-you-go-usage`, for example `01tVO00000QiCQ0YAN`, Client Extensions vCPU's (1 vCPU) - Supplemental. Each allotment definition sets `overageSkuExternalReferenceCode` to its overage SKU and leaves `overageRate` unset. Each overage SKU also has one entitlement definition, `C_ENT_DEF_EXPERIENCE_<METRIC>_OVERAGE`, so an overage order item creates its entitlement as the Liferay Data Platform overage bucket does. UAT does not give these SKUs the `overage` consumption role yet, so `05-commerce-product` of the Salesforce product batch sets it. Every Experience usage definition has an `overageBucketSize` of 1, so one bucket is one GiB or one vCPU. A report with overage therefore carries the overage SKU and the bucket count, and leaves the amount empty. BizOps prices the overage order in Salesforce. The bucket size of 1 also measures the Additional vCPU add on, whose entitlement quantity is 4 vCPUs.
 
 **A usage definition is one metric from one source.** `storage-gb` already counted the SaaS plan document library, the storage add on, and PaaS storage, all as seed data with no source. Pointing it at the composable usage API would read Experience storage for the SaaS plan projects too, which is a different number from a different product. So Experience storage has its own definition, and `C_ENT_DEF_PAAS_STORAGE` and `C_ENT_DEF_SAAS_STORAGE` moved to it. When a metric name already has a usage definition, check every entitlement definition linked to it before you give it a source.
 

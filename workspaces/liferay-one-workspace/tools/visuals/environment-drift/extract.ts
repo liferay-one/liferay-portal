@@ -21,7 +21,13 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {batchItems, inputFile, readJSON} from '../lib.ts';
+import {
+	SYSTEM_OBJECT_FIELD_FILE,
+	batchItems,
+	batchRelationships,
+	inputFile,
+	readJSON,
+} from '../lib.ts';
 import {readConfig} from './config.ts';
 
 import type {IExtraction} from '../lib.ts';
@@ -303,9 +309,7 @@ function _compare(snapshot: ISnapshot): IDrift[] {
 		'03-object-definition.batch-engine-data.json'
 	);
 
-	const systemDefinitions = batchItems(
-		'02-system-object-field.batch-engine-data.json'
-	);
+	const systemDefinitions = batchItems(SYSTEM_OBJECT_FIELD_FILE);
 
 	for (const definition of [...customDefinitions, ...systemDefinitions]) {
 		const erc = definition.externalReferenceCode;
@@ -452,9 +456,7 @@ function _compare(snapshot: ISnapshot): IDrift[] {
 		}
 	}
 
-	const batchRelationships = batchItems(
-		'04-object-relationship.batch-engine-data.json'
-	);
+	const relationships = batchRelationships();
 
 	const liveRelationships = snapshot.objectDefinitions.flatMap((definition) =>
 		definition.objectRelationships.filter(
@@ -462,7 +464,7 @@ function _compare(snapshot: ISnapshot): IDrift[] {
 		)
 	);
 
-	for (const relationship of batchRelationships) {
+	for (const relationship of relationships) {
 		const owner = relationship.objectDefinitionExternalReferenceCode1;
 
 		const base = {
@@ -533,7 +535,7 @@ function _compare(snapshot: ISnapshot): IDrift[] {
 		}
 
 		if (
-			batchRelationships.some(
+			relationships.some(
 				(relationship) =>
 					relationship.objectDefinitionExternalReferenceCode1 ===
 						liveRelationship.objectDefinitionExternalReferenceCode1 &&

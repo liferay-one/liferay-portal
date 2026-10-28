@@ -18,7 +18,7 @@ Pure Liferay SaaS client-extension workspace — no OSGi modules, no Ant. Client
 - `liferay-one-etc-spring-boot/` — custom REST, Salesforce Pub/Sub subscriber, crons, integration clients.
 - `liferay-one-global-css/` — shared styles.
 - `liferay-one-instance-settings/` — global Liferay instance configs.
-- `liferay-one-salesforce-product-batch/` — the Salesforce products of UAT, as UAT holds them: 47 draft products and 1 approved, with all SKUs unpublished except one. `scripts/seed/export_uat_products.sh` writes it from UAT, together with the seed products. Local only.
+- `liferay-one-batch-products/` — the catalog data that we own: every product specification, and the Salesforce products of UAT with their entitlement definitions, SKU links, and usage definitions. The products are as UAT holds them: 47 draft products and 1 approved, with all SKUs unpublished except one. The batch files are the source of truth and are edited by hand. No script writes UAT or production data; the batch deploy is the only write. It deploys to every environment, after `liferay-one-batch`.
 - `liferay-one-site-initializer/` — single site, all Object definitions + roles + fragments.
 
 ## Related Repos

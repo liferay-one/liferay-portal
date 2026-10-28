@@ -403,6 +403,16 @@
 		},
 		{
 			"description": {
+				"en_US": "Designates the product's classification from Salesforce (Add-on, Primary, Regular)."
+			},
+			"facetable": true,
+			"key": "product-type",
+			"title": {
+				"en_US": "Product Type"
+			}
+		},
+		{
+			"description": {
 				"en_US": "Selects which activation experience the project dashboard renders for this product."
 			},
 			"facetable": false,

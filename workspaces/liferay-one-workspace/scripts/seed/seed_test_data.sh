@@ -17,6 +17,8 @@ source ../_common.sh
 
 BATCH_ENGINE_URL="${LIFERAY_URL}/o/headless-batch-engine/v1.0/import-task"
 
+PRODUCT_BATCH_DIR="${WORKSPACE_ROOT}/client-extensions/liferay-one-batch-products/batch"
+
 function main {
 	_require_local_seed_target
 
@@ -24,13 +26,9 @@ function main {
 
 	_wait_for_object_definitions
 
-	# On 2026.q1.2 the liferay-one-batch client extension does not create the
-	# commerce options, because OptionResourceImpl throws a
-	# NullPointerException for each new option. Without the options, each
-	# published SKU expires its siblings. The REST import upserts, so it is
-	# safe to run when the deploy already created them.
+	local status=0
 
-	_import "${BATCH_DIR}/09-commerce-option.batch-engine-data.json"
+	_ensure_batch_records || status=1
 
 	local file
 
@@ -38,6 +36,159 @@ function main {
 	do
 		_import "${file}"
 	done
+
+	return "${status}"
+}
+
+# The batch client extensions create three kinds of record only on an
+# environment that does not have them yet, and fail on each later deploy: the
+# SGD currency and the C_PROJECT_MEMBERSHIP validation rule have no upsert on
+# 2026.q1.2, and a product import fails for each product that already has its
+# options. When a first import did not create one of them, no later deploy does,
+# so create each one that is missing. The rule must exist before the project
+# memberships, because Liferay refuses a composite key rule on an object that
+# has entries.
+
+function _ensure_batch_records {
+	local status=0
+
+	_ensure_currency || status=1
+	_ensure_object_validation_rule || status=1
+	_ensure_salesforce_products || status=1
+
+	return "${status}"
+}
+
+function _ensure_currency {
+	local http_code
+
+	http_code=$(_curl \
+		--output /dev/null \
+		--write-out "%{http_code}" \
+		"${LIFERAY_URL}/o/headless-commerce-admin-catalog/v1.0/currencies/by-externalReferenceCode/SGD")
+
+	[[ ${http_code} == "200" ]] && return 0
+
+	_import "${BATCH_DIR}/07-commerce-currency.batch-engine-data.json"
+}
+
+function _ensure_object_validation_rule {
+	local file="${BATCH_DIR}/05-object-validation-rule.batch-engine-data.json"
+
+	local object_definition_external_reference_code
+	object_definition_external_reference_code=$(_read_config "${file}" "externalReferenceCode")
+
+	local url="${LIFERAY_URL}/o/object-admin/v1.0/object-definitions/by-external-reference-code/${object_definition_external_reference_code}/object-validation-rules"
+
+	local missing_items
+
+	if ! missing_items=$(_curl --fail "${url}?pageSize=-1" | python3 -c "
+import json
+import sys
+
+external_reference_codes = {
+	item['externalReferenceCode'] for item in json.load(sys.stdin)['items']
+}
+
+with open('${file}') as file:
+	items = json.load(file)['items']
+
+json.dump(
+	[
+		item
+		for item in items
+		if item['externalReferenceCode'] not in external_reference_codes
+	],
+	sys.stdout)
+")
+	then
+		echo "Unable to read the validation rules of ${object_definition_external_reference_code}." >&2
+
+		return 1
+	fi
+
+	local item
+
+	while read -r item
+	do
+		[[ -z ${item} ]] && continue
+
+		local http_code
+
+		http_code=$(_curl \
+			--data "${item}" \
+			--header "Content-Type: application/json" \
+			--output /dev/null \
+			--write-out "%{http_code}" \
+			"${url}")
+
+		if [[ ${http_code} != 2* ]]
+		then
+			echo "Unable to add the validation rule $(echo "${item}" | _read_field "externalReferenceCode") to ${object_definition_external_reference_code}." >&2
+
+			return 1
+		fi
+
+		echo "Added the validation rule $(echo "${item}" | _read_field "externalReferenceCode") to ${object_definition_external_reference_code}."
+	done < <(echo "${missing_items}" | python3 -c "
+import json
+import sys
+
+for item in json.load(sys.stdin):
+	print(json.dumps(item))
+")
+}
+
+function _ensure_salesforce_products {
+	local file="${PRODUCT_BATCH_DIR}/05-commerce-product.batch-engine-data.json"
+
+	local missing_file
+	missing_file=$(mktemp --suffix=.batch-engine-data.json)
+
+	local count
+
+	if ! count=$(_curl --fail "${LIFERAY_URL}/o/headless-commerce-admin-catalog/v1.0/products?fields=externalReferenceCode&pageSize=-1" | python3 -c "
+import json
+import sys
+
+external_reference_codes = {
+	item['externalReferenceCode'] for item in json.load(sys.stdin)['items']
+}
+
+with open('${file}') as file:
+	batch = json.load(file)
+
+batch['items'] = [
+	item
+	for item in batch['items']
+	if item['externalReferenceCode'] not in external_reference_codes
+]
+
+with open('${missing_file}', 'w') as file:
+	json.dump(batch, file)
+
+print(len(batch['items']))
+")
+	then
+		echo "Unable to read the products." >&2
+
+		rm -f "${missing_file}"
+
+		return 1
+	fi
+
+	local status=0
+
+	if [[ ${count} != "0" ]]
+	then
+		echo "Importing ${count} missing Salesforce products."
+
+		_import "${missing_file}" || status=1
+	fi
+
+	rm -f "${missing_file}"
+
+	return "${status}"
 }
 
 function _import {

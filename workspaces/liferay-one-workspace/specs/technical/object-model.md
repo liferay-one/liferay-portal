@@ -272,7 +272,7 @@ These five findings are fixed in the batch files and in `data-model.md`. A deplo
 
 1. Two labels have no space: `UsageDefinition` and `UsageEvent` (the plural labels are correct). The object `PublisherDetail` has the ERC `C_PUBLISHER_DETAILS`. The object `GetAppInformation` has a verb phrase as its name.
 
-1. `Organization.accountEntryId` has two definitions: a system object field in `02-system-object-field` and a custom field in `expando-columns.json`. Keep one.
+1. `Organization.accountEntryId` has two definitions: a system object field in `03-system-object-field` and a custom field in `expando-columns.json`. Keep one.
 
 ## Object Reference
 
