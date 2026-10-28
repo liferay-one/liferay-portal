@@ -33,81 +33,10 @@
 			"usageSourceUnit": "events"
 		},
 		{
-			"aggregationType": "peak",
-			"externalReferenceCode": "experience-database-monthly",
-			"overageBucketSize": 1,
-			"period": "per month",
-			"unit": "GiB",
-			"usageSource": "composable-account-usage",
-			"usageSourceMetricKey": "databaseStorage",
-			"usageSourceUnit": "bytes"
-		},
-		{
-			"aggregationType": "peak",
-			"externalReferenceCode": "experience-extensions-ram-monthly",
-			"overageBucketSize": 1,
-			"period": "per month",
-			"unit": "GiB",
-			"usageSource": "composable-account-usage",
-			"usageSourceMetricKey": "clientExtensionsRAM",
-			"usageSourceUnit": "bytes"
-		},
-		{
-			"aggregationType": "peak",
-			"externalReferenceCode": "experience-extensions-vcpus-monthly",
-			"overageBucketSize": 1,
-			"period": "per month",
-			"unit": "vCPU",
-			"usageSource": "composable-account-usage",
-			"usageSourceMetricKey": "clientExtensionsCPU"
-		},
-		{
-			"aggregationType": "peak",
-			"externalReferenceCode": "experience-logs-monthly",
-			"overageBucketSize": 1,
-			"period": "per month",
-			"unit": "GiB",
-			"usageSource": "composable-account-usage",
-			"usageSourceMetricKey": "logStorage",
-			"usageSourceUnit": "bytes"
-		},
-		{
-			"aggregationType": "peak",
-			"externalReferenceCode": "experience-storage-monthly",
-			"overageBucketSize": 1,
-			"period": "per month",
-			"unit": "GiB",
-			"usageSource": "composable-account-usage",
-			"usageSourceMetricKey": "documentLibraryAndBackupStorage",
-			"usageSourceUnit": "bytes"
-		},
-		{
-			"aggregationType": "peak",
-			"externalReferenceCode": "experience-traffic-networking-monthly",
-			"overageBucketSize": 1,
-			"period": "per month",
-			"unit": "GiB",
-			"usageSource": "composable-account-usage",
-			"usageSourceMetricKey": "networkTraffic",
-			"usageSourceUnit": "bytes"
-		},
-		{
 			"aggregationType": "count",
 			"externalReferenceCode": "license-generations",
 			"period": "per contract term",
 			"unit": "licenses"
-		},
-		{
-			"aggregationType": "count",
-			"externalReferenceCode": "page-views-monthly",
-			"period": "per month",
-			"unit": "page views"
-		},
-		{
-			"aggregationType": "sum",
-			"externalReferenceCode": "storage-gb",
-			"period": "per month",
-			"unit": "GB"
 		}
 	]
 }

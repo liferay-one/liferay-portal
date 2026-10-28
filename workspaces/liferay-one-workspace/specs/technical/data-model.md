@@ -103,7 +103,7 @@ Liferay system Organization, migrated from support.liferay for FLS (First Line S
 
 **CPSpecificationOption values (product specifications)**
 
-Defined in `client-extensions/liferay-one-batch/batch/10-commerce-specification.batch-engine-data.json`, which is the source of truth for every key below.
+Defined in `client-extensions/liferay-one-batch-products/batch/04-commerce-specification.batch-engine-data.json`, which is the source of truth for every key below.
 
 | Key | Title | Option category |
 |---|---|---|

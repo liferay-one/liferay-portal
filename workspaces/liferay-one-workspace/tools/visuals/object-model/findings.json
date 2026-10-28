@@ -184,7 +184,7 @@
 		"title": "Relationship names use three patterns"
 	},
 	{
-		"body": "It is a system object field in 02-system-object-field and a custom field in expando-columns.json. Keep one.",
+		"body": "It is a system object field in 03-system-object-field and a custom field in expando-columns.json. Keep one.",
 		"edges": [
 			"SOFT_L_ORGANIZATION_accountEntryId"
 		],

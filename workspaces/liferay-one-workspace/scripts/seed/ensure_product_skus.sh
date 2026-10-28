@@ -25,7 +25,7 @@ source ../_common.sh
 # seed_test_data (which imports the products) and before populate_orders (which
 # needs the SKUs).
 #
-# The liferay-one-salesforce-product-batch client extension mirrors the
+# The liferay-one-batch-products client extension mirrors the
 # Salesforce products of UAT, where every SKU stays unpublished until an order
 # line arrives for it and the Salesforce sync publishes it. Its batch import
 # keeps the nested SKUs, so this step only publishes the SKUs that the seed
@@ -33,7 +33,7 @@ source ../_common.sh
 
 PRODUCT_BATCH_FILE="data/06-commerce-product.batch-engine-data.json"
 
-SALESFORCE_PRODUCT_BATCH_FILE="${WORKSPACE_ROOT}/client-extensions/liferay-one-salesforce-product-batch/batch/02-commerce-product.batch-engine-data.json"
+SALESFORCE_PRODUCT_BATCH_FILE="${WORKSPACE_ROOT}/client-extensions/liferay-one-batch-products/batch/05-commerce-product.batch-engine-data.json"
 
 function main {
 	_acquire_oauth_token

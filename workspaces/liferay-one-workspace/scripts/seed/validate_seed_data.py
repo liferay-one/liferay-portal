@@ -379,9 +379,11 @@ def _check_coverage(report, scope):
 		for entitlement in entitlements
 	}
 
+	seed_definitions = scope["seed_definitions"]
+
 	unused = sorted(
 		definition["externalReferenceCode"]
-		for definition in definitions
+		for definition in seed_definitions
 		if definition["externalReferenceCode"] not in used
 	)
 
@@ -389,7 +391,7 @@ def _check_coverage(report, scope):
 		report.warning(
 			"Entitlement definition grants nothing",
 			"%d of %d definitions: %s"
-			% (len(unused), len(definitions), ", ".join(unused)),
+			% (len(unused), len(seed_definitions), ", ".join(unused)),
 		)
 
 	metered = {
@@ -397,7 +399,7 @@ def _check_coverage(report, scope):
 		for event in usage_events
 	}
 
-	for usage_definition in usage_definitions:
+	for usage_definition in scope["seed_usage_definitions"]:
 		erc = usage_definition["externalReferenceCode"]
 
 		if erc not in metered:
@@ -930,17 +932,38 @@ def main():
 	)["items"]
 	roles = load(os.path.join(batch, "13-role.batch-engine-data.json"))["items"]
 
-	salesforce_products = load(
-		os.path.join(
-			WORKSPACE_ROOT,
-			"client-extensions",
-			"liferay-one-salesforce-product-batch",
-			"batch",
-			"02-commerce-product.batch-engine-data.json",
-		)
-	)["items"]
+	salesforce_batch = os.path.join(
+		WORKSPACE_ROOT,
+		"client-extensions",
+		"liferay-one-batch-products",
+		"batch",
+	)
+
+	def salesforce_items(name):
+		return load(os.path.join(salesforce_batch, name))["items"]
+
+	salesforce_products = salesforce_items(
+		"05-commerce-product.batch-engine-data.json"
+	)
 
 	catalog_products = products + salesforce_products
+
+	# The Salesforce batch holds the definitions of the Salesforce SKUs and runs
+	# before the seed, so references resolve against both, while coverage
+	# warnings only report what the seed owns
+
+	seed_definitions = definitions
+	seed_usage_definitions = usage_definitions
+
+	usage_definitions = usage_definitions + salesforce_items(
+		"00-usage-definition.batch-engine-data.json"
+	)
+	definitions = definitions + salesforce_items(
+		"01-entitlement-definition.batch-engine-data.json"
+	)
+	definition_skus = definition_skus + salesforce_items(
+		"02-entitlement-definition-sku.batch-engine-data.json"
+	)
 
 	orders = []
 	order_items = []

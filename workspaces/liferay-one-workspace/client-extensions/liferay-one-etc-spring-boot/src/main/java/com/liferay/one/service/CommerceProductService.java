@@ -202,6 +202,10 @@ public class CommerceProductService extends OneBaseService {
 			return;
 		}
 
+		if (_isLiferayIncProduct(product)) {
+			return;
+		}
+
 		String dashboardURL = StringBundler.concat(
 			lxcDXPServerProtocol, "://", lxcDXPMainDomain,
 			"/web/one/administrator-dashboard#/apps/", product.getProductId());
@@ -693,6 +697,18 @@ public class CommerceProductService extends OneBaseService {
 		}
 
 		return false;
+	}
+
+	private boolean _isLiferayIncProduct(Product product) throws Exception {
+		Catalog catalog = _commerceCatalogService.fetchCatalog(
+			CommerceCatalogConstants.
+				EXTERNAL_REFERENCE_CODE_LIFERAY_INC_CATALOG);
+
+		if (catalog == null) {
+			return false;
+		}
+
+		return Objects.equals(catalog.getId(), product.getCatalogId());
 	}
 
 	private void _logMissingSku(String salesforceProductId) {

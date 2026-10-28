@@ -193,7 +193,7 @@ with open('${file}') as file:
 # takes rather than the plain object the file authors. A later order item PATCH
 # fails with 'The product is no longer available' whenever the product is not
 # approved, which is the state of every product in the
-# liferay-one-salesforce-product-batch client extension, while the create
+# liferay-one-batch-products client extension, while the create
 # accepts them.
 
 order.pop('channelExternalReferenceCode', None)

@@ -22,7 +22,9 @@ import {
 	BATCH_DIR,
 	CUSTOM_ELEMENT_DIR,
 	SPRING_BOOT_DIR,
+	SYSTEM_OBJECT_FIELD_FILE,
 	batchItems,
+	batchRelationships,
 	inputFile,
 	listFiles,
 	readJSON,
@@ -893,10 +895,7 @@ function _model() {
 		BATCH_DIR,
 		'05-object-definition-account-entry-restricted.batch-engine-data.json'
 	);
-	const systemFieldsFile = path.join(
-		BATCH_DIR,
-		'02-system-object-field.batch-engine-data.json'
-	);
+	const systemFieldsFile = path.join(BATCH_DIR, SYSTEM_OBJECT_FIELD_FILE);
 
 	const config = readJSON<{
 		accountChildrenShared: {
@@ -906,9 +905,23 @@ function _model() {
 	}>(inputFile(import.meta.dirname, 'config.json'));
 
 	const definitions = batchItems(path.basename(definitionsFile));
-	const relationships = batchItems(path.basename(relationshipsFile));
+	const relationships = batchRelationships();
 	const restrictions = batchItems(path.basename(restrictionsFile));
 	const systemDefinitions = batchItems(path.basename(systemFieldsFile));
+
+	const systemRelationshipERCs = new Set(
+		systemDefinitions.flatMap((definition) =>
+			(definition.objectRelationships ?? []).map(
+				(relationship: {externalReferenceCode: string}) =>
+					relationship.externalReferenceCode
+			)
+		)
+	);
+
+	const relationshipFile = (relationship: {externalReferenceCode: string}) =>
+		systemRelationshipERCs.has(relationship.externalReferenceCode)
+			? systemFieldsFile
+			: relationshipsFile;
 
 	const naming: IHit[] = [];
 	const problems: string[] = [];
@@ -1047,7 +1060,7 @@ function _model() {
 		if (!relationship.externalReferenceCode) {
 			relationshipERC.push(
 				at(
-					relationshipsFile,
+					relationshipFile(relationship),
 					`"name": "${relationship.name}"`,
 					`${relationship.name} has no externalReferenceCode`
 				)
@@ -1093,7 +1106,7 @@ function _model() {
 		else if (relationship.deletionType === 'disassociate') {
 			restrictedLink.push(
 				ercAt(
-					relationshipsFile,
+					relationshipFile(relationship),
 					relationship.externalReferenceCode,
 					`${relationship.name} is disassociate, but ${erc} is restricted by it`
 				)
@@ -1123,7 +1136,7 @@ function _model() {
 		if (!restricted.has(child) && !shared.has(child)) {
 			unrestricted.push(
 				ercAt(
-					relationshipsFile,
+					relationshipFile(relationship),
 					relationship.externalReferenceCode,
 					`${child} is a child of Account through ${relationship.name} and is not account restricted`
 				)

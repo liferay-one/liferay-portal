@@ -14,14 +14,23 @@ set -o pipefail
 # build inputs deploys nothing.
 #
 # A client extension is deployable when its LCP.json does not set a top level
-# "deploy": false. The batch client extension deploys first and the site
-# initializer second, because the site initializer references the objects that
-# the batch client extension defines.
+# "deploy": false. The batch client extension deploys first, the Salesforce
+# product batch second, and the site initializer third. The Salesforce product
+# batch fills the objects and the option categories that the batch client
+# extension defines, and the site initializer references those objects.
+#
+# lcp deploy returns before the environment imports a batch. When one run
+# deploys the batch client extension and the product batch, the script waits
+# until the environment has the relationships that the product batch writes.
+# An import into a missing relationship drops the link with no error, and the
+# product batch imports again only when its zip changes.
 #
 # Usage: scripts/deploy.sh [<base-commit>]
 #
 # Environment:
 # LCP_PROJECT (required) The project and environment ID
+# LIFERAY_URL (required when the batch client extension and the product batch
+#   deploy together) The URL of the environment
 # DRY_RUN (optional) Set to true to print the commands and not run them
 #
 
@@ -66,6 +75,12 @@ function main {
 			--extension "client-extensions/${client_extension}/dist/${client_extension}.zip" \
 			--message "${client_extension} $(git rev-parse --short HEAD)" \
 			--project "${LCP_PROJECT}"
+
+		if [ "${client_extension}" == "liferay-one-batch" ] &&
+		   [[ " ${client_extensions[*]} " == *" liferay-one-batch-products "* ]]
+		then
+			_wait_for_product_batch_relationships
+		fi
 	done
 }
 
@@ -158,7 +173,7 @@ function _get_deployable_client_extensions {
 
 	local client_extension
 
-	for client_extension in liferay-one-batch liferay-one-site-initializer
+	for client_extension in liferay-one-batch liferay-one-batch-products liferay-one-site-initializer
 	do
 		if [[ " ${client_extensions[*]} " == *" ${client_extension} "* ]]
 		then
@@ -169,11 +184,28 @@ function _get_deployable_client_extensions {
 	for client_extension in "${client_extensions[@]}"
 	do
 		if [ "${client_extension}" != "liferay-one-batch" ] &&
+		   [ "${client_extension}" != "liferay-one-batch-products" ] &&
 		   [ "${client_extension}" != "liferay-one-site-initializer" ]
 		then
 			echo "${client_extension}"
 		fi
 	done
+}
+
+function _has_filter_field {
+	local http_code
+
+	http_code=$( \
+		curl \
+			--data-urlencode "filter=${2} eq '0'" \
+			--data-urlencode "pageSize=1" \
+			--get \
+			--output /dev/null \
+			--silent \
+			--write-out "%{http_code}" \
+			"${LIFERAY_URL}/o/c/${1}") || true
+
+	[ "${http_code}" == "200" ]
 }
 
 function _run {
@@ -183,6 +215,39 @@ function _run {
 	else
 		"${@}"
 	fi
+}
+
+function _wait_for_product_batch_relationships {
+	if [ "${DRY_RUN:-false}" == "true" ]
+	then
+		echo "Waiting for the relationships that liferay-one-batch-products writes."
+
+		return 0
+	fi
+
+	if [ -z "${LIFERAY_URL:-}" ]
+	then
+		echo "Set LIFERAY_URL to deploy liferay-one-batch and liferay-one-batch-products together." >&2
+
+		return 1
+	fi
+
+	echo "Waiting for the relationships that liferay-one-batch-products writes."
+
+	for _ in $(seq 1 120)
+	do
+		if _has_filter_field entitlementdefinitions r_usageDefinitionToEntitlementDefinition_c_usageDefinitionId &&
+		   _has_filter_field entitlementdefinitionskus r_entitlementDefinitionToSku_c_entitlementDefinitionId
+		then
+			return 0
+		fi
+
+		sleep 10
+	done
+
+	echo "${LIFERAY_URL} did not have the relationships of liferay-one-batch-products within 20 minutes." >&2
+
+	return 1
 }
 
 main "${@}"

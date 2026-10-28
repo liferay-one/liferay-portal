@@ -19,6 +19,17 @@ export const BATCH_DIR = path.join(
 	'client-extensions/liferay-one-batch/batch'
 );
 
+/**
+ * The batch file of the system objects. A base branch from before the file
+ * moved after the custom objects still has it as 02.
+ */
+export const SYSTEM_OBJECT_FIELD_FILE =
+	[
+		'03-system-object-field.batch-engine-data.json',
+		'02-system-object-field.batch-engine-data.json',
+	].find((fileName) => fs.existsSync(path.join(BATCH_DIR, fileName))) ??
+	'03-system-object-field.batch-engine-data.json';
+
 export const CUSTOM_ELEMENT_DIR = path.join(
 	WORKSPACE_ROOT,
 	'client-extensions/liferay-one-custom-element'
@@ -216,6 +227,19 @@ export function actionKey(action: {title: string; visual: string}): string {
 
 export function batchItems<T = any>(fileName: string): T[] {
 	return readJSON<{items: T[]}>(path.join(BATCH_DIR, fileName)).items;
+}
+
+/**
+ * Returns every relationship of the batch: the ones that a system object
+ * holds in its own item, and the ones in the relationship file.
+ */
+export function batchRelationships<T = any>(): T[] {
+	return [
+		...batchItems(SYSTEM_OBJECT_FIELD_FILE).flatMap(
+			(item) => item.objectRelationships ?? []
+		),
+		...batchItems<T>('04-object-relationship.batch-engine-data.json'),
+	];
 }
 
 /**

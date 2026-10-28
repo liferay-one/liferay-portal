@@ -157,7 +157,7 @@ function _delete_commerce_specifications {
 
 	local ercs
 
-	ercs=$(_read_ercs "${BATCH_DIR}/10-commerce-specification.batch-engine-data.json")
+	ercs=$(_read_ercs "${WORKSPACE_ROOT}/client-extensions/liferay-one-batch-products/batch/04-commerce-specification.batch-engine-data.json")
 
 	_delete_from_collection "commerce specifications" \
 		"${LIFERAY_URL}/o/headless-commerce-admin-catalog/v1.0/specifications" \
@@ -398,8 +398,15 @@ function _read_relationships_by_source {
 import collections
 import json
 
+with open('${BATCH_DIR}/03-system-object-field.batch-engine-data.json') as file:
+	items = [
+		object_relationship
+		for item in json.load(file)['items']
+		for object_relationship in item.get('objectRelationships', [])
+	]
+
 with open('${BATCH_DIR}/04-object-relationship.batch-engine-data.json') as file:
-	items = json.load(file)['items']
+	items += json.load(file)['items']
 
 groups = collections.OrderedDict()
 
@@ -426,7 +433,7 @@ function _read_system_object_fields {
 	python3 -c "
 import json
 
-with open('${BATCH_DIR}/02-system-object-field.batch-engine-data.json') as file:
+with open('${BATCH_DIR}/03-system-object-field.batch-engine-data.json') as file:
 	items = json.load(file)['items']
 
 for item in items:

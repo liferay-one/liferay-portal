@@ -6,7 +6,7 @@ The code is the source of truth. On 2026-10-16 this file was checked against the
 
 - `client-extensions/liferay-one-etc-spring-boot/src/main/java/com/liferay/one/**`, mainly the Salesforce subscribers, `CommerceOrderService`, `CommerceOrderItemService`, `EntitlementService`, `EntitlementDefinitionService`, `ContractService`, `TrialRestController`, and `UsageReportGenerator`.
 - `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml` for the object action client extensions.
-- `client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json`, `03-object-definition.batch-engine-data.json`, and `04-object-relationship.batch-engine-data.json` for the object actions, fields, and relationships.
+- `client-extensions/liferay-one-batch/batch/03-system-object-field.batch-engine-data.json`, `03-object-definition.batch-engine-data.json`, and `04-object-relationship.batch-engine-data.json` for the object actions, fields, and relationships.
 - `client-extensions/liferay-one-site-initializer/site-initializer/expando-columns.json` and `object-actions/commerce-order.object-actions.json`.
 - `client-extensions/liferay-one-custom-element/src/services/commerce/**`, `src/hooks/useProjectItems.ts`, `useProjectOrders.ts`, `useProjectCommerce.ts`, and `useProjectUsage.ts`.
 - `scripts/seed/populate_orders.sh` and `scripts/seed/populate_overages.sh`.
@@ -276,7 +276,7 @@ The report ERC is the prefix plus the project ERC, the usage definition ERC, and
 
 ## The Shared Tail
 
-Every source ends when an order item is added or changed. The object actions are defined on the Liferay system objects in `02-system-object-field.batch-engine-data.json`, except `CommerceOrderUpdate`, which the site initializer adds (`client-extensions/liferay-one-site-initializer/site-initializer/object-actions/commerce-order.object-actions.json`).
+Every source ends when an order item is added or changed. The object actions are defined on the Liferay system objects in `03-system-object-field.batch-engine-data.json`, except `CommerceOrderUpdate`, which the site initializer adds (`client-extensions/liferay-one-site-initializer/site-initializer/object-actions/commerce-order.object-actions.json`).
 
 | Action | Object | Trigger | Condition | Handler path | What it changes |
 | --- | --- | --- | --- | --- | --- |

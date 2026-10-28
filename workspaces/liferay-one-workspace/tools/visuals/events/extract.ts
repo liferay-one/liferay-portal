@@ -9,6 +9,7 @@ import * as path from 'path';
 import {
 	SITE_INITIALIZER_DIR,
 	SPRING_BOOT_DIR,
+	SYSTEM_OBJECT_FIELD_FILE,
 	WORKSPACE_ROOT,
 	batchItems,
 	listFiles,
@@ -629,8 +630,11 @@ function _objectActions(
 	};
 
 	for (const [fileName, source] of [
-		['02-system-object-field.batch-engine-data.json', 'batch 02'],
 		['03-object-definition.batch-engine-data.json', 'batch 03'],
+		[
+			SYSTEM_OBJECT_FIELD_FILE,
+			`batch ${SYSTEM_OBJECT_FIELD_FILE.slice(0, 2)}`,
+		],
 	]) {
 		for (const item of batchItems(fileName)) {
 			for (const action of item.objectActions ?? []) {

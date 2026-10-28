@@ -7,9 +7,10 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {
-	BATCH_DIR,
 	SITE_INITIALIZER_DIR,
+	SYSTEM_OBJECT_FIELD_FILE,
 	batchItems,
+	batchRelationships,
 	inputFile,
 	readJSON,
 } from '../lib.ts';
@@ -156,13 +157,12 @@ export function extract(): IExtraction {
 	const listTypeDefinitions = batchItems(
 		'00-list-type-definition.batch-engine-data.json'
 	);
-	const relationships = batchItems(
-		'04-object-relationship.batch-engine-data.json'
-	);
+	const relationships = batchRelationships();
 	const systemDefinitions = new Map(
-		batchItems('02-system-object-field.batch-engine-data.json').map(
-			(item) => [item.externalReferenceCode, item]
-		)
+		batchItems(SYSTEM_OBJECT_FIELD_FILE).map((item) => [
+			item.externalReferenceCode,
+			item,
+		])
 	);
 
 	const restricted = new Map<string, string>(
@@ -250,7 +250,7 @@ export function extract(): IExtraction {
 	for (const erc of systemDefinitions.keys()) {
 		if (!SYSTEM_OBJECTS[erc]) {
 			problems.push(
-				`02-system-object-field defines ${erc}, which SYSTEM_OBJECTS in object-model/extract.ts does not list.`
+				`${SYSTEM_OBJECT_FIELD_FILE} defines ${erc}, which SYSTEM_OBJECTS in object-model/extract.ts does not list.`
 			);
 		}
 	}
@@ -398,17 +398,18 @@ export function extract(): IExtraction {
 		)
 	);
 
-	// A batch file whose update strategy is UPDATE replaces each entity in
-	// full. On a system object that sends an empty objectRelationships, which
-	// can delete the system relationships on a redeploy.
+	// The system object file replaces each system object in full, so a
+	// redeploy deletes every relationship of a system object that its item
+	// does not list. A relationship in 04 with a system object as its parent
+	// is deleted, with its foreign keys, on the next redeploy.
 
-	const fullReplace =
-		readJSON<{configuration: any}>(
-			path.join(
-				BATCH_DIR,
-				'02-system-object-field.batch-engine-data.json'
-			)
-		).configuration?.parameters?.updateStrategy === 'UPDATE';
+	const misplacedRelationships = batchItems(
+		'04-object-relationship.batch-engine-data.json'
+	).filter((relationship) =>
+		systemDefinitions.has(
+			relationship.objectDefinitionExternalReferenceCode1
+		)
+	);
 
 	return {
 		actions: [
@@ -420,14 +421,13 @@ export function extract(): IExtraction {
 					source: [...finding.nodes, ...finding.edges].join(', '),
 					title: finding.title,
 				})),
-			...(fullReplace
+			...(misplacedRelationships.length
 				? [
 						{
-							detail: 'Batch 02 imports the six system objects with updateStrategy UPDATE, a full replace. Each item sends no objectRelationships, so a redeploy of liferay-one-batch can delete their system relationships. Test a redeploy on a scratch instance, then use PARTIAL_UPDATE if it does.',
-							severity: 'medium' as const,
-							source: 'client-extensions/liferay-one-batch/batch/02-system-object-field.batch-engine-data.json',
-							title: 'Batch 02 replaces the system objects in full',
-							tracked: 'Go-Live Tasks D8',
+							detail: `${misplacedRelationships.map((relationship) => relationship.name).join(', ')} ${misplacedRelationships.length === 1 ? 'has' : 'have'} a system object as the parent but ${misplacedRelationships.length === 1 ? 'is' : 'are'} in batch 04. The system object file replaces each system object in full, so a redeploy deletes ${misplacedRelationships.length === 1 ? 'it' : 'them'} and the foreign keys. Move ${misplacedRelationships.length === 1 ? 'it' : 'them'} to the objectRelationships of the system object item.`,
+							severity: 'high' as const,
+							source: 'client-extensions/liferay-one-batch/batch/04-object-relationship.batch-engine-data.json',
+							title: 'A system object relationship is in batch 04',
 						},
 					]
 				: []),
