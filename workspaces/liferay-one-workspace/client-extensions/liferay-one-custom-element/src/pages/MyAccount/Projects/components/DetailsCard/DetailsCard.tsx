@@ -80,7 +80,13 @@ export default function DetailsCard({
 							{row.label}
 						</span>
 
-						<span style={{color: 'var(--color-neutral-8)'}}>
+						<span
+							style={{
+								color: 'var(--color-neutral-8)',
+								minWidth: 0,
+								overflowWrap: 'anywhere',
+							}}
+						>
 							{row.value}
 						</span>
 					</div>
