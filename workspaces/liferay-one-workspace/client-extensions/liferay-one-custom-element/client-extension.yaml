@@ -13,6 +13,7 @@ liferay-one-custom-element:
         articleGettingStartedWithLiferayEnterpriseSearchURL: https://support.liferay.com/w/les-getting-started-with-liferay-enterprise-search
         cloudConsoleURL: https://console.liferay.cloud
         contactSupportURL: https://liferay.atlassian.net/servicedesk/customer/portals
+        dxpTrialProductExternalReferenceCode: PRDCT-DXP-TRIAL
         featurePreview: product-versioning-new-primary-key
         jira-fls-portal-url: https://liferay.atlassian.net/servicedesk/customer/portal/204
         jira-fls-project: LRFLS
