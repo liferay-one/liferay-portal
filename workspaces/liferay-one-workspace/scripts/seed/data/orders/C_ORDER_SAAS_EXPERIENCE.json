@@ -105,19 +105,6 @@
 		},
 		{
 			"endDate": "2027-08-09T00:00:00Z",
-			"externalReferenceCode": "C_ENT_SAAS_SUPPORT",
-			"grantType": "fixed",
-			"maxQuantity": 1,
-			"name": "liferay-saas-support",
-			"quantity": 1,
-			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-002",
-			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_SAAS",
-			"r_contractToEntitlement_c_contractERC": "C_CONTRACT_SAAS_EXPERIENCE",
-			"r_projectToEntitlement_c_projectERC": "PRJCT-002",
-			"startDate": "2026-08-09T00:00:00Z"
-		},
-		{
-			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_SAAS_TRAFFIC_NETWORKING",
 			"grantType": "fixed",
 			"maxQuantity": 1,
