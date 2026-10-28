@@ -1359,11 +1359,11 @@ public class LicenseKeysRestControllerTest {
 				new JSONObject(
 				).put(
 					"id", 3L
-				).put(
-					"licenseKeyType", "free"
 				)
 			).put(
 				"id", _FREE_ENTITLEMENT_ID
+			).put(
+				"licenseKeyType", "free"
 			));
 	}
 

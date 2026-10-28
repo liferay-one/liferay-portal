@@ -725,13 +725,13 @@ public class AppLicenseKeyGenerationServiceTest {
 			new JSONObject(
 			).put(
 				"id", 100 + entitlementId
-			).put(
-				"licenseKeyFamily", licenseKeyFamily
-			).put(
-				"licenseKeyType", licenseKeyType
 			)
 		).put(
 			"id", entitlementId
+		).put(
+			"licenseKeyFamily", licenseKeyFamily
+		).put(
+			"licenseKeyType", licenseKeyType
 		).put(
 			"name", "Entitlement " + entitlementId
 		).put(

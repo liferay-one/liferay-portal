@@ -130,9 +130,9 @@ public class LicenseKeyGenerateFormServiceTest {
 		);
 
 		List<Entitlement> entitlements = Arrays.asList(
-			_toLicenseGenerationEntitlement(
+			_toActivationKeyEntitlement(
 				1L, true, "DXP", "production", "DXP-SKU"),
-			_toLicenseGenerationEntitlement(
+			_toActivationKeyEntitlement(
 				2L, true, "DXP", "production", "SELF-HOSTED-SKU"));
 
 		List<Object> entitledProducts = _getEntitledProducts(
@@ -170,7 +170,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		List<Object> entitledProducts = _getEntitledProducts(
 			Collections.singletonList(
-				_toLicenseGenerationEntitlement(
+				_toActivationKeyEntitlement(
 					1L, true, "CMP", "production", "CMP-SKU")),
 			licenseKeyGenerateFormService);
 
@@ -208,7 +208,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		List<Object> entitledProducts = _getEntitledProducts(
 			Collections.singletonList(
-				_toLicenseGenerationEntitlement(
+				_toActivationKeyEntitlement(
 					1L, true, null, null, "TEST-APP-SKU")),
 			licenseKeyGenerateFormService);
 
@@ -238,10 +238,10 @@ public class LicenseKeyGenerateFormServiceTest {
 				).build());
 
 		List<Entitlement> entitlements = Arrays.asList(
-			_toLicenseGenerationEntitlement(
+			_toActivationKeyEntitlement(
 				1L, false, "CMP", null, "PRDCT-CONTENT-MARKETING"),
-			_toLicenseGenerationEntitlement(
-				2L, false, "CMP", "developer",
+			_toActivationKeyEntitlement(
+				2L, true, "CMP", "developer",
 				"PRDCT-CONTENT-MARKETING-DEVELOPER"));
 
 		List<Object> entitledProducts = _getEntitledProducts(
@@ -271,8 +271,7 @@ public class LicenseKeyGenerateFormServiceTest {
 				).build());
 
 		List<Entitlement> entitlements = Collections.singletonList(
-			_toLicenseGenerationEntitlement(
-				1L, true, "DXP", null, "PRDCT-DXP"));
+			_toActivationKeyEntitlement(1L, true, "DXP", null, "PRDCT-DXP"));
 
 		List<Object> entitledProducts = _getEntitledProducts(
 			entitlements, licenseKeyGenerateFormService);
@@ -294,9 +293,8 @@ public class LicenseKeyGenerateFormServiceTest {
 	public void testGetEntitledProductsWithoutAnActivationKey()
 		throws Exception {
 
-		// A SKU carrying no license usage type option leads an activation key
-		// only where its entitlement definition says so, which is what keeps
-		// the cloud products out of the bundle.
+		// An entitlement grants license keys only where its own
+		// generatesActivationKey says so, whatever its name or definition.
 
 		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
 			_toLicenseKeyGenerateFormService(
@@ -306,18 +304,13 @@ public class LicenseKeyGenerateFormServiceTest {
 				).build());
 
 		List<Entitlement> entitlements = Collections.singletonList(
-			_toLicenseGenerationEntitlement(
+			_toActivationKeyEntitlement(
 				1L, false, "Cloud Native", null, "PRDCT-CLOUD-NATIVE"));
 
 		List<Object> entitledProducts = _getEntitledProducts(
 			entitlements, licenseKeyGenerateFormService);
 
-		Assertions.assertEquals(1, entitledProducts.size());
-
-		boolean generatesActivationKey = ReflectionTestUtils.invokeMethod(
-			entitledProducts.get(0), "isGeneratesActivationKey");
-
-		Assertions.assertFalse(generatesActivationKey);
+		Assertions.assertTrue(entitledProducts.isEmpty());
 	}
 
 	@Test
@@ -374,14 +367,14 @@ public class LicenseKeyGenerateFormServiceTest {
 		).thenReturn(
 			Arrays.asList(
 				new Entitlement(
-					_toLicenseGenerationEntitlementJSONObject(
+					_toActivationKeyEntitlementJSONObject(
 						3L, true, "DXP", "non-production", "PRDCT-DXP-TRIAL"
 					).put(
 						"endDate", "2099-01-01T00:00:00Z"
 					)),
-				_toLicenseGenerationEntitlement(
+				_toActivationKeyEntitlement(
 					1L, true, "DXP", "non-production", "PRDCT-DXP-TRIAL"),
-				_toLicenseGenerationEntitlement(
+				_toActivationKeyEntitlement(
 					2L, true, "CMP", null, "PRDCT-CONTENT-MARKETING-TRIAL"))
 		);
 
@@ -540,9 +533,9 @@ public class LicenseKeyGenerateFormServiceTest {
 			entitlementService.getActiveUnassignedEntitlements(1L)
 		).thenReturn(
 			Arrays.asList(
-				_toLicenseGenerationEntitlement(
+				_toActivationKeyEntitlement(
 					1L, true, "DXP", "free", "PRDCT-DXP"),
-				_toLicenseGenerationEntitlement(
+				_toActivationKeyEntitlement(
 					2L, true, "DXP", "free", "PRDCT-DXP"))
 		);
 
@@ -667,6 +660,22 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetInstanceSizeReadsTheEntitlementName() {
+		Assertions.assertEquals(
+			3,
+			LicenseKeyGenerateFormService.getInstanceSize(
+				_toEntitlement(1L, "liferay-self-hosted-prod-sizing-3")));
+		Assertions.assertEquals(
+			7,
+			LicenseKeyGenerateFormService.getInstanceSize(
+				_toEntitlement(1L, "Liferay Self-Hosted Flex Sizing 7")));
+		Assertions.assertEquals(
+			1,
+			LicenseKeyGenerateFormService.getInstanceSize(
+				_toEntitlement(1L, "liferay-self-hosted-developer")));
+	}
+
+	@Test
 	public void testGetKeyTypesCarriesTheLicenseKeyDuration() {
 		Entitlement entitlement = new Entitlement(
 			new JSONObject(
@@ -720,11 +729,11 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		Entitlement entitlement = _toEntitlement(5.0);
 
-		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
-			HashMapBuilder.<String, Map<String, Entitlement>>put(
+		Map<String, Map<String, List<Entitlement>>> licenseKeyTypeEntitlements =
+			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
-				(Map<String, Entitlement>)HashMapBuilder.put(
-					"production", entitlement
+				(Map<String, List<Entitlement>>)HashMapBuilder.put(
+					"production", Collections.singletonList(entitlement)
 				).build()
 			).build();
 
@@ -752,6 +761,59 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertEquals(
 			0, subscriptionJSONObject.getInt("availableCount"));
 		Assertions.assertEquals(5, subscriptionJSONObject.getInt("totalCount"));
+	}
+
+	@Test
+	public void testGetKeyTypesListsEachEntitlementOfTheKeyType() {
+		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
+			LicenseKeyTypeService.class);
+
+		Mockito.when(
+			licenseKeyTypeService.getLicenseKeyTypes()
+		).thenReturn(
+			Collections.singletonList(LicenseKeyType.PRODUCTION)
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyTypeService",
+			licenseKeyTypeService);
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
+			false, false, false, Collections.emptyMap(), "DXP",
+			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
+				"DXP",
+				(Map<String, List<Entitlement>>)HashMapBuilder.put(
+					"production",
+					Arrays.asList(
+						_toEntitlement(1L, "liferay-self-hosted-prod-sizing-1"),
+						_toEntitlement(2L, "liferay-self-hosted-prod-sizing-3"))
+				).build()
+			).build(),
+			Collections.emptyList(), true, false);
+
+		Assertions.assertEquals(1, jsonArray.length());
+
+		JSONArray subscriptionsJSONArray = jsonArray.getJSONObject(
+			0
+		).getJSONArray(
+			"subscriptions"
+		);
+
+		Assertions.assertEquals(2, subscriptionsJSONArray.length());
+
+		for (int i = 0; i < subscriptionsJSONArray.length(); i++) {
+			JSONObject subscriptionJSONObject =
+				subscriptionsJSONArray.getJSONObject(i);
+
+			Assertions.assertEquals(
+				i + 1, subscriptionJSONObject.getLong("entitlementId"));
+			Assertions.assertEquals(
+				(i * 2) + 1, subscriptionJSONObject.getInt("instanceSize"));
+		}
 	}
 
 	@Test
@@ -844,14 +906,15 @@ public class LicenseKeyGenerateFormServiceTest {
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
 			false, false, false, Collections.emptyMap(), "DXP",
-			HashMapBuilder.<String, Map<String, Entitlement>>put(
+			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
-				(Map<String, Entitlement>)HashMapBuilder.put(
-					"developer", _toEntitlement(5.0)
+				(Map<String, List<Entitlement>>)HashMapBuilder.put(
+					"developer", Collections.singletonList(_toEntitlement(5.0))
 				).put(
-					"developer-cluster", _toEntitlement(5.0)
+					"developer-cluster",
+					Collections.singletonList(_toEntitlement(5.0))
 				).put(
-					"production", _toEntitlement(5.0)
+					"production", Collections.singletonList(_toEntitlement(5.0))
 				).build()
 			).build(),
 			Collections.emptyList(), false, false);
@@ -999,7 +1062,7 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertEquals(
 			"cmp-app-entry-uuid",
 			LicenseKeyGenerateFormService.getProductId(
-				_toLicenseGenerationEntitlement(1L, true, "CMP", null, null),
+				_toActivationKeyEntitlement(1L, true, "CMP", null, null),
 				_toProduct("PRDCT-CONTENT-MARKETING", "cmp-app-entry-uuid")));
 	}
 
@@ -1008,7 +1071,7 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertEquals(
 			LicenseConstants.PRODUCT_ID_PORTAL,
 			LicenseKeyGenerateFormService.getProductId(
-				_toLicenseGenerationEntitlement(1L, true, "CMP", null, null),
+				_toActivationKeyEntitlement(1L, true, "CMP", null, null),
 				_toProduct(1L, "PRDCT-CONTENT-MARKETING")));
 	}
 
@@ -1017,7 +1080,7 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertEquals(
 			LicenseConstants.PRODUCT_ID_PORTAL,
 			LicenseKeyGenerateFormService.getProductId(
-				_toLicenseGenerationEntitlement(1L, true, "DXP", null, null),
+				_toActivationKeyEntitlement(1L, true, "DXP", null, null),
 				_toProduct("PRDCT-DXP", "cmp-app-entry-uuid")));
 	}
 
@@ -1442,10 +1505,10 @@ public class LicenseKeyGenerateFormServiceTest {
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false,
 			allowComplimentary, false, hasComplimentaryActivationKey, false,
 			Collections.emptyMap(), "DXP",
-			HashMapBuilder.<String, Map<String, Entitlement>>put(
+			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
-				(Map<String, Entitlement>)HashMapBuilder.put(
-					"complimentary", entitlement
+				(Map<String, List<Entitlement>>)HashMapBuilder.put(
+					"complimentary", Collections.singletonList(entitlement)
 				).build()
 			).build(),
 			Collections.emptyList(), true, false);
@@ -1514,12 +1577,12 @@ public class LicenseKeyGenerateFormServiceTest {
 		return ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", admin,
 			false, false, false, true, new HashMap<Long, Integer>(), "DXP",
-			HashMapBuilder.<String, Map<String, Entitlement>>put(
+			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
-				(Map<String, Entitlement>)HashMapBuilder.put(
-					"developer", _toEntitlement(5.0)
+				(Map<String, List<Entitlement>>)HashMapBuilder.put(
+					"developer", Collections.singletonList(_toEntitlement(5.0))
 				).put(
-					"production", _toEntitlement(5.0)
+					"production", Collections.singletonList(_toEntitlement(5.0))
 				).build()
 			).build(),
 			Collections.singletonList(_toProductVersion("7.4", "DXP 7.4")),
@@ -1548,6 +1611,16 @@ public class LicenseKeyGenerateFormServiceTest {
 		customField.setCustomValue(() -> customValue);
 
 		return customField;
+	}
+
+	private Entitlement _toEntitlement(long entitlementId, String name) {
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"id", entitlementId
+			).put(
+				"name", name
+			));
 	}
 
 	private Entitlement _toEntitlement(Double maxQuantity) {
@@ -1600,41 +1673,31 @@ public class LicenseKeyGenerateFormServiceTest {
 		);
 	}
 
-	private Entitlement _toLicenseGenerationEntitlement(
+	private Entitlement _toActivationKeyEntitlement(
 		long entitlementId, boolean generatesActivationKey,
 		String licenseKeyFamily, String licenseKeyType,
 		String skuExternalReferenceCode) {
 
 		return new Entitlement(
-			_toLicenseGenerationEntitlementJSONObject(
+			_toActivationKeyEntitlementJSONObject(
 				entitlementId, generatesActivationKey, licenseKeyFamily,
 				licenseKeyType, skuExternalReferenceCode));
 	}
 
-	private JSONObject _toLicenseGenerationEntitlementJSONObject(
+	private JSONObject _toActivationKeyEntitlementJSONObject(
 		long entitlementId, boolean generatesActivationKey,
 		String licenseKeyFamily, String licenseKeyType,
 		String skuExternalReferenceCode) {
 
 		return new JSONObject(
 		).put(
-			"entitlementDefinitionToEntitlement",
-			new JSONObject(
-			).put(
-				"generatesActivationKey", generatesActivationKey
-			).put(
-				"id", entitlementId
-			).put(
-				"licenseKeyFamily", licenseKeyFamily
-			).put(
-				"licenseKeyType", licenseKeyType
-			).put(
-				"name",
-				LicenseKeyGenerationConstants.
-					ENTITLEMENT_DEFINITION_NAME_LICENSE_GENERATION
-			)
+			"generatesActivationKey", generatesActivationKey
 		).put(
 			"id", entitlementId
+		).put(
+			"licenseKeyFamily", licenseKeyFamily
+		).put(
+			"licenseKeyType", licenseKeyType
 		).put(
 			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
@@ -1843,11 +1906,11 @@ public class LicenseKeyGenerateFormServiceTest {
 				new JSONObject(
 				).put(
 					"id", 1L
-				).put(
-					"licenseKeyFamily", licenseKeyFamily
 				)
 			).put(
 				"id", 1L
+			).put(
+				"licenseKeyFamily", licenseKeyFamily
 			).put(
 				"startDate", "2026-01-01T00:00:00Z"
 			));

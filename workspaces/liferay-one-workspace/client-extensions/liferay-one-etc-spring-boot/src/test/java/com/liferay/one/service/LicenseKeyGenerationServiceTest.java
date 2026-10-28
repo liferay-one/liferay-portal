@@ -25,6 +25,7 @@ import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.function.UnsafeSupplier;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
@@ -2195,6 +2196,34 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyUsesTheSizingOfTheSubscriptionEntitlement()
+		throws Exception {
+
+		_stubEntitlements(
+			_toNamedEntitlement(1L, "liferay-self-hosted-prod-sizing-3"),
+			_toEntitlement(2L, 5.0));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toGenerateRequest(Arrays.asList(1L, 2L), 1L));
+
+		Assertions.assertEquals(
+			Collections.nCopies(2, "Sizing 3"),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 32));
+		Assertions.assertEquals(
+			Collections.nCopies(2, "Sizing 3"),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 13));
+		Assertions.assertEquals(
+			Collections.nCopies(2, "Sizing 3"),
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 14));
+	}
+
+	@Test
 	public void testGenerateActivationKeyWithUnentitledBundleProduct()
 		throws Exception {
 
@@ -2444,6 +2473,24 @@ public class LicenseKeyGenerationServiceTest {
 			Collections.singletonList(
 				LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS),
 			_getInvocationArguments(_licenseKeyExporter, "toXML", 11));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLHasNoSizing() throws Exception {
+		_stubEntitlements(_toDeveloperEntitlement(1L, "PRDCT-DXP"));
+
+		_stubLicensedProducts();
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Collections.emptyList(), "developer", "Liferay DXP", _toProject(),
+			"7.4");
+
+		Assertions.assertEquals(
+			Collections.singletonList(StringPool.BLANK),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 13));
+		Assertions.assertEquals(
+			Collections.singletonList(StringPool.BLANK),
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 14));
 	}
 
 	@Test
@@ -2786,7 +2833,7 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
-	public void testGenerateDeveloperLicenseXMLWithoutLicenseGeneration()
+	public void testGenerateDeveloperLicenseXMLWithoutGeneratesActivationKey()
 		throws Exception {
 
 		_stubEntitlements(_toEntitlement(1L, 5.0));
@@ -3218,11 +3265,13 @@ public class LicenseKeyGenerationServiceTest {
 			new JSONObject(
 			).put(
 				"id", entitlementId
-			).put(
-				"licenseKeyType", "backup"
 			)
 		).put(
+			"generatesActivationKey", true
+		).put(
 			"id", entitlementId
+		).put(
+			"licenseKeyType", "backup"
 		).put(
 			"name", "Entitlement " + entitlementId
 		);
@@ -3247,32 +3296,31 @@ public class LicenseKeyGenerationServiceTest {
 		long entitlementId, Double maxQuantity, String skuExternalReferenceCode,
 		int licenseKeyDurationDays, String endDate, String licenseKeyType) {
 
-		JSONObject entitlementDefinitionJSONObject = new JSONObject(
-		).put(
-			"id", entitlementId
-		).put(
-			"licenseKeyDurationDays", licenseKeyDurationDays
-		).put(
-			"licenseKeyFamily",
-			_licenseKeyFamilies.get(skuExternalReferenceCode)
-		);
-
-		if (licenseKeyType != null) {
-			entitlementDefinitionJSONObject.put(
-				"licenseKeyType", licenseKeyType);
-		}
-
 		JSONObject jsonObject = new JSONObject(
 		).put(
 			"entitlementDefinitionToEntitlement",
-			entitlementDefinitionJSONObject
+			new JSONObject(
+			).put(
+				"id", entitlementId
+			).put(
+				"licenseKeyDurationDays", licenseKeyDurationDays
+			)
+		).put(
+			"generatesActivationKey", true
 		).put(
 			"id", entitlementId
+		).put(
+			"licenseKeyFamily",
+			_licenseKeyFamilies.get(skuExternalReferenceCode)
 		).put(
 			"name", "Entitlement " + entitlementId
 		).put(
 			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
+
+		if (licenseKeyType != null) {
+			jsonObject.put("licenseKeyType", licenseKeyType);
+		}
 
 		if (endDate != null) {
 			jsonObject.put("endDate", endDate);
@@ -3304,11 +3352,13 @@ public class LicenseKeyGenerationServiceTest {
 				"id", entitlementId
 			).put(
 				"licenseKeyDurationDays", licenseKeyDurationDays
-			).put(
-				"licenseKeyType", licenseKeyType
 			)
 		).put(
+			"generatesActivationKey", true
+		).put(
 			"id", entitlementId
+		).put(
+			"licenseKeyType", licenseKeyType
 		).put(
 			"name", "Entitlement " + entitlementId
 		);
@@ -3382,6 +3432,28 @@ public class LicenseKeyGenerationServiceTest {
 		return product;
 	}
 
+	private Entitlement _toNamedEntitlement(long entitlementId, String name) {
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"entitlementDefinitionToEntitlement",
+				new JSONObject(
+				).put(
+					"id", entitlementId
+				)
+			).put(
+				"generatesActivationKey", true
+			).put(
+				"id", entitlementId
+			).put(
+				"licenseKeyType", "backup"
+			).put(
+				"maxQuantity", 5.0
+			).put(
+				"name", name
+			));
+	}
+
 	private Project _toProject() {
 		return new Project(
 			new JSONObject(
@@ -3442,17 +3514,19 @@ public class LicenseKeyGenerationServiceTest {
 			).put(
 				"id", entitlementId
 			).put(
-				"licenseKeyFamily",
-				_licenseKeyFamilies.get(skuExternalReferenceCode)
-			).put(
-				"licenseKeyType", "backup"
-			).put(
 				"skuExternalReferenceCode", skuExternalReferenceCode
 			)
+		).put(
+			"generatesActivationKey", true
 		).put(
 			"id", entitlementId
 		).put(
 			"licenseKeyDurationDays", licenseKeyDurationDays
+		).put(
+			"licenseKeyFamily",
+			_licenseKeyFamilies.get(skuExternalReferenceCode)
+		).put(
+			"licenseKeyType", "backup"
 		).put(
 			"maxQuantity", 1.0
 		).put(

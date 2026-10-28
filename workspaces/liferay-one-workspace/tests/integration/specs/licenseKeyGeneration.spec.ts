@@ -265,9 +265,12 @@ async function upsertEntitlement(
 			endDate: new Date(
 				startDate.getTime() + 365 * DAY_MILLISECONDS
 			).toISOString(),
+			generatesActivationKey: true,
 			grantType: 'fixed',
+			licenseKeyFamily: 'DXP',
+			licenseKeyType: keyType,
 			maxQuantity: quantity,
-			name: 'licenseGeneration',
+			name: `license-key-generation-${keyType}`,
 			quantity,
 			r_accountEntryToEntitlement_accountEntryERC: ACCOUNT_ERC,
 			r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC:
@@ -318,7 +321,7 @@ test.describe('[FLOW-LICENSE-GENERATION] license key generation for each key typ
 					licenseKeyFamily: 'DXP',
 					licenseKeyType: keyType,
 					maxQuantity: 3,
-					name: 'licenseGeneration',
+					name: `license-key-generation-${keyType}`,
 				}
 			);
 

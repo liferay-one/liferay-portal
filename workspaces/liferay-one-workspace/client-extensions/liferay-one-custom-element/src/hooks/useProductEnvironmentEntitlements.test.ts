@@ -26,30 +26,24 @@ const orderItems = [{id: 7, optionValueNames: [], skuProductName: ''}];
 const entitlementNodes = [
 	{
 		endDate: '2027-08-09T00:00:00.000Z',
-		entitlementDefinitionToEntitlement: {
-			generatesActivationKey: true,
-			licenseKeyType: 'production',
-			unit: 'boolean',
-		},
+		entitlementDefinitionToEntitlement: {unit: 'boolean'},
+		generatesActivationKey: true,
 		id: 11,
+		licenseKeyType: 'production',
 		quantity: 2,
 		startDate: '2026-08-09T00:00:00.000Z',
 	},
 	{
-		entitlementDefinitionToEntitlement: {
-			generatesActivationKey: true,
-			unit: 'boolean',
-		},
+		entitlementDefinitionToEntitlement: {unit: 'boolean'},
+		generatesActivationKey: true,
 		id: 12,
 		terminationStatus: 'terminated',
 	},
 	{
-		entitlementDefinitionToEntitlement: {
-			generatesActivationKey: true,
-			licenseKeyType: 'developer',
-			unit: 'boolean',
-		},
+		entitlementDefinitionToEntitlement: {unit: 'boolean'},
+		generatesActivationKey: true,
 		id: 13,
+		licenseKeyType: 'developer',
 	},
 	{
 		entitlementDefinitionToEntitlement: {unit: 'count'},
@@ -156,12 +150,10 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 					'developer',
 					'developer-cluster',
 				].map((licenseKeyType, index) => ({
-					entitlementDefinitionToEntitlement: {
-						generatesActivationKey: true,
-						licenseKeyType,
-						unit: 'boolean',
-					},
+					entitlementDefinitionToEntitlement: {unit: 'boolean'},
+					generatesActivationKey: true,
 					id: 21 + index,
+					licenseKeyType,
 				})),
 			},
 			isLoading: false,
@@ -327,17 +319,15 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		).toEqual(['Subscription Portal EE - Platinum (Production)', '']);
 	});
 
-	it('prefers the license key type of the definition to the order item options', () => {
+	it('prefers the license key type of the entitlement to the order item options', () => {
 		useDataQueryMock.mockReturnValue({data: undefined, isLoading: false});
 		useFetchMock.mockReturnValue({
 			data: {
 				items: [
 					{
-						entitlementDefinitionToEntitlement: {
-							licenseKeyType: 'non-production',
-							unit: 'boolean',
-						},
+						entitlementDefinitionToEntitlement: {unit: 'boolean'},
 						id: 21,
+						licenseKeyType: 'non-production',
 						r_commerceOrderItemToEntitlement_commerceOrderItemId: 7,
 					},
 				],
