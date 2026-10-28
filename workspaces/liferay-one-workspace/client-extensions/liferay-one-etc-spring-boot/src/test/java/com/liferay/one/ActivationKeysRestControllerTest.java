@@ -2289,31 +2289,6 @@ public class ActivationKeysRestControllerTest {
 		);
 	}
 
-	private String _toAccountGenerateJSON() {
-		JSONObject generateJSONObject = new JSONObject(_toGenerateJSON());
-
-		generateJSONObject.put(
-			"accountExternalReferenceCode", _ACCOUNT_ERC
-		).remove(
-			"projectExternalReferenceCode"
-		);
-
-		return generateJSONObject.toString();
-	}
-
-	private JSONObject _toAccountGenerateJSON(String keyType) {
-		JSONObject generateJSONObject = new JSONObject(
-			_toGenerateJSON(keyType));
-
-		generateJSONObject.put(
-			"accountExternalReferenceCode", _ACCOUNT_ERC
-		).remove(
-			"projectExternalReferenceCode"
-		);
-
-		return generateJSONObject;
-	}
-
 	private Project _stubVirtualClusterRenewal() throws Exception {
 		Project project = Mockito.mock(Project.class);
 
@@ -2351,6 +2326,31 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		return project;
+	}
+
+	private String _toAccountGenerateJSON() {
+		JSONObject generateJSONObject = new JSONObject(_toGenerateJSON());
+
+		generateJSONObject.put(
+			"accountExternalReferenceCode", _ACCOUNT_ERC
+		).remove(
+			"projectExternalReferenceCode"
+		);
+
+		return generateJSONObject.toString();
+	}
+
+	private JSONObject _toAccountGenerateJSON(String keyType) {
+		JSONObject generateJSONObject = new JSONObject(
+			_toGenerateJSON(keyType));
+
+		generateJSONObject.put(
+			"accountExternalReferenceCode", _ACCOUNT_ERC
+		).remove(
+			"projectExternalReferenceCode"
+		);
+
+		return generateJSONObject;
 	}
 
 	private String _toGenerateJSON() {

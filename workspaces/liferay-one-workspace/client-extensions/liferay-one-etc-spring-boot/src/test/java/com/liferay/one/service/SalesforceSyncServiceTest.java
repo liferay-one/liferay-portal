@@ -178,21 +178,6 @@ public class SalesforceSyncServiceTest {
 	}
 
 	@Test
-	public void testGetSalesforceRecordComparisonsRejectsAnInvalidQueryJobId() {
-		Exception exception = Assertions.assertThrows(
-			SalesforceQueryJobException.class,
-			() -> _salesforceSyncService.getSalesforceRecordComparisons(
-				"0015g00000ABCDE",
-				List.of("750A", "../opportunities", "750C")));
-
-		Assertions.assertEquals(
-			"Salesforce query job ID ../opportunities is not valid",
-			exception.getMessage());
-
-		Mockito.verifyNoInteractions(_accountService, _salesforceService);
-	}
-
-	@Test
 	public void testGetSalesforceRecordComparisonsRejectsAQueryJobOfAnotherAccount()
 		throws Exception {
 
@@ -222,6 +207,21 @@ public class SalesforceSyncServiceTest {
 			exception.getMessage());
 
 		Mockito.verifyNoInteractions(_accountService);
+	}
+
+	@Test
+	public void testGetSalesforceRecordComparisonsRejectsAnInvalidQueryJobId() {
+		Exception exception = Assertions.assertThrows(
+			SalesforceQueryJobException.class,
+			() -> _salesforceSyncService.getSalesforceRecordComparisons(
+				"0015g00000ABCDE",
+				List.of("750A", "../opportunities", "750C")));
+
+		Assertions.assertEquals(
+			"Salesforce query job ID ../opportunities is not valid",
+			exception.getMessage());
+
+		Mockito.verifyNoInteractions(_accountService, _salesforceService);
 	}
 
 	@Test
