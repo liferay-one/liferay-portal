@@ -405,6 +405,41 @@ public class CommerceProductServiceTest {
 	}
 
 	@Test
+	public void testSendNewAppSubmittedNotificationLiferayIncProduct()
+		throws Exception {
+
+		Catalog catalog = new Catalog();
+
+		catalog.setId(() -> 10L);
+
+		Mockito.doReturn(
+			catalog
+		).when(
+			_commerceCatalogService
+		).fetchCatalog(
+			"LIFERAY_INC_CATALOG"
+		);
+
+		Product product = new Product();
+
+		product.setCatalogId(() -> 10L);
+		product.setId(() -> _PRODUCT_ID);
+
+		Mockito.doReturn(
+			product
+		).when(
+			_commerceProductService
+		).fetchProduct(
+			_PRODUCT_ID
+		);
+
+		_commerceProductService.sendNewAppSubmittedNotification(_PRODUCT_ID);
+
+		Mockito.verifyNoInteractions(
+			_notificationQueueEntryService, _notificationTemplateService);
+	}
+
+	@Test
 	public void testSendNewAppSubmittedNotificationProductNotFound()
 		throws Exception {
 
