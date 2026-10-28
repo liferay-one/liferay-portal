@@ -1119,7 +1119,6 @@ export default {
 	'payment-summary': '支払いの概要',
 	'payments': '支払い',
 	'paypal': 'PayPal',
-	'paypal-account': 'PayPalアカウント',
 	'peak-usage-exceeded-your-entitlements':
 		'ピーク使用量がエンタイトルメントを超過しました',
 	'pending': '申請中',
@@ -1307,7 +1306,6 @@ export default {
 	'record-actual-event-date': '実際のイベント日を記録',
 	'refresh': '更新',
 	'region': '地域 (都道府県)',
-	'reimbursement': '払い戻し',
 	'reject-request': 'リクエストを拒否',
 	'remove': '削除',
 	'remove-all-roles': 'すべてのロールを削除',

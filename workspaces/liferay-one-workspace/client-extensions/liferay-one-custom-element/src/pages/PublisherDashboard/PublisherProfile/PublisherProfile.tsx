@@ -219,34 +219,6 @@ export default function PublisherProfile() {
 						]}
 						orientation={Orientation.VERTICAL}
 					/>
-
-					<ProfileSection title="contacts" />
-
-					<DetailTable
-						items={[
-							{
-								title: i18n.translate('email'),
-								value: value(details.privateEmail),
-							},
-							{
-								title: i18n.translate('phone'),
-								value: value(details.phone),
-							},
-						]}
-						orientation={Orientation.VERTICAL}
-					/>
-
-					<ProfileSection title="reimbursement" />
-
-					<DetailTable
-						items={[
-							{
-								title: i18n.translate('paypal-account'),
-								value: value(details.paypalAccount),
-							},
-						]}
-						orientation={Orientation.VERTICAL}
-					/>
 				</DetailedCard>
 			</div>
 		</Page>

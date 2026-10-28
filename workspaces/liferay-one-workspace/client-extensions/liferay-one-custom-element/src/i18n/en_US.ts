@@ -1329,7 +1329,6 @@ export default {
 	'payment-summary': 'Payment Summary',
 	'payments': 'Payments',
 	'paypal': 'PayPal',
-	'paypal-account': 'PayPal Account',
 	'peak-usage-exceeded-your-entitlements':
 		'Peak usage exceeded your entitlements',
 	'pending': 'Pending',
@@ -1551,7 +1550,6 @@ export default {
 	'record-actual-event-date': 'Record Actual Event Date',
 	'refresh': 'Refresh',
 	'region': 'Region',
-	'reimbursement': 'Reimbursement',
 	'reject-request': 'Reject Request',
 	'related-records': 'Related Records',
 	'relationship-tree': 'Relationship Tree',

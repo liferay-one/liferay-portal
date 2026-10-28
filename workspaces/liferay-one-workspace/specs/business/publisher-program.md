@@ -46,7 +46,7 @@ Terms used in this file:
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
 | REQ-PUBLISHER-020 | The publisher profile has public fields: the publisher name, the company description, the company, support, and sales email addresses, the website, and the company address. | P1 | LPD-54024 | `ROUTE-PUBLISHER-DASHBOARD-PUBLISHER-PROFILE`, `HOOK-USEPUBLISHERDETAILS` |
-| REQ-PUBLISHER-021 | The publisher profile has private fields: the full name and role of the contact, a private email address, a phone number, and the PayPal account for payouts. | P0 | LPD-54024 | `ROUTE-PUBLISHER-DASHBOARD-EDIT`, `HOOK-USEPUBLISHERDETAILS` |
+| REQ-PUBLISHER-021 | The publisher profile has the full name and role of the contact. It holds no private email address, phone number, or PayPal account, because anonymous visitors can read every publisher profile. | P0 | LPD-54024 | `ROUTE-PUBLISHER-DASHBOARD-EDIT`, `HOOK-USEPUBLISHERDETAILS` |
 | REQ-PUBLISHER-022 | A publisher can edit only a profile that already exists for the publisher catalog. The dashboard does not create a profile, and shows an error when there is none. | P1 | LPD-54024 | `ROUTE-PUBLISHER-DASHBOARD-EDIT` |
 | REQ-PUBLISHER-023 | Guests and signed in users can read publisher profiles, so that the marketplace can show who publishes each product. | P1 | — | — |
 

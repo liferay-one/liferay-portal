@@ -1134,7 +1134,6 @@ export default {
 	'payment-summary': 'Resumo do pagamento',
 	'payments': 'Pagamentos',
 	'paypal': 'PayPal',
-	'paypal-account': 'Conta do PayPal',
 	'peak-usage-exceeded-your-entitlements':
 		'O uso de pico excedeu seus limites contratados',
 	'pending': 'Pendente',
@@ -1322,7 +1321,6 @@ export default {
 	'record-actual-event-date': 'Registrar Data Real do Evento',
 	'refresh': 'Atualizar',
 	'region': 'Região',
-	'reimbursement': 'Reembolso',
 	'reject-request': 'Rejeitar solicitação',
 	'remove': 'Remover',
 	'remove-all-roles': 'Remover todas as funções',

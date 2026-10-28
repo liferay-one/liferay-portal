@@ -253,7 +253,7 @@ These five findings are fixed in the batch files and in `data-model.md`. A deplo
 
 1. Two objects are children of the account but are not in `05-object-definition-account-entry-restricted`. Only role permissions control who reads them.
 
-	- PublisherDetail is the public profile of a publisher, and the Marketplace site shows it to every visitor. Guest and User have company scope VIEW on purpose. Every field, `privateEmail`, `paypalAccount`, and `phone` included, is public information.
+	- PublisherDetail is the public profile of a publisher, and the Marketplace site shows it to every visitor. Guest and User have company scope VIEW on purpose, so every field is public. The object holds no private contact or payment field.
 	- PublisherSalesSummary is for administrators only. Only Finance Administrator has a grant, and a publisher cannot see its own summaries, so an account restriction adds nothing.
 
 1. UsageReport has no account relationship. It reaches the account only through Project or Entitlement, so it depends on role permissions only.
@@ -1101,9 +1101,6 @@ Object name `PublisherDetail`. REST `/o/c/publisherdetails`. Title field `catalo
 | `email` | Text | |
 | `fullName` | Text | |
 | `location` | Text | |
-| `paypalAccount` | Text | |
-| `phone` | Text | |
-| `privateEmail` | Text | |
 | `publisherName` | Text | |
 | `publisherProfileImageURL` | LongText | |
 | `role` | Text | |

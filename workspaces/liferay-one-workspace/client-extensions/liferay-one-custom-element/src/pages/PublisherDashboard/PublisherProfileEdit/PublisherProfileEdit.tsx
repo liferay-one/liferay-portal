@@ -37,9 +37,6 @@ const PUBLIC_FIELDS: EditableField[] = [
 const PRIVATE_FIELDS: EditableField[] = [
 	{key: 'fullName', label: 'full-name'},
 	{key: 'role', label: 'role'},
-	{key: 'privateEmail', label: 'email', type: 'email'},
-	{key: 'phone', label: 'phone'},
-	{key: 'paypalAccount', label: 'paypal-account'},
 ];
 
 const ALL_FIELDS = [...PUBLIC_FIELDS, ...PRIVATE_FIELDS];
