@@ -17,7 +17,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_PARTNER_OEM_DXP",
-			"generatesActivationKey": true,
+			"generatesActivationKey": false,
 			"grantType": "fixed",
 			"licenseKeyFamily": "DXP",
 			"maxQuantity": 1,

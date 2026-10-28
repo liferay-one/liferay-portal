@@ -1451,12 +1451,25 @@ public class LicenseKeyGenerationService {
 
 		entitlements.add(subscriptionEntitlement);
 
+		String licenseKeyFamily =
+			LicenseKeyGenerateFormService.getLicenseKeyFamily(
+				subscriptionEntitlement);
+
+		boolean leadingLicenseKeyFamily =
+			LicenseKeyGenerateFormService.isLeadingLicenseKeyFamily(
+				licenseKeyFamily);
+
 		String skuExternalReferenceCode = _getSkuExternalReferenceCode(
 			subscriptionEntitlement);
 
 		for (Entitlement bundleEntitlement : bundleEntitlements) {
 			if ((bundleEntitlement.getEntitlementId() ==
 					subscriptionEntitlement.getEntitlementId()) ||
+				(leadingLicenseKeyFamily &&
+				 Objects.equals(
+					 licenseKeyFamily,
+					 LicenseKeyGenerateFormService.getLicenseKeyFamily(
+						 bundleEntitlement))) ||
 				(Validator.isNotNull(skuExternalReferenceCode) &&
 				 Objects.equals(
 					 skuExternalReferenceCode,

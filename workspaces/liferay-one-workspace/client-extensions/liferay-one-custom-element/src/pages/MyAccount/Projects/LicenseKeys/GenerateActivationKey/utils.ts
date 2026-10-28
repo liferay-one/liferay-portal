@@ -64,6 +64,33 @@ export function buildEmptyServer(): GenerateActivationKeyServer {
 	return {hostName: '', ipAddresses: '', macAddresses: ''};
 }
 
+export function getBundleProductUnavailableReason(
+	bundleProduct: GenerateFormBundleProduct,
+	developer: boolean,
+	renewing: boolean,
+	required: boolean,
+	version: string
+): Word | null {
+	if (!bundleProduct.licensable) {
+		return 'no-license-is-available-for-this-product';
+	}
+
+	if (
+		!developer &&
+		!renewing &&
+		!required &&
+		bundleProduct.availableCount <= 0
+	) {
+		return 'no-key-activations-are-available-for-this-product';
+	}
+
+	if (!required && !isLicensedForVersion(bundleProduct, version)) {
+		return 'this-product-is-not-available-for-the-selected-version';
+	}
+
+	return null;
+}
+
 export function getBundleProducts(
 	developer: boolean,
 	generateForm: GenerateForm,

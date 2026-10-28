@@ -18,7 +18,7 @@ import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import SelectionButtons from '../components/SelectionButtons/SelectionButtons';
 import VersionField from '../components/VersionField/VersionField';
 import {GenerateActivationKeyForm} from '../types';
-import {getBundleProducts, isLicensedForVersion} from '../utils';
+import {getBundleProductUnavailableReason, getBundleProducts} from '../utils';
 
 type AddOnStepProps = {
 	developer: boolean;
@@ -56,26 +56,15 @@ export default function AddOnStep({
 	);
 
 	function getUnavailableReason(bundleProduct: GenerateFormBundleProduct) {
-		if (!bundleProduct.licensable) {
-			return translate('no-license-is-available-for-this-product');
-		}
+		const unavailableReason = getBundleProductUnavailableReason(
+			bundleProduct,
+			developer,
+			Boolean(renewing),
+			isRequired(bundleProduct),
+			version
+		);
 
-		if (!developer && !renewing && bundleProduct.availableCount <= 0) {
-			return translate(
-				'no-key-activations-are-available-for-this-product'
-			);
-		}
-
-		if (
-			!isRequired(bundleProduct) &&
-			!isLicensedForVersion(bundleProduct, version)
-		) {
-			return translate(
-				'this-product-is-not-available-for-the-selected-version'
-			);
-		}
-
-		return '';
+		return unavailableReason ? translate(unavailableReason) : '';
 	}
 
 	const unavailableEntitlementIds = bundleProducts

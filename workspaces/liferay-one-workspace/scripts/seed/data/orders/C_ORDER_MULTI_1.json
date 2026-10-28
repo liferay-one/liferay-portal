@@ -48,7 +48,7 @@
 		{
 			"endDate": "2026-12-31T00:00:00Z",
 			"externalReferenceCode": "C_ENT_MULTI_1_DXP",
-			"generatesActivationKey": true,
+			"generatesActivationKey": false,
 			"grantType": "fixed",
 			"licenseKeyFamily": "DXP",
 			"maxQuantity": 1,

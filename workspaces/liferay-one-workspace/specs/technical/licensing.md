@@ -187,7 +187,7 @@ The inputs of one license key are:
 | License entry | `LicenseEntryService` reads `license-entries.csv` and matches the family prefix, the version, and the key type. An add-on without an entry uses the entry of the leading product. `sb/service/LicenseKeyGenerationService.java:811` |
 | License version | `LicenseVersion.getLicenseVersion(productName, version)`. `sb/constants/LicenseVersion.java` |
 | Product version | `version` from the request, one of the supported `dxp` product versions on the form. `sb/service/LicenseKeyGenerateFormService.java:816` |
-| Servers | Host name, IP addresses, and MAC addresses for each server. One license key for each server and each bundle entitlement. |
+| Servers | Host name, IP addresses, and MAC addresses for each server. One license key for each server and each bundle entitlement. The leading product gets its license key from the selected subscription only. A bundle entitlement in the same leading family is dropped, so it is not licensed and its quota is not checked. `sb/service/LicenseKeyGenerationService.java` `_toBundleEntitlements` |
 
 The signing step is `KeyGenerator.encrypt` (`sb/license/LicenseKeyGenerator.java:22`). It refuses license version 1. For version 2 and later, it sorts the properties, digests each value with an algorithm that depends on the product ID and the position, shortens the digests, digests them again, and joins them. The portal product gets an interleaved digest. The algorithm and its constants are in the private repository that the build clones (`client-extensions/liferay-one-etc-spring-boot/build.gradle:45`, `:103`). No secret comes from configuration. `LicenseKeyExporter.toXML` then writes the properties and the digest into the license XML, and the server stores that XML in `LicenseKey.key`.
 
@@ -321,6 +321,7 @@ These are the checks that the server applies before it issues a key. "Project pa
 
 | Rule | Applies To | Source |
 | --- | --- | --- |
+| A bundle entitlement in the same leading family as the subscription is dropped. The add-on step does not check the quota of the required leading product, because the subscription step checks the quota of the selected subscription. | Project path | `sb/service/LicenseKeyGenerationService.java` `_toBundleEntitlements`, `ce/pages/MyAccount/Projects/LicenseKeys/GenerateActivationKey/utils.ts` `getBundleProductUnavailableReason` |
 | A bundle product is selected, unless the key is complimentary | Project path | `sb/service/LicenseKeyGenerationService.java:60` |
 | A complimentary key covers exactly one server | Project path | `sb/service/LicenseKeyGenerationService.java:370` |
 | A complimentary key has a purpose of 255 characters or fewer | Project path | `sb/service/LicenseKeyGenerationService.java:377` |

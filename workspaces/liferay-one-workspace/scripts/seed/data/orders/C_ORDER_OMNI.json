@@ -249,7 +249,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_OMNI_DXP",
-			"generatesActivationKey": true,
+			"generatesActivationKey": false,
 			"grantType": "fixed",
 			"licenseKeyFamily": "DXP",
 			"maxQuantity": 1,
@@ -426,7 +426,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_OMNI_PORTAL",
-			"generatesActivationKey": true,
+			"generatesActivationKey": false,
 			"grantType": "fixed",
 			"licenseKeyFamily": "Portal",
 			"maxQuantity": 1,
