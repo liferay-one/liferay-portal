@@ -138,7 +138,10 @@ describe('[CLIENT-MODELS-MARKETPLACEDELIVERYPRODUCT] MarketplaceDeliveryProduct'
 			'0CPUs, 0GB RAM'
 		);
 		expect(
-			createProduct({cpu: '2', ram: '4'}).getProductResourceLabel()
+			createProduct({
+				'number-of-cpus': '2',
+				'ram-in-gb': '4',
+			}).getProductResourceLabel()
 		).toBe('2CPUs, 4GB RAM');
 	});
 
@@ -177,7 +180,10 @@ describe('[CLIENT-MODELS-MARKETPLACEDELIVERYPRODUCT] MarketplaceDeliveryProduct'
 	});
 
 	it('checks the instance, CPU, and floored RAM against the project plan usage', () => {
-		const product = createProduct({cpu: '2', ram: '8'});
+		const product = createProduct({
+			'number-of-cpus': '2',
+			'ram-in-gb': '8',
+		});
 
 		expect(
 			product.hasEnoughResources(
