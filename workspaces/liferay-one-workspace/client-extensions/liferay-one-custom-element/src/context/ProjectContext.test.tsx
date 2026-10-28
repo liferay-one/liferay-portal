@@ -110,7 +110,7 @@ function mockState({
 }
 
 function renderProvider(path: string) {
-	return render(
+	const getTree = () => (
 		<MemoryRouter initialEntries={[path]}>
 			<Routes>
 				<Route
@@ -127,6 +127,10 @@ function renderProvider(path: string) {
 			</Routes>
 		</MemoryRouter>
 	);
+
+	const result = render(getTree());
+
+	return {...result, rerenderProvider: () => result.rerender(getTree())};
 }
 
 describe('[CTX-PROJECTCONTEXT] ProjectProvider', () => {
@@ -311,8 +315,36 @@ describe('[CTX-PROJECTCONTEXT] ProjectProvider', () => {
 			expect(screen.getByTestId('location')).toHaveTextContent(
 				`/ACCNT-1/project/${ONE_TIME_PURCHASES}`
 			);
+			expect(localStorage.getItem(LAST_PROJECT_STORAGE_KEY)).toBe(
+				ONE_TIME_PURCHASES
+			);
 		}
 	);
+
+	it('keeps the last project while One Time Purchases is offered only until the projects load', () => {
+		localStorage.setItem(LAST_PROJECT_STORAGE_KEY, 'PRJCT-BETA');
+
+		mockState({placedOrders: [], projects: [], projectsLoading: true});
+
+		const {rerenderProvider} = renderProvider(
+			`/ACCNT-1/project/${ONE_TIME_PURCHASES}`
+		);
+
+		expect(localStorage.getItem(LAST_PROJECT_STORAGE_KEY)).toBe(
+			'PRJCT-BETA'
+		);
+
+		mockState();
+
+		rerenderProvider();
+
+		expect(screen.getByTestId('location')).toHaveTextContent(
+			'/ACCNT-1/project/PRJCT-BETA'
+		);
+		expect(localStorage.getItem(LAST_PROJECT_STORAGE_KEY)).toBe(
+			'PRJCT-BETA'
+		);
+	});
 
 	it.each([
 		['account', {accountLoading: true}],

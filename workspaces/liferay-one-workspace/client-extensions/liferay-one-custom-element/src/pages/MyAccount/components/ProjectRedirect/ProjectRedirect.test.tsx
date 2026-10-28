@@ -86,7 +86,10 @@ describe('[ROUTE-MY-ACCOUNT-PROJECT] ProjectRedirect', () => {
 
 	it.each([
 		['/project', '/ACCNT-1/project/one-time-purchases'],
-		['/project/activation', '/ACCNT-1/project/one-time-purchases/activation'],
+		[
+			'/project/activation',
+			'/ACCNT-1/project/one-time-purchases/activation',
+		],
 	])(
 		'redirects %s to %s when the account has no project with orders',
 		(pathname, expected) => {
