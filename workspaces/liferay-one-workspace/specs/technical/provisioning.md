@@ -211,8 +211,8 @@ The file order respects all 12 edges. No file references an entity that a later 
 | File | Entity | Items | Create, Update in the File | Depends On |
 | --- | --- | --- | --- | --- |
 | `00-usage-definition` | `C_USAGE_DEFINITION` | 8 | `UPSERT`, `UPDATE` | batch `03` |
-| `01-entitlement-definition` | `C_ENTITLEMENT_DEFINITION` | 336 | `UPSERT`, `UPDATE` | batch `03`, `04`; `00` (8 usage definitions) |
-| `02-entitlement-definition-sku` | `C_ENTITLEMENT_DEFINITION_SKU` | 1,437 | `UPSERT`, `UPDATE` | batch `03`, `04`; `01` (336 definitions) |
+| `01-entitlement-definition` | `C_ENTITLEMENT_DEFINITION` | 335 | `UPSERT`, `UPDATE` | batch `03`, `04`; `00` (8 usage definitions) |
+| `02-entitlement-definition-sku` | `C_ENTITLEMENT_DEFINITION_SKU` | 1,436 | `UPSERT`, `UPDATE` | batch `03`, `04`; `01` (335 definitions) |
 | `03-commerce-option` | `Option` | 49 | `INSERT`, `PARTIAL_UPDATE` | nothing |
 | `04-commerce-specification` | `Specification` | 62 | `UPSERT`, `PARTIAL_UPDATE` | batch `08` (5 option categories) |
 | `05-commerce-product` | `Product` | 48 | `UPSERT`, `PARTIAL_UPDATE` | batch `06`, `09`; `03`, `04` |
@@ -276,7 +276,7 @@ The workspace rule is: the batch client extension holds definitions, configurati
 | Vocabulary `article-categories` (site) | site initializer | site initializer (60 categories) | none | none |
 | Search blueprint | batch `17` | none | none | none |
 | Usage definitions | batch `03` | Salesforce product batch `00` (8); seed `13` (4), finding 4 | none | none |
-| Entitlement definitions and SKU links | batch `03` | Salesforce product batch `01`, `02` (the 336 definitions and 1,437 links of the Salesforce SKUs) | seed `15`, `17` (43 and 45) | migration `CreateEntitlementDefinitions` |
+| Entitlement definitions and SKU links | batch `03` | Salesforce product batch `01`, `02` (the 335 definitions and 1,436 links of the Salesforce SKUs) | seed `15`, `17` (43 and 45) | migration `CreateEntitlementDefinitions` |
 | Accounts, users | Liferay | none | seed `01`, `02` and the assign scripts | migration and runtime |
 | Orders, order items, entitlements, license keys, usage events | Liferay and batch `03` | none | `populate_orders.sh`, `populate_overages.sh` | migration and runtime |
 | Pages, fragments, templates, style books, menus, documents | site initializer | none | none | none |

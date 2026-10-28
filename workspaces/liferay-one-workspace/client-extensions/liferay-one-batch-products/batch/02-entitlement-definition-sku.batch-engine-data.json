@@ -562,11 +562,6 @@
 			"skuExternalReferenceCode": "01t70000002mUasAAE"
 		},
 		{
-			"externalReferenceCode": "C_ENT_DEF_PORTAL_FREE_01t70000002ljneAAA",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_FREE",
-			"skuExternalReferenceCode": "01t70000002ljneAAA"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_PORTAL_NON_PRODUCTION_01t70000002ljneAAA",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_PORTAL_NON_PRODUCTION",
 			"skuExternalReferenceCode": "01t70000002ljneAAA"

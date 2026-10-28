@@ -498,7 +498,7 @@
 			"defaultQuantity": 1,
 			"displayName": "Analytics Cloud",
 			"externalReferenceCode": "C_ENT_DEF_ANALYTICS_CLOUD",
-			"generatesActivationKey": true,
+			"generatesActivationKey": false,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "analytics-cloud",
@@ -1038,19 +1038,6 @@
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "portal-enterprise-wide-license",
-			"unit": "boolean"
-		},
-		{
-			"active": false,
-			"defaultQuantity": 5,
-			"displayName": "Portal Free",
-			"externalReferenceCode": "C_ENT_DEF_PORTAL_FREE",
-			"generatesActivationKey": true,
-			"grantType": "fixed",
-			"licenseKeyFamily": "Portal",
-			"licenseKeyType": "free",
-			"maxQuantity": 5,
-			"name": "portal-free",
 			"unit": "boolean"
 		},
 		{

@@ -17,6 +17,7 @@
 			"externalReferenceCode": "C_ENT_DEF_AIHUB",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "AIHUB",
 			"maxQuantity": 1,
 			"name": "ai-hub",
 			"unit": "boolean"
@@ -28,6 +29,7 @@
 			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "AIHUB",
 			"maxQuantity": 1,
 			"name": "ai-hub",
 			"unit": "boolean"
@@ -50,6 +52,7 @@
 			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "AIHUB",
 			"maxQuantity": 1,
 			"name": "ai-hub",
 			"unit": "boolean"
@@ -83,6 +86,7 @@
 			"externalReferenceCode": "C_ENT_DEF_AI_BLOG_WORKSPACE",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "AIBLOG",
 			"maxQuantity": 1,
 			"name": "ai-blog-workspace",
 			"unit": "boolean"
@@ -105,6 +109,7 @@
 			"externalReferenceCode": "C_ENT_DEF_COLLECTION_GRID",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "GRID",
 			"maxQuantity": 1,
 			"name": "collection-display-grid-view-with-item-highlight",
 			"unit": "boolean"
@@ -119,6 +124,7 @@
 			"licenseKeyFamily": "CMP",
 			"maxQuantity": 1,
 			"name": "content-marketing-platform",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "license-generations",
 			"unit": "boolean"
 		},
 		{
@@ -154,8 +160,10 @@
 			"externalReferenceCode": "C_ENT_DEF_DATA_PLATFORM",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "LDP",
 			"maxQuantity": 1,
 			"name": "liferay-data-platform",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "license-generations",
 			"unit": "boolean"
 		},
 		{
@@ -269,6 +277,7 @@
 			"licenseKeyFamily": "DXP",
 			"maxQuantity": 1,
 			"name": "liferay-dxp",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "license-generations",
 			"unit": "boolean"
 		},
 		{
@@ -370,6 +379,7 @@
 			"externalReferenceCode": "C_ENT_DEF_EMAIL_MFA",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "EMAILMFA",
 			"maxQuantity": 1,
 			"name": "email-mfa-for-liferay-ce",
 			"unit": "boolean"
@@ -392,6 +402,7 @@
 			"externalReferenceCode": "C_ENT_DEF_INSURANCE_AGENT_PORTAL",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "IAP",
 			"maxQuantity": 1,
 			"name": "insurance-agent-portal-accelerator",
 			"unit": "boolean"
@@ -477,6 +488,7 @@
 			"externalReferenceCode": "C_ENT_DEF_SUGARCRM_PORTAL",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "SUGARCRM",
 			"maxQuantity": 1,
 			"name": "sugarcrm-customer-portal",
 			"unit": "boolean"

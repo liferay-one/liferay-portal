@@ -9,6 +9,7 @@
 			"externalReferenceCode": "C_ENT_DATA_PLATFORM",
 			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "LDP",
 			"maxQuantity": 1,
 			"name": "Liferay Data Platform",
 			"quantity": 1,

@@ -3,7 +3,7 @@
 		{
 			"endDate": "2027-06-30T00:00:00Z",
 			"externalReferenceCode": "C_ENT_MULTI_ONE_TIME_ANALYTICS_CLOUD",
-			"generatesActivationKey": true,
+			"generatesActivationKey": false,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "Liferay Analytics Cloud Subscription - Basic Plan",
