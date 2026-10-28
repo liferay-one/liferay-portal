@@ -123,6 +123,61 @@ public class ProductVersionServiceTest {
 	}
 
 	@Test
+	public void testGetPortalProductVersions() throws Exception {
+		Mockito.doAnswer(
+			invocation -> {
+				Function<JSONObject, ProductVersion> function =
+					invocation.getArgument(2);
+
+				List<ProductVersion> productVersions = new ArrayList<>();
+
+				for (String name :
+						new String[] {
+							"6.1 GA1", "6.2 EE", "6.1 GA3", "6.1 GA2"
+						}) {
+
+					productVersions.add(
+						function.apply(
+							new JSONObject(
+							).put(
+								"id", 1L
+							).put(
+								"name", name
+							)));
+				}
+
+				return productVersions;
+			}
+		).when(
+			_productVersionService
+		).getAllItems(
+			Mockito.eq(
+				"/o/headless-admin-list-type/v1.0/list-type-definitions" +
+					"/by-external-reference-code/LT_PORTAL_VERSION" +
+						"/list-type-entries"),
+			Mockito.isNull(), Mockito.any()
+		);
+
+		List<String> productGroupVersions = new ArrayList<>();
+
+		for (ProductVersion productVersion :
+				_productVersionService.getPortalProductVersions()) {
+
+			Assertions.assertEquals("portal", productVersion.getProductGroup());
+			Assertions.assertEquals(
+				productVersion.getProductGroupVersion(),
+				productVersion.getVersion());
+			Assertions.assertTrue(productVersion.isSupported());
+
+			productGroupVersions.add(productVersion.getProductGroupVersion());
+		}
+
+		Assertions.assertEquals(
+			Arrays.asList("6.2 EE", "6.1 GA3", "6.1 GA2", "6.1 GA1"),
+			productGroupVersions);
+	}
+
+	@Test
 	public void testGetProductVersionFilter() throws Exception {
 		_productVersionService.getProductVersion("dxp", "DXP 2026.Q2");
 

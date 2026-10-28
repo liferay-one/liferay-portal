@@ -27,6 +27,8 @@ import com.liferay.one.model.Project;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
+import java.lang.reflect.Constructor;
+
 import java.time.Instant;
 import java.time.Year;
 
@@ -995,6 +997,85 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetPortalProductVersionsIsEmptyWhenTheServiceFails()
+		throws Exception {
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService();
+
+		ProductVersionService productVersionService =
+			(ProductVersionService)ReflectionTestUtils.getField(
+				licenseKeyGenerateFormService, "_productVersionService");
+
+		Mockito.when(
+			productVersionService.getPortalProductVersions()
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		List<ProductVersion> productVersions = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getPortalProductVersions",
+			Arrays.asList(
+				_toEntitledProduct(
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP),
+				_toEntitledProduct(
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_PORTAL)));
+
+		Assertions.assertTrue(productVersions.isEmpty());
+	}
+
+	@Test
+	public void testGetPortalProductVersionsSkipsTheServiceWithoutPortal()
+		throws Exception {
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService();
+
+		ProductVersionService productVersionService =
+			(ProductVersionService)ReflectionTestUtils.getField(
+				licenseKeyGenerateFormService, "_productVersionService");
+
+		List<ProductVersion> productVersions = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getPortalProductVersions",
+			Collections.singletonList(
+				_toEntitledProduct(
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP)));
+
+		Assertions.assertTrue(productVersions.isEmpty());
+
+		Mockito.verify(
+			productVersionService, Mockito.never()
+		).getPortalProductVersions();
+	}
+
+	@Test
+	public void testGetPortalProductVersionsUsesTheService() throws Exception {
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService();
+
+		ProductVersionService productVersionService =
+			(ProductVersionService)ReflectionTestUtils.getField(
+				licenseKeyGenerateFormService, "_productVersionService");
+
+		List<ProductVersion> portalProductVersions = _toPortalProductVersions();
+
+		Mockito.when(
+			productVersionService.getPortalProductVersions()
+		).thenReturn(
+			portalProductVersions
+		);
+
+		Assertions.assertSame(
+			portalProductVersions,
+			ReflectionTestUtils.invokeMethod(
+				licenseKeyGenerateFormService, "_getPortalProductVersions",
+				Collections.singletonList(
+					_toEntitledProduct(
+						LicenseKeyGenerationConstants.
+							LICENSE_KEY_FAMILY_PORTAL))));
+	}
+
+	@Test
 	public void testGetProductIdIsAppEntryUuidForAddOn() {
 		Assertions.assertEquals(
 			"cmp-app-entry-uuid",
@@ -1019,6 +1100,35 @@ public class LicenseKeyGenerateFormServiceTest {
 			LicenseKeyGenerateFormService.getProductId(
 				_toLicenseGenerationEntitlement(1L, true, "DXP", null, null),
 				_toProduct("PRDCT-DXP", "cmp-app-entry-uuid")));
+	}
+
+	@Test
+	public void testGetProductVersionsOfDXPKeepsTheDXPVersions() {
+		List<ProductVersion> productVersions = Arrays.asList(
+			_toProductVersion("2026.Q1", "DXP 2026.Q1"),
+			_toProductVersion("7.4", "DXP 7.4"));
+
+		Assertions.assertSame(
+			productVersions,
+			ReflectionTestUtils.invokeMethod(
+				new LicenseKeyGenerateFormService(), "_getProductVersions",
+				LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP,
+				_toPortalProductVersions(), productVersions));
+	}
+
+	@Test
+	public void testGetProductVersionsOfPortalUsesThePortalVersions() {
+		List<ProductVersion> portalProductVersions = _toPortalProductVersions();
+
+		Assertions.assertSame(
+			portalProductVersions,
+			ReflectionTestUtils.invokeMethod(
+				new LicenseKeyGenerateFormService(), "_getProductVersions",
+				LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_PORTAL,
+				portalProductVersions,
+				Arrays.asList(
+					_toProductVersion("2026.Q1", "DXP 2026.Q1"),
+					_toProductVersion("7.4", "DXP 7.4"))));
 	}
 
 	@Test
@@ -1360,6 +1470,23 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		Assertions.assertEquals(
 			Arrays.asList("2026.Q3", "2025.Q4", "7.4"), jsonArray.toList());
+	}
+
+	@Test
+	public void testToSelectableVersionsSkipsQuarterlyVersionsBefore2026Q1() {
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			new LicenseKeyGenerateFormService(),
+			"_toSelectableVersionsJSONArray",
+			new JSONArray(
+				Arrays.asList(
+					"2026.Q3", "2026.Q2", "2026.Q1", "2025.Q4", "2024.Q1",
+					"2023.Q3", "7.4", "7.3", "7.2", "7.1", "7.0")));
+
+		Assertions.assertEquals(
+			Arrays.asList(
+				"2026.Q3", "2026.Q2", "2026.Q1", "7.4", "7.3", "7.2", "7.1",
+				"7.0"),
+			jsonArray.toList());
 	}
 
 	@Test
@@ -1792,6 +1919,31 @@ public class LicenseKeyGenerateFormServiceTest {
 		).put(
 			"licenseKeyFamily", licenseKeyFamily
 		);
+	}
+
+	private Object _toEntitledProduct(String licenseKeyFamily)
+		throws Exception {
+
+		Class<?> clazz = Class.forName(
+			LicenseKeyGenerateFormService.class.getName() + "$EntitledProduct");
+
+		Constructor<?> constructor = clazz.getDeclaredConstructor(
+			boolean.class, Entitlement.class, String.class, boolean.class,
+			String.class, String.class);
+
+		constructor.setAccessible(true);
+
+		return constructor.newInstance(
+			false, null, "PRDCT-" + licenseKeyFamily, true, licenseKeyFamily,
+			licenseKeyFamily);
+	}
+
+	private List<ProductVersion> _toPortalProductVersions() {
+		return Arrays.asList(
+			_toProductVersion("6.2 EE", "6.2 EE"),
+			_toProductVersion("6.1 GA3", "6.1 GA3"),
+			_toProductVersion("6.1 GA2", "6.1 GA2"),
+			_toProductVersion("6.1 GA1", "6.1 GA1"));
 	}
 
 	private ProductVersion _toProductVersion(
