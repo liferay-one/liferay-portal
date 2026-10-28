@@ -132,7 +132,15 @@ export type SalesforceRecord = {
 	type: SalesforceRecordType;
 };
 
-export type SalesforceRecords = {
+export type SalesforceQueryJobs = {
+	queryJobIds: string[];
+};
+
+export type SalesforceRecords =
+	| {complete: false}
+	| {complete: true; records: SalesforceRecord[]};
+
+export type SalesforceComparison = SalesforceQueryJobs & {
 	records: SalesforceRecord[];
 };
 

@@ -53,6 +53,7 @@ import com.liferay.one.util.FindUtil;
 import com.liferay.one.util.TermCountUtil;
 import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -93,6 +94,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -352,22 +354,38 @@ public class AccountsRestController extends OneBaseRestController {
 	@GetMapping("/{externalReferenceCode}/salesforce/records")
 	public ResponseEntity<String> getSalesforceRecords(
 			@AuthenticationPrincipal Jwt jwt,
-			@PathVariable("externalReferenceCode") String externalReferenceCode)
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@RequestParam(defaultValue = StringPool.BLANK, required = false)
+				String[] queryJobIds)
 		throws Exception {
 
 		_adminPermission.check(jwt);
 
+		List<SalesforceRecordComparison> salesforceRecordComparisons =
+			_salesforceSyncService.getSalesforceRecordComparisons(
+				externalReferenceCode, List.of(queryJobIds));
+
+		if (salesforceRecordComparisons == null) {
+			return new ResponseEntity<>(
+				new JSONObject(
+				).put(
+					"complete", false
+				).toString(),
+				HttpStatus.OK);
+		}
+
 		JSONArray jsonArray = new JSONArray();
 
 		for (SalesforceRecordComparison salesforceRecordComparison :
-				_salesforceSyncService.getSalesforceRecordComparisons(
-					_accountService.getAccount(externalReferenceCode))) {
+				salesforceRecordComparisons) {
 
 			jsonArray.put(salesforceRecordComparison.toJSONObject());
 		}
 
 		return new ResponseEntity<>(
 			new JSONObject(
+			).put(
+				"complete", true
 			).put(
 				"records", jsonArray
 			).toString(),
@@ -575,21 +593,63 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 	}
 
-	@PostMapping("/{externalReferenceCode}/sync-from-salesforce")
-	public ResponseEntity<String> postSyncFromSalesforce(
+	@PostMapping("/{externalReferenceCode}/salesforce/query-jobs")
+	public ResponseEntity<String> postSalesforceQueryJobs(
 			@AuthenticationPrincipal Jwt jwt,
 			@PathVariable("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
 		_adminPermission.check(jwt);
 
-		int count = _salesforceSyncService.syncAccount(
-			_accountService.getAccount(externalReferenceCode));
+		return new ResponseEntity<>(
+			new JSONObject(
+			).put(
+				"queryJobIds",
+				_salesforceSyncService.postSalesforceQueryJobs(
+					_accountService.getAccount(externalReferenceCode))
+			).toString(),
+			HttpStatus.OK);
+	}
+
+	@PostMapping("/{externalReferenceCode}/sync-from-salesforce")
+	public ResponseEntity<String> postSyncFromSalesforce(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@RequestBody(required = false) String json)
+		throws Exception {
+
+		_adminPermission.check(jwt);
+
+		List<String> queryJobIds = new ArrayList<>();
+
+		if (Validator.isNotNull(json)) {
+			JSONArray jsonArray = new JSONObject(
+				json
+			).optJSONArray(
+				"queryJobIds", new JSONArray()
+			);
+
+			for (int i = 0; i < jsonArray.length(); i++) {
+				queryJobIds.add(jsonArray.optString(i));
+			}
+		}
+
+		List<SalesforceRecordComparison> salesforceRecordComparisons =
+			_salesforceSyncService.getSalesforceRecordComparisons(
+				externalReferenceCode, queryJobIds);
+
+		if (salesforceRecordComparisons == null) {
+			throw new ResponseStatusException(
+				HttpStatus.CONFLICT,
+				"The Salesforce query jobs are not complete");
+		}
 
 		return new ResponseEntity<>(
 			new JSONObject(
 			).put(
-				"count", count
+				"count",
+				_salesforceSyncService.syncSalesforceRecordComparisons(
+					salesforceRecordComparisons)
 			).toString(),
 			HttpStatus.OK);
 	}

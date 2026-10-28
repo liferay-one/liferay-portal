@@ -5,7 +5,7 @@
 
 import ClayAlert from '@clayui/alert';
 import ClayLabel from '@clayui/label';
-import {useMemo, useState} from 'react';
+import {useEffect, useMemo, useState} from 'react';
 import Loading from '~/components/Loading/Loading';
 import {useDataQuery} from '~/hooks/useDataQuery';
 import i18n from '~/i18n';
@@ -117,10 +117,15 @@ export default function SalesforceRecords({
 }: SalesforceRecordsProps) {
 	const [opened, setOpened] = useState(false);
 
+	const [abortController] = useState(() => new AbortController());
+
+	useEffect(() => () => abortController.abort(), [abortController]);
+
 	const {data, error, isLoading} = useDataQuery(
 		accountSalesforceRecordsQuery(
 			opened ? inspection.account.externalReferenceCode : undefined,
-			inspection.loadedAt
+			inspection.loadedAt,
+			abortController.signal
 		),
 		{revalidateOnFocus: false}
 	);

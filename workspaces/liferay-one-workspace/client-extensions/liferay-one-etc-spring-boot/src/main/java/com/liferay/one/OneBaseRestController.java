@@ -16,6 +16,7 @@ import com.liferay.one.exception.NoSuchActivationKeyException;
 import com.liferay.one.exception.NoSuchEntitlementException;
 import com.liferay.one.exception.NoSuchLicenseKeyException;
 import com.liferay.one.exception.ProjectNotFoundException;
+import com.liferay.one.exception.SalesforceQueryJobException;
 import com.liferay.one.jira.exception.AccountNotFoundException;
 import com.liferay.one.jira.exception.JiraAssetObjectException;
 import com.liferay.one.service.UserAccountService;
@@ -212,6 +213,18 @@ public abstract class OneBaseRestController extends BaseRestController {
 		return new ResponseEntity<>(
 			responseStatusException.getBody(),
 			responseStatusException.getStatusCode());
+	}
+
+	@ExceptionHandler(SalesforceQueryJobException.class)
+	public ResponseEntity<?> handleException(
+		SalesforceQueryJobException salesforceQueryJobException) {
+
+		if (_log.isWarnEnabled()) {
+			_log.warn(salesforceQueryJobException);
+		}
+
+		return _toResponseEntity(
+			HttpStatus.BAD_REQUEST, salesforceQueryJobException.getMessage());
 	}
 
 	protected UserAccount getMyUserAccount(Jwt jwt) throws Exception {

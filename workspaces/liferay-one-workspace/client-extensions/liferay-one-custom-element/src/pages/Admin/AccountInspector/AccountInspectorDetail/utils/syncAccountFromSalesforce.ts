@@ -5,14 +5,24 @@
 
 import i18n from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
+import {fetchSalesforceComparison} from '~/services/queries/accountSalesforceRecordsQuery';
 import Accounts from '~/services/spring-boot/Accounts';
 
 import type FetcherError from '~/services/fetcher/FetcherError';
 
-async function syncAccountFromSalesforce(accountExternalReferenceCode: string) {
+async function syncAccountFromSalesforce(
+	accountExternalReferenceCode: string,
+	comparedQueryJobIds?: string[]
+) {
 	try {
+		const queryJobIds =
+			comparedQueryJobIds ??
+			(await fetchSalesforceComparison(accountExternalReferenceCode))
+				.queryJobIds;
+
 		const {count} = await Accounts.postSyncFromSalesforce(
-			accountExternalReferenceCode
+			accountExternalReferenceCode,
+			queryJobIds
 		);
 
 		Liferay.Util.openToast({
