@@ -1258,10 +1258,11 @@ public class LicenseKeyGenerateFormService {
 
 	private static final int _INSTANCE_SIZE_DEFAULT = 1;
 
-	private static final Pattern _instanceSizePattern = Pattern.compile(
-		"\\bsizing[- ]?(\\d+)\\b", Pattern.CASE_INSENSITIVE);
 	private static final Log _log = LogFactory.getLog(
 		LicenseKeyGenerateFormService.class);
+
+	private static final Pattern _instanceSizePattern = Pattern.compile(
+		"\\bsizing[- ]?(\\d+)\\b", Pattern.CASE_INSENSITIVE);
 
 	@Autowired
 	private AccountService _accountService;
