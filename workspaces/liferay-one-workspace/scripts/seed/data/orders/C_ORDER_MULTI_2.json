@@ -3,7 +3,9 @@
 		{
 			"endDate": "2027-06-30T00:00:00Z",
 			"externalReferenceCode": "C_ENT_MULTI_2_DSR",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "DSR",
 			"maxQuantity": 1,
 			"name": "Digital Sales Room",
 			"quantity": 1,
@@ -17,7 +19,9 @@
 		{
 			"endDate": "2027-06-30T00:00:00Z",
 			"externalReferenceCode": "C_ENT_MULTI_2_DXP",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
 			"maxQuantity": 1,
 			"name": "Liferay DXP",
 			"quantity": 1,
@@ -31,7 +35,10 @@
 		{
 			"endDate": "2027-06-30T00:00:00Z",
 			"externalReferenceCode": "C_ENT_MULTI_2_DXP_COMPLIMENTARY",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "complimentary",
 			"maxQuantity": 1,
 			"name": "Liferay DXP Complimentary",
 			"quantity": 1,

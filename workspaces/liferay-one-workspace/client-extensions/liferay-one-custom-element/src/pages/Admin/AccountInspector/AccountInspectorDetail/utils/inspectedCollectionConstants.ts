@@ -94,6 +94,9 @@ export const INSPECTED_COLLECTION_COLUMNS: Record<
 		END_DATE_COLUMN,
 		hiddenField('sku', 'skuExternalReferenceCode'),
 		hiddenField('quantity', 'quantity'),
+		hiddenField('generates-activation-key', 'generatesActivationKey'),
+		hiddenField('license-key-family', 'licenseKeyFamily'),
+		hiddenField('license-key-type', 'licenseKeyType'),
 		hiddenField(
 			'entitlement-definition',
 			'r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC'

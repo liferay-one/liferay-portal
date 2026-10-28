@@ -364,7 +364,7 @@ It does not look at `customStatus`. A Canceled item keeps its entitlements until
 
 | Source | Name convention | ERC | Code |
 | --- | --- | --- | --- |
-| Seed and manual definitions for Liferay products | Machine key, for example `licenseGeneration`, `disasterRecovery`, `production-pods`. Many definitions share `licenseGeneration`, and `displayName` tells them apart. | Chosen by the author | `scripts/seed/data/15-entitlement-definition.batch-engine-data.json` |
+| Seed and manual definitions for Liferay products | Machine key, for example `liferay-dxp-production`, `disasterRecovery`, `production-pods`. | Chosen by the author | `scripts/seed/data/15-entitlement-definition.batch-engine-data.json` |
 | Generated definitions for paid App SKUs | Display label `<product name> - <SKU>`, used for both `name` and `displayName` | The SKU ERC | `EntitlementDefinitionService._syncEntitlementDefinition` (`…/one/service/EntitlementDefinitionService.java:380`) |
 
 The sidecar checks entitlements by machine key from `EntitlementConstants` (for example `NAME_DISASTER_RECOVERY` in `CloudRestController.java:187` and `CloudActivationRequestService.java:73`, and `namesSLAs` and `NAME_PARTNER` in `ProvisioningEmailService.java:407`). So `Entitlement.name` is a key for Liferay products and a label for marketplace apps. Code that matches on `name` must know which kind it expects.

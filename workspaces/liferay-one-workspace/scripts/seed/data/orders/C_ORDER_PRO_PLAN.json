@@ -3,7 +3,9 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_PRO_PLAN_DXP",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
 			"maxQuantity": 1,
 			"name": "Liferay DXP",
 			"quantity": 1,
@@ -17,7 +19,10 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_PRO_PLAN_DXP_COMPLIMENTARY",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "complimentary",
 			"maxQuantity": 1,
 			"name": "Liferay DXP Complimentary",
 			"quantity": 1,

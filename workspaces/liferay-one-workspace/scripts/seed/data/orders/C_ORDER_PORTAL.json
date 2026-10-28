@@ -3,7 +3,9 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_PORTAL",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "Portal",
 			"maxQuantity": 1,
 			"name": "Portal EE 6.x License (Production)",
 			"quantity": 1,

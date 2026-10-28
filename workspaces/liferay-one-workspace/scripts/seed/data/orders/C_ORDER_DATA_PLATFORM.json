@@ -7,6 +7,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_DATA_PLATFORM",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "Liferay Data Platform",

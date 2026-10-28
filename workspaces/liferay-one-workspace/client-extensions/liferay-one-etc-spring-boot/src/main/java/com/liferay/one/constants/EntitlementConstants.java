@@ -80,8 +80,6 @@ public class EntitlementConstants {
 
 	public static final String NAME_GOLD_SUPPORT = "gold-support";
 
-	public static final String NAME_LICENSE_GENERATION = "licenseGeneration";
-
 	public static final String NAME_LIFERAY_SAAS_SUPPORT =
 		"liferay-saas-support";
 

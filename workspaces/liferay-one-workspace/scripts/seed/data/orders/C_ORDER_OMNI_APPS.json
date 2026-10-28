@@ -3,6 +3,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_OMNI_TEST_APP",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "AI Blog Workspace",
@@ -17,6 +18,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_OMNI_TEST_CRM_ACCELERATOR",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "SugarCRM Customer Portal",
@@ -31,6 +33,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_OMNI_TEST_PARTNER_PORTAL",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "Insurance Agent Portal Accelerator",
@@ -45,6 +48,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_OMNI_TEST_SLACK_CONNECTOR",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "Email MFA for Liferay CE",
@@ -59,6 +63,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_OMNI_TEST_THEME_PACK",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "Collection display grid view with Item Highlight",

@@ -313,8 +313,11 @@ Materialized grant records derived from CommerceOrderItems via EntitlementDefini
 | FK `orderItemId` | long | `commerceOrderItemToEntitlement`, disassociate. Parent CommerceOrderItem that grants this entitlement |
 | FK `contractId` | long | `contractToEntitlement`, disassociate |
 | FK `projectId` | long | Project scoping the grant (`projectToEntitlement`), from the order's `salesforceProjectId` custom field; empty for project-less orders |
-| `name` | string | e.g. `database-size` · `vcpu` · `maxServers` · `licenseGeneration` |
+| `name` | string | Copied from the definition, e.g. `database-size` · `vcpu` · `liferay-self-hosted-prod-sizing-3`. The sizing of a license key comes from it |
+| `generatesActivationKey` | boolean | Copied from the definition at grant time. True when the entitlement grants license keys |
 | `grantType` | string | `fixed` · `rollover` · `prepaid` · `metered` |
+| `licenseKeyFamily` | string | Copied from the definition at grant time. The license entry family of the keys it grants |
+| `licenseKeyType` | string | Copied from the definition at grant time. The key type it grants |
 | `quantity` | double | Soft cap — alerts at this level; overridden by `sizing` where applicable |
 | `maxQuantity` | double | Hard cap — blocks at this level |
 | `overageRate` | double | Price of one overage bucket, copied from the definition at grant time |
@@ -341,8 +344,8 @@ Capability-level entitlement template. Many SKUs ↔ many EntitlementDefinitions
 |---|---|---|
 | PK `entitlementDefinitionId` | long | |
 | `externalReferenceCode` | string | e.g. `dxp-cloud-standard-database-size` |
-| `name` | string | e.g. `database-size`, `vcpu`, `maxServers`, `licenseGeneration` |
-| `displayName` | string | Human-readable, e.g. `Database Storage`, `License Generation` |
+| `name` | string | e.g. `database-size`, `vcpu`, `liferay-self-hosted-prod-sizing-3` |
+| `displayName` | string | Human-readable, e.g. `Database Storage`, `Liferay Self-Hosted Prod Sizing 3` |
 | `unit` | string | GB · vCPU · count · requests · seats · boolean |
 | `defaultQuantity` | double | Default; overridden at order item level via `sizing` |
 | `grantType` | string | `fixed` · `rollover` · `metered` · `prepaid` |
@@ -366,9 +369,9 @@ Capability-level entitlement template. Many SKUs ↔ many EntitlementDefinitions
 
 When a project's allotments have no overage SKU or conflicting pricing, or its usage definition has no bucket size, `UsageReportGenerator` records the overage but leaves the SKU, bucket count, and amount empty for a reviewer. A project with add-on buckets and no bucket size is skipped, since its entitled quantity is unknown.
 
-**License generation:** Presence of an EntitlementDefinition with `name = 'licenseGeneration'` (`grantType = fixed`, `unit = boolean`) indicates the product can generate license keys. This replaces the old boolean `licenses` flag on products.
+**License generation:** An entitlement whose `generatesActivationKey` is true grants license keys. The entitlement copies `generatesActivationKey`, `licenseKeyFamily`, and `licenseKeyType` from its definition at grant time, and key generation reads only the entitlement, so a later definition change does not change the keys that an existing grant allows. This replaces the old boolean `licenses` flag on products and the `licenseGeneration` definition name.
 
-**Licensing is SKU level.** Which key type a purchase grants (`licenseKeyType`), how long the key lasts (`licenseKeyDurationDays`), which license entry family it resolves against (`licenseKeyFamily`), and whether it leads an activation key (`generatesActivationKey`) all live on the definition, keyed by SKU external reference code. None of them is a product specification: a product external reference code is minted by whichever catalog created the product and differs per environment, while the SKU is what Salesforce sells and what an entitlement resolves.
+**Licensing is SKU level.** Which key type a purchase grants (`licenseKeyType`), how long the key lasts (`licenseKeyDurationDays`), which license entry family it resolves against (`licenseKeyFamily`), and whether it grants license keys (`generatesActivationKey`) all live on the definition, keyed by SKU external reference code, and are copied to each entitlement it grants. None of them is a product specification: a product external reference code is minted by whichever catalog created the product and differs per environment, while the SKU is what Salesforce sells and what an entitlement resolves.
 
 ---
 

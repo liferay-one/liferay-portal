@@ -357,7 +357,7 @@ public class LicenseKeyGenerationService {
 			boolean complimentary, String description, Entitlement entitlement,
 			Date expirationDate, GenerateRequest generateRequest,
 			LicensedProduct licensedProduct, GenerateRequest.Server server,
-			Date startDate)
+			String sizing, Date startDate)
 		throws Exception {
 
 		LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
@@ -375,7 +375,7 @@ public class LicenseKeyGenerationService {
 			ServerInfoUtil.toCommaSeparated(server.getIpAddresses()),
 			_toLicenseXML(
 				activationKeyScope, description, expirationDate,
-				generateRequest, licensedProduct, server, startDate),
+				generateRequest, licensedProduct, server, sizing, startDate),
 			LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
 			licenseEntry.getName(), licenseEntry.getType(),
 			_getLicenseVersion(productId, productName, version),
@@ -386,8 +386,7 @@ public class LicenseKeyGenerationService {
 			generateRequest.getEnvironmentName(), productId, productName,
 			_getProductVersion(productId, version),
 			activationKeyScope.getProjectExternalReferenceCode(),
-			_getServerId(generateRequest), _getSizing(generateRequest),
-			startDate);
+			_getServerId(generateRequest), sizing, startDate);
 	}
 
 	private void _checkComplimentary(ActivationKeyScope activationKeyScope)
@@ -908,6 +907,9 @@ public class LicenseKeyGenerationService {
 					subscriptionEntitlement);
 			}
 			else {
+				String sizing = _getSizing(
+					generateRequest, subscriptionEntitlement);
+
 				for (GenerateRequest.Server server :
 						_getServers(generateRequest)) {
 
@@ -918,7 +920,7 @@ public class LicenseKeyGenerationService {
 							generateRequest,
 							licensedProducts.get(
 								entitlement.getEntitlementId()),
-							server, startDate);
+							server, sizing, startDate);
 					}
 				}
 			}
@@ -1331,12 +1333,17 @@ public class LicenseKeyGenerationService {
 		return generateRequest.getServers();
 	}
 
-	private String _getSizing(GenerateRequest generateRequest) {
+	private String _getSizing(
+		GenerateRequest generateRequest, Entitlement subscriptionEntitlement) {
+
 		if (_isComplimentary(generateRequest)) {
 			return _SIZING_COMPLIMENTARY;
 		}
 
-		return _SIZING_DEFAULT;
+		int instanceSize = LicenseKeyGenerateFormService.getInstanceSize(
+			subscriptionEntitlement);
+
+		return "Sizing " + instanceSize;
 	}
 
 	private String _getSkuExternalReferenceCode(Entitlement entitlement) {
@@ -1502,7 +1509,7 @@ public class LicenseKeyGenerationService {
 			accountName, description, keyType, licenseVersion, productName,
 			productId, productVersion, accountName, 0, 0,
 			LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS, 0, 0,
-			_SIZING_DEFAULT, description, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, description, StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
 			expirationDate);
 
@@ -1510,7 +1517,7 @@ public class LicenseKeyGenerationService {
 			key, accountName, description, keyType, licenseVersion, productName,
 			productId, productVersion, accountName, 0, 0,
 			LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS, 0, 0,
-			_SIZING_DEFAULT, description, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, description, StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
 			expirationDate);
 	}
@@ -1519,7 +1526,7 @@ public class LicenseKeyGenerationService {
 			ActivationKeyScope activationKeyScope, String description,
 			Date expirationDate, GenerateRequest generateRequest,
 			LicensedProduct licensedProduct, GenerateRequest.Server server,
-			Date startDate)
+			String sizing, Date startDate)
 		throws Exception {
 
 		LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
@@ -1543,7 +1550,6 @@ public class LicenseKeyGenerationService {
 		String productVersion = _getProductVersion(
 			productId, generateRequest.getVersion());
 		String serverId = _getServerId(generateRequest);
-		String sizing = _getSizing(generateRequest);
 
 		String key = _licenseKeyGenerator.generateKey(
 			accountName, licenseEntry.getName(), licenseEntry.getType(),
@@ -1561,8 +1567,6 @@ public class LicenseKeyGenerationService {
 	}
 
 	private static final String _SIZING_COMPLIMENTARY = "Sizing 4";
-
-	private static final String _SIZING_DEFAULT = "Sizing 1";
 
 	private static final Log _log = LogFactory.getLog(
 		LicenseKeyGenerationService.class);

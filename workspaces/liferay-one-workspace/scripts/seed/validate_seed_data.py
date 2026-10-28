@@ -540,6 +540,37 @@ def _check_fields(report, definitions, entitlements, order_items):
 				),
 			)
 
+		if bool(entitlement.get("generatesActivationKey")) != bool(
+			definition.get("generatesActivationKey")
+		):
+			report.error(
+				"Entitlement disagrees with its definition",
+				"entitlement %s has generatesActivationKey %r but its definition "
+				"%s has %r"
+				% (
+					erc,
+					bool(entitlement.get("generatesActivationKey")),
+					definition["externalReferenceCode"],
+					bool(definition.get("generatesActivationKey")),
+				),
+			)
+
+		for field_name in ("licenseKeyFamily", "licenseKeyType"):
+			if (entitlement.get(field_name) or None) != (
+				definition.get(field_name) or None
+			):
+				report.error(
+					"Entitlement disagrees with its definition",
+					"entitlement %s has %s %r but its definition %s has %r"
+					% (
+						erc,
+						field_name,
+						entitlement.get(field_name),
+						definition["externalReferenceCode"],
+						definition.get(field_name),
+					),
+				)
+
 		order_item_quantity = order_item_quantities.get(
 			entitlement.get("r_commerceOrderItemToEntitlement_commerceOrderItemERC")
 		)

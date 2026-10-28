@@ -4,6 +4,7 @@
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_CLOUD_NATIVE_PENDING",
 			"grantType": "fixed",
+			"licenseKeyFamily": "Cloud Native",
 			"maxQuantity": 1,
 			"name": "Liferay Cloud Native - Standard Operations Bundle",
 			"quantity": 1,

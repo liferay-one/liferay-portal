@@ -105,7 +105,7 @@ sequenceDiagram
     SB->>SB: ProjectPermission VIEW on the project
     SB->>Form: getSummary(admin, project, provisionable)
     Form->>DXP: Active entitlements of the project
-    Form->>Form: Keep entitlements whose definition name is licenseGeneration
+    Form->>Form: Keep entitlements whose generatesActivationKey is true
     Form->>DXP: Resolve each SKU to a product
     Form->>Form: Group by licenseKeyFamily, then by licenseKeyType
     Form->>Form: Drop a key type with no license entry for the family
@@ -115,17 +115,16 @@ sequenceDiagram
     CE-->>User: Enable New Key when hasGeneratePermission and generatable
 ```
 
-The fields of the entitlement definition decide `generatable` as follows:
+The fields of the entitlement decide `generatable` as follows. `EntitlementService.addEntitlement` copies `generatesActivationKey`, `licenseKeyFamily`, and `licenseKeyType` from the definition when it creates the entitlement. Key generation reads them from the entitlement only, so a later change to the definition, or a lost relationship to it, does not change the keys that the entitlement grants. The name of the entitlement or its definition has no effect.
 
-| Definition Field | Effect on `generatable` | Source |
+| Entitlement Field | Effect on `generatable` | Source |
 | --- | --- | --- |
-| `name` | Must be `licenseGeneration`. Any other entitlement is ignored. | `sb/service/LicenseKeyGenerateFormService.java:383`, `:848` |
-| `licenseKeyFamily` | Must not be empty. An empty value drops the entitlement. | `sb/service/LicenseKeyGenerateFormService.java:785` |
-| `licenseKeyType` | Must not be empty, and must be in `liferay.one.license.key.types`. | `sb/service/LicenseKeyGenerateFormService.java:779`, `:668` |
-| `maxQuantity` on the entitlement | Sets the activations. An empty value gives 0, so the key type is not generatable. | `sb/service/LicenseKeyGenerateFormService.java:156` |
-| `generatesActivationKey` | No effect on `generatable`. It only puts the product in the `bundleProducts` list of the form. | `sb/service/LicenseKeyGenerateFormService.java:304`, `:477` |
+| `generatesActivationKey` | Must be true. Any other entitlement is ignored. A true value also puts the product in the `bundleProducts` list of the form. | `sb/service/LicenseKeyGenerateFormService.java` `grantsLicense` |
+| `licenseKeyFamily` | Must not be empty. An empty value drops the entitlement. | `sb/service/LicenseKeyGenerateFormService.java` `_getLicenseKeyTypeEntitlements` |
+| `licenseKeyType` | Must not be empty, and must be in `liferay.one.license.key.types`. | `sb/service/LicenseKeyGenerateFormService.java` `_getLicenseKeyTypeEntitlements`, `_getKeyTypesJSONArray` |
+| `maxQuantity` | Sets the activations. An empty value gives 0, so the key type is not generatable. | `sb/service/LicenseKeyGenerateFormService.java` `getTotalCount` |
 
-The hint that UAT once showed no New Key because its definitions lacked `licenseKeyFamily` agrees with the code. The hint that a missing `generatesActivationKey` also hid the button does not: that field only changes the bundle list.
+Each entitlement of a key type is its own subscription in the form, so a project with two production entitlements of different sizes can choose either one. The entitlement of a renewed activation key comes first.
 
 A user who cannot provision (`provisionable` false) still sees the button when a developer key type has activations left, because `_isGeneratable` keeps the downloadable types (`sb/service/LicenseKeyGenerateFormService.java:959`). The hook gives `hasGeneratePermission` to every user of an assigned project (`ce/pages/MyAccount/Projects/hooks/useHasActivationPermission.ts:136`), so such a user can open the form and download only a developer key.
 
@@ -181,7 +180,7 @@ The inputs of one license key are:
 | Input | Source |
 | --- | --- |
 | Account name and owner | `project.getName()` is the account name in the XML. The owner and the key name are the environment name. `sb/service/LicenseKeyGenerationService.java:982`, `:301` |
-| Cluster or instance size | Not taken from the request. `maxClusterNodes`, `maxServers`, `maxHttpSessions`, `maxUsers`, and `maxConcurrentUsers` are 0. The form always sends `instanceSize` 1. Sizing is `Sizing 1`, or `Sizing 4` for a complimentary key. `sb/service/LicenseKeyGenerationService.java:997`, `:1009`, `sb/service/LicenseKeyGenerateFormService.java:1110` |
+| Cluster or instance size | Not taken from the request. `maxClusterNodes`, `maxServers`, `maxHttpSessions`, `maxUsers`, and `maxConcurrentUsers` are 0. The sizing comes from the name of the selected subscription entitlement, for example `Sizing 3` for `liferay-self-hosted-prod-sizing-3`, and is `Sizing 1` when the name has no sizing. Every license key of the activation key gets that sizing. A complimentary key gets `Sizing 4`. A developer key gets no sizing, so its license file has no `instance-size`, as on the legacy provisioning server. `sb/service/LicenseKeyGenerationService.java` `_getSizing`, `sb/service/LicenseKeyGenerateFormService.java` `getInstanceSize` |
 | Dates | The start date is the subscription start date. A complimentary key starts on the requested date. The end date follows the rules table below. `sb/service/LicenseKeyGenerationService.java:529` |
 | Entitlement | `subscriptionEntitlementId` and `bundleEntitlementIds`, each found among the active entitlements of the project. `sb/service/LicenseKeyGenerationService.java:519`, `:659` |
 | Environment | `environmentName` from the request. No `C_ENVIRONMENT` record is read or written. |
@@ -329,7 +328,7 @@ These are the checks that the server applies before it issues a key. "Project pa
 | A complimentary key lasts `licenseKeyDurationDays`, or 30 days when the value is 0 | Project path | `sb/service/LicenseKeyGenerationService.java:684` |
 | A complimentary key uses only an entitlement whose type is `complimentary`, and such an entitlement grants no other key | Project path | `sb/service/LicenseKeyGenerationService.java:346` |
 | A developer key needs a version of 7.4 or later | Developer download | `sb/service/LicenseKeyGenerationService.java:91` |
-| A developer key needs a `licenseGeneration` entitlement whose type equals the requested key type | Developer download | `sb/service/LicenseKeyGenerationService.java:429` |
+| A developer key needs an entitlement whose `generatesActivationKey` is true and whose type equals the requested key type | Developer download | `sb/service/LicenseKeyGenerationService.java` `_fetchEntitledProductEntitlement` |
 | A developer key ends after `licenseKeyDurationDays`, or on the entitlement end date. With neither, the download is refused. | Developer download | `sb/service/LicenseKeyGenerationService.java:780` |
 | A developer key does not bundle an app, another leading family, or an add on that has no license entry for the version | Developer download | `sb/service/LicenseKeyGenerationService.java:728`, `:744`, `:755` |
 | A free key is refused when the owner has a free key for the domain on any account, at any date, unless that key belongs to the same order | Free key | `sb/service/LicenseKeyService.java:555`, `sb/LicenseKeysRestController.java:286` |

@@ -3,7 +3,9 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_DSR",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "DSR",
 			"maxQuantity": 1,
 			"name": "Digital Sales Room",
 			"quantity": 1,
@@ -17,6 +19,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_DSR_ANALYTICS_CLOUD",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "Liferay Analytics Cloud Subscription - Basic Plan",

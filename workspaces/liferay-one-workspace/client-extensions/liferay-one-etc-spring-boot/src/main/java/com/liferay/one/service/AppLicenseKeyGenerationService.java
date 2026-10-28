@@ -15,7 +15,6 @@ import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.exception.LicenseKeyEntitlementException;
 import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.Entitlement;
-import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.one.util.ServerInfoUtil;
@@ -240,13 +239,6 @@ public class AppLicenseKeyGenerationService {
 				_entitlementService.getActiveUnassignedEntitlements(
 					accountEntryId)) {
 
-			EntitlementDefinition entitlementDefinition =
-				entitlement.getEntitlementDefinition();
-
-			if (entitlementDefinition == null) {
-				continue;
-			}
-
 			String skuExternalReferenceCode =
 				entitlement.getSkuExternalReferenceCode();
 
@@ -274,7 +266,7 @@ public class AppLicenseKeyGenerationService {
 
 			appEntitlements.add(
 				new AppEntitlement(
-					entitlement, _getKeyType(entitlementDefinition), product));
+					entitlement, _getKeyType(entitlement), product));
 		}
 
 		return appEntitlements;
@@ -307,8 +299,8 @@ public class AppLicenseKeyGenerationService {
 			).toInstant());
 	}
 
-	private String _getKeyType(EntitlementDefinition entitlementDefinition) {
-		String licenseKeyType = entitlementDefinition.getLicenseKeyType();
+	private String _getKeyType(Entitlement entitlement) {
+		String licenseKeyType = entitlement.getLicenseKeyType();
 
 		if (Validator.isNull(licenseKeyType)) {
 			return LicenseKeyGenerationConstants.KEY_TYPE_PRODUCTION;

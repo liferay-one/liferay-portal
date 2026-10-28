@@ -29,8 +29,12 @@ public final class Entitlement {
 		_entitlementDefinitionId = jsonObject.optLong(
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId");
 		_entitlementId = jsonObject.getLong("id");
+		_generatesActivationKey = jsonObject.optBoolean(
+			"generatesActivationKey");
 		_grantType = jsonObject.optString("grantType");
 		_licenseKeyDurationDays = jsonObject.optInt("licenseKeyDurationDays");
+		_licenseKeyFamily = jsonObject.optString("licenseKeyFamily");
+		_licenseKeyType = jsonObject.optString("licenseKeyType");
 		_maxQuantity = jsonObject.optDoubleObject("maxQuantity", null);
 		_name = jsonObject.optString("name");
 		_overagePricing = OveragePricing.of(jsonObject);
@@ -107,6 +111,14 @@ public final class Entitlement {
 		return _licenseKeyDurationDays;
 	}
 
+	public String getLicenseKeyFamily() {
+		return _licenseKeyFamily;
+	}
+
+	public String getLicenseKeyType() {
+		return _licenseKeyType;
+	}
+
 	public Double getMaxQuantity() {
 		return _maxQuantity;
 	}
@@ -155,6 +167,10 @@ public final class Entitlement {
 		return _endDateInstant.isBefore(Instant.now());
 	}
 
+	public boolean isGeneratesActivationKey() {
+		return _generatesActivationKey;
+	}
+
 	public boolean isSelfServiceTrial() {
 		if ((_contractId == 0) && (_licenseKeyDurationDays > 0) &&
 			Validator.isNull(_projectExternalReferenceCode)) {
@@ -178,8 +194,11 @@ public final class Entitlement {
 	private final EntitlementDefinition _entitlementDefinition;
 	private final long _entitlementDefinitionId;
 	private final long _entitlementId;
+	private final boolean _generatesActivationKey;
 	private final String _grantType;
 	private final int _licenseKeyDurationDays;
+	private final String _licenseKeyFamily;
+	private final String _licenseKeyType;
 	private final Double _maxQuantity;
 	private final String _name;
 	private final OveragePricing _overagePricing;

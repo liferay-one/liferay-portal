@@ -28,11 +28,11 @@ export type EnvironmentEntitlement = {
 type EntitlementNode = {
 	endDate?: string;
 	entitlementDefinitionToEntitlement?: {
-		generatesActivationKey?: boolean;
-		licenseKeyType?: string;
 		unit?: string;
 	};
+	generatesActivationKey?: boolean;
 	id: number;
+	licenseKeyType?: string;
 	quantity?: number;
 	r_commerceOrderItemToEntitlement_commerceOrderItemId?: number;
 	startDate?: string;
@@ -48,10 +48,10 @@ export const ENVIRONMENTS: Word[] = [
 
 const ENTITLEMENT_FIELDS = [
 	'endDate',
-	'entitlementDefinitionToEntitlement.generatesActivationKey',
-	'entitlementDefinitionToEntitlement.licenseKeyType',
 	'entitlementDefinitionToEntitlement.unit',
+	'generatesActivationKey',
 	'id',
+	'licenseKeyType',
 	'quantity',
 	'r_commerceOrderItemToEntitlement_commerceOrderItemId',
 	'startDate',
@@ -74,8 +74,8 @@ function isEnvironmentEntitlement(
 	entitlementNode: EntitlementNode,
 	activationKeys: boolean
 ) {
-	const {generatesActivationKey, licenseKeyType, unit} =
-		entitlementNode.entitlementDefinitionToEntitlement ?? {};
+	const {generatesActivationKey, licenseKeyType} = entitlementNode;
+	const {unit} = entitlementNode.entitlementDefinitionToEntitlement ?? {};
 
 	if (licenseKeyType && !ENVIRONMENTS.includes(licenseKeyType as Word)) {
 		return false;
@@ -145,8 +145,8 @@ export function useProductEnvironmentEntitlements(
 			return {
 				endDate: entitlementNode.endDate ?? '',
 				environment:
-					entitlementNode.entitlementDefinitionToEntitlement
-						?.licenseKeyType || getEnvironment(optionValueNames),
+					entitlementNode.licenseKeyType ||
+					getEnvironment(optionValueNames),
 				instanceSize: getInstanceSize(optionValueNames),
 				provisionedCount: provisionedCounts?.[index],
 				quantity: entitlementNode.quantity ?? 0,

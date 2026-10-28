@@ -6,6 +6,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_TEST_LOW_CODE_CONFIGURATION",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "Sticky Notes for the Portal",

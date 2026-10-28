@@ -3,6 +3,7 @@
 		{
 			"endDate": "2027-01-15T00:00:00Z",
 			"externalReferenceCode": "C_ENT_MP_COMPOSITE_APP",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "Hubspot Lead Capture",

@@ -3,6 +3,7 @@
 		{
 			"endDate": "2026-12-31T00:00:00Z",
 			"externalReferenceCode": "C_ENT_MULTI_1_AIHUB",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "AI Hub",
@@ -31,7 +32,9 @@
 		{
 			"endDate": "2026-07-01T00:00:00Z",
 			"externalReferenceCode": "C_ENT_MULTI_1_CONTENT_MARKETING",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "CMP",
 			"maxQuantity": 1,
 			"name": "Content Marketing Platform",
 			"quantity": 1,
@@ -45,7 +48,9 @@
 		{
 			"endDate": "2026-12-31T00:00:00Z",
 			"externalReferenceCode": "C_ENT_MULTI_1_DXP",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
 			"maxQuantity": 1,
 			"name": "Liferay DXP",
 			"quantity": 1,
@@ -59,7 +64,10 @@
 		{
 			"endDate": "2026-12-31T00:00:00Z",
 			"externalReferenceCode": "C_ENT_MULTI_1_DXP_COMPLIMENTARY",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "complimentary",
 			"maxQuantity": 1,
 			"name": "Liferay DXP Complimentary",
 			"quantity": 1,

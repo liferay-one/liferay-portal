@@ -3,6 +3,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_NO_PROJECT_APP",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
 			"name": "Liferay Commerce Connector to PunchOut2Go",

@@ -64,8 +64,10 @@ public class EntitlementService extends OneBaseService {
 
 	public Entitlement addEntitlement(
 			long accountEntryId, long commerceOrderItemId, long contractId,
-			long entitlementDefinitionId, String endDate, String grantType,
-			int licenseKeyDurationDays, Double maxQuantity, String name,
+			long entitlementDefinitionId, String endDate,
+			boolean generatesActivationKey, String grantType,
+			int licenseKeyDurationDays, String licenseKeyFamily,
+			String licenseKeyType, Double maxQuantity, String name,
 			OveragePricing overagePricing, Map<String, String> productOptions,
 			String projectExternalReferenceCode, Double quantity,
 			String skuExternalReferenceCode, String startDate)
@@ -90,7 +92,13 @@ public class EntitlementService extends OneBaseService {
 			StringBundler.concat(
 				commerceOrderItemId, "-", entitlementDefinitionId)
 		).put(
+			"generatesActivationKey", generatesActivationKey
+		).put(
 			"grantType", grantType
+		).put(
+			"licenseKeyFamily", licenseKeyFamily
+		).put(
+			"licenseKeyType", licenseKeyType
 		).put(
 			"maxQuantity", maxQuantity
 		).put(
@@ -838,10 +846,13 @@ public class EntitlementService extends OneBaseService {
 				Entitlement entitlement = addEntitlement(
 					accountEntryId, commerceOrderItemId, contractId,
 					entitlementDefinition.getEntitlementDefinitionId(), endDate,
+					entitlementDefinition.isGeneratesActivationKey(),
 					entitlementDefinition.getGrantType(),
 					_getLicenseKeyDurationDays(
 						entitlementDefinition, selfServiceTrial,
 						selfServiceTrialCustomer),
+					entitlementDefinition.getLicenseKeyFamily(),
+					entitlementDefinition.getLicenseKeyType(),
 					_multiply(
 						orderItemQuantity,
 						entitlementDefinition.getMaxQuantity()),

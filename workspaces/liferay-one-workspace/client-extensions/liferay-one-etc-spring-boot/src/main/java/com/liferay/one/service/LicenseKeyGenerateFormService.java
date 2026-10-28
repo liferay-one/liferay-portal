@@ -23,12 +23,12 @@ import com.liferay.one.model.ProductVersion;
 import com.liferay.one.model.Project;
 import com.liferay.one.util.AccountUtil;
 import com.liferay.one.util.CommerceProductUtil;
-import com.liferay.one.util.CommerceSkuUtil;
 import com.liferay.one.util.comparator.VersionComparator;
 import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -61,6 +63,16 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class LicenseKeyGenerateFormService {
+
+	public static int getInstanceSize(Entitlement entitlement) {
+		Matcher matcher = _instanceSizePattern.matcher(entitlement.getName());
+
+		if (!matcher.find()) {
+			return _INSTANCE_SIZE_DEFAULT;
+		}
+
+		return GetterUtil.getInteger(matcher.group(1), _INSTANCE_SIZE_DEFAULT);
+	}
 
 	public static int getLicenseKeyDurationDays(Entitlement entitlement) {
 		if (entitlement.getLicenseKeyDurationDays() > 0) {
@@ -126,25 +138,11 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public static String getLicenseKeyFamily(Entitlement entitlement) {
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return StringPool.BLANK;
-		}
-
-		return entitlementDefinition.getLicenseKeyFamily();
+		return entitlement.getLicenseKeyFamily();
 	}
 
 	public static String getLicenseKeyType(Entitlement entitlement) {
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return StringPool.BLANK;
-		}
-
-		return entitlementDefinition.getLicenseKeyType();
+		return entitlement.getLicenseKeyType();
 	}
 
 	public static String getProductId(
@@ -326,17 +324,7 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public boolean grantsLicense(Entitlement entitlement) {
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return false;
-		}
-
-		return Objects.equals(
-			LicenseKeyGenerationConstants.
-				ENTITLEMENT_DEFINITION_NAME_LICENSE_GENERATION,
-			entitlementDefinition.getName());
+		return entitlement.isGeneratesActivationKey();
 	}
 
 	public boolean isAllowComplimentary(long accountId) throws Exception {
@@ -418,25 +406,6 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return _commerceProductService.fetchProduct(productId);
-	}
-
-	private boolean _generatesActivationKey(
-		Entitlement entitlement, ResolvedProduct resolvedProduct) {
-
-		if (CommerceSkuUtil.hasLicenseUsageTypeOption(
-				resolvedProduct._getSku())) {
-
-			return true;
-		}
-
-		EntitlementDefinition entitlementDefinition =
-			entitlement.getEntitlementDefinition();
-
-		if (entitlementDefinition == null) {
-			return false;
-		}
-
-		return entitlementDefinition.isGeneratesActivationKey();
 	}
 
 	private JSONArray _getCloudNativeKeyTypesJSONArray(
@@ -579,7 +548,7 @@ public class LicenseKeyGenerateFormService {
 		List<Long> renewedActivationKeyIds = _getRenewedActivationKeyIds(
 			renewedActivationKeyExternalReferenceCode);
 
-		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
+		Map<String, Map<String, List<Entitlement>>> licenseKeyTypeEntitlements =
 			_getLicenseKeyTypeEntitlements(
 				entitlements,
 				_getRenewedEntitlementIds(renewedActivationKeyIds),
@@ -708,7 +677,7 @@ public class LicenseKeyGenerateFormService {
 				entitlement.getEntitlementId());
 
 			if ((resolvedProduct == null) ||
-				!_generatesActivationKey(entitlement, resolvedProduct)) {
+				!entitlement.isGeneratesActivationKey()) {
 
 				continue;
 			}
@@ -726,14 +695,14 @@ public class LicenseKeyGenerateFormService {
 		boolean allowPermanentLicenses, boolean hasComplimentaryActivationKey,
 		boolean hasLicenseEntries, Map<Long, Integer> licenseKeyCounts,
 		String licenseKeyFamily,
-		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements,
+		Map<String, Map<String, List<Entitlement>>> licenseKeyTypeEntitlements,
 		List<ProductVersion> productVersions, boolean provisionable,
 		boolean virtualClusterAllowed) {
 
 		JSONArray jsonArray = new JSONArray();
 
-		Map<String, Entitlement> entitlements = licenseKeyTypeEntitlements.get(
-			licenseKeyFamily);
+		Map<String, List<Entitlement>> entitlements =
+			licenseKeyTypeEntitlements.get(licenseKeyFamily);
 
 		if (entitlements == null) {
 			return jsonArray;
@@ -762,9 +731,10 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
-			Entitlement entitlement = entitlements.get(licenseKeyType.getKey());
+			List<Entitlement> keyTypeEntitlements = entitlements.get(
+				licenseKeyType.getKey());
 
-			if (entitlement == null) {
+			if (ListUtil.isEmpty(keyTypeEntitlements)) {
 				continue;
 			}
 
@@ -797,8 +767,10 @@ public class LicenseKeyGenerateFormService {
 			}
 
 			JSONArray subscriptionsJSONArray = _getSubscriptionsJSONArray(
-				allowPermanentLicenses && !complimentary, entitlement,
+				allowPermanentLicenses && !complimentary, keyTypeEntitlements,
 				licenseEntryType, licenseKeyCounts);
+
+			Entitlement entitlement = keyTypeEntitlements.get(0);
 
 			jsonArray.put(
 				new JSONObject(
@@ -847,12 +819,12 @@ public class LicenseKeyGenerateFormService {
 		return licenseEntries;
 	}
 
-	private Map<String, Map<String, Entitlement>>
+	private Map<String, Map<String, List<Entitlement>>>
 		_getLicenseKeyTypeEntitlements(
 			List<Entitlement> entitlements, Set<Long> renewedEntitlementIds,
 			Map<Long, ResolvedProduct> resolvedProducts) {
 
-		Map<String, Map<String, Entitlement>> licenseKeyTypeEntitlements =
+		Map<String, Map<String, List<Entitlement>>> licenseKeyTypeEntitlements =
 			new HashMap<>();
 
 		for (Entitlement entitlement : entitlements) {
@@ -875,17 +847,21 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
-			Map<String, Entitlement> entitlementsMap =
+			Map<String, List<Entitlement>> entitlementsMap =
 				licenseKeyTypeEntitlements.computeIfAbsent(
 					licenseKeyFamily, key -> new HashMap<>());
+
+			List<Entitlement> keyTypeEntitlements =
+				entitlementsMap.computeIfAbsent(
+					licenseKeyType, key -> new ArrayList<>());
 
 			if (renewedEntitlementIds.contains(
 					entitlement.getEntitlementId())) {
 
-				entitlementsMap.put(licenseKeyType, entitlement);
+				keyTypeEntitlements.add(0, entitlement);
 			}
 			else {
-				entitlementsMap.putIfAbsent(licenseKeyType, entitlement);
+				keyTypeEntitlements.add(entitlement);
 			}
 		}
 
@@ -994,7 +970,7 @@ public class LicenseKeyGenerateFormService {
 					entitlement, sku, skuExternalReferenceCode);
 
 				if (product != null) {
-					resolvedProduct = new ResolvedProduct(product, sku);
+					resolvedProduct = new ResolvedProduct(product);
 
 					skuResolvedProducts.put(
 						skuExternalReferenceCode, resolvedProduct);
@@ -1017,40 +993,44 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private JSONArray _getSubscriptionsJSONArray(
-		boolean allowPermanentLicenses, Entitlement entitlement,
+		boolean allowPermanentLicenses, List<Entitlement> entitlements,
 		String licenseEntryType, Map<Long, Integer> licenseKeyCounts) {
 
 		JSONArray jsonArray = new JSONArray();
 
-		int totalCount = getTotalCount(entitlement);
+		for (Entitlement entitlement : entitlements) {
+			int totalCount = getTotalCount(entitlement);
 
-		int usedCount = licenseKeyCounts.getOrDefault(
-			entitlement.getEntitlementId(), 0);
+			int usedCount = licenseKeyCounts.getOrDefault(
+				entitlement.getEntitlementId(), 0);
 
-		int availableCount = Math.max(0, totalCount - usedCount);
+			int availableCount = Math.max(0, totalCount - usedCount);
 
-		jsonArray.put(
-			new JSONObject(
-			).put(
-				"availableCount", availableCount
-			).put(
-				"endDate", toISO8601(entitlement.getEndDateInstant())
-			).put(
-				"entitlementId", entitlement.getEntitlementId()
-			).put(
-				"instanceSize", _INSTANCE_SIZE_DEFAULT
-			).put(
-				"licenseKeyDurationDays", getLicenseKeyDurationDays(entitlement)
-			).put(
-				"licenseKeyExpirationDate",
-				toISO8601(
-					getLicenseKeyExpirationInstant(
-						allowPermanentLicenses, entitlement, licenseEntryType))
-			).put(
-				"startDate", toISO8601(entitlement.getStartDateInstant())
-			).put(
-				"totalCount", totalCount
-			));
+			jsonArray.put(
+				new JSONObject(
+				).put(
+					"availableCount", availableCount
+				).put(
+					"endDate", toISO8601(entitlement.getEndDateInstant())
+				).put(
+					"entitlementId", entitlement.getEntitlementId()
+				).put(
+					"instanceSize", getInstanceSize(entitlement)
+				).put(
+					"licenseKeyDurationDays",
+					getLicenseKeyDurationDays(entitlement)
+				).put(
+					"licenseKeyExpirationDate",
+					toISO8601(
+						getLicenseKeyExpirationInstant(
+							allowPermanentLicenses, entitlement,
+							licenseEntryType))
+				).put(
+					"startDate", toISO8601(entitlement.getStartDateInstant())
+				).put(
+					"totalCount", totalCount
+				));
+		}
 
 		return jsonArray;
 	}
@@ -1278,6 +1258,8 @@ public class LicenseKeyGenerateFormService {
 
 	private static final int _INSTANCE_SIZE_DEFAULT = 1;
 
+	private static final Pattern _instanceSizePattern = Pattern.compile(
+		"\\bsizing[- ]?(\\d+)\\b", Pattern.CASE_INSENSITIVE);
 	private static final Log _log = LogFactory.getLog(
 		LicenseKeyGenerateFormService.class);
 
@@ -1361,21 +1343,15 @@ public class LicenseKeyGenerateFormService {
 
 	private static class ResolvedProduct {
 
-		private ResolvedProduct(Product product, Sku sku) {
+		private ResolvedProduct(Product product) {
 			_product = product;
-			_sku = sku;
 		}
 
 		private Product _getProduct() {
 			return _product;
 		}
 
-		private Sku _getSku() {
-			return _sku;
-		}
-
 		private final Product _product;
-		private final Sku _sku;
 
 	}
 

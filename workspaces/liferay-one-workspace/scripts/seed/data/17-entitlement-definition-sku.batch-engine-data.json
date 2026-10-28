@@ -719,6 +719,96 @@
 			"externalReferenceCode": "C_ENT_DEF_ZENDESK_f7cd2285-4dea-1712-5df9-bc5077310740",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ZENDESK",
 			"skuExternalReferenceCode": "f7cd2285-4dea-1712-5df9-bc5077310740"
+		},
+		{
+			"externalReferenceCode": "developer-tools_01t70000004cY0eAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "developer-tools",
+			"skuExternalReferenceCode": "01t70000004cY0eAAE"
+		},
+		{
+			"externalReferenceCode": "developer-tools_01t70000004cY0oAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "developer-tools",
+			"skuExternalReferenceCode": "01t70000004cY0oAAE"
+		},
+		{
+			"externalReferenceCode": "developer-tools_01t70000004cY0yAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "developer-tools",
+			"skuExternalReferenceCode": "01t70000004cY0yAAE"
+		},
+		{
+			"externalReferenceCode": "dxp_01t70000004cY0eAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "dxp",
+			"skuExternalReferenceCode": "01t70000004cY0eAAE"
+		},
+		{
+			"externalReferenceCode": "dxp_01t70000004cY0oAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "dxp",
+			"skuExternalReferenceCode": "01t70000004cY0oAAE"
+		},
+		{
+			"externalReferenceCode": "dxp_01t70000004cY0yAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "dxp",
+			"skuExternalReferenceCode": "01t70000004cY0yAAE"
+		},
+		{
+			"externalReferenceCode": "gold-support_01t70000004cY0eAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "gold-support",
+			"skuExternalReferenceCode": "01t70000004cY0eAAE"
+		},
+		{
+			"externalReferenceCode": "gold-support_01t70000004cY0oAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "gold-support",
+			"skuExternalReferenceCode": "01t70000004cY0oAAE"
+		},
+		{
+			"externalReferenceCode": "gold-support_01t70000004cY0yAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "gold-support",
+			"skuExternalReferenceCode": "01t70000004cY0yAAE"
+		},
+		{
+			"externalReferenceCode": "liferay-self-hosted-developer_01t70000004cY0eAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-self-hosted-developer",
+			"skuExternalReferenceCode": "01t70000004cY0eAAE"
+		},
+		{
+			"externalReferenceCode": "liferay-self-hosted-developer_01t70000004cY0oAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-self-hosted-developer",
+			"skuExternalReferenceCode": "01t70000004cY0oAAE"
+		},
+		{
+			"externalReferenceCode": "liferay-self-hosted-developer_01t70000004cY0yAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-self-hosted-developer",
+			"skuExternalReferenceCode": "01t70000004cY0yAAE"
+		},
+		{
+			"externalReferenceCode": "liferay-self-hosted-non-prod-sizing-1_01t70000004cY0yAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-self-hosted-non-prod-sizing-1",
+			"skuExternalReferenceCode": "01t70000004cY0yAAE"
+		},
+		{
+			"externalReferenceCode": "liferay-self-hosted-prod-sizing-1_01t70000004cY0eAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-self-hosted-prod-sizing-1",
+			"skuExternalReferenceCode": "01t70000004cY0eAAE"
+		},
+		{
+			"externalReferenceCode": "liferay-self-hosted-prod-sizing-3_01t70000004cY0oAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-self-hosted-prod-sizing-3",
+			"skuExternalReferenceCode": "01t70000004cY0oAAE"
+		},
+		{
+			"externalReferenceCode": "liferay-self-hosted_01t70000004cY0eAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-self-hosted",
+			"skuExternalReferenceCode": "01t70000004cY0eAAE"
+		},
+		{
+			"externalReferenceCode": "liferay-self-hosted_01t70000004cY0oAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-self-hosted",
+			"skuExternalReferenceCode": "01t70000004cY0oAAE"
+		},
+		{
+			"externalReferenceCode": "liferay-self-hosted_01t70000004cY0yAAE",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-self-hosted",
+			"skuExternalReferenceCode": "01t70000004cY0yAAE"
 		}
 	]
 }

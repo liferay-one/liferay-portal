@@ -3,7 +3,9 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_CONTENT_MARKETING",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
+			"licenseKeyFamily": "CMP",
 			"maxQuantity": 1,
 			"name": "Content Marketing Platform",
 			"quantity": 1,

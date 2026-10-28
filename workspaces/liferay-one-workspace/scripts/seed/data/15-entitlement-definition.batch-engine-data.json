@@ -60,7 +60,7 @@
 			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "ai-hub",
 			"unit": "boolean"
 		},
 		{
@@ -71,7 +71,7 @@
 			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "ai-hub",
 			"unit": "boolean"
 		},
 		{
@@ -93,7 +93,7 @@
 			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "ai-hub",
 			"unit": "boolean"
 		},
 		{
@@ -126,7 +126,7 @@
 			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "ai-blog-workspace",
 			"unit": "boolean"
 		},
 		{
@@ -137,7 +137,7 @@
 			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "analytics-cloud",
 			"unit": "boolean"
 		},
 		{
@@ -145,9 +145,10 @@
 			"defaultQuantity": 1,
 			"displayName": "Batch Client Extension Generator",
 			"externalReferenceCode": "C_ENT_DEF_BATCH_CX_GENERATOR",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "batch-client-extension-generator",
 			"unit": "boolean"
 		},
 		{
@@ -158,7 +159,7 @@
 			"grantType": "fixed",
 			"licenseKeyFamily": "Cloud Native",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "cloud-native",
 			"unit": "boolean"
 		},
 		{
@@ -166,11 +167,12 @@
 			"defaultQuantity": 1,
 			"displayName": "Cloud Native Developer",
 			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_DEVELOPER",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"licenseKeyFamily": "Cloud Native",
 			"licenseKeyType": "developer",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "cloud-native-developer",
 			"unit": "boolean"
 		},
 		{
@@ -207,11 +209,12 @@
 			"defaultQuantity": 5,
 			"displayName": "Cloud Native Non-Production",
 			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_NON_PRODUCTION",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"licenseKeyFamily": "Cloud Native",
 			"licenseKeyType": "non-production",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "cloud-native-non-production",
 			"unit": "boolean"
 		},
 		{
@@ -229,11 +232,12 @@
 			"defaultQuantity": 5,
 			"displayName": "Cloud Native Production",
 			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_PRODUCTION",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"licenseKeyFamily": "Cloud Native",
 			"licenseKeyType": "production",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "cloud-native-production",
 			"unit": "boolean"
 		},
 		{
@@ -241,11 +245,12 @@
 			"defaultQuantity": 5,
 			"displayName": "Cloud Native UAT",
 			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_UAT",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"licenseKeyFamily": "Cloud Native",
 			"licenseKeyType": "uat",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "cloud-native-uat",
 			"unit": "boolean"
 		},
 		{
@@ -256,7 +261,7 @@
 			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "collection-display-grid-view-with-item-highlight",
 			"unit": "boolean"
 		},
 		{
@@ -266,7 +271,7 @@
 			"externalReferenceCode": "C_ENT_DEF_COMMERCE",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "commerce",
 			"unit": "boolean"
 		},
 		{
@@ -276,7 +281,7 @@
 			"externalReferenceCode": "C_ENT_DEF_COMMERCE_CLOUD",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "commerce-cloud",
 			"unit": "boolean"
 		},
 		{
@@ -308,7 +313,7 @@
 			"grantType": "fixed",
 			"licenseKeyFamily": "CMP",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "content-marketing-platform",
 			"unit": "boolean"
 		},
 		{
@@ -321,7 +326,7 @@
 			"licenseKeyFamily": "CMP",
 			"licenseKeyType": "developer",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "content-marketing-platform-developer",
 			"unit": "boolean"
 		},
 		{
@@ -334,7 +339,7 @@
 			"licenseKeyFamily": "CMP",
 			"licenseKeyType": "production",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "content-marketing-platform-production",
 			"unit": "boolean"
 		},
 		{
@@ -345,7 +350,7 @@
 			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "liferay-data-platform",
 			"unit": "boolean"
 		},
 		{
@@ -433,7 +438,7 @@
 			"grantType": "fixed",
 			"licenseKeyFamily": "DSR",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "digital-sales-room",
 			"unit": "boolean"
 		},
 		{
@@ -446,7 +451,7 @@
 			"licenseKeyFamily": "DSR",
 			"licenseKeyType": "developer",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "digital-sales-room-developer",
 			"unit": "boolean"
 		},
 		{
@@ -458,7 +463,7 @@
 			"grantType": "fixed",
 			"licenseKeyFamily": "DXP",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "liferay-dxp",
 			"unit": "boolean"
 		},
 		{
@@ -471,7 +476,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "backup",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "liferay-dxp-backup",
 			"unit": "boolean"
 		},
 		{
@@ -485,7 +490,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "complimentary",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "liferay-dxp-complimentary",
 			"unit": "boolean"
 		},
 		{
@@ -498,7 +503,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "developer",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "liferay-dxp-developer",
 			"unit": "boolean"
 		},
 		{
@@ -511,7 +516,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "developer-cluster",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "liferay-dxp-developer-cluster",
 			"unit": "boolean"
 		},
 		{
@@ -524,7 +529,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "free",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "liferay-dxp-free",
 			"unit": "boolean"
 		},
 		{
@@ -537,7 +542,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "non-production",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "liferay-dxp-non-production",
 			"unit": "boolean"
 		},
 		{
@@ -550,7 +555,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "production",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "liferay-dxp-production",
 			"unit": "boolean"
 		},
 		{
@@ -581,7 +586,7 @@
 			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "email-mfa-for-liferay-ce",
 			"unit": "boolean"
 		},
 		{
@@ -591,7 +596,7 @@
 			"externalReferenceCode": "C_ENT_DEF_ENTERPRISE_SEARCH",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "enterprise-search",
 			"unit": "boolean"
 		},
 		{
@@ -601,7 +606,7 @@
 			"externalReferenceCode": "C_ENT_DEF_ENTERPRISE_SEARCH_CLOUD",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "enterprise-search-cloud",
 			"unit": "boolean"
 		},
 		{
@@ -685,9 +690,10 @@
 			"defaultQuantity": 1,
 			"displayName": "Hubspot Lead Capture",
 			"externalReferenceCode": "C_ENT_DEF_HUBSPOT_LEAD_CAPTURE",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "hubspot-lead-capture",
 			"unit": "boolean"
 		},
 		{
@@ -698,7 +704,7 @@
 			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "insurance-agent-portal-accelerator",
 			"unit": "boolean"
 		},
 		{
@@ -766,9 +772,10 @@
 			"defaultQuantity": 1,
 			"displayName": "Minium Theme",
 			"externalReferenceCode": "C_ENT_DEF_MINIUM_THEME",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "minium-theme",
 			"unit": "boolean"
 		},
 		{
@@ -776,9 +783,10 @@
 			"defaultQuantity": 1,
 			"displayName": "Connector to OpenSearch 2",
 			"externalReferenceCode": "C_ENT_DEF_OPENSEARCH",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "connector-to-opensearch-2",
 			"unit": "boolean"
 		},
 		{
@@ -808,7 +816,7 @@
 			"externalReferenceCode": "C_ENT_DEF_PAAS",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "paas",
 			"unit": "boolean"
 		},
 		{
@@ -877,7 +885,7 @@
 			"externalReferenceCode": "C_ENT_DEF_PAAS_LEGACY",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "paas-legacy",
 			"unit": "boolean"
 		},
 		{
@@ -926,7 +934,7 @@
 			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_DISTRIBUTION",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "distribution-partnership",
 			"unit": "boolean"
 		},
 		{
@@ -936,7 +944,7 @@
 			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_SOLUTION_RESELLER",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "solution-partnership-reseller-program",
 			"unit": "boolean"
 		},
 		{
@@ -946,7 +954,7 @@
 			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_TECHNOLOGY",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "technology-partnership",
 			"unit": "boolean"
 		},
 		{
@@ -956,7 +964,7 @@
 			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_TRAINING",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "training-partnership",
 			"unit": "boolean"
 		},
 		{
@@ -966,7 +974,7 @@
 			"externalReferenceCode": "C_ENT_DEF_PARTNERSHIP_VAR",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "value-added-reseller-partnership",
 			"unit": "boolean"
 		},
 		{
@@ -978,7 +986,7 @@
 			"grantType": "fixed",
 			"licenseKeyFamily": "Portal",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "portal",
 			"unit": "boolean"
 		},
 		{
@@ -991,7 +999,7 @@
 			"licenseKeyFamily": "Portal",
 			"licenseKeyType": "backup",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "portal-backup",
 			"unit": "boolean"
 		},
 		{
@@ -1004,7 +1012,7 @@
 			"licenseKeyFamily": "Portal",
 			"licenseKeyType": "developer",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "portal-developer",
 			"unit": "boolean"
 		},
 		{
@@ -1017,7 +1025,7 @@
 			"licenseKeyFamily": "Portal",
 			"licenseKeyType": "developer-cluster",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "portal-developer-cluster",
 			"unit": "boolean"
 		},
 		{
@@ -1027,7 +1035,7 @@
 			"externalReferenceCode": "C_ENT_DEF_PORTAL_EWSA",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "portal-enterprise-wide-license",
 			"unit": "boolean"
 		},
 		{
@@ -1040,7 +1048,7 @@
 			"licenseKeyFamily": "Portal",
 			"licenseKeyType": "free",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "portal-free",
 			"unit": "boolean"
 		},
 		{
@@ -1053,7 +1061,7 @@
 			"licenseKeyFamily": "Portal",
 			"licenseKeyType": "non-production",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "portal-non-production",
 			"unit": "boolean"
 		},
 		{
@@ -1066,7 +1074,7 @@
 			"licenseKeyFamily": "Portal",
 			"licenseKeyType": "production",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "portal-production",
 			"unit": "boolean"
 		},
 		{
@@ -1076,7 +1084,7 @@
 			"externalReferenceCode": "C_ENT_DEF_PUNCHOUT",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "punchout",
 			"unit": "boolean"
 		},
 		{
@@ -1084,9 +1092,10 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Connector to PunchOut2Go",
 			"externalReferenceCode": "C_ENT_DEF_PUNCHOUT2GO_APP",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "liferay-commerce-connector-to-punchout2go",
 			"unit": "boolean"
 		},
 		{
@@ -1096,7 +1105,7 @@
 			"externalReferenceCode": "C_ENT_DEF_SAAS",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "saas",
 			"unit": "boolean"
 		},
 		{
@@ -1137,7 +1146,7 @@
 			"externalReferenceCode": "C_ENT_DEF_SAAS_BUSINESS_PLAN",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "liferay-saas-business-plan",
 			"unit": "boolean"
 		},
 		{
@@ -1211,7 +1220,7 @@
 			"externalReferenceCode": "C_ENT_DEF_SAAS_ENTERPRISE_PLAN",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "liferay-saas-enterprise-plan",
 			"unit": "boolean"
 		},
 		{
@@ -1287,7 +1296,7 @@
 			"externalReferenceCode": "C_ENT_DEF_SAAS_LEGACY",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "saas-legacy",
 			"unit": "boolean"
 		},
 		{
@@ -1398,7 +1407,7 @@
 			"grantType": "fixed",
 			"licenseKeyFamily": "DXP",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "liferay-self-hosted",
 			"unit": "boolean"
 		},
 		{
@@ -1411,7 +1420,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "backup",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "liferay-self-hosted-backup",
 			"unit": "boolean"
 		},
 		{
@@ -1425,7 +1434,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "complimentary",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "liferay-self-hosted-complimentary",
 			"unit": "boolean"
 		},
 		{
@@ -1438,7 +1447,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "developer",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "liferay-self-hosted-developer",
 			"unit": "boolean"
 		},
 		{
@@ -1451,7 +1460,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "developer-cluster",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "liferay-self-hosted-developer-cluster",
 			"unit": "boolean"
 		},
 		{
@@ -1474,7 +1483,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "non-production",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "liferay-self-hosted-non-production",
 			"unit": "boolean"
 		},
 		{
@@ -1487,7 +1496,7 @@
 			"licenseKeyFamily": "DXP",
 			"licenseKeyType": "production",
 			"maxQuantity": 5,
-			"name": "licenseGeneration",
+			"name": "liferay-self-hosted-production",
 			"unit": "boolean"
 		},
 		{
@@ -1497,7 +1506,7 @@
 			"externalReferenceCode": "C_ENT_DEF_SSA_TRIAL",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "ssa-saas-trial",
 			"unit": "boolean"
 		},
 		{
@@ -1505,9 +1514,10 @@
 			"defaultQuantity": 1,
 			"displayName": "Sticky Notes for the Portal",
 			"externalReferenceCode": "C_ENT_DEF_STICKY_NOTES",
+			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "sticky-notes-for-the-portal",
 			"unit": "boolean"
 		},
 		{
@@ -1518,7 +1528,7 @@
 			"generatesActivationKey": true,
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "sugarcrm-customer-portal",
 			"unit": "boolean"
 		},
 		{
@@ -1528,7 +1538,7 @@
 			"externalReferenceCode": "C_ENT_DEF_SUPPORT_GOLD",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "gold-support",
 			"unit": "boolean"
 		},
 		{
@@ -1538,7 +1548,7 @@
 			"externalReferenceCode": "C_ENT_DEF_SUPPORT_PLATINUM",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "platinum-support",
 			"unit": "boolean"
 		},
 		{
@@ -1548,7 +1558,7 @@
 			"externalReferenceCode": "C_ENT_DEF_UPS_CONNECTOR",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "liferay-commerce-connector-to-ups",
 			"unit": "boolean"
 		},
 		{
@@ -1558,8 +1568,84 @@
 			"externalReferenceCode": "C_ENT_DEF_ZENDESK",
 			"grantType": "fixed",
 			"maxQuantity": 1,
-			"name": "licenseGeneration",
+			"name": "click-to-chat-integration-for-zendesk",
 			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Developer Tools",
+			"externalReferenceCode": "developer-tools",
+			"maxQuantity": 1,
+			"name": "developer-tools"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "DXP",
+			"externalReferenceCode": "dxp",
+			"maxQuantity": 1,
+			"name": "dxp"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Gold Support",
+			"externalReferenceCode": "gold-support",
+			"maxQuantity": 1,
+			"name": "gold-support"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted",
+			"externalReferenceCode": "liferay-self-hosted",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Developer",
+			"externalReferenceCode": "liferay-self-hosted-developer",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "developer",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-developer"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Non-Prod Sizing 1",
+			"externalReferenceCode": "liferay-self-hosted-non-prod-sizing-1",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "non-production",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-non-prod-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Prod Sizing 1",
+			"externalReferenceCode": "liferay-self-hosted-prod-sizing-1",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "production",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-prod-sizing-1"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Self-Hosted Prod Sizing 3",
+			"externalReferenceCode": "liferay-self-hosted-prod-sizing-3",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "production",
+			"maxQuantity": 1,
+			"name": "liferay-self-hosted-prod-sizing-3"
 		}
 	]
 }
