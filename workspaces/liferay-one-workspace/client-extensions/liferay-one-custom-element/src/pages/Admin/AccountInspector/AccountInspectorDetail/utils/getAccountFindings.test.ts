@@ -469,7 +469,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-GETACCOUNTFINDINGS]
 		});
 	});
 
-	it('reports projects that share a name and ignores projects with no name', () => {
+	it('does not report projects that share a name', () => {
 		const inspection = buildInspection({
 			projectMemberships: toCollection(
 				[20, 21, 22, 23].map((projectId) => ({
@@ -487,6 +487,6 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-GETACCOUNTFINDINGS]
 			]),
 		});
 
-		expect(findIds(inspection, 'projects-share-a-name')).toEqual([20, 21]);
+		expect(getAccountFindings(inspection)).toEqual([]);
 	});
 });

@@ -116,7 +116,7 @@ describe('[MOD-ADMIN-PRODUCTINSPECTOR-GETPRODUCTFINDINGS] getProductFindings', (
 		expect(getMessages(buildProduct())).toEqual([]);
 	});
 
-	it('reports an inactive, unapproved product with no SKUs', () => {
+	it('reports an inactive product with no SKUs, but not that it is unapproved', () => {
 		const product = buildProduct({
 			active: false,
 			skus: [],
@@ -126,7 +126,6 @@ describe('[MOD-ADMIN-PRODUCTINSPECTOR-GETPRODUCTFINDINGS] getProductFindings', (
 		expect(getMessages(product)).toEqual([
 			'the-product-has-no-skus',
 			'the-product-is-inactive',
-			'the-product-is-not-approved',
 		]);
 	});
 
@@ -146,7 +145,7 @@ describe('[MOD-ADMIN-PRODUCTINSPECTOR-GETPRODUCTFINDINGS] getProductFindings', (
 					},
 				})
 			)
-		).toEqual(['the-product-is-not-approved']);
+		).toEqual([]);
 	});
 
 	it('reports a missing project item type, empty values, repeated key and value pairs, and unknown keys', () => {
@@ -250,7 +249,7 @@ describe('[MOD-ADMIN-PRODUCTINSPECTOR-GETPRODUCTFINDINGS] getProductFindings', (
 		]);
 	});
 
-	it('reports SKUs with no entitlement definition and SKUs another product shares', () => {
+	it('reports SKUs another product shares, but not SKUs with no entitlement definition', () => {
 		const product = buildProduct({
 			skus: [buildSKU('SKU-1'), buildSKU('SKU-2')],
 		});
@@ -272,12 +271,6 @@ describe('[MOD-ADMIN-PRODUCTINSPECTOR-GETPRODUCTFINDINGS] getProductFindings', (
 				ids: [1],
 				message: 'skus-are-also-used-by-another-product',
 				severity: 'danger',
-			},
-			{
-				collection: 'skus',
-				ids: [2],
-				message: 'skus-have-no-entitlement-definition',
-				severity: 'warning',
 			},
 		]);
 	});

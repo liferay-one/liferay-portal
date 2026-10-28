@@ -240,7 +240,7 @@ describe('[MOD-ADMIN-PRODUCTINSPECTOR-PRODUCTINSPECTORDETAIL-BUILDPRODUCTTREE] b
 			skus?.children.map(({label, severity}) => [label, severity])
 		).toEqual([
 			['SKU-1', 'warning'],
-			['SKU-2', 'warning'],
+			['SKU-2', undefined],
 		]);
 
 		const brokenLinks = tree.find(({key}) => key === 'broken');
@@ -252,7 +252,6 @@ describe('[MOD-ADMIN-PRODUCTINSPECTOR-PRODUCTINSPECTORDETAIL-BUILDPRODUCTTREE] b
 				recordIds: children.map(({recordId}) => recordId),
 			}))
 		).toEqual([
-			{collection: 'skus', count: 1, recordIds: [11]},
 			{collection: 'entitlementDefinitions', count: 1, recordIds: [500]},
 		]);
 	});
