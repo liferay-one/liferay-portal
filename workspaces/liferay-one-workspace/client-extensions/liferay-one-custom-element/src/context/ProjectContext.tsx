@@ -141,10 +141,10 @@ export function ProjectProvider({children}: {children: ReactNode}) {
 	);
 
 	useEffect(() => {
-		if (accessible) {
+		if (accessible && !resolvingProjects) {
 			localStorage.setItem(LAST_PROJECT_STORAGE_KEY, projectId);
 		}
-	}, [accessible, projectId]);
+	}, [accessible, projectId, resolvingProjects]);
 
 	useEffect(() => {
 		if (resolvingProjects || !projects.length || accessible) {
