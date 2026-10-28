@@ -95,6 +95,8 @@ const TRIAL_GENERATE_FORM = {
 	],
 };
 
+const DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE = 'PRDCT-DXP-TRIAL';
+
 const TRIAL_SERVER = {
 	environmentName: ' E2E Trial ',
 	serverField: 'ipAddresses',
@@ -156,6 +158,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		await expect(
 			new ProductPurchaseSelfServiceTrial(
 				account,
+				DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE,
 				getProduct('cmp-trial')
 			).createOrder()
 		).resolves.toEqual({id: 5});
@@ -188,6 +191,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		await expect(
 			new ProductPurchaseSelfServiceTrial(
 				account,
+				DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE,
 				getProduct('cmp-trial')
 			).createOrder()
 		).resolves.toEqual({id: 5});
@@ -202,6 +206,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		await expect(
 			new ProductPurchaseSelfServiceTrial(
 				account,
+				DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE,
 				getProduct('cmp-trial')
 			).createOrder()
 		).rejects.toThrow('Invalid price');
@@ -210,6 +215,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 	it('places the DSR trial order with its own order type', async () => {
 		await new ProductPurchaseSelfServiceTrial(
 			account,
+			DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE,
 			getProduct('dsr-trial')
 		).createOrder();
 
@@ -226,6 +232,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		await expect(
 			new ProductPurchaseSelfServiceTrial(
 				account,
+				DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE,
 				getProduct('cmp-trial')
 			).createOrder()
 		).rejects.toThrow('Unable to find product PRDCT-DXP-TRIAL');
@@ -233,10 +240,24 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		expect(HeadlessCommerceDeliveryCart.createCart).not.toHaveBeenCalled();
 	});
 
+	it('fails when no DXP trial product is configured', () => {
+		expect(
+			() =>
+				new ProductPurchaseSelfServiceTrial(
+					account,
+					'',
+					getProduct('cmp-trial')
+				)
+		).toThrow(
+			'Unable to start a trial without the DXP trial product external reference code'
+		);
+	});
+
 	it('loads the DXP trial product once before the order is placed', async () => {
 		const productPurchaseSelfServiceTrial =
 			new ProductPurchaseSelfServiceTrial(
 				account,
+				DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE,
 				getProduct('cmp-trial')
 			);
 
@@ -266,6 +287,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 
 		const nextStepsLinkPromise = new ProductPurchaseSelfServiceTrial(
 			account,
+			DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE,
 			getProduct('cmp-trial'),
 			TRIAL_SERVER
 		).getNextStepsLink({id: 5} as Cart);
@@ -315,6 +337,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		await expect(
 			new ProductPurchaseSelfServiceTrial(
 				account,
+				DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE,
 				getProduct('cmp-trial'),
 				TRIAL_SERVER
 			).getNextStepsLink({id: 5} as Cart)
@@ -339,6 +362,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 
 		const nextStepsLinkPromise = new ProductPurchaseSelfServiceTrial(
 			account,
+			DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE,
 			getProduct('cmp-trial')
 		).getNextStepsLink({id: 5} as Cart);
 
@@ -367,7 +391,11 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 	it('rejects a product that is not a self service trial', () => {
 		expect(
 			() =>
-				new ProductPurchaseSelfServiceTrial(account, getProduct('cmp'))
+				new ProductPurchaseSelfServiceTrial(
+					account,
+					DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE,
+					getProduct('cmp')
+				)
 		).toThrow('Unable to find the trial order type of product PRDCT-TRIAL');
 	});
 
@@ -379,6 +407,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESELFSERVICETRIAL] ProductPurchaseSelfS
 		const productPurchaseSelfServiceTrial =
 			new ProductPurchaseSelfServiceTrial(
 				account,
+				DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE,
 				getProduct('dsr-trial')
 			);
 
