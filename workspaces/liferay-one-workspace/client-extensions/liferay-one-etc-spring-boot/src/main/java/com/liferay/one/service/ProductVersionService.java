@@ -5,6 +5,7 @@
 
 package com.liferay.one.service;
 
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.constants.ProductVersionConstants;
 import com.liferay.one.model.ProductVersion;
 import com.liferay.one.util.comparator.VersionComparator;
@@ -20,6 +21,7 @@ import java.net.URI;
 import java.time.Duration;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -107,6 +109,18 @@ public class ProductVersionService extends OneBaseService {
 		}
 
 		return latestProductGroupVersion;
+	}
+
+	public List<ProductVersion> getPortalProductVersions() throws Exception {
+		List<ProductVersion> productVersions = getAllItems(
+			_PORTAL_VERSIONS_PATH, null, this::_toPortalProductVersion);
+
+		productVersions.sort(
+			Comparator.comparing(
+				ProductVersion::getProductGroupVersion,
+				new VersionComparator(false)));
+
+		return productVersions;
 	}
 
 	public ProductVersion getProductVersion(String productGroup, String version)
@@ -515,6 +529,25 @@ public class ProductVersionService extends OneBaseService {
 		}
 	}
 
+	private ProductVersion _toPortalProductVersion(JSONObject jsonObject) {
+		String name = jsonObject.getString("name");
+
+		return new ProductVersion(
+			new JSONObject(
+			).put(
+				"id", jsonObject.getLong("id")
+			).put(
+				"productGroup",
+				LicenseKeyGenerationConstants.PRODUCT_GROUP_PORTAL
+			).put(
+				"productGroupVersion", name
+			).put(
+				"productVersion", name
+			).put(
+				"supported", true
+			));
+	}
+
 	private void _waitUntilReady(String authorization) {
 		if (_log.isInfoEnabled()) {
 			_log.info(
@@ -548,6 +581,10 @@ public class ProductVersionService extends OneBaseService {
 	private static final String _FREE_TIER_PRODUCT_GROUP = "dxp";
 
 	private static final String _FREE_TIER_PRODUCT_VERSION = "7.4";
+
+	private static final String _PORTAL_VERSIONS_PATH =
+		"/o/headless-admin-list-type/v1.0/list-type-definitions" +
+			"/by-external-reference-code/LT_PORTAL_VERSION/list-type-entries";
 
 	private static final long _READINESS_MAX_RETRIES = 6;
 

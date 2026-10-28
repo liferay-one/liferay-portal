@@ -49,11 +49,15 @@ public class LicenseKeyGenerationConstants {
 
 	public static final String MINIMUM_DEVELOPER_VERSION = "7.4";
 
+	public static final String MINIMUM_QUARTERLY_VERSION = "2026.Q1";
+
 	public static final int PERMANENT_LICENSE_KEY_DURATION_DAYS = 36500;
 
 	public static final int PERMANENT_LICENSE_KEY_MIN_YEARS = 80;
 
 	public static final String PRODUCT_GROUP_DXP = "dxp";
+
+	public static final String PRODUCT_GROUP_PORTAL = "portal";
 
 	public static final int TERMED_LICENSE_KEY_EXTENSION_DAYS = 180;
 

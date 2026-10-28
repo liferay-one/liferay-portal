@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -589,6 +590,8 @@ public class LicenseKeyGenerateFormService {
 			_licenseKeyService.getActiveLicenseKeyCounts(
 				activationKeyScope, entitlements, renewedActivationKeyIds);
 
+		List<ProductVersion> portalProductVersions = _getPortalProductVersions(
+			entitledProducts);
 		List<ProductVersion> productVersions = _getProductVersions();
 
 		boolean allowComplimentary = false;
@@ -622,11 +625,16 @@ public class LicenseKeyGenerateFormService {
 		JSONArray productsJSONArray = new JSONArray();
 		JSONArray developerVersionsJSONArray = _toDeveloperVersionsJSONArray(
 			productVersions);
-		JSONArray versionsJSONArray = _toVersionsJSONArray(productVersions);
 
 		for (EntitledProduct entitledProduct : entitledProducts) {
+			List<ProductVersion> licenseKeyFamilyProductVersions =
+				_getProductVersions(
+					entitledProduct.getLicenseKeyFamily(),
+					portalProductVersions, productVersions);
+
 			JSONArray licensedVersionsJSONArray = _getLicensedVersionsJSONArray(
-				entitledProduct.getLicenseKeyFamily(), productVersions);
+				entitledProduct.getLicenseKeyFamily(),
+				licenseKeyFamilyProductVersions);
 
 			boolean hasLicenseEntries = !licensedVersionsJSONArray.isEmpty();
 
@@ -634,8 +642,8 @@ public class LicenseKeyGenerateFormService {
 				admin, allowComplimentary, allowPermanentLicenses,
 				hasComplimentaryActivationKey, hasLicenseEntries,
 				licenseKeyCounts, entitledProduct.getLicenseKeyFamily(),
-				licenseKeyTypeEntitlements, productVersions, provisionable,
-				virtualClusterAllowed);
+				licenseKeyTypeEntitlements, licenseKeyFamilyProductVersions,
+				provisionable, virtualClusterAllowed);
 
 			if (entitledProduct.isGeneratesActivationKey()) {
 				bundleProductsJSONArray.put(
@@ -661,10 +669,12 @@ public class LicenseKeyGenerateFormService {
 					cloudNativeDeveloperVersionsJSONArray;
 			}
 
-			JSONArray productVersionsJSONArray = versionsJSONArray;
+			JSONArray productVersionsJSONArray = _toSelectableVersionsJSONArray(
+				_toVersionsJSONArray(licenseKeyFamilyProductVersions));
 
 			if (hasLicenseEntries) {
-				productVersionsJSONArray = licensedVersionsJSONArray;
+				productVersionsJSONArray = _toSelectableVersionsJSONArray(
+					licensedVersionsJSONArray);
 			}
 
 			productsJSONArray.put(
@@ -911,6 +921,30 @@ public class LicenseKeyGenerateFormService {
 		return jsonArray;
 	}
 
+	private List<ProductVersion> _getPortalProductVersions(
+		List<EntitledProduct> entitledProducts) {
+
+		for (EntitledProduct entitledProduct : entitledProducts) {
+			if (!Objects.equals(
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_PORTAL,
+					entitledProduct.getLicenseKeyFamily())) {
+
+				continue;
+			}
+
+			try {
+				return _productVersionService.getPortalProductVersions();
+			}
+			catch (Exception exception) {
+				_log.error("Unable to get Portal product versions", exception);
+
+				return Collections.emptyList();
+			}
+		}
+
+		return Collections.emptyList();
+	}
+
 	private List<ProductVersion> _getProductVersions() throws Exception {
 		List<ProductVersion> productVersions = new ArrayList<>(
 			_productVersionService.getProductVersions(
@@ -924,6 +958,20 @@ public class LicenseKeyGenerateFormService {
 			Comparator.comparing(
 				ProductVersion::getProductGroupVersion,
 				Comparator.nullsLast(new VersionComparator(false))));
+
+		return productVersions;
+	}
+
+	private List<ProductVersion> _getProductVersions(
+		String licenseKeyFamily, List<ProductVersion> portalProductVersions,
+		List<ProductVersion> productVersions) {
+
+		if (Objects.equals(
+				LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_PORTAL,
+				licenseKeyFamily)) {
+
+			return portalProductVersions;
+		}
 
 		return productVersions;
 	}
@@ -1245,6 +1293,32 @@ public class LicenseKeyGenerateFormService {
 			}
 
 			jsonArray.put(version);
+		}
+
+		return jsonArray;
+	}
+
+	private JSONArray _toSelectableVersionsJSONArray(
+		JSONArray versionsJSONArray) {
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (int i = 0; i < versionsJSONArray.length(); i++) {
+			String version = versionsJSONArray.optString(i);
+
+			Matcher matcher =
+				com.liferay.one.constants.ProductVersion.
+					getQuarterlyReleaseMatcher(version);
+
+			int value = _versionComparator.compare(
+				version,
+				LicenseKeyGenerationConstants.MINIMUM_QUARTERLY_VERSION);
+
+			if (matcher.matches() && (value < 0)) {
+				continue;
+			}
+
+			jsonArray.put(versionsJSONArray.opt(i));
 		}
 
 		return jsonArray;
