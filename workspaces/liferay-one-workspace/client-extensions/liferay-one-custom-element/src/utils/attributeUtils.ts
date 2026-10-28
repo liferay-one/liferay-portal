@@ -9,6 +9,7 @@ export const baseAttributes = [
 	'articleGettingStartedWithLiferayEnterpriseSearchURL',
 	'cloudConsoleURL',
 	'contactSupportURL',
+	'dxpTrialProductExternalReferenceCode',
 	'endUserLicenseAgreement',
 	'eulaBaseURL',
 	'featureFlags',

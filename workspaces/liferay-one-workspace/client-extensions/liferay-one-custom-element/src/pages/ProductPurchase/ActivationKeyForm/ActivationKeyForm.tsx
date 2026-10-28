@@ -171,11 +171,16 @@ const ActivationKeyForm = () => {
 		formFields: ActivationKeyFormValues
 	) => {
 		const productPurchaseSelfServiceTrial =
-			new ProductPurchaseSelfServiceTrial(selectedAccount, product, {
-				environmentName: formFields.environmentName,
-				serverField: formFields.serverField,
-				serverValue: formFields.serverValue,
-			});
+			new ProductPurchaseSelfServiceTrial(
+				selectedAccount,
+				properties.dxpTrialProductExternalReferenceCode,
+				product,
+				{
+					environmentName: formFields.environmentName,
+					serverField: formFields.serverField,
+					serverValue: formFields.serverValue,
+				}
+			);
 
 		try {
 			const [hasTrialOrder] = await Promise.all([

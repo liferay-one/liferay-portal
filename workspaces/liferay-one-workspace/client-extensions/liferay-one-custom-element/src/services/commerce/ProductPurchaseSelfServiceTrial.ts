@@ -28,8 +28,6 @@ import type {Account} from '~/types/accounts';
 import type {Cart, OrderTypes} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
 
-export const DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE = 'PRDCT-DXP-TRIAL';
-
 export type SelfServiceTrialServer = {
 	environmentName: string;
 	serverField: ActivationKeyServerField;
@@ -49,10 +47,17 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 
 	constructor(
 		account: Account,
+		private readonly dxpTrialProductExternalReferenceCode: string,
 		product: DeliveryProduct,
 		private readonly server?: SelfServiceTrialServer
 	) {
 		super(account, product);
+
+		if (!dxpTrialProductExternalReferenceCode) {
+			throw new Error(
+				'Unable to start a trial without the DXP trial product external reference code'
+			);
+		}
 
 		const orderTypeExternalReferenceCode =
 			getSelfServiceTrialOrderType(product);
@@ -142,7 +147,7 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 
 		if (!this.dxpTrialProduct) {
 			throw new Error(
-				`Unable to find product ${DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE}`
+				`Unable to find product ${this.dxpTrialProductExternalReferenceCode}`
 			);
 		}
 
@@ -165,7 +170,7 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 					'accountId': String(this.account.id),
 					'filter': SearchBuilder.eq(
 						'externalReferenceCode',
-						DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE
+						this.dxpTrialProductExternalReferenceCode
 					),
 					'nestedFields': 'skus',
 					'pageSize': '1',
@@ -177,7 +182,7 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 
 		if (!dxpTrialProduct?.skus?.length) {
 			throw new Error(
-				`Unable to find product ${DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE}`
+				`Unable to find product ${this.dxpTrialProductExternalReferenceCode}`
 			);
 		}
 
@@ -185,7 +190,7 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 	}
 
 	private getGenerateActivationKeyLink() {
-		return `${this.getProjectLink()}/activation/generate?new=${DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE}`;
+		return `${this.getProjectLink()}/activation/generate?new=${this.dxpTrialProductExternalReferenceCode}`;
 	}
 
 	private getGenerateActivationKeyRequest(
@@ -198,7 +203,7 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 		const dxpTrialProduct = generateForm.products.find(
 			({externalReferenceCode}) =>
 				externalReferenceCode ===
-				DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE
+				this.dxpTrialProductExternalReferenceCode
 		);
 
 		const [version] = dxpTrialProduct?.versions ?? [];
@@ -260,7 +265,7 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 
 			if (
 				externalReferenceCodes.has(
-					DXP_TRIAL_PRODUCT_EXTERNAL_REFERENCE_CODE
+					this.dxpTrialProductExternalReferenceCode
 				) &&
 				externalReferenceCodes.has(this.product.externalReferenceCode)
 			) {
