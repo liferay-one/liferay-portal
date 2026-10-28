@@ -425,6 +425,7 @@ export default {
 	'copy-id': 'Copy ID',
 	'copy-this-token-to-your-liferay-dxp-instance':
 		'Copy this token to your Liferay DXP Instance',
+	'cost': 'Cost',
 	'could-not-find-ssa-account': 'Could not find SSA account',
 	'could-not-upload-the-file-a-package-with-this-filename-already-exists':
 		'Could not upload the file. A package with this filename already exists.',
@@ -541,6 +542,7 @@ export default {
 	'disaster-recovery-data-center-region':
 		'Disaster Recovery Data Center Region',
 	'discontinued': 'Discontinued',
+	'display-date': 'Display Date',
 	'display-name': 'Display Name',
 	'do-not-close-this-window': 'DO NOT CLOSE THIS WINDOW',
 	'documentation': 'Documentation',
@@ -799,6 +801,7 @@ export default {
 	'got-it': 'Got it',
 	'government': 'Government',
 	'grant-type': 'Grant Type',
+	'gtin': 'GTIN',
 	'hamina-finland': 'Hamina, Finland',
 	'hang-tight-your-purchase-is-being-processed':
 		'Hang tight, your purchase is being processed.',
@@ -1058,6 +1061,7 @@ export default {
 	'manage-your-products-purchased-from-the-marketplace':
 		'Manage your products purchased from the Marketplace.',
 	'manage-your-teams-trial': "Manage your team's trial",
+	'manufacturer-part-number': 'Manufacturer Part Number',
 	'manufacturing': 'Manufacturing',
 	'mark-as-paid': 'Mark as Paid',
 	'marked-as-paid': 'Marked as paid.',
@@ -1176,6 +1180,8 @@ export default {
 		'No problems were found for this entitlement definition.',
 	'no-problems-were-found-for-this-product':
 		'No problems were found for this product.',
+	'no-problems-were-found-for-this-sku':
+		'No problems were found for this SKU.',
 	'no-product': 'No Product',
 	'no-products-yet': 'No Products Yet',
 	'no-project-account-level': 'No Project (Account Level)',
@@ -1270,6 +1276,8 @@ export default {
 	'open-project': 'Open Project',
 	'open-project-members': 'Open Project Members',
 	'opportunity-id': 'Opportunity ID',
+	'option-id': 'Option ID',
+	'option-value-id': 'Option Value ID',
 	'options': 'Options',
 	'order': 'Order',
 	'order-confirmation': 'Order Confirmation',
@@ -1301,6 +1309,7 @@ export default {
 	'other': 'Other',
 	'other-event': 'Other Event',
 	'other-please-specify': 'Other, please specify',
+	'other-products-with-this-sku': 'Other Products with This SKU',
 	'overage-bucket-size': 'Overage Bucket Size',
 	'overage-quantity': 'Overage Quantity',
 	'overage-rate': 'Overage Rate',
@@ -1469,6 +1478,7 @@ export default {
 	'projects-have-no-members': 'Projects have no members.',
 	'projects-that-do-not-qualify-x': 'Projects that do not qualify: {0}.',
 	'projects-without-an-account': 'Projects without an Account',
+	'promo-price': 'Promo Price',
 	'prompt': 'Prompt',
 	'properties': 'Properties',
 	'provide-app-build': 'Provide App Build',
@@ -1734,6 +1744,7 @@ export default {
 	'sku': 'SKU',
 	'sku-codes': 'SKU Codes',
 	'sku-contributor': 'SKU Contributor',
+	'sku-details': 'SKU Details',
 	'skus': 'SKUs',
 	'skus-and-products': 'SKUs and Products',
 	'skus-are-also-used-by-another-product':
@@ -1949,6 +1960,7 @@ export default {
 	'the-selected-project-does-not-meet-the-necessary-resource-requirements-for-this-app-please-contact-sales-to-request-additional-resources':
 		'The selected project does not meet the necessary resource requirements for this app. Please contact Sales to request additional resources.',
 	'the-sku-matches-no-product': 'The SKU matches no product.',
+	'the-sku-was-not-found': 'The SKU was not found in the product.',
 	'the-start-and-end-dates-must-be-different':
 		'The start and end dates must be different.',
 	'the-start-date-must-be-before-the-subscription-end-date':
@@ -2138,6 +2150,7 @@ export default {
 	'unlock-exclusive-benefits-with-a-business-account':
 		'Unlock exclusive benefits with a Business Account!',
 	'unpaid': 'Unpaid',
+	'unpublished': 'Unpublished',
 	'unused-specifications': 'Unused Specifications',
 	'unused-usage-definitions': 'Unused Usage Definitions',
 	'upgrade': 'Upgrade',

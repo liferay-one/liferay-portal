@@ -54,6 +54,7 @@ const PublisherRequests = lazy(
 );
 const Publishers = lazy(() => import('./Publishers/Publishers'));
 const PubSub = lazy(() => import('./PubSub/PubSub'));
+const SKUDetail = lazy(() => import('./ProductInspector/SKUDetail/SKUDetail'));
 const SolutionDetail = lazy(
 	() => import('./Solutions/SolutionDetail/SolutionDetail')
 );
@@ -139,6 +140,11 @@ export const adminRoutes: AppRoute[] = [
 		canAccess: canAccessProvisioning,
 		element: <EntitlementDefinitionDetail />,
 		path: 'product-inspector/entitlement-definitions/:externalReferenceCode',
+	},
+	{
+		canAccess: canAccessProvisioning,
+		element: <SKUDetail />,
+		path: 'product-inspector/:externalReferenceCode/skus/:skuExternalReferenceCode',
 	},
 	{
 		canAccess: canAccessFinance,

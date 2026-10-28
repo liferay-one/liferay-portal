@@ -12,6 +12,7 @@ import {
 import {
 	getEntitlementDefinitionName,
 	getEntitlementDefinitionPath,
+	getSKUPath,
 } from '~/pages/Admin/ProductInspector/utils/productInspectorColumnsUtils';
 
 import type {CatalogIndex} from '~/pages/Admin/ProductInspector/utils/productCatalogUtils';
@@ -133,7 +134,24 @@ export function getSKUColumns(
 		[];
 
 	return [
-		{label: 'sku', sortable: true, value: ({sku}) => sku},
+		{
+			label: 'sku',
+			render: ({externalReferenceCode, sku}) =>
+				externalReferenceCode ? (
+					<Link
+						to={getSKUPath(
+							productExternalReferenceCode,
+							externalReferenceCode
+						)}
+					>
+						<b>{sku || externalReferenceCode}</b>
+					</Link>
+				) : (
+					sku
+				),
+			sortable: true,
+			value: ({sku}) => sku,
+		},
 		{
 			hidden: true,
 			label: 'external-reference-code',

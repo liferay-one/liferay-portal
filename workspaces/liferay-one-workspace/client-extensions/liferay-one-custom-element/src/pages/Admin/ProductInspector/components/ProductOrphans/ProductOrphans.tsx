@@ -167,8 +167,7 @@ export default function ProductOrphans({
 				columns={getEntitlementDefinitionColumns(
 					entitlementDefinitionFindings,
 					index,
-					undefined,
-					false
+					{productsVisible: false}
 				)}
 				id="product-inspector-orphaned-entitlement-definitions"
 				title={title('entitlement-definitions-without-a-sku')}
