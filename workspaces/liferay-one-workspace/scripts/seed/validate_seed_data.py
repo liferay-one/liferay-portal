@@ -206,6 +206,14 @@ def _check_chain(report, scope):
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC"
 		)
 
+		if not definition:
+			report.error(
+				"Entitlement without an entitlement definition",
+				"entitlement %s (%s) names no entitlement definition, so the "
+				"account inspector lists it as an orphan"
+				% (erc, entitlement["_file"]),
+			)
+
 		pairs[(order_item, definition)] += 1
 
 		order_erc = order_item_orders.get(order_item)
