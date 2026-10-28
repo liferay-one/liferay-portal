@@ -28,6 +28,16 @@ export function getProductPath(externalReferenceCode = '') {
 	return `/product-inspector/${encodeURIComponent(externalReferenceCode)}`;
 }
 
+export function getSKUPath(
+	productExternalReferenceCode = '',
+	skuExternalReferenceCode = '',
+	section?: string
+) {
+	const path = `${getProductPath(productExternalReferenceCode)}/skus/${encodeURIComponent(skuExternalReferenceCode)}`;
+
+	return section ? `${path}?${new URLSearchParams({section})}` : path;
+}
+
 export function getEntitlementDefinitionPath(
 	externalReferenceCode = '',
 	productExternalReferenceCode?: string
@@ -151,22 +161,36 @@ export function getProductColumns(
 export function getEntitlementDefinitionColumns(
 	findings: Map<number, InspectorFinding[]>,
 	index: CatalogIndex,
-	productExternalReferenceCode?: string,
-	productsVisible = !productExternalReferenceCode
+	{
+		linked = true,
+		productExternalReferenceCode,
+		productsVisible = !productExternalReferenceCode,
+	}: {
+		linked?: boolean;
+		productExternalReferenceCode?: string;
+		productsVisible?: boolean;
+	} = {}
 ): InspectorTableColumn<InspectedEntitlementDefinition>[] {
 	return [
 		{
 			label: 'display-name',
-			render: (entitlementDefinition) => (
-				<Link
-					to={getEntitlementDefinitionPath(
-						entitlementDefinition.externalReferenceCode,
-						productExternalReferenceCode
-					)}
-				>
+			render: (entitlementDefinition) =>
+				linked ? (
+					<Link
+						to={getEntitlementDefinitionPath(
+							entitlementDefinition.externalReferenceCode,
+							productExternalReferenceCode
+						)}
+					>
+						<b>
+							{getEntitlementDefinitionName(
+								entitlementDefinition
+							)}
+						</b>
+					</Link>
+				) : (
 					<b>{getEntitlementDefinitionName(entitlementDefinition)}</b>
-				</Link>
-			),
+				),
 			sortable: true,
 			value: getEntitlementDefinitionName,
 		},

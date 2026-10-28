@@ -5,7 +5,7 @@
 
 import ClayLabel from '@clayui/label';
 import {useMemo} from 'react';
-import {useParams} from 'react-router';
+import {useNavigate, useParams} from 'react-router';
 import BackLink from '~/components/BackLink/BackLink';
 import EmptyState from '~/components/EmptyState/EmptyState';
 import {PageRenderer} from '~/components/Page/Page';
@@ -18,13 +18,15 @@ import InspectorFindings from '../components/InspectorFindings/InspectorFindings
 import useProductCatalogInspection from '../hooks/useProductCatalogInspection';
 import {
 	PRODUCT_COLLECTION_LABELS,
-	getEntitlementDefinitions,
 	getFlaggedIdsByCollection,
 	getProductControlPanelURL,
 	getProductName,
 	scrollToSection,
 } from '../utils/productCatalogUtils';
-import {getEntitlementDefinitionColumns} from '../utils/productInspectorColumnsUtils';
+import {
+	getEntitlementDefinitionPath,
+	getSKUPath,
+} from '../utils/productInspectorColumnsUtils';
 import ProductSummary from './components/ProductSummary/ProductSummary';
 import buildProductTree from './utils/buildProductTree';
 import {
@@ -38,6 +40,7 @@ import {
 
 import type {
 	InspectedProduct,
+	InspectorFinding,
 	ProductCollectionKey,
 } from '~/types/productInspection';
 
@@ -68,10 +71,7 @@ function ProductInspectorContent({
 		[findings]
 	);
 
-	const entitlementDefinitions = useMemo(
-		() => getEntitlementDefinitions(product, index),
-		[index, product]
-	);
+	const navigate = useNavigate();
 
 	const treeNodes = useMemo(
 		() =>
@@ -85,12 +85,32 @@ function ProductInspectorContent({
 	);
 
 	const sectionId = (collection: ProductCollectionKey) =>
-		`${SECTION_ID_PREFIX}-${collection}`;
+		`${SECTION_ID_PREFIX}-${
+			collection === 'entitlementDefinitions' ? 'skus' : collection
+		}`;
 
 	const focusRecord = (
 		collection: ProductCollectionKey,
 		recordId?: number
 	) => {
+		const entitlementDefinition =
+			collection === 'entitlementDefinitions'
+				? inspection.entitlementDefinitions.items.find(
+						({id}) => id === recordId
+					)
+				: undefined;
+
+		if (entitlementDefinition) {
+			navigate(
+				getEntitlementDefinitionPath(
+					entitlementDefinition.externalReferenceCode,
+					product.externalReferenceCode
+				)
+			);
+
+			return;
+		}
+
 		const rowId = `${sectionId(collection)}-${recordId}`;
 
 		scrollToSection(
@@ -98,6 +118,36 @@ function ProductInspectorContent({
 				? rowId
 				: sectionId(collection)
 		);
+	};
+
+	const selectFinding = (
+		collection: ProductCollectionKey,
+		{ids}: InspectorFinding<ProductCollectionKey>
+	) => {
+		const skus =
+			collection === 'entitlementDefinitions'
+				? (product.skus ?? []).filter(({externalReferenceCode}) =>
+						index.entitlementDefinitionsBySKU
+							?.get(externalReferenceCode ?? '')
+							?.some(({id}) => ids.includes(id))
+					)
+				: [];
+
+		const [sku] = skus;
+
+		if (skus.length === 1 && sku.externalReferenceCode) {
+			navigate(
+				getSKUPath(
+					product.externalReferenceCode,
+					sku.externalReferenceCode,
+					'entitlementDefinitions'
+				)
+			);
+
+			return;
+		}
+
+		scrollToSection(sectionId(collection));
 	};
 
 	return (
@@ -124,9 +174,13 @@ function ProductInspectorContent({
 				collectionLabels={PRODUCT_COLLECTION_LABELS}
 				emptyMessage="no-problems-were-found-for-this-product"
 				findings={findings}
-				onSelect={(collection) =>
-					scrollToSection(sectionId(collection))
-				}
+				onSelect={selectFinding}
+			/>
+
+			<ProductSummary
+				catalogName={catalogNames.get(product.catalogId)}
+				id={sectionId('product')}
+				product={product}
 			/>
 
 			<InspectorTree
@@ -141,10 +195,13 @@ function ProductInspectorContent({
 				rootLabel={getProductName(product)}
 			/>
 
-			<ProductSummary
-				catalogName={catalogNames.get(product.catalogId)}
-				id={sectionId('product')}
-				product={product}
+			<InspectorTable
+				columns={getSKUColumns(index, product.externalReferenceCode)}
+				defaultExpanded
+				entries={product.skus ?? []}
+				flaggedIds={flaggedIds.get('skus')}
+				id={sectionId('skus')}
+				title={i18n.translate('skus')}
 			/>
 
 			<InspectorTable
@@ -158,29 +215,6 @@ function ProductInspectorContent({
 				flaggedIds={flaggedIds.get('productSpecifications')}
 				id={sectionId('productSpecifications')}
 				title={i18n.translate('specifications')}
-			/>
-
-			<InspectorTable
-				columns={getSKUColumns(index, product.externalReferenceCode)}
-				defaultExpanded
-				entries={product.skus ?? []}
-				flaggedIds={flaggedIds.get('skus')}
-				id={sectionId('skus')}
-				title={i18n.translate('skus')}
-			/>
-
-			<InspectorTable
-				columns={getEntitlementDefinitionColumns(
-					entitlementDefinitionFindings,
-					index,
-					product.externalReferenceCode
-				)}
-				defaultExpanded
-				entries={entitlementDefinitions}
-				error={inspection.entitlementDefinitions.error}
-				flaggedIds={flaggedIds.get('entitlementDefinitions')}
-				id={sectionId('entitlementDefinitions')}
-				title={i18n.translate('entitlement-definitions')}
 			/>
 
 			<InspectorTable

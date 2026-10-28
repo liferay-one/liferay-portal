@@ -24,7 +24,10 @@ type InspectorFindingsProps<CollectionKey extends string> = {
 	collectionLabels: Record<CollectionKey, Word>;
 	emptyMessage: Word;
 	findings: InspectorFinding<CollectionKey>[];
-	onSelect: (collection: CollectionKey) => void;
+	onSelect: (
+		collection: CollectionKey,
+		finding: InspectorFinding<CollectionKey>
+	) => void;
 };
 
 function formatIds(ids: (number | string)[]) {
@@ -56,36 +59,44 @@ export default function InspectorFindings<CollectionKey extends string>({
 				</ClayAlert>
 			)}
 
-			{findings.map(({collection, ids, message, severity}) => (
-				<div
-					className="account-inspector-finding align-items-start border d-flex mb-2 p-3 rounded-lg"
-					key={`${collection}-${message}`}
-				>
-					<ClayLabel className="mr-3" displayType={severity}>
-						{i18n.translate(SEVERITY_LABELS[severity])}
-					</ClayLabel>
+			{findings.map((finding) => {
+				const {collection, ids, message, severity} = finding;
 
-					<div className="flex-grow-1">
-						<div>
-							<button
-								className="btn btn-link btn-sm font-weight-semi-bold mr-2 p-0"
-								onClick={() => onSelect(collection)}
-								type="button"
-							>
-								{i18n.translate(collectionLabels[collection])}
-							</button>
+				return (
+					<div
+						className="account-inspector-finding align-items-start border d-flex mb-2 p-3 rounded-lg"
+						key={`${collection}-${message}`}
+					>
+						<ClayLabel className="mr-3" displayType={severity}>
+							{i18n.translate(SEVERITY_LABELS[severity])}
+						</ClayLabel>
 
-							<span>{i18n.translate(message)}</span>
-						</div>
+						<div className="flex-grow-1">
+							<div>
+								<button
+									className="btn btn-link btn-sm font-weight-semi-bold mr-2 p-0"
+									onClick={() =>
+										onSelect(collection, finding)
+									}
+									type="button"
+								>
+									{i18n.translate(
+										collectionLabels[collection]
+									)}
+								</button>
 
-						{Boolean(ids.length) && (
-							<div className="small text-secondary">
-								{i18n.sub('ids-x', formatIds(ids))}
+								<span>{i18n.translate(message)}</span>
 							</div>
-						)}
+
+							{Boolean(ids.length) && (
+								<div className="small text-secondary">
+									{i18n.sub('ids-x', formatIds(ids))}
+								</div>
+							)}
+						</div>
 					</div>
-				</div>
-			))}
+				);
+			})}
 		</InspectorSection>
 	);
 }

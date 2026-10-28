@@ -10,7 +10,7 @@ import type {
 	InspectedEntry,
 } from '~/types/accountInspection';
 import type {Catalog} from '~/types/commerce';
-import type {Product, Specification} from '~/types/product';
+import type {CustomField, Product, Specification} from '~/types/product';
 
 export const PRODUCT_NESTED_COLLECTION_KEYS = [
 	'categories',
@@ -23,13 +23,21 @@ export type ProductNestedCollectionKey =
 	(typeof PRODUCT_NESTED_COLLECTION_KEYS)[number];
 
 export type InspectedSKU = InspectedEntry & {
+	cost?: number;
+	customFields?: CustomField[];
 	discontinued?: boolean;
+	displayDate?: string;
 	price?: number;
 	productId?: number;
 	published?: boolean;
 	purchasable?: boolean;
 	sku?: string;
-	skuOptions?: {key: string; value: string}[];
+	skuOptions?: {
+		key: string;
+		optionId?: number;
+		optionValueId?: number;
+		value: string;
+	}[];
 };
 
 export type InspectedProduct = Omit<Product, 'skus'> & {
