@@ -288,7 +288,7 @@ The frontend, batch, configuration, and site initializer client extensions run i
 
 1. **`.env.example` declares a key that no code reads.** `.env.example:21` sets `LIFERAY_ONE_GCS_SERVICE_ACCOUNT_KEY`, which binds to `liferay.one.gcs.service.account.key`. The code reads `liferay.one.gcs.service.account` (an email to impersonate) and `liferay.one.gcs.project.id` (`GoogleCloudStorageService.java:240`). A developer who pastes a JSON key there gets no GCS access.
 
-1. **The `liferay-one-etc-spring-boot-oaci` application has no user in the workspace.** `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:3` declares it, but no Java class requests a token for it and it is not in `liferay.oauth.application.external.reference.codes`.
+1. **The instance settings client extension holds the OAuth2 application of Cloud Infra.** `client-extensions/liferay-one-instance-settings/client-extension.yaml` declares `liferay-one-instance-settings-cloud-infra-oahs`. Cloud Infra calls Liferay directly, so the sidecar does not request a token for it. The application authenticates as `default-service-account`, so the scopes are the only limit on what Cloud Infra can do.
 
 1. **The sidecar has no restart policy and no wait on the JWK set.** `docker-compose.yaml:60-83` gives the sidecar no `restart` key (only `mail` has one, at line 90). `client-extensions/liferay-one-etc-spring-boot/scripts/wait-for-routes.sh` waits only for the `mainDomain` file. Together with the eager JWK fetch, a 503 from `/o/oauth2/jwks` during boot leaves the sidecar stopped.
 
@@ -297,8 +297,6 @@ The frontend, batch, configuration, and site initializer client extensions run i
 1. **2 client extension directories hold only ignored build output.** `client-extensions/liferay-one-etc-cron` and `client-extensions/liferay-one-mock-mail` contain only `build/` and `dist/`, which `.gitignore:15` ignores. Nothing in Git defines them.
 
 ## Open Questions
-
-1. Who uses `liferay-one-etc-spring-boot-oaci` ("Cloud Infrastructure")? It can be an external operations tool that calls Liferay directly. The repository does not show it.
 
 1. Does force recreating the sidecar container remove the CORS patch? The patch is in the shared `liferay_routes` volume, which recreation does not change. I could verify only that a redeploy of the client extension writes the route file again. A portal restart that runs the configuration factories again can also do it.
 

@@ -4,6 +4,15 @@ liferay-one-instance-settings-auth-login:
     promptEnabled: true
     siteExternalReferenceCode: LIFERAY_ONE
     type: instanceSettings
+liferay-one-instance-settings-cloud-infra-oahs:
+    .serviceAddress: localhost:8080
+    .serviceScheme: http
+    name: Liferay One Instance Settings Cloud Infra OAuth Application Headless Server
+    scopes:
+        -   Liferay.Headless.Admin.User.everything.read
+        -   c_property.everything.read
+    type: oAuthApplicationHeadlessServer
+    userAccountScreenName: default-service-account
 liferay-one-instance-settings-consent-manager:
     active: true
     enabled: true
