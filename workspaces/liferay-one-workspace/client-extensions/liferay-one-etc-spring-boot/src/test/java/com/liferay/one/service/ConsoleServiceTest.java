@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
@@ -19,6 +20,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
  * @author Ryan Schuhler
@@ -121,6 +123,58 @@ public class ConsoleServiceTest {
 		Assertions.assertNull(
 			_testConsoleService.getProjectUsage(
 				"user@example.com", "project-2"));
+	}
+
+	@Test
+	public void testGetProjectsUsageReturnsNoProjectsWhenTheConsoleReturns404()
+		throws Exception {
+
+		_testConsoleService._getException = new WebClientResponseException(
+			404, "Not Found", null, null, null);
+
+		JSONObject jsonObject = new JSONObject(
+			_testConsoleService.getProjectsUsage("user@example.com"));
+
+		JSONArray userProjectsJSONArray = jsonObject.getJSONArray(
+			"userProjects");
+
+		Assertions.assertTrue(userProjectsJSONArray.isEmpty());
+
+		Assertions.assertNull(
+			_testConsoleService.getProjectUsage(
+				"user@example.com", "project-1"));
+	}
+
+	@Test
+	public void testGetProjectsUsageThrowsWhenTheConsoleFails() {
+		_testConsoleService._getException = new WebClientResponseException(
+			500, "Internal Server Error", null, null, null);
+
+		WebClientResponseException webClientResponseException =
+			Assertions.assertThrows(
+				WebClientResponseException.class,
+				() -> _testConsoleService.getProjectsUsage("user@example.com"));
+
+		Assertions.assertEquals(
+			500,
+			webClientResponseException.getStatusCode(
+			).value());
+	}
+
+	@Test
+	public void testGetProjectsUsageThrowsWhenTheConsoleLoginReturns404() {
+		_testConsoleService._loginException = new WebClientResponseException(
+			404, "Not Found", null, null, null);
+
+		WebClientResponseException webClientResponseException =
+			Assertions.assertThrows(
+				WebClientResponseException.class,
+				() -> _testConsoleService.getProjectsUsage("user@example.com"));
+
+		Assertions.assertEquals(
+			404,
+			webClientResponseException.getStatusCode(
+			).value());
 	}
 
 	@Test
@@ -235,6 +289,10 @@ public class ConsoleServiceTest {
 		protected String get(String authorization, URI uri) {
 			_requests.add(new Request(authorization, null, uri));
 
+			if (_getException != null) {
+				throw _getException;
+			}
+
 			return _getResponse;
 		}
 
@@ -245,6 +303,10 @@ public class ConsoleServiceTest {
 			String path = uri.getPath();
 
 			if (path.endsWith("/login")) {
+				if (_loginException != null) {
+					throw _loginException;
+				}
+
 				if (_loginResponseNull) {
 					return null;
 				}
@@ -272,7 +334,9 @@ public class ConsoleServiceTest {
 		}
 
 		private String _failingInviteEmailAddress = "none";
+		private WebClientResponseException _getException;
 		private String _getResponse;
+		private WebClientResponseException _loginException;
 		private boolean _loginResponseNull;
 		private final List<Request> _requests = new ArrayList<>();
 
