@@ -21,8 +21,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import reactor.util.retry.Retry;
@@ -143,16 +145,33 @@ public class ConsoleService extends BaseService {
 	}
 
 	public String getProjectsUsage(String userEmail) throws Exception {
-		return get(
-			getAuthorization(),
-			UriComponentsBuilder.fromUriString(
-				_consoleAuthURL
-			).path(
-				"/admin/user-projects-plan-usage"
-			).queryParam(
-				"userEmail", userEmail
-			).build(
-			).toUri());
+		String authorization = getAuthorization();
+
+		try {
+			return get(
+				authorization,
+				UriComponentsBuilder.fromUriString(
+					_consoleAuthURL
+				).path(
+					"/admin/user-projects-plan-usage"
+				).queryParam(
+					"userEmail", userEmail
+				).build(
+				).toUri());
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if (statusCode == HttpStatus.NOT_FOUND.value()) {
+				return new JSONObject(
+				).put(
+					"userProjects", new JSONArray()
+				).toString();
+			}
+
+			throw webClientResponseException;
+		}
 	}
 
 	public void setUpProject(
