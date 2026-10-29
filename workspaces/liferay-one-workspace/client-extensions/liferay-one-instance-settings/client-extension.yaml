@@ -51,3 +51,11 @@ liferay-one-instance-settings-fragment-service:
     pid: com.liferay.fragment.configuration.FragmentServiceConfiguration
     propagateChanges: true
     type: instanceSettings
+liferay-one-instance-settings-release-team-oahs:
+    .serviceAddress: localhost:8080
+    .serviceScheme: http
+    name: Liferay One Instance Settings Release Team OAuth Application Headless Server
+    scopes:
+        -   Liferay.Headless.Admin.User.everything.read
+    type: oAuthApplicationHeadlessServer
+    userAccountScreenName: default-service-account
