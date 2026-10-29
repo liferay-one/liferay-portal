@@ -34,7 +34,7 @@ flowchart TD
     B --> C["docker compose up: database, liferay, etc-spring-boot"]
     C --> D["Wait for /c/portal/status"]
     D --> E1["Deploy liferay-one-global-css"]
-    E1 --> E2["Deploy liferay-one-instance-settings"]
+    E1 --> E2["Deploy liferay-one-instance-settings, creates the OAuth2 application of Cloud Infra"]
     E2 --> E3["Deploy liferay-one-custom-element"]
     E3 --> E4["Deploy liferay-one-batch, creates liferay-one-batch-oahs"]
     E4 --> BATCH
@@ -42,7 +42,7 @@ flowchart TD
         B00["00 picklists"] --> B01["01 object folders"] --> B02["02 system object fields and actions"] --> B03["03 object definitions"] --> B04["04 object relationships"] --> B05a["05 account restrictions"] --> B05b["05 validation rule"] --> B06["06 catalog"] --> B07["07 currency"] --> B08["08 option categories"] --> B09["09 options"] --> B12["12 order types"] --> B13["13 roles"] --> B14["14 vocabularies"] --> B15["15 categories"] --> B16["16 user groups"] --> B17["17 search blueprint"]
     end
     BATCH --> E4b["Deploy liferay-one-batch-products: usage definitions, entitlement definitions, SKU links, options, specifications, products"]
-    E4b --> E5["Deploy liferay-one-etc-spring-boot, creates oahs, oaua, oaci and 16 object action entries"]
+    E4b --> E5["Deploy liferay-one-etc-spring-boot, creates oahs, oaua and 16 object action entries"]
     E5 --> E6["Deploy liferay-one-site-initializer"]
     E6 --> SI
     subgraph SI["Site initializer, one transaction"]
@@ -72,8 +72,8 @@ flowchart TD
 | Containers | Starts `database`, `liferay`, and `liferay-one-etc-spring-boot`. The sidecar shares the network of the `liferay` container. | `scripts/bootstrap.sh:60`, `docker-compose.yaml` |
 | Liferay ready | Polls `/c/portal/status` every 10 seconds with no limit. | `scripts/bootstrap.sh:63-67` |
 | Client extensions | Deploys seven client extensions in a fixed order. It sleeps 10 seconds after each light one, waits for the batch log to go quiet for 20 seconds, and waits for the `Initialized One for group` log line. | `scripts/bootstrap/deploy_client_extensions.sh:26-48`, `:88-140`, `:145-150` |
-| OAuth applications | Each client extension deploy creates its own OAuth2 applications: `liferay-one-batch-oahs`, `liferay-one-batch-products-oahs`, `liferay-one-site-initializer-oahs`, and the `oahs`, `oaua`, and `oaci` applications of the Spring Boot client extension. | `client-extensions/*/client-extension.yaml` |
-| Instance settings | Four `instanceSettings` entries. Three are scoped to the site by `siteExternalReferenceCode: LIFERAY_ONE`. Liferay matches that code when it reads the configuration, so the site does not have to exist at deploy time. | `client-extensions/liferay-one-instance-settings/client-extension.yaml`, `modules/apps/configuration-admin/.../ConfigurationFilterStringUtil.java:51-73` |
+| OAuth applications | Each client extension deploy creates its own OAuth2 applications: `liferay-one-batch-oahs`, `liferay-one-batch-products-oahs`, `liferay-one-site-initializer-oahs`, the `oahs` and `oaua` applications of the Spring Boot client extension, and the `liferay-one-instance-settings-cloud-infra-oahs` application of the instance settings client extension. | `client-extensions/*/client-extension.yaml` |
+| Instance settings | Four `instanceSettings` entries and the OAuth2 application of Cloud Infra. Three are scoped to the site by `siteExternalReferenceCode: LIFERAY_ONE`. Liferay matches that code when it reads the configuration, so the site does not have to exist at deploy time. | `client-extensions/liferay-one-instance-settings/client-extension.yaml`, `modules/apps/configuration-admin/.../ConfigurationFilterStringUtil.java:51-73` |
 | Batch import | Imports 18 files, one at a time, in natural file name order. | `modules/apps/batch-engine/.../BatchEngineUnitReaderImpl.java:111-112`, `BatchEngineUnitProcessorImpl.java:540-561` |
 | Site initializer | Creates or updates the `LIFERAY_ONE` site through `putSiteByExternalReferenceCode` in one transaction. | `modules/apps/site-initializer/.../SiteInitializerClientExtension.java:168-229` |
 | Sidecar | Rebuilds the Spring Boot image and recreates its container, so it reads the routes the deploy wrote. | `scripts/bootstrap/deploy_client_extensions.sh:50-60` |
