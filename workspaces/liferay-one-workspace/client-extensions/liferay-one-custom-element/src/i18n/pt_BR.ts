@@ -1846,6 +1846,8 @@ export default {
 	'view-request': 'Ver solicitação',
 	'view-the-documentation': 'Ver a documentação',
 	'virtual-cluster': 'Cluster virtual',
+	'virtual-cluster-keys-do-not-include-add-ons':
+		'As chaves de cluster virtual não incluem complementos.',
 	'visit': 'Visita',
 	'vr': 'RV',
 	'warning': 'Aviso',

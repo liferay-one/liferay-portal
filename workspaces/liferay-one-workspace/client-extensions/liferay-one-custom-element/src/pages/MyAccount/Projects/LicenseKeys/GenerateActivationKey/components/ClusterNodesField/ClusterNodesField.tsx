@@ -56,6 +56,10 @@ export default function ClusterNodesField({
 					[String(availableCount)]
 				)}
 			</div>
+
+			<div className="form-text">
+				{translate('virtual-cluster-keys-do-not-include-add-ons')}
+			</div>
 		</div>
 	);
 }

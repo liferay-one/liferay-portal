@@ -1828,6 +1828,8 @@ export default {
 	'view-request': 'リクエストを表示',
 	'view-the-documentation': 'ドキュメントを表示',
 	'virtual-cluster': '仮想クラスター',
+	'virtual-cluster-keys-do-not-include-add-ons':
+		'仮想クラスターキーにはアドオンが含まれません。',
 	'visit': '訪問回数',
 	'vr': 'VR',
 	'warning': '警告',

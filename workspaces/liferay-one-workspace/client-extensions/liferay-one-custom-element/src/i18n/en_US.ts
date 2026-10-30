@@ -2224,6 +2224,8 @@ export default {
 	'view-source': 'View Source',
 	'view-the-documentation': 'View the documentation',
 	'virtual-cluster': 'Virtual Cluster',
+	'virtual-cluster-keys-do-not-include-add-ons':
+		'Virtual cluster keys do not include add ons.',
 	'visible': 'Visible',
 	'visit': 'Visit',
 	'vocabulary': 'Vocabulary',

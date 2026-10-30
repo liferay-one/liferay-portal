@@ -28,6 +28,7 @@ type AddOnStepProps = {
 	onClickCancel: () => void;
 	onClickContinue: () => void;
 	renewing?: boolean;
+	serverless: boolean;
 	submitting: boolean;
 	versions: string[];
 };
@@ -40,6 +41,7 @@ export default function AddOnStep({
 	onClickCancel,
 	onClickContinue,
 	renewing,
+	serverless,
 	submitting,
 	versions,
 }: AddOnStepProps) {
@@ -52,7 +54,8 @@ export default function AddOnStep({
 	const bundleProducts = getBundleProducts(
 		developer,
 		generateForm,
-		productExternalReferenceCode
+		productExternalReferenceCode,
+		serverless
 	);
 
 	function getUnavailableReason(bundleProduct: GenerateFormBundleProduct) {

@@ -94,7 +94,8 @@ export function getBundleProductUnavailableReason(
 export function getBundleProducts(
 	developer: boolean,
 	generateForm: GenerateForm,
-	productExternalReferenceCode: string
+	productExternalReferenceCode: string,
+	serverless: boolean
 ): GenerateFormBundleProduct[] {
 	const product = generateForm.products.find(
 		(current) =>
@@ -110,9 +111,10 @@ export function getBundleProducts(
 			(!developer || !bundleProduct.app) &&
 			(bundleProduct.externalReferenceCode ===
 				product.externalReferenceCode ||
-				!LEADING_LICENSE_KEY_FAMILIES.includes(
-					bundleProduct.licenseKeyFamily
-				))
+				(!serverless &&
+					!LEADING_LICENSE_KEY_FAMILIES.includes(
+						bundleProduct.licenseKeyFamily
+					)))
 	);
 }
 
