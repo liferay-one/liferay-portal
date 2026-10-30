@@ -3,7 +3,7 @@
 		{
 			"endDate": "2026-12-31T00:00:00Z",
 			"externalReferenceCode": "C_ENT_MULTI_1_AIHUB",
-			"generatesActivationKey": true,
+			"generatesActivationKey": false,
 			"grantType": "fixed",
 			"licenseKeyFamily": "AIHUB",
 			"maxQuantity": 1,

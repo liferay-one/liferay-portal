@@ -18,7 +18,7 @@
 		{
 			"endDate": "2027-08-09T00:00:00Z",
 			"externalReferenceCode": "C_ENT_CLOUD_NATIVE_OFFLINE_AI_HUB",
-			"generatesActivationKey": true,
+			"generatesActivationKey": false,
 			"grantType": "fixed",
 			"licenseKeyFamily": "AIHUB",
 			"maxQuantity": 1,
