@@ -1522,6 +1522,14 @@
 		},
 		{
 			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "AI Hub",
+			"externalReferenceCode": "ai-hub",
+			"maxQuantity": 1,
+			"name": "ai-hub"
+		},
+		{
+			"active": true,
 			"defaultQuantity": 100000,
 			"displayName": "APV",
 			"externalReferenceCode": "apv_100000",
@@ -1772,6 +1780,14 @@
 			"externalReferenceCode": "digital-asset-management",
 			"maxQuantity": 1,
 			"name": "digital-asset-management"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Digital Sales Room",
+			"externalReferenceCode": "digital-sales-room",
+			"maxQuantity": 1,
+			"name": "digital-sales-room"
 		},
 		{
 			"active": true,
