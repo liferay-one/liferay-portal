@@ -96,6 +96,19 @@ public class CommerceProductUtil {
 	}
 
 	public static boolean isApp(Product product) {
+		String solutionType = getSpecificationValue(
+			product, ProductSpecificationConstants.KEY_SOLUTION_TYPE);
+
+		if (StringUtil.equalsIgnoreCase(
+				solutionType,
+				ProductSpecificationConstants.SOLUTION_TYPE_CMP) ||
+			StringUtil.equalsIgnoreCase(
+				solutionType,
+				ProductSpecificationConstants.SOLUTION_TYPE_DSR)) {
+
+			return false;
+		}
+
 		return StringUtil.equalsIgnoreCase(
 			getSpecificationValue(
 				product, ProductSpecificationConstants.KEY_PROJECT_ITEM_TYPE),
