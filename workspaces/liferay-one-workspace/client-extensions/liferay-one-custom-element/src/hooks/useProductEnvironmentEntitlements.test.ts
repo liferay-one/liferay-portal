@@ -204,7 +204,6 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 			{
 				endDate: '2027-08-09T00:00:00.000Z',
 				environment: 'production',
-				instanceSize: '',
 				provisionedCount: 1,
 				quantity: 2,
 				skuProductName: '',
@@ -214,7 +213,6 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 			{
 				endDate: '',
 				environment: '',
-				instanceSize: '',
 				provisionedCount: 0,
 				quantity: 0,
 				skuProductName: '',
@@ -270,12 +268,9 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 
 		expect(
 			result.current.environmentEntitlements.map(
-				({environment, instanceSize}) => [environment, instanceSize]
+				({environment}) => environment
 			)
-		).toEqual([
-			['production', '1'],
-			['non-production', '2'],
-		]);
+		).toEqual(['production', 'non-production']);
 	});
 
 	it('takes the SKU product name of each entitlement from its order item', () => {
@@ -353,9 +348,9 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 
 		expect(
 			result.current.environmentEntitlements.map(
-				({environment, instanceSize}) => [environment, instanceSize]
+				({environment}) => environment
 			)
-		).toEqual([['non-production', '3']]);
+		).toEqual(['non-production']);
 	});
 
 	it('leaves the counts out when they did not load', () => {

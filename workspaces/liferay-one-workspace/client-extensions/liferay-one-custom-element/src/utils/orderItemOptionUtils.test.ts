@@ -7,7 +7,6 @@ import {describe, expect, it} from 'vitest';
 
 import {
 	getEnvironment,
-	getInstanceSize,
 	getOptionValueNames,
 	getOrderItemProductName,
 	getProductOptionValueName,
@@ -64,17 +63,6 @@ describe('[MOD-ORDERITEMOPTIONUTILS] orderItemOptionUtils', () => {
 			'',
 			'',
 		]);
-	});
-
-	it('reads the instance size from an option value name', () => {
-		expect(
-			[
-				'Liferay Self-Hosted Subscription - Gold Prod Sizing 1',
-				'Liferay Commerce Subscription - Non-Prod Sizing 12',
-				'liferay-portal-developer-sizing-2',
-				'Portal EE 6.x License (Production)',
-			].map((optionValueName) => getInstanceSize([optionValueName]))
-		).toEqual(['1', '12', '2', '']);
 	});
 
 	it('names an order item after its Salesforce product option first', () => {
