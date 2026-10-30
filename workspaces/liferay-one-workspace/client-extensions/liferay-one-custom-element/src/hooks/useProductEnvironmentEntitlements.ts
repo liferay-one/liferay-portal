@@ -8,7 +8,7 @@ import {useDataQuery} from '~/hooks/useDataQuery';
 import {useFetch} from '~/hooks/useFetch';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
-import {getEnvironment, getInstanceSize} from '~/utils/orderItemOptionUtils';
+import {getEnvironment} from '~/utils/orderItemOptionUtils';
 
 import type {ProductOrderItem} from '~/hooks/useProjectOrders';
 import type {Word} from '~/i18n';
@@ -17,7 +17,6 @@ import type {APIResponse} from '~/types/api';
 export type EnvironmentEntitlement = {
 	endDate: string;
 	environment: string;
-	instanceSize: string;
 	provisionedCount?: number;
 	quantity: number;
 	skuProductName: string;
@@ -147,7 +146,6 @@ export function useProductEnvironmentEntitlements(
 				environment:
 					entitlementNode.licenseKeyType ||
 					getEnvironment(optionValueNames),
-				instanceSize: getInstanceSize(optionValueNames),
 				provisionedCount: provisionedCounts?.[index],
 				quantity: entitlementNode.quantity ?? 0,
 				skuProductName: orderItem?.skuProductName ?? '',

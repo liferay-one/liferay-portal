@@ -51,7 +51,6 @@ const ENTITLEMENT_STATUSES: Word[] = [
 type EnvironmentSummary = {
 	endDate: string;
 	environment: string;
-	instanceSizes: string[];
 	provisionedCount?: number;
 	quantity: number;
 	skuProductNames: string[];
@@ -149,9 +148,6 @@ function summarizeEnvironment(
 	return {
 		endDate: sortDates(term.map(({endDate}) => endDate)).at(-1) ?? '',
 		environment,
-		instanceSizes: [
-			...new Set(term.map(({instanceSize}) => instanceSize)),
-		].filter(Boolean),
 		provisionedCount: provisionedCounted
 			? term.reduce(
 					(total, {provisionedCount}) =>
@@ -242,13 +238,6 @@ function environmentDateRows(
 		{label: i18n.translate('expiration-date'), value: formatDate(endDate)},
 		{label: i18n.translate('status'), value: i18n.translate(status)},
 	];
-}
-
-function instanceSizeRow(environmentSummary: EnvironmentSummary): DetailsRow {
-	return {
-		label: i18n.translate('instance-size'),
-		value: environmentSummary.instanceSizes.join(', ') || '-',
-	};
 }
 
 function keysProvisioned(environmentSummary: EnvironmentSummary): string {
@@ -400,7 +389,6 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 		]),
 	'env-instance': (context) =>
 		environmentSections(context, (environmentSummary) => [
-			instanceSizeRow(environmentSummary),
 			{
 				label: i18n.translate('keys-provisioned'),
 				value: keysProvisioned(environmentSummary),

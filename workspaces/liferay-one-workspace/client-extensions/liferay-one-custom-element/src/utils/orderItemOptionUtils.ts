@@ -28,8 +28,6 @@ const NON_PRODUCT_OPTION_KEYS = new Set(['consumption-role', 'machinetype']);
 
 const SALESFORCE_PRODUCT_OPTION_KEY = 'salesforce-product';
 
-const SIZING_PATTERN = /\bsizing[- ]?(\d+)\b/i;
-
 export function getOrderItemProductName(orderItem: OrderItem): string {
 	return getProductOptionValueName(orderItem) || orderItem.name;
 }
@@ -71,18 +69,6 @@ export function getEnvironment(optionValueNames: string[]): string {
 
 		if (environmentPattern) {
 			return environmentPattern[1];
-		}
-	}
-
-	return '';
-}
-
-export function getInstanceSize(optionValueNames: string[]): string {
-	for (const optionValueName of optionValueNames) {
-		const match = optionValueName.match(SIZING_PATTERN);
-
-		if (match) {
-			return match[1];
 		}
 	}
 
