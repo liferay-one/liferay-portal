@@ -1,0 +1,224 @@
+[#function toId value]
+	[#return value?is_number?then(value?c, value?string) /]
+[/#function]
+
+[#function getCategory categoryId]
+	[#local category = {} /]
+
+	[#if categoryId?matches("[0-9]+")]
+		[#attempt]
+			[#local category = restClient.get("/headless-admin-taxonomy/v1.0/taxonomy-categories/" + categoryId) /]
+		[#recover]
+		[/#attempt]
+	[/#if]
+
+	[#if (category.id)??]
+		[#return category /]
+	[/#if]
+
+	[#return {} /]
+[/#function]
+
+[#function getCategoryFieldValue structuredContent]
+	[#list (structuredContent.contentFields)![] as contentField]
+		[#if (contentField.fieldReference!"") == "category"]
+			[#return ((contentField.contentFieldValue.data)!"")?string /]
+		[/#if]
+	[/#list]
+
+	[#return "" /]
+[/#function]
+
+[#function getChildCategories categoryId]
+	[#local childCategories = [] /]
+
+	[#attempt]
+		[#local childCategories = (restClient.get("/headless-admin-taxonomy/v1.0/taxonomy-categories/" + categoryId + "/taxonomy-categories?page=1&pageSize=200").items)![] /]
+	[#recover]
+	[/#attempt]
+
+	[#return childCategories /]
+[/#function]
+
+[#function getArticles categoryId]
+	[#local articles = [] /]
+
+	[#attempt]
+		[#local structuredContents = (restClient.get("/headless-delivery/v1.0/sites/" + siteId + "/structured-contents?fields=contentFields,friendlyUrlPath,id,title&filter=contentStructureId eq " + contentStructureId + "&flatten=true&page=1&pageSize=300&search=" + categoryId).items)![] /]
+
+		[#-- Search also matches the ID in other fields, so keep only the articles whose Category field is this category --]
+
+		[#local articles = structuredContents?filter(structuredContent -> getCategoryFieldValue(structuredContent) == categoryId) /]
+	[#recover]
+	[/#attempt]
+
+	[#return articles /]
+[/#function]
+
+[#function getNavItems categoryId depth]
+	[#local navItems = [] /]
+
+	[#if configuration.showCategories && (depth < 4)]
+		[#list getChildCategories(categoryId) as childCategory]
+			[#local navItems = navItems + [{"data": childCategory, "name": childCategory.name, "type": "category"}] /]
+		[/#list]
+	[/#if]
+
+	[#if configuration.showArticles]
+		[#list getArticles(categoryId) as article]
+			[#local navItems = navItems + [{"data": article, "name": article.title, "type": "article"}] /]
+		[/#list]
+	[/#if]
+
+	[#return navItems /]
+[/#function]
+
+[#function sortNavItems navItems]
+	[#local
+		dateArticles = []
+		otherNavItems = []
+	/]
+
+	[#list navItems?sort_by("name") as navItem]
+		[#if (navItem.type == "article") && navItem.name?matches("^[0-9]{4}\\.[0-9]{2}\\.[0-9]{2}.*")]
+			[#local dateArticles = dateArticles + [navItem] /]
+		[#else]
+			[#local otherNavItems = otherNavItems + [navItem] /]
+		[/#if]
+	[/#list]
+
+	[#return dateArticles?reverse + otherNavItems /]
+[/#function]
+
+[#macro renderNavItem navItem depth]
+	[#if navItem.type == "category"]
+		[#local
+			categoryId = toId(navItem.data.id)
+			childNavItems = getNavItems(categoryId, depth)
+		/]
+
+		[#if childNavItems?has_content]
+			<li>
+				<details class="lo-article-side-panel-group"[#if ancestorCategoryIds?seq_contains(categoryId)] open[/#if]>
+					<summary class="align-items-center d-flex lo-support-nav-link">
+						<span class="lo-support-nav-label">${htmlUtil.escape(navItem.name)}</span>
+
+						<span class="lo-article-side-panel-toggle">
+							[@clay["icon"] symbol="angle-right-small" /]
+						</span>
+					</summary>
+
+					<ul class="list-unstyled lo-article-side-panel-list mb-0">
+						[#list sortNavItems(childNavItems) as childNavItem]
+							[@renderNavItem depth=(depth + 1) navItem=childNavItem /]
+						[/#list]
+					</ul>
+				</details>
+			</li>
+		[/#if]
+	[#else]
+		<li>
+			<a class="align-items-center d-flex lo-support-nav-link[#if toId(navItem.data.id) == articleId] active[/#if]" href="${baseURL}/w/${navItem.data.friendlyUrlPath}">
+				<span class="align-items-center d-flex lo-support-nav-icon">
+					[@clay["icon"] symbol="document-text" /]
+				</span>
+				<span class="lo-support-nav-label">${htmlUtil.escape(navItem.name)}</span>
+			</a>
+		</li>
+	[/#if]
+[/#macro]
+
+[#assign displayObject = (request.getAttribute("LAYOUT_DISPLAY_PAGE_OBJECT_PROVIDER").getDisplayObject())!{} /]
+
+[#if (displayObject.resourcePrimKey)??]
+	[#assign
+		articleId = displayObject.resourcePrimKey?c
+		baseURL = themeDisplay.getURLCurrent()?replace("/w/.*", "", "r")
+		siteId = themeDisplay.getScopeGroupId()?c
+	/]
+
+	[#assign restArticle = (restClient.get("/headless-delivery/v1.0/structured-contents/" + articleId + "?fields=contentFields,contentStructureId,taxonomyCategoryBriefs"))!{} /]
+
+	[#assign
+		contentStructureId = toId(restArticle.contentStructureId!"")
+		currentCategory = getCategory(getCategoryFieldValue(restArticle))
+	/]
+
+	[#-- Fall back to the deepest asset category when the Category field does not hold a category ID --]
+
+	[#if !currentCategory?has_content]
+		[#assign
+			briefCategories = []
+			parentCategoryIds = []
+		/]
+
+		[#list restArticle.taxonomyCategoryBriefs![] as taxonomyCategoryBrief]
+			[#assign briefCategory = getCategory(toId(taxonomyCategoryBrief.taxonomyCategoryId)) /]
+
+			[#if briefCategory?has_content]
+				[#assign briefCategories = briefCategories + [briefCategory] /]
+
+				[#if (briefCategory.parentTaxonomyCategory.id)??]
+					[#assign parentCategoryIds = parentCategoryIds + [toId(briefCategory.parentTaxonomyCategory.id)] /]
+				[/#if]
+			[/#if]
+		[/#list]
+
+		[#list briefCategories as briefCategory]
+			[#if !parentCategoryIds?seq_contains(toId(briefCategory.id))]
+				[#assign currentCategory = briefCategory /]
+
+				[#break /]
+			[/#if]
+		[/#list]
+	[/#if]
+
+	[#if currentCategory?has_content && contentStructureId?has_content]
+		[#assign
+			ancestorCategoryIds = [toId(currentCategory.id)]
+			ancestorCategory = currentCategory
+		/]
+
+		[#list 1..5 as i]
+			[#if !(ancestorCategory.parentTaxonomyCategory.id)??]
+				[#break /]
+			[/#if]
+
+			[#assign ancestorCategory = getCategory(toId(ancestorCategory.parentTaxonomyCategory.id)) /]
+
+			[#if !ancestorCategory?has_content]
+				[#break /]
+			[/#if]
+
+			[#assign ancestorCategoryIds = ancestorCategoryIds + [toId(ancestorCategory.id)] /]
+		[/#list]
+
+		[#-- List the current category with its siblings, or the current category's children if it is top level --]
+
+		[#if (currentCategory.parentTaxonomyCategory.id)??]
+			[#assign
+				sectionCategoryId = toId(currentCategory.parentTaxonomyCategory.id)
+				sectionCategoryName = currentCategory.parentTaxonomyCategory.name!""
+			/]
+		[#else]
+			[#assign
+				sectionCategoryId = toId(currentCategory.id)
+				sectionCategoryName = currentCategory.name
+			/]
+		[/#if]
+
+		[#assign navItems = getNavItems(sectionCategoryId, 0) /]
+
+		[#if navItems?has_content]
+			<nav aria-label="${htmlUtil.escapeAttribute(sectionCategoryName)}" class="lo-article-side-panel lo-support-nav">
+				<p class="font-weight-semi-bold lo-article-side-panel-title mb-2">${htmlUtil.escape(sectionCategoryName)}</p>
+
+				<ul class="list-unstyled mb-0">
+					[#list sortNavItems(navItems) as navItem]
+						[@renderNavItem depth=1 navItem=navItem /]
+					[/#list]
+				</ul>
+			</nav>
+		[/#if]
+	[/#if]
+[/#if]
