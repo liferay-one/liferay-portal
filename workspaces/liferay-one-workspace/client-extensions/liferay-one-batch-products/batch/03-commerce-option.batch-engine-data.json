@@ -404,6 +404,19 @@
 			"skuContributor": true
 		},
 		{
+			"externalReferenceCode": "salesforce-product-liferay-saas-legacy-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-saas-legacy",
+			"name": {
+				"en_US": "Liferay SaaS - Legacy"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
 			"externalReferenceCode": "salesforce-product-liferay-saas-user-traffic-tiers-option",
 			"facetable": false,
 			"fieldType": "select",

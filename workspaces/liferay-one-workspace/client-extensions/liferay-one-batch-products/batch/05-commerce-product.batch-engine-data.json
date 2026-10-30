@@ -11562,27 +11562,6 @@
 					"optionExternalReferenceCode": "salesforce-product-liferay-saas-option",
 					"productOptionValues": [
 						{
-							"key": "01t4u00000dzbxaaaw",
-							"name": {
-								"en_US": "Liferay SaaS Subscription - Engage Site"
-							},
-							"priority": 0
-						},
-						{
-							"key": "01t4u00000dzbxbaaw",
-							"name": {
-								"en_US": "Liferay SaaS Subscription - Support Site"
-							},
-							"priority": 0
-						},
-						{
-							"key": "01t4u00000dzbxcaaw",
-							"name": {
-								"en_US": "Liferay SaaS Subscription - Transact Site"
-							},
-							"priority": 0
-						},
-						{
 							"key": "01t4u00000f7jowaai",
 							"name": {
 								"en_US": "Liferay SaaS - Pro Plan"
@@ -11722,48 +11701,6 @@
 			"productType": "virtual",
 			"skus": [
 				{
-					"externalReferenceCode": "01t4u00000dZBxAAAW",
-					"neverExpire": true,
-					"price": 0,
-					"published": false,
-					"purchasable": false,
-					"sku": "01t4u00000dZBxAAAW",
-					"skuOptions": [
-						{
-							"key": "liferay-saas",
-							"value": "01t4u00000dzbxaaaw"
-						}
-					]
-				},
-				{
-					"externalReferenceCode": "01t4u00000dZBxBAAW",
-					"neverExpire": true,
-					"price": 0,
-					"published": false,
-					"purchasable": false,
-					"sku": "01t4u00000dZBxBAAW",
-					"skuOptions": [
-						{
-							"key": "liferay-saas",
-							"value": "01t4u00000dzbxbaaw"
-						}
-					]
-				},
-				{
-					"externalReferenceCode": "01t4u00000dZBxCAAW",
-					"neverExpire": true,
-					"price": 0,
-					"published": false,
-					"purchasable": false,
-					"sku": "01t4u00000dZBxCAAW",
-					"skuOptions": [
-						{
-							"key": "liferay-saas",
-							"value": "01t4u00000dzbxcaaw"
-						}
-					]
-				},
-				{
 					"externalReferenceCode": "01t4u00000f7jOwAAI",
 					"neverExpire": true,
 					"price": 0,
@@ -11886,6 +11823,164 @@
 						{
 							"key": "liferay-saas",
 							"value": "01tvo00000qyrlbyat"
+						}
+					]
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"externalReferenceCode": "salesforce-product-liferay-saas-legacy",
+			"name": {
+				"en_US": "Liferay SaaS - Legacy"
+			},
+			"productOptions": [
+				{
+					"facetable": false,
+					"fieldType": "select",
+					"key": "liferay-saas-legacy",
+					"name": {
+						"en_US": "Liferay SaaS - Legacy"
+					},
+					"optionExternalReferenceCode": "salesforce-product-liferay-saas-legacy-option",
+					"productOptionValues": [
+						{
+							"key": "01t4u00000dzbxaaaw",
+							"name": {
+								"en_US": "Liferay SaaS Subscription - Engage Site"
+							},
+							"priority": 0
+						},
+						{
+							"key": "01t4u00000dzbxbaaw",
+							"name": {
+								"en_US": "Liferay SaaS Subscription - Support Site"
+							},
+							"priority": 0
+						},
+						{
+							"key": "01t4u00000dzbxcaaw",
+							"name": {
+								"en_US": "Liferay SaaS Subscription - Transact Site"
+							},
+							"priority": 0
+						}
+					],
+					"required": false,
+					"skuContributor": true
+				}
+			],
+			"productSpecifications": [
+				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "product-type",
+					"value": {
+						"en_US": "primary"
+					}
+				},
+				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "status"
+					}
+				},
+				{
+					"specificationKey": "project-contacts-role-ercs",
+					"value": {
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_DATA_BREACH_CONTACT,C_SECURITY_INCIDENT_CONTACT"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "project-utilization-profile",
+					"value": {
+						"en_US": "legacy"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "cloud"
+					}
+				}
+			],
+			"productStatus": 2,
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "01t4u00000dZBxAAAW",
+					"neverExpire": true,
+					"price": 0,
+					"published": false,
+					"purchasable": false,
+					"sku": "01t4u00000dZBxAAAW",
+					"skuOptions": [
+						{
+							"key": "liferay-saas-legacy",
+							"value": "01t4u00000dzbxaaaw"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "01t4u00000dZBxBAAW",
+					"neverExpire": true,
+					"price": 0,
+					"published": false,
+					"purchasable": false,
+					"sku": "01t4u00000dZBxBAAW",
+					"skuOptions": [
+						{
+							"key": "liferay-saas-legacy",
+							"value": "01t4u00000dzbxbaaw"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "01t4u00000dZBxCAAW",
+					"neverExpire": true,
+					"price": 0,
+					"published": false,
+					"purchasable": false,
+					"sku": "01t4u00000dZBxCAAW",
+					"skuOptions": [
+						{
+							"key": "liferay-saas-legacy",
+							"value": "01t4u00000dzbxcaaw"
 						}
 					]
 				}
