@@ -54,7 +54,6 @@ const KNOWN_DEFECTS: Record<string, string> = {
 	'No Role (null), project member — assigned project': `The assigned project opens, but its Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
 	'Partner Account Admin — Account Details':
 		'Account Details renders no edit control for any role, so a partner administrator cannot change the account details the matrix grants them.',
-	'Partner Account Admin — Account Orders': PLACED_ORDERS_404,
 	'Project Admin — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
 	'Project Requester — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
 	'Project User — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
