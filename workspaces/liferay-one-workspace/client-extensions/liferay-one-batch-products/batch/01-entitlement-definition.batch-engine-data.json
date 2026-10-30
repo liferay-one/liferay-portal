@@ -1950,7 +1950,7 @@
 			"name": "global-24-7-support"
 		},
 		{
-			"active": true,
+			"active": false,
 			"defaultQuantity": 1,
 			"displayName": "Global Support",
 			"externalReferenceCode": "global-support",
@@ -1960,7 +1960,7 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Gold Support",
+			"displayName": "Gold Subscription",
 			"externalReferenceCode": "gold-support",
 			"maxQuantity": 1,
 			"name": "gold-support"
@@ -2569,7 +2569,7 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Limited Support",
+			"displayName": "Limited Subscription",
 			"externalReferenceCode": "limited-support",
 			"maxQuantity": 1,
 			"name": "limited-support"
@@ -2747,6 +2747,14 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "PaaS Experience",
+			"externalReferenceCode": "paas-experience",
+			"maxQuantity": 1,
+			"name": "paas-experience"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Partner",
 			"externalReferenceCode": "partner",
 			"maxQuantity": 1,
@@ -2755,7 +2763,7 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
-			"displayName": "Platinum Support",
+			"displayName": "Platinum Subscription",
 			"externalReferenceCode": "platinum-support",
 			"maxQuantity": 1,
 			"name": "platinum-support"
@@ -2922,6 +2930,14 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "SaaS Experience",
+			"externalReferenceCode": "saas-experience",
+			"maxQuantity": 1,
+			"name": "saas-experience"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Self-Service Support",
 			"externalReferenceCode": "self-service-support",
 			"maxQuantity": 1,
@@ -2959,7 +2975,7 @@
 			"name": "standard-8-5-support"
 		},
 		{
-			"active": true,
+			"active": false,
 			"defaultQuantity": 1,
 			"displayName": "Standard Support",
 			"externalReferenceCode": "standard-support",

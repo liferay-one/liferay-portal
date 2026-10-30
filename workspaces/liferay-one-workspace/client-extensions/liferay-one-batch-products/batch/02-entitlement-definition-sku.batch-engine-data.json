@@ -3207,63 +3207,63 @@
 			"skuExternalReferenceCode": "01tVO00000QYrkkYAD"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMhYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMhYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMhYAN"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMiYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMiYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMiYAN"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMjYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMjYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMjYAN"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMkYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMkYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMkYAN"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMlYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMlYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMlYAN"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMmYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMmYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMmYAN"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMnYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMnYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMnYAN"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMoYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMoYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMoYAN"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMpYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMpYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMpYAN"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMqYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMqYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMqYAN"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMrYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMrYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMrYAN"
 		},
 		{
-			"externalReferenceCode": "global-support_01tVO00000QaVMsYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-support",
+			"externalReferenceCode": "global-24-7-support_01tVO00000QaVMsYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "global-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMsYAN"
 		},
 		{
@@ -6522,6 +6522,11 @@
 			"skuExternalReferenceCode": "01tVO00000QYrl3YAD"
 		},
 		{
+			"externalReferenceCode": "paas-experience_01tVO00000QYrkpYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "paas-experience",
+			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
+		},
+		{
 			"externalReferenceCode": "partner_01t70000002lsiNAAQ",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "partner",
 			"skuExternalReferenceCode": "01t70000002lsiNAAQ"
@@ -6922,6 +6927,11 @@
 			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
 		},
 		{
+			"externalReferenceCode": "saas-experience_01tVO00000QYrkoYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "saas-experience",
+			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
+		},
+		{
 			"externalReferenceCode": "self-service-support_01tVO00000TxejtYAB",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "self-service-support",
 			"skuExternalReferenceCode": "01tVO00000TxejtYAB"
@@ -6957,63 +6967,63 @@
 			"skuExternalReferenceCode": "01tVO00000QYrkjYAD"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMUYA3",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMUYA3",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMUYA3"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMVYA3",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMVYA3",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMVYA3"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMWYA3",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMWYA3",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMWYA3"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMXYA3",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMXYA3",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMXYA3"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMYYA3",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMYYA3",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMYYA3"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMZYA3",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMZYA3",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMZYA3"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMaYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMaYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMaYAN"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMbYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMbYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMbYAN"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMcYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMcYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMcYAN"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMdYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMdYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMdYAN"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMeYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMeYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMeYAN"
 		},
 		{
-			"externalReferenceCode": "standard-support_01tVO00000QaVMfYAN",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-support",
+			"externalReferenceCode": "standard-8-5-support_01tVO00000QaVMfYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "standard-8-5-support",
 			"skuExternalReferenceCode": "01tVO00000QaVMfYAN"
 		},
 		{
