@@ -23,6 +23,7 @@ import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.jira.service.JiraBusinessEventService;
 import com.liferay.one.model.AccountSupportInfo;
 import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.service.AccountService;
@@ -67,6 +68,13 @@ public class AccountSynchronizerTest {
 		_accountSynchronizer = new AccountSynchronizer();
 
 		_jiraAssetService = Mockito.mock(JiraAssetService.class);
+
+		Mockito.when(
+			_jiraAssetService.fetchReferenceObjectIds(
+				Mockito.any(), Mockito.isNull(), Mockito.any())
+		).thenReturn(
+			null
+		);
 
 		Mockito.when(
 			_jiraAssetService.getOrCreateReferenceObjectIds(
@@ -344,6 +352,53 @@ public class AccountSynchronizerTest {
 			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
 			Mockito.eq(_getExpectedRoleExternalKeysByUserAccountExternalKey()),
 			Mockito.any(Date.class)
+		);
+	}
+
+	@Test
+	public void testSyncAccountResolvesEntitlementsWithoutCreatingThem()
+		throws Exception {
+
+		List<EntitlementDefinition> entitlementDefinitions =
+			Collections.singletonList(
+				new EntitlementDefinition(
+					new JSONObject(
+					).put(
+						"displayName", "Gold Subscription"
+					).put(
+						"id", 1L
+					)));
+
+		Mockito.when(
+			_entitlementService.
+				getActiveEntitlementDefinitionsExcludingSelfServiceTrials(
+					Mockito.anyLong())
+		).thenReturn(
+			entitlementDefinitions
+		);
+
+		Mockito.when(
+			_jiraAssetService.fetchReferenceObjectIds(
+				Mockito.any(), Mockito.eq(entitlementDefinitions),
+				Mockito.any())
+		).thenReturn(
+			Collections.singletonList("entitlement-object-id")
+		);
+
+		_accountSynchronizer.syncAccount(_createAccount());
+
+		Mockito.verify(
+			_jiraAssetObject
+		).setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_ENTITLEMENTS,
+			Collections.singletonList("entitlement-object-id")
+		);
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.never()
+		).getOrCreateReferenceObjectIds(
+			Mockito.any(), Mockito.eq(entitlementDefinitions), Mockito.any(),
+			Mockito.any()
 		);
 	}
 

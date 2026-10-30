@@ -598,10 +598,9 @@ public class AccountSynchronizer {
 	private List<String> _toEntitlementObjectIds(
 		List<EntitlementDefinition> entitlementDefinitions) {
 
-		return _jiraAssetService.getOrCreateReferenceObjectIds(
+		return _jiraAssetService.fetchReferenceObjectIds(
 			_entitlementConverter, entitlementDefinitions,
-			EntitlementDefinition::getDisplayName,
-			_entitlementConverter::toAssetObject);
+			EntitlementDefinition::getDisplayName);
 	}
 
 	private static final long _LOOK_BACK_HOURS = 48;
