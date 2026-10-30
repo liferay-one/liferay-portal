@@ -165,7 +165,8 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 				getBundleProducts(
 					false,
 					generateForm,
-					'marketplace-product-2'
+					'marketplace-product-2',
+					false
 				).map(({externalReferenceCode}) => externalReferenceCode)
 			).toEqual([
 				'marketplace-product-2',
@@ -180,7 +181,8 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 				getBundleProducts(
 					true,
 					generateForm,
-					'marketplace-product-2'
+					'marketplace-product-2',
+					false
 				).map(({externalReferenceCode}) => externalReferenceCode)
 			).toEqual([
 				'marketplace-product-2',
@@ -189,9 +191,20 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			]);
 		});
 
+		it('returns only the chosen product for an enterprise or OEM key', () => {
+			expect(
+				getBundleProducts(
+					false,
+					generateForm,
+					'marketplace-product-2',
+					true
+				).map(({externalReferenceCode}) => externalReferenceCode)
+			).toEqual(['marketplace-product-2']);
+		});
+
 		it('returns an empty list when the product is unknown', () => {
 			expect(
-				getBundleProducts(false, generateForm, 'PRDCT-UNKNOWN')
+				getBundleProducts(false, generateForm, 'PRDCT-UNKNOWN', false)
 			).toEqual([]);
 		});
 	});

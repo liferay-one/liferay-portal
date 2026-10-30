@@ -971,6 +971,14 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyEnterpriseBundlesNothingElse()
+		throws Exception {
+
+		_assertBundlesNothingElse(
+			"enterprise", _toServerlessGenerateRequest("enterprise"));
+	}
+
+	@Test
 	public void testGenerateActivationKeyFlagsComplimentaryLicenseKeys()
 		throws Exception {
 
@@ -1974,6 +1982,13 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyOEMBundlesNothingElse()
+		throws Exception {
+
+		_assertBundlesNothingElse("oem", _toServerlessGenerateRequest("oem"));
+	}
+
+	@Test
 	public void testGenerateActivationKeyRejectsAComplimentaryBundleEntitlement()
 		throws Exception {
 
@@ -2247,6 +2262,16 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyVirtualClusterBundlesNothingElse()
+		throws Exception {
+
+		_assertBundlesNothingElse(
+			"production",
+			_toVirtualClusterGenerateRequest(
+				Arrays.asList(1L, 2L), "production", 3, 1L));
+	}
+
+	@Test
 	public void testGenerateActivationKeyWithUnentitledBundleProduct()
 		throws Exception {
 
@@ -2456,6 +2481,58 @@ public class LicenseKeyGenerationServiceTest {
 			).contains(
 				"minimum version is 7.4"
 			));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLBundlesTheDigitalSalesRoom()
+		throws Exception {
+
+		_stubEntitlements(
+			_toDeveloperEntitlement(1L, "PRDCT-DXP"),
+			_toEntitlement(2L, 1.0, "PRDCT-DIGITAL-SALES-ROOM"));
+
+		_stubLicensedProducts();
+
+		Product product = _toProduct(
+			"Digital Sales Room", "PRDCT-DIGITAL-SALES-ROOM");
+
+		product.setProductSpecifications(
+			new ProductSpecification[] {
+				_toProductSpecification(
+					ProductSpecificationConstants.KEY_APP_ENTRY_UUID,
+					"dsr-app-entry-uuid"),
+				_toProductSpecification(
+					ProductSpecificationConstants.KEY_PROJECT_ITEM_TYPE,
+					ProductSpecificationConstants.
+						PROJECT_ITEM_TYPE_APPLICATION),
+				_toProductSpecification(
+					ProductSpecificationConstants.KEY_SOLUTION_TYPE,
+					ProductSpecificationConstants.SOLUTION_TYPE_DSR)
+			});
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchProduct(
+				Mockito.argThat(
+					entitlement -> entitlement.getEntitlementId() == 2L))
+		).thenReturn(
+			product
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.isLicensedForVersion(
+				Mockito.any(), Mockito.any())
+		).thenReturn(
+			true
+		);
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Arrays.asList(1L, 2L), "developer", "Liferay DXP", _toProject(),
+			"7.4");
+
+		Assertions.assertEquals(
+			Arrays.asList(
+				LicenseConstants.PRODUCT_ID_PORTAL, "dsr-app-entry-uuid"),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 5));
 	}
 
 	@Test
@@ -2881,6 +2958,26 @@ public class LicenseKeyGenerationServiceTest {
 			).contains(
 				"not entitled to Liferay DXP"
 			));
+	}
+
+	private void _assertBundlesNothingElse(
+			String keyType,
+			LicenseKeyGenerationService.GenerateRequest generateRequest)
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlementOfKeyType(1L, 5.0, keyType), _toEntitlement(2L, 5.0));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(generateRequest);
+
+		Assertions.assertEquals(
+			Collections.singletonList(1L),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 9));
 	}
 
 	private void _assertServerlessKey(
@@ -3477,6 +3574,20 @@ public class LicenseKeyGenerationServiceTest {
 		return product;
 	}
 
+	private ProductSpecification _toProductSpecification(
+		String specificationKey, String value) {
+
+		ProductSpecification productSpecification = new ProductSpecification();
+
+		productSpecification.setSpecificationKey(specificationKey);
+		productSpecification.setValue(
+			HashMapBuilder.put(
+				"en_US", value
+			).build());
+
+		return productSpecification;
+	}
+
 	private Project _toProject() {
 		return new Project(
 			new JSONObject(
@@ -3485,6 +3596,15 @@ public class LicenseKeyGenerationServiceTest {
 			).put(
 				"name", "Project One"
 			));
+	}
+
+	private LicenseKeyGenerationService.GenerateRequest
+		_toServerlessGenerateRequest(String keyType) {
+
+		return new LicenseKeyGenerationService.GenerateRequest(
+			Arrays.asList(1L, 2L), "Description", null, "Environment", keyType,
+			0, null, null, _toProject(), null, null, Collections.emptyList(),
+			null, 1L, "2026.Q3", false);
 	}
 
 	private List<LicenseKeyGenerationService.GenerateRequest.Server> _toServers(

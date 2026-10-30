@@ -136,6 +136,28 @@ public class CommerceProductUtilTest {
 	}
 
 	@Test
+	public void testIsAppWithTheContentMarketingPlatform() {
+		Assertions.assertFalse(
+			CommerceProductUtil.isApp(
+				_createProduct(
+					_createProductSpecification(
+						"project-item-type", Map.of("en_US", "application")),
+					_createProductSpecification(
+						"solution-type", Map.of("en_US", "cmp")))));
+	}
+
+	@Test
+	public void testIsAppWithTheDigitalSalesRoom() {
+		Assertions.assertFalse(
+			CommerceProductUtil.isApp(
+				_createProduct(
+					_createProductSpecification(
+						"project-item-type", Map.of("en_US", "application")),
+					_createProductSpecification(
+						"solution-type", Map.of("en_US", "dsr")))));
+	}
+
+	@Test
 	public void testIsAppWithoutAProjectItemType() {
 		Assertions.assertFalse(CommerceProductUtil.isApp(new Product()));
 		Assertions.assertFalse(CommerceProductUtil.isApp(null));
