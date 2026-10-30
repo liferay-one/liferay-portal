@@ -33,7 +33,7 @@ Terms used in this file:
 | --- | --- | --- | --- | --- |
 | REQ-USAGE-010 | The limit of a metric is the sum of the quantities of the matching entitlements. An entitlement with the unlimited grant type, or a negative quantity, makes the metric unlimited. | P0 | LPD-91383 | `CLS-BASEUSAGESTRATEGY`, `CLS-SAASUSAGESTRATEGY`, `CLS-EXPERIENCEUSAGESTRATEGY`, `CLS-LDPUSAGESTRATEGY` |
 | REQ-USAGE-011 | The percentage of a metric is the usage divided by the limit, rounded to two decimals. An unlimited metric, a zero limit, or a metric without usage data shows zero percent. | P1 | LPD-91383 | `CLS-BASEUSAGESTRATEGY` |
-| REQ-USAGE-012 | The system measures capacity in GiB. It converts an entitlement in TiB to GiB. It shows a value of 1024 GiB or more in TiB. It converts experience usage in bytes to whole GiB, rounded down. | P1 | LPD-91383 | `CLS-BASEUSAGESTRATEGY`, `CLS-EXPERIENCEUSAGESTRATEGY` |
+| REQ-USAGE-012 | The system measures capacity in GiB. It converts an entitlement in TiB to GiB. It shows a value of 1024 GiB or more in TiB. It converts experience usage in bytes to GiB with two decimals, rounded down, as the Customer Portal does. | P1 | LPD-91383 | `CLS-BASEUSAGESTRATEGY`, `CLS-EXPERIENCEUSAGESTRATEGY` |
 | REQ-USAGE-013 | The dashboard warns of overage charges when any metric is above 100 percent. It does not show this warning when the usage data is not available. It shows "Unlimited" for an unlimited limit. | P1 | — | `MOD-MYACCOUNT-PROJECTS-USAGEMETRICDISPLAYUTILS` |
 
 ## Liferay Data Platform Events
