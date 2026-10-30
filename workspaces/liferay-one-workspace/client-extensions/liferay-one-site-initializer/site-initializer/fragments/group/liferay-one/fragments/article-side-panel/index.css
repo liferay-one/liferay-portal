@@ -1,0 +1,32 @@
+.lo-article-side-panel {
+	.lo-article-side-panel-group > summary {
+		cursor: pointer;
+		justify-content: space-between;
+		list-style: none;
+
+		&::-webkit-details-marker {
+			display: none;
+		}
+	}
+
+	.lo-article-side-panel-group[open] > summary .lo-article-side-panel-toggle {
+		transform: rotate(90deg);
+	}
+
+	.lo-article-side-panel-list {
+		padding-left: 0.75rem;
+	}
+
+	.lo-article-side-panel-title {
+		color: var(--color-neutral-6, #6b6c7e);
+		font-size: 0.875rem;
+		padding: 0 0.875rem;
+	}
+
+	.lo-article-side-panel-toggle {
+		color: var(--color-neutral-6, #6b6c7e);
+		display: flex;
+		flex-shrink: 0;
+		transition: transform 0.1s ease-in-out;
+	}
+}

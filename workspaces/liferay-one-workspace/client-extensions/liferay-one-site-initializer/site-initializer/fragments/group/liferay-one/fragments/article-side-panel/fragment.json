@@ -1,0 +1,8 @@
+{
+	"configurationPath": "configuration.json",
+	"cssPath": "index.css",
+	"htmlPath": "index.html",
+	"icon": "list",
+	"name": "Article Side Panel",
+	"type": "component"
+}
