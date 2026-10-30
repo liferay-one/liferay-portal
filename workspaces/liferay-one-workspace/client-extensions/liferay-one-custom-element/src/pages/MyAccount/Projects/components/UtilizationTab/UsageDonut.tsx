@@ -12,7 +12,7 @@ import {
 
 import type {UsageMetric} from '~/pages/MyAccount/Projects/hooks/useProjectUsageDashboard';
 
-const COLORS = ['var(--color-primary)', 'transparent'];
+const COLORS = ['var(--color-brand-primary)', 'var(--color-neutral-2)'];
 
 type UsageDonutProps = {
 	label: Word;
