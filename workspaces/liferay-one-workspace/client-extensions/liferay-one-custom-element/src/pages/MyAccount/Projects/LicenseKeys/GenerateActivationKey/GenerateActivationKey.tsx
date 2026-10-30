@@ -138,6 +138,7 @@ export default function GenerateActivationKey() {
 	const developer = !unassigned && isDeveloperKeyType(keyType);
 	const free = isFreeKeyType(keyType);
 	const productExternalReferenceCode = watch('productExternalReferenceCode');
+	const serverless = isServerlessKeyType(keyType);
 	const subscriptionEntitlementId = watch('subscriptionEntitlementId');
 	const version = watch('version');
 
@@ -190,7 +191,8 @@ export default function GenerateActivationKey() {
 			getBundleProducts(
 				developer,
 				generateForm,
-				productExternalReferenceCode
+				productExternalReferenceCode,
+				serverless
 			)
 				.filter(
 					(bundleProduct) =>
@@ -205,6 +207,7 @@ export default function GenerateActivationKey() {
 		generateForm,
 		productExternalReferenceCode,
 		renewing,
+		serverless,
 		setValue,
 	]);
 
@@ -301,31 +304,8 @@ export default function GenerateActivationKey() {
 				(current) => current.entitlementId === subscriptionEntitlementId
 			);
 
-		if (!generateForm || !subscription) {
-			return 0;
-		}
-
-		return Math.min(
-			subscription.availableCount,
-			...getBundleProducts(
-				developer,
-				generateForm,
-				productExternalReferenceCode
-			)
-				.filter((bundleProduct) =>
-					bundleEntitlementIds.includes(bundleProduct.entitlementId)
-				)
-				.map((bundleProduct) => bundleProduct.availableCount)
-		);
-	}, [
-		bundleEntitlementIds,
-		developer,
-		generateForm,
-		keyType,
-		product,
-		productExternalReferenceCode,
-		subscriptionEntitlementId,
-	]);
+		return subscription?.availableCount ?? 0;
+	}, [keyType, product, subscriptionEntitlementId]);
 
 	const cloudNative = isCloudNativeProduct(product);
 
@@ -759,6 +739,7 @@ export default function GenerateActivationKey() {
 									: goTo('environment')
 							}
 							renewing={renewing}
+							serverless={serverless}
 							submitting={submitting}
 							versions={versions}
 						/>

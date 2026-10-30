@@ -817,8 +817,16 @@ public class LicenseKeyGenerationService {
 				subscriptionEntitlement);
 		}
 		else {
-			bundleEntitlements = _toBundleEntitlements(
-				bundleEntitlements, subscriptionEntitlement);
+			if (_isServerless(generateRequest) ||
+				_isVirtualCluster(generateRequest)) {
+
+				bundleEntitlements = Collections.singletonList(
+					subscriptionEntitlement);
+			}
+			else {
+				bundleEntitlements = _toBundleEntitlements(
+					bundleEntitlements, subscriptionEntitlement);
+			}
 
 			for (Entitlement entitlement : bundleEntitlements) {
 				_checkComplimentaryEntitlement(entitlement);
