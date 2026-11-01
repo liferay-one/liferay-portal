@@ -2130,6 +2130,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal Backup Sizing 2",
 			"externalReferenceCode": "liferay-portal-backup-sizing-2",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "backup",
 			"maxQuantity": 1,
 			"name": "liferay-portal-backup-sizing-2"
 		},
@@ -2138,6 +2141,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal Backup Sizing 3",
 			"externalReferenceCode": "liferay-portal-backup-sizing-3",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "backup",
 			"maxQuantity": 1,
 			"name": "liferay-portal-backup-sizing-3"
 		},
@@ -2146,6 +2152,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal Backup Sizing 4",
 			"externalReferenceCode": "liferay-portal-backup-sizing-4",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "backup",
 			"maxQuantity": 1,
 			"name": "liferay-portal-backup-sizing-4"
 		},
@@ -2154,6 +2163,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal Developer",
 			"externalReferenceCode": "liferay-portal-developer",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "developer",
 			"maxQuantity": 1,
 			"name": "liferay-portal-developer"
 		},
@@ -2170,6 +2182,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal Non-Prod Sizing 1",
 			"externalReferenceCode": "liferay-portal-non-prod-sizing-1",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
 			"name": "liferay-portal-non-prod-sizing-1"
 		},
@@ -2178,6 +2193,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal Non-Prod Sizing 2",
 			"externalReferenceCode": "liferay-portal-non-prod-sizing-2",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
 			"name": "liferay-portal-non-prod-sizing-2"
 		},
@@ -2186,6 +2204,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal Non-Prod Sizing 3",
 			"externalReferenceCode": "liferay-portal-non-prod-sizing-3",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
 			"name": "liferay-portal-non-prod-sizing-3"
 		},
@@ -2194,6 +2215,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal Non-Prod Sizing 4",
 			"externalReferenceCode": "liferay-portal-non-prod-sizing-4",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
 			"name": "liferay-portal-non-prod-sizing-4"
 		},
@@ -2210,6 +2234,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal OEM Sizing 4",
 			"externalReferenceCode": "liferay-portal-oem-sizing-4",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "oem",
 			"maxQuantity": 1,
 			"name": "liferay-portal-oem-sizing-4"
 		},
@@ -2226,6 +2253,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal Prod Sizing 2",
 			"externalReferenceCode": "liferay-portal-prod-sizing-2",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "production",
 			"maxQuantity": 1,
 			"name": "liferay-portal-prod-sizing-2"
 		},
@@ -2234,6 +2264,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal Prod Sizing 3",
 			"externalReferenceCode": "liferay-portal-prod-sizing-3",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "production",
 			"maxQuantity": 1,
 			"name": "liferay-portal-prod-sizing-3"
 		},
@@ -2242,6 +2275,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Portal Prod Sizing 4",
 			"externalReferenceCode": "liferay-portal-prod-sizing-4",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "Portal",
+			"licenseKeyType": "production",
 			"maxQuantity": 1,
 			"name": "liferay-portal-prod-sizing-4"
 		},
@@ -2314,6 +2350,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Self-Hosted Backup Sizing 1",
 			"externalReferenceCode": "liferay-self-hosted-backup-sizing-1",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "backup",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-backup-sizing-1"
 		},
@@ -2322,6 +2361,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Self-Hosted Backup Sizing 2",
 			"externalReferenceCode": "liferay-self-hosted-backup-sizing-2",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "backup",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-backup-sizing-2"
 		},
@@ -2330,6 +2372,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Self-Hosted Backup Sizing 3",
 			"externalReferenceCode": "liferay-self-hosted-backup-sizing-3",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "backup",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-backup-sizing-3"
 		},
@@ -2338,6 +2383,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Self-Hosted Backup Sizing 4",
 			"externalReferenceCode": "liferay-self-hosted-backup-sizing-4",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "backup",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-backup-sizing-4"
 		},
@@ -2357,6 +2405,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Self-Hosted Enterprise Sizing 4",
 			"externalReferenceCode": "liferay-self-hosted-enterprise-sizing-4",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "enterprise",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-enterprise-sizing-4"
 		},
@@ -2432,6 +2483,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Self-Hosted Non-Prod Sizing 2",
 			"externalReferenceCode": "liferay-self-hosted-non-prod-sizing-2",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-non-prod-sizing-2"
 		},
@@ -2440,6 +2494,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Self-Hosted Non-Prod Sizing 3",
 			"externalReferenceCode": "liferay-self-hosted-non-prod-sizing-3",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-non-prod-sizing-3"
 		},
@@ -2448,6 +2505,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Self-Hosted Non-Prod Sizing 4",
 			"externalReferenceCode": "liferay-self-hosted-non-prod-sizing-4",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-non-prod-sizing-4"
 		},
@@ -2456,6 +2516,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Self-Hosted OEM Sizing 4",
 			"externalReferenceCode": "liferay-self-hosted-oem-sizing-4",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "oem",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-oem-sizing-4"
 		},
@@ -2475,6 +2538,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Self-Hosted Prod Sizing 2",
 			"externalReferenceCode": "liferay-self-hosted-prod-sizing-2",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "production",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-prod-sizing-2"
 		},
@@ -2494,6 +2560,9 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Self-Hosted Prod Sizing 4",
 			"externalReferenceCode": "liferay-self-hosted-prod-sizing-4",
+			"generatesActivationKey": true,
+			"licenseKeyFamily": "DXP",
+			"licenseKeyType": "production",
 			"maxQuantity": 1,
 			"name": "liferay-self-hosted-prod-sizing-4"
 		},
