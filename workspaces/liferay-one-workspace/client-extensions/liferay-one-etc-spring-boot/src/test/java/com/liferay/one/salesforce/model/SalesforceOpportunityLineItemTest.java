@@ -33,7 +33,7 @@ public class SalesforceOpportunityLineItemTest {
 				));
 
 		Assertions.assertEquals(
-			Instant.parse("2027-03-31T00:00:00Z"),
+			Instant.parse("2027-04-01T00:00:00Z"),
 			salesforceOpportunityLineItem.getEndDateInstant());
 		Assertions.assertEquals(
 			Instant.parse("2026-04-01T00:00:00Z"),

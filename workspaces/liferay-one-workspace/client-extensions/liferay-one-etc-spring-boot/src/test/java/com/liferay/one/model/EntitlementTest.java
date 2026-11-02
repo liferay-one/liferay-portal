@@ -42,6 +42,16 @@ public class EntitlementTest {
 	}
 
 	@Test
+	public void testEffectiveEndDateFallsBackToEndDate() {
+		Entitlement entitlement = new Entitlement(
+			_createJSONObject().put("endDate", "2026-11-01T00:00:00Z"));
+
+		Assertions.assertEquals(
+			Instant.parse("2026-11-01T00:00:00Z"),
+			entitlement.getEffectiveEndDateInstant());
+	}
+
+	@Test
 	public void testFutureEndDateIsNotExpired() {
 		Instant endDateInstant = Instant.now(
 		).plus(
@@ -96,6 +106,25 @@ public class EntitlementTest {
 			_createJSONObject().put("endDate", "2020-01-01T00:00:00Z"));
 
 		Assertions.assertTrue(entitlement.isExpired());
+	}
+
+	@Test
+	public void testPastEndDateIsNotExpiredDuringTheGracePeriod() {
+		Entitlement entitlement = new Entitlement(
+			_createJSONObject(
+			).put(
+				"effectiveEndDate", "2999-01-01T00:00:00Z"
+			).put(
+				"endDate", "2020-01-01T00:00:00Z"
+			));
+
+		Assertions.assertEquals(
+			Instant.parse("2020-01-01T00:00:00Z"),
+			entitlement.getEndDateInstant());
+		Assertions.assertEquals(
+			Instant.parse("2999-01-01T00:00:00Z"),
+			entitlement.getEffectiveEndDateInstant());
+		Assertions.assertFalse(entitlement.isExpired());
 	}
 
 	@Test

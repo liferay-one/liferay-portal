@@ -955,9 +955,9 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
-	public void testGetLicenseKeyExpirationInstantEndsCloudNativeKeysWithTheSubscription() {
+	public void testGetLicenseKeyExpirationInstantEndsCloudNativeKeysWithTheGracePeriod() {
 		Assertions.assertEquals(
-			Instant.parse("2027-01-01T00:00:00Z"),
+			Instant.parse("2027-01-31T00:00:00Z"),
 			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
 				true,
 				_toSubscriptionEntitlement(
@@ -967,9 +967,9 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
-	public void testGetLicenseKeyExpirationInstantEndsKeysWithTheSubscriptionWithoutPermanentLicenses() {
+	public void testGetLicenseKeyExpirationInstantEndsKeysWithTheGracePeriodWithoutPermanentLicenses() {
 		Assertions.assertEquals(
-			Instant.parse("2027-01-01T00:00:00Z"),
+			Instant.parse("2027-01-31T00:00:00Z"),
 			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
 				false,
 				_toSubscriptionEntitlement(
@@ -1770,6 +1770,23 @@ public class LicenseKeyGenerateFormServiceTest {
 		return customField;
 	}
 
+	private Object _toEntitledProduct(String licenseKeyFamily)
+		throws Exception {
+
+		Class<?> clazz = Class.forName(
+			LicenseKeyGenerateFormService.class.getName() + "$EntitledProduct");
+
+		Constructor<?> constructor = clazz.getDeclaredConstructor(
+			boolean.class, Entitlement.class, String.class, boolean.class,
+			String.class, String.class);
+
+		constructor.setAccessible(true);
+
+		return constructor.newInstance(
+			false, null, "PRDCT-" + licenseKeyFamily, true, licenseKeyFamily,
+			licenseKeyFamily);
+	}
+
 	private Entitlement _toEntitlement(Double maxQuantity) {
 		JSONObject jsonObject = new JSONObject(
 		).put(
@@ -1934,6 +1951,14 @@ public class LicenseKeyGenerateFormServiceTest {
 		return licenseKeyGenerateFormService;
 	}
 
+	private List<ProductVersion> _toPortalProductVersions() {
+		return Arrays.asList(
+			_toProductVersion("6.2 EE", "6.2 EE"),
+			_toProductVersion("6.1 GA3", "6.1 GA3"),
+			_toProductVersion("6.1 GA2", "6.1 GA2"),
+			_toProductVersion("6.1 GA1", "6.1 GA1"));
+	}
+
 	private Product _toProduct(long productId, String externalReferenceCode) {
 		Product product = new Product();
 
@@ -1984,31 +2009,6 @@ public class LicenseKeyGenerateFormServiceTest {
 		);
 	}
 
-	private Object _toEntitledProduct(String licenseKeyFamily)
-		throws Exception {
-
-		Class<?> clazz = Class.forName(
-			LicenseKeyGenerateFormService.class.getName() + "$EntitledProduct");
-
-		Constructor<?> constructor = clazz.getDeclaredConstructor(
-			boolean.class, Entitlement.class, String.class, boolean.class,
-			String.class, String.class);
-
-		constructor.setAccessible(true);
-
-		return constructor.newInstance(
-			false, null, "PRDCT-" + licenseKeyFamily, true, licenseKeyFamily,
-			licenseKeyFamily);
-	}
-
-	private List<ProductVersion> _toPortalProductVersions() {
-		return Arrays.asList(
-			_toProductVersion("6.2 EE", "6.2 EE"),
-			_toProductVersion("6.1 GA3", "6.1 GA3"),
-			_toProductVersion("6.1 GA2", "6.1 GA2"),
-			_toProductVersion("6.1 GA1", "6.1 GA1"));
-	}
-
 	private ProductVersion _toProductVersion(
 		String productGroupVersion, boolean supported, String version) {
 
@@ -2051,6 +2051,8 @@ public class LicenseKeyGenerateFormServiceTest {
 	private Entitlement _toSubscriptionEntitlement(String licenseKeyFamily) {
 		return new Entitlement(
 			new JSONObject(
+			).put(
+				"effectiveEndDate", "2027-01-31T00:00:00Z"
 			).put(
 				"endDate", "2027-01-01T00:00:00Z"
 			).put(

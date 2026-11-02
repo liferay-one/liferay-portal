@@ -16,7 +16,7 @@ import {
 	GenerateFormProduct,
 	GenerateFormSubscription,
 } from '~/services/spring-boot/ActivationKeys';
-import {formatDate} from '~/utils/dateUtils';
+import {formatDate, toLastTermDay, toUTCCalendarDate} from '~/utils/dateUtils';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import SelectField from '../components/SelectField/SelectField';
@@ -39,6 +39,10 @@ type SubscriptionStepProps = {
 	onClickContinue: () => void;
 	renewing?: boolean;
 };
+
+function formatUTCDate(value?: string) {
+	return formatDate(value ? toUTCCalendarDate(value) : undefined);
+}
 
 export default function SubscriptionStep({
 	contractTermHelp,
@@ -196,8 +200,8 @@ export default function SubscriptionStep({
 			selected: subscription.entitlementId === subscriptionEntitlementId,
 			title: (
 				<span className="generate-activation-key-subscription-title">
-					{`${formatDate(subscription.startDate)} - ${formatDate(
-						subscription.endDate
+					{`${formatUTCDate(subscription.startDate)} - ${formatUTCDate(
+						toLastTermDay(subscription.endDate)
 					)}`}
 				</span>
 			),

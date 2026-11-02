@@ -107,7 +107,7 @@ public class ProvisioningOrderServiceTest {
 
 		_provisioningOrderService.trimRealignedOrderItems(
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PARENT_OPPORTUNITY_ID,
-			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
+			List.of(_createRealignmentLineItem("2025-12-31")), warningMessages);
 
 		Mockito.verify(
 			_commerceOrderItemService
@@ -130,7 +130,7 @@ public class ProvisioningOrderServiceTest {
 
 		_provisioningOrderService.trimRealignedOrderItems(
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PARENT_OPPORTUNITY_ID,
-			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
+			List.of(_createRealignmentLineItem("2025-12-31")), warningMessages);
 
 		Mockito.verify(
 			_commerceOrderItemService
@@ -165,7 +165,7 @@ public class ProvisioningOrderServiceTest {
 
 		_provisioningOrderService.trimRealignedOrderItems(
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PARENT_OPPORTUNITY_ID,
-			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
+			List.of(_createRealignmentLineItem("2025-12-31")), warningMessages);
 
 		Mockito.verify(
 			_commerceOrderItemService
@@ -188,7 +188,7 @@ public class ProvisioningOrderServiceTest {
 
 		_provisioningOrderService.trimRealignedOrderItems(
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PARENT_OPPORTUNITY_ID,
-			List.of(_createRealignmentLineItem("2025-01-01")), warningMessages);
+			List.of(_createRealignmentLineItem("2024-12-31")), warningMessages);
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
 		Assertions.assertEquals(0, warningMessages.size());

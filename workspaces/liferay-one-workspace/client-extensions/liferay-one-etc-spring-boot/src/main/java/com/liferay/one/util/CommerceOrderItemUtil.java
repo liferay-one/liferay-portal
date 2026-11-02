@@ -65,6 +65,18 @@ public class CommerceOrderItemUtil {
 		return _getCustomFieldInstant(orderItem, "endDate");
 	}
 
+	public static Instant getEntitlementEffectiveEndDateInstant(
+		OrderItem orderItem) {
+
+		Instant effectiveEndDateInstant = getEffectiveEndDateInstant(orderItem);
+
+		if (effectiveEndDateInstant != null) {
+			return effectiveEndDateInstant;
+		}
+
+		return getEndDateInstant(orderItem);
+	}
+
 	public static Instant getEntitlementEndDateInstant(OrderItem orderItem) {
 		Instant endDateInstant = getEndDateInstant(orderItem);
 		Instant effectiveEndDateInstant = getEffectiveEndDateInstant(orderItem);

@@ -1110,7 +1110,7 @@ public class LicenseKeyGenerationService {
 			return calendar.getTime();
 		}
 
-		Instant endDateInstant = entitlement.getEndDateInstant();
+		Instant endDateInstant = entitlement.getEffectiveEndDateInstant();
 
 		if (endDateInstant == null) {
 			throw new LicenseKeyEntitlementException(

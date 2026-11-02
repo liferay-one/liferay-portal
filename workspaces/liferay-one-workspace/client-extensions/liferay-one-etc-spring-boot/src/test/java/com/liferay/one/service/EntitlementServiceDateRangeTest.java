@@ -170,7 +170,11 @@ public class EntitlementServiceDateRangeTest {
 		String filterString = filterStringArgumentCaptor.getValue();
 
 		Assertions.assertTrue(
-			filterString.startsWith("(endDate eq null or endDate ge "),
+			filterString.startsWith("((effectiveEndDate ge "), filterString);
+		Assertions.assertTrue(
+			filterString.contains(
+				") or (effectiveEndDate eq null and (endDate eq null or " +
+					"endDate ge "),
 			filterString);
 		Assertions.assertTrue(
 			filterString.contains(
@@ -320,11 +324,12 @@ public class EntitlementServiceDateRangeTest {
 			entitlementService
 		).getEntitlements(
 			StringBundler.concat(
-				"(dateModified ge 2026-08-01T00:00:00Z or (endDate ge ",
-				"2026-08-01T00:00:00Z and endDate le 2026-09-01T00:00:00Z) or ",
-				"(startDate ge 2026-08-01T00:00:00Z and startDate le ",
-				"2026-09-01T00:00:00Z)) and (name eq 'gold-support' or name ",
-				"eq 'partner')")
+				"(dateModified ge 2026-08-01T00:00:00Z or (effectiveEndDate ",
+				"ge 2026-08-01T00:00:00Z and effectiveEndDate le ",
+				"2026-09-01T00:00:00Z) or (endDate ge 2026-08-01T00:00:00Z ",
+				"and endDate le 2026-09-01T00:00:00Z) or (startDate ge ",
+				"2026-08-01T00:00:00Z and startDate le 2026-09-01T00:00:00Z)) ",
+				"and (name eq 'gold-support' or name eq 'partner')")
 		);
 	}
 

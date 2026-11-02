@@ -239,6 +239,14 @@ export function toISODate(value?: string): string | undefined {
 	return value ? new Date(`${value}T12:00:00`).toISOString() : undefined;
 }
 
+export function toLastTermDay(endDate?: string): string | undefined {
+	if (!endDate) {
+		return undefined;
+	}
+
+	return new Date(new Date(endDate).getTime() - 1).toISOString();
+}
+
 export function toSlashDateUTC(date: Date): string {
 	const [year, month, day] = toUTCDateString(date).split('-');
 

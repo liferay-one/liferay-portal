@@ -63,6 +63,7 @@ export type ProjectProduct = {
 };
 
 type EntitlementNode = {
+	effectiveEndDate?: string;
 	endDate?: string;
 	externalReferenceCode: string;
 	name: string;
@@ -82,6 +83,7 @@ type ContractNode = {
 };
 
 type ProductEntitlement = {
+	effectiveEndDate?: string;
 	endDate?: string;
 	skuExternalReferenceCode?: string;
 };
@@ -193,6 +195,7 @@ function toProductEntitlements(
 ): ProductEntitlement[] {
 	return (entitlementNodes ?? [])
 		.map((entitlement) => ({
+			effectiveEndDate: entitlement.effectiveEndDate,
 			endDate: entitlement.endDate,
 			skuExternalReferenceCode: entitlement.skuExternalReferenceCode,
 		}))
@@ -753,7 +756,9 @@ export function useHasActiveExperienceOffering() {
 					EXPERIENCE_OFFERING_PRODUCT_EXTERNAL_REFERENCE_CODES.some(
 						(code) => code === product.externalReferenceCode
 					) &&
-					getEntitlementStatus(entitlement.endDate) === 'active'
+					getEntitlementStatus(
+						entitlement.effectiveEndDate ?? entitlement.endDate
+					) === 'active'
 				);
 			});
 	}, [data, productsData]);

@@ -30,6 +30,39 @@ import org.junit.jupiter.api.Test;
 public class CommerceOrderItemUtilTest {
 
 	@Test
+	public void testGetEntitlementEffectiveEndDateInstantFallsBackToEndDate() {
+		Assertions.assertNull(
+			CommerceOrderItemUtil.getEntitlementEffectiveEndDateInstant(
+				_createOrderItem()));
+		Assertions.assertEquals(
+			Instant.parse(_DECEMBER_31),
+			CommerceOrderItemUtil.getEntitlementEffectiveEndDateInstant(
+				_createOrderItem("endDate", _DECEMBER_31)));
+	}
+
+	@Test
+	public void testGetEntitlementEffectiveEndDateInstantKeepsTheGracePeriod() {
+		OrderItem orderItem = _createOrderItem(
+			"effectiveEndDate", _DECEMBER_31, "endDate", _JUNE_30);
+
+		Assertions.assertEquals(
+			Instant.parse(_DECEMBER_31),
+			CommerceOrderItemUtil.getEntitlementEffectiveEndDateInstant(
+				orderItem));
+	}
+
+	@Test
+	public void testGetEntitlementEffectiveEndDateInstantKeepsTheTrimDate() {
+		OrderItem orderItem = _createOrderItem(
+			"effectiveEndDate", _JUNE_30, "endDate", _DECEMBER_31);
+
+		Assertions.assertEquals(
+			Instant.parse(_JUNE_30),
+			CommerceOrderItemUtil.getEntitlementEffectiveEndDateInstant(
+				orderItem));
+	}
+
+	@Test
 	public void testGetEntitlementEndDateInstantPrefersEarlierEffectiveEndDate() {
 		OrderItem orderItem = _createOrderItem(
 			"effectiveEndDate", _JUNE_30, "endDate", _DECEMBER_31);

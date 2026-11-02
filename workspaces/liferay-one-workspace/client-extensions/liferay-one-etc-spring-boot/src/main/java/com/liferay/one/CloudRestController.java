@@ -1330,7 +1330,7 @@ public class CloudRestController extends OneBaseRestController {
 		}
 
 		Date expirationDate = _toDate(
-			cloudNativeEntitlement.getEndDateInstant(),
+			cloudNativeEntitlement.getEffectiveEndDateInstant(),
 			new Date(System.currentTimeMillis() + Time.YEAR));
 		Date startDate = _toDate(
 			cloudNativeEntitlement.getStartDateInstant(), new Date());

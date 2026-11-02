@@ -8,6 +8,8 @@ package com.liferay.one.salesforce.model;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 import org.json.JSONObject;
 
@@ -31,7 +33,13 @@ public class SalesforceOpportunityLineItem {
 			_endDateInstant = null;
 		}
 		else {
-			_endDateInstant = Instant.parse(endDate + "T00:00:00Z");
+			LocalDate endLocalDate = LocalDate.parse(endDate);
+
+			_endDateInstant = endLocalDate.plusDays(
+				1
+			).atStartOfDay(
+				ZoneOffset.UTC
+			).toInstant();
 		}
 
 		String serviceDate = jsonObject.optString("ServiceDate");
