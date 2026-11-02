@@ -40,6 +40,9 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -541,6 +544,11 @@ public class SalesforceOpportunityPubsubSubscriber
 			provisionableSalesforceOpportunityLineItems, salesforceProject);
 
 		if ((contract != null) && (contract.getEndDateInstant() != null)) {
+			Instant contractEndDateInstant = contract.getEndDateInstant(
+			).plus(
+				1, ChronoUnit.DAYS
+			);
+
 			for (SalesforceOpportunityLineItem
 					provisionableSalesforceOpportunityLineItem :
 						provisionableSalesforceOpportunityLineItems) {
@@ -548,7 +556,7 @@ public class SalesforceOpportunityPubsubSubscriber
 				if (Objects.equals(
 						provisionableSalesforceOpportunityLineItem.
 							getEndDateInstant(),
-						contract.getEndDateInstant())) {
+						contractEndDateInstant)) {
 
 					continue;
 				}

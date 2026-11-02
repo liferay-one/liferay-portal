@@ -434,7 +434,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 				environmentEntitlements: [
 					{
 						...environmentEntitlement,
-						endDate: '2099-08-09T00:00:00.000Z',
+						endDate: '2099-08-10T00:00:00.000Z',
 						startDate: '2026-08-09T00:00:00.000Z',
 					},
 				],

@@ -56,6 +56,15 @@ public final class Entitlement {
 				entitlementDefinitionJSONObject);
 		}
 
+		String effectiveEndDate = jsonObject.optString("effectiveEndDate");
+
+		if (Validator.isNull(effectiveEndDate)) {
+			_effectiveEndDateInstant = null;
+		}
+		else {
+			_effectiveEndDateInstant = Instant.parse(effectiveEndDate);
+		}
+
 		String endDate = jsonObject.optString("endDate");
 
 		if (Validator.isNull(endDate)) {
@@ -85,6 +94,14 @@ public final class Entitlement {
 
 	public long getContractId() {
 		return _contractId;
+	}
+
+	public Instant getEffectiveEndDateInstant() {
+		if (_effectiveEndDateInstant != null) {
+			return _effectiveEndDateInstant;
+		}
+
+		return _endDateInstant;
 	}
 
 	public Instant getEndDateInstant() {
@@ -160,11 +177,13 @@ public final class Entitlement {
 	}
 
 	public boolean isExpired() {
-		if (_endDateInstant == null) {
+		Instant effectiveEndDateInstant = getEffectiveEndDateInstant();
+
+		if (effectiveEndDateInstant == null) {
 			return false;
 		}
 
-		return _endDateInstant.isBefore(Instant.now());
+		return effectiveEndDateInstant.isBefore(Instant.now());
 	}
 
 	public boolean isGeneratesActivationKey() {
@@ -190,6 +209,7 @@ public final class Entitlement {
 	private final long _accountEntryId;
 	private final long _commerceOrderItemId;
 	private final long _contractId;
+	private final Instant _effectiveEndDateInstant;
 	private final Instant _endDateInstant;
 	private final EntitlementDefinition _entitlementDefinition;
 	private final long _entitlementDefinitionId;

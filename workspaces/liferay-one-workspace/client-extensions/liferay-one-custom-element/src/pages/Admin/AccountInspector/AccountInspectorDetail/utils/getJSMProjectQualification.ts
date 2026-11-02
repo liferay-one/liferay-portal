@@ -19,11 +19,14 @@ const NO_PROJECT_ID = 0;
 const TERMINATION_STATUS_TERMINATED = 'terminated';
 
 function isUnterminatedActive(entitlement: InspectedEntry, now: number) {
-	const {endDate, startDate, terminationStatus} = entitlement;
+	const {effectiveEndDate, endDate, startDate, terminationStatus} =
+		entitlement;
+
+	const accessEndDate = effectiveEndDate ?? endDate;
 
 	return (
 		terminationStatus !== TERMINATION_STATUS_TERMINATED &&
-		(!endDate || Date.parse(String(endDate)) >= now) &&
+		(!accessEndDate || Date.parse(String(accessEndDate)) >= now) &&
 		(!startDate || Date.parse(String(startDate)) <= now)
 	);
 }

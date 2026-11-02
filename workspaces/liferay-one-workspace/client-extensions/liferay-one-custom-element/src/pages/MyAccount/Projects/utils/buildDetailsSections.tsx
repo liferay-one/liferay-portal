@@ -7,7 +7,7 @@ import {format, startOfToday} from 'date-fns';
 import {Fragment} from 'react';
 import {ENVIRONMENTS} from '~/hooks/useProductEnvironmentEntitlements';
 import i18n, {Word} from '~/i18n';
-import {toUTCCalendarDate} from '~/utils/dateUtils';
+import {toLastTermDay, toUTCCalendarDate} from '~/utils/dateUtils';
 
 import {DetailsRow} from '../components/DetailsCard/DetailsCard';
 import {DetailsSection} from '../components/SectionedDetailsCard/SectionedDetailsCard';
@@ -235,7 +235,10 @@ function environmentDateRows(
 
 	return [
 		{label: i18n.translate('start-date'), value: formatDate(startDate)},
-		{label: i18n.translate('expiration-date'), value: formatDate(endDate)},
+		{
+			label: i18n.translate('expiration-date'),
+			value: formatDate(toLastTermDay(endDate)),
+		},
 		{label: i18n.translate('status'), value: i18n.translate(status)},
 	];
 }

@@ -2211,6 +2211,28 @@
 				{
 					"DBType": "Date",
 					"businessType": "DateTime",
+					"externalReferenceCode": "C_ENTITLEMENT_EFFECTIVE_END_DATE",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Effective End Date"
+					},
+					"name": "effectiveEndDate",
+					"objectFieldSettings": [
+						{
+							"name": "timeStorage",
+							"value": "convertToUTC"
+						}
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Date"
+				},
+				{
+					"DBType": "Date",
+					"businessType": "DateTime",
 					"externalReferenceCode": "C_ENTITLEMENT_END_DATE",
 					"indexed": true,
 					"indexedAsKeyword": false,

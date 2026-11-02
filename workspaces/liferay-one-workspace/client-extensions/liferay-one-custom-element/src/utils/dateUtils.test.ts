@@ -22,6 +22,7 @@ import {
 	shiftUTCDays,
 	shiftUTCMonths,
 	toISODate,
+	toLastTermDay,
 	toSlashDateUTC,
 	toUTCCalendarDate,
 	toUTCDateString,
@@ -136,6 +137,19 @@ describe('[MOD-DATEUTILS] dateUtils', () => {
 		expect(new Date(isoDate).getDate()).toBe(15);
 		expect(toISODate(undefined)).toBeUndefined();
 		expect(toISODate('')).toBeUndefined();
+	});
+
+	it('toLastTermDay returns the last day of a term with an exclusive end', () => {
+		expect(toLastTermDay('2026-11-01T00:00:00.000Z')).toBe(
+			'2026-10-31T23:59:59.999Z'
+		);
+		expect(
+			toUTCDateString(
+				new Date(toLastTermDay('2026-11-01T14:30:00Z') as string)
+			)
+		).toBe('2026-11-01');
+		expect(toLastTermDay(undefined)).toBeUndefined();
+		expect(toLastTermDay('')).toBeUndefined();
 	});
 
 	it('toUTCCalendarDate keeps the UTC calendar day in the local zone', () => {

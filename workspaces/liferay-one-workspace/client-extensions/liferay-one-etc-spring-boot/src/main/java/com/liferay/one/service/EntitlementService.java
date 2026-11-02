@@ -64,8 +64,8 @@ public class EntitlementService extends OneBaseService {
 
 	public Entitlement addEntitlement(
 			long accountEntryId, long commerceOrderItemId, long contractId,
-			long entitlementDefinitionId, String endDate,
-			boolean generatesActivationKey, String grantType,
+			long entitlementDefinitionId, String effectiveEndDate,
+			String endDate, boolean generatesActivationKey, String grantType,
 			int licenseKeyDurationDays, String licenseKeyFamily,
 			String licenseKeyType, Double maxQuantity, String name,
 			OveragePricing overagePricing, Map<String, String> productOptions,
@@ -85,6 +85,8 @@ public class EntitlementService extends OneBaseService {
 		}
 
 		JSONObject entitlementJSONObject = new JSONObject(
+		).put(
+			"effectiveEndDate", effectiveEndDate
 		).put(
 			"endDate", endDate
 		).put(
@@ -429,10 +431,12 @@ public class EntitlementService extends OneBaseService {
 		return getEntitlements(
 			_getEntitlementNamesFilterString(
 				StringBundler.concat(
-					"dateModified ge ", startInstant, " or (endDate ge ",
-					startInstant, " and endDate le ", endInstant,
-					") or (startDate ge ", startInstant, " and startDate le ",
-					endInstant, ")"),
+					"dateModified ge ", startInstant,
+					" or (effectiveEndDate ge ", startInstant,
+					" and effectiveEndDate le ", endInstant,
+					") or (endDate ge ", startInstant, " and endDate le ",
+					endInstant, ") or (startDate ge ", startInstant,
+					" and startDate le ", endInstant, ")"),
 				names));
 	}
 
@@ -687,8 +691,8 @@ public class EntitlementService extends OneBaseService {
 				getAllProjectedItems(
 					"/o/c/entitlements", _FIELDS_CUSTOMER,
 					StringBundler.concat(
-						"(endDate eq null or endDate ge ", instant,
-						") and (r_accountEntryToEntitlement_accountEntryId eq ",
+						_getUnexpiredFilterString(instant),
+						" and (r_accountEntryToEntitlement_accountEntryId eq ",
 						"'", accountEntryId,
 						"') and (r_contractToEntitlement_c_contractId ne '0')"),
 					Entitlement::new)) {
@@ -723,6 +727,8 @@ public class EntitlementService extends OneBaseService {
 			entitlementId,
 			new JSONObject(
 			).put(
+				"effectiveEndDate", _toJSONValue(endDateInstant)
+			).put(
 				"endDate", _toJSONValue(endDateInstant)
 			).put(
 				"startDate", _toJSONValue(startDateInstant)
@@ -750,6 +756,9 @@ public class EntitlementService extends OneBaseService {
 			return;
 		}
 
+		Instant effectiveEndDateInstant =
+			CommerceOrderItemUtil.getEntitlementEffectiveEndDateInstant(
+				orderItem);
 		Instant endDateInstant =
 			CommerceOrderItemUtil.getEntitlementEndDateInstant(orderItem);
 		Instant startDateInstant = CommerceOrderItemUtil.getStartDateInstant(
@@ -768,16 +777,29 @@ public class EntitlementService extends OneBaseService {
 					"startDate", startDateInstant.toString());
 			}
 
-			if (endDateInstant != null) {
-				Instant effectiveStartDateInstant = startDateInstant;
+			Instant entitlementStartDateInstant = startDateInstant;
 
-				if (effectiveStartDateInstant == null) {
-					effectiveStartDateInstant =
-						entitlement.getStartDateInstant();
+			if (entitlementStartDateInstant == null) {
+				entitlementStartDateInstant = entitlement.getStartDateInstant();
+			}
+
+			if (effectiveEndDateInstant != null) {
+				Instant targetEffectiveEndDateInstant = _getLatestInstant(
+					effectiveEndDateInstant, entitlementStartDateInstant);
+
+				if (!Objects.equals(
+						entitlement.getEffectiveEndDateInstant(),
+						targetEffectiveEndDateInstant)) {
+
+					entitlementJSONObject.put(
+						"effectiveEndDate",
+						targetEffectiveEndDateInstant.toString());
 				}
+			}
 
+			if (endDateInstant != null) {
 				Instant targetEndDateInstant = _getLatestInstant(
-					endDateInstant, effectiveStartDateInstant);
+					endDateInstant, entitlementStartDateInstant);
 
 				if (!Objects.equals(
 						entitlement.getEndDateInstant(),
@@ -825,7 +847,8 @@ public class EntitlementService extends OneBaseService {
 
 	private void _addEntitlements(
 			long accountEntryId, long commerceOrderItemId, long contractId,
-			String endDate, List<EntitlementDefinition> entitlementDefinitions,
+			String effectiveEndDate, String endDate,
+			List<EntitlementDefinition> entitlementDefinitions,
 			BigDecimal orderItemQuantity, Map<String, String> productOptions,
 			String projectExternalReferenceCode, boolean selfServiceTrial,
 			String skuExternalReferenceCode, String startDate)
@@ -845,7 +868,8 @@ public class EntitlementService extends OneBaseService {
 			try {
 				Entitlement entitlement = addEntitlement(
 					accountEntryId, commerceOrderItemId, contractId,
-					entitlementDefinition.getEntitlementDefinitionId(), endDate,
+					entitlementDefinition.getEntitlementDefinitionId(),
+					effectiveEndDate, endDate,
 					entitlementDefinition.isGeneratesActivationKey(),
 					entitlementDefinition.getGrantType(),
 					_getLicenseKeyDurationDays(
@@ -929,8 +953,11 @@ public class EntitlementService extends OneBaseService {
 		String projectExternalReferenceCode = _getProjectExternalReferenceCode(
 			order);
 
+		String effectiveEndDate = _toString(
+			CommerceOrderItemUtil.getEntitlementEffectiveEndDateInstant(
+				orderItem));
 		String endDate = _toString(
-			CommerceOrderItemUtil.getEndDateInstant(orderItem));
+			CommerceOrderItemUtil.getEntitlementEndDateInstant(orderItem));
 		String startDate = _toString(
 			CommerceOrderItemUtil.getStartDateInstant(orderItem));
 
@@ -956,9 +983,9 @@ public class EntitlementService extends OneBaseService {
 				if (!selfServiceTrial) {
 					_addEntitlements(
 						accountEntryId, commerceOrderItemId, contractId,
-						endDate, missingEntitlementDefinitions,
-						orderItem.getQuantity(), productOptions,
-						projectExternalReferenceCode, false,
+						effectiveEndDate, endDate,
+						missingEntitlementDefinitions, orderItem.getQuantity(),
+						productOptions, projectExternalReferenceCode, false,
 						skuExternalReferenceCode, startDate);
 
 					return;
@@ -978,9 +1005,10 @@ public class EntitlementService extends OneBaseService {
 				}
 
 				_addEntitlements(
-					accountEntryId, commerceOrderItemId, contractId, endDate,
-					missingEntitlementDefinitions, BigDecimal.ONE,
-					productOptions, projectExternalReferenceCode, true,
+					accountEntryId, commerceOrderItemId, contractId,
+					effectiveEndDate, endDate, missingEntitlementDefinitions,
+					BigDecimal.ONE, productOptions,
+					projectExternalReferenceCode, true,
 					skuExternalReferenceCode, startDate);
 			});
 	}
@@ -1028,7 +1056,7 @@ public class EntitlementService extends OneBaseService {
 		);
 
 		return StringBundler.concat(
-			"(endDate eq null or endDate ge ", instant, ") and (", filterString,
+			_getUnexpiredFilterString(instant), " and (", filterString,
 			") and (startDate eq null or startDate le ", instant, ")");
 	}
 
@@ -1188,6 +1216,13 @@ public class EntitlementService extends OneBaseService {
 		}
 
 		return 0;
+	}
+
+	private String _getUnexpiredFilterString(Instant instant) {
+		return StringBundler.concat(
+			"((effectiveEndDate ge ", instant,
+			") or (effectiveEndDate eq null and (endDate eq null or endDate ",
+			"ge ", instant, ")))");
 	}
 
 	private boolean _hasEarlierSelfServiceTrialOrder(

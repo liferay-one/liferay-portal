@@ -103,14 +103,12 @@ public class LicenseKeyGenerateFormService {
 		boolean allowPermanentLicenses, Entitlement entitlement,
 		String licenseEntryType) {
 
-		Instant endDateInstant = entitlement.getEndDateInstant();
-
 		if (!allowPermanentLicenses ||
 			Objects.equals(
 				LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_CLOUD_NATIVE,
 				getLicenseKeyFamily(entitlement))) {
 
-			return endDateInstant;
+			return entitlement.getEffectiveEndDateInstant();
 		}
 
 		if (Objects.equals(
@@ -127,6 +125,8 @@ public class LicenseKeyGenerateFormService {
 					PERMANENT_LICENSE_KEY_DURATION_DAYS,
 				ChronoUnit.DAYS);
 		}
+
+		Instant endDateInstant = entitlement.getEndDateInstant();
 
 		if (endDateInstant == null) {
 			return null;

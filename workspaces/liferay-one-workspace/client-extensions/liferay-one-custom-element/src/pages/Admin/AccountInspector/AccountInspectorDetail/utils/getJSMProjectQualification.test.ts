@@ -132,4 +132,25 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-GETJSMPROJECTQUALIF
 			])
 		).toEqual({nonqualifying: [20, 21], qualifying: []});
 	});
+
+	it('qualifies a project during the grace period after the end date', () => {
+		expect(
+			getQualifyingProjectIds([
+				{
+					effectiveEndDate: '2026-06-15T00:00:00Z',
+					endDate: '2026-05-16T00:00:00Z',
+					id: 1,
+					name: 'active-subscription',
+					r_projectToEntitlement_c_projectId: 20,
+				},
+				{
+					effectiveEndDate: '2026-05-31T00:00:00Z',
+					endDate: '2026-05-01T00:00:00Z',
+					id: 2,
+					name: 'active-subscription',
+					r_projectToEntitlement_c_projectId: 21,
+				},
+			])
+		).toEqual({nonqualifying: [21], qualifying: [20]});
+	});
 });

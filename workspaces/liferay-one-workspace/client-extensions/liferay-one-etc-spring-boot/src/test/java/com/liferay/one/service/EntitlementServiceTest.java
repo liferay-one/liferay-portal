@@ -271,10 +271,11 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
@@ -283,9 +284,9 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.eq(entitlementDefinition.getOveragePricing()),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any()
@@ -329,10 +330,11 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
@@ -341,11 +343,12 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.eq(true), Mockito.any(),
-			Mockito.anyInt(), Mockito.eq("DXP"), Mockito.eq("production"),
-			Mockito.any(), Mockito.eq("liferay-self-hosted-prod-sizing-3"),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.eq(true),
+			Mockito.any(), Mockito.anyInt(), Mockito.eq("DXP"),
+			Mockito.eq("production"), Mockito.any(),
+			Mockito.eq("liferay-self-hosted-prod-sizing-3"), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any()
+			Mockito.any()
 		);
 	}
 
@@ -383,10 +386,11 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
@@ -398,9 +402,9 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			overagePricingArgumentCaptor.capture(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
@@ -453,10 +457,11 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.eq(3.0), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(3.0),
+			Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -536,10 +541,11 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
@@ -548,9 +554,9 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_ORDER_ITEM_ID),
-			Mockito.eq(_CONTRACT_ID), Mockito.eq(1L), Mockito.isNull(),
-			Mockito.anyBoolean(), Mockito.eq("fixed"), Mockito.eq(0),
-			Mockito.any(), Mockito.any(), Mockito.isNull(),
+			Mockito.eq(_CONTRACT_ID), Mockito.eq(1L), Mockito.any(),
+			Mockito.isNull(), Mockito.anyBoolean(), Mockito.eq("fixed"),
+			Mockito.eq(0), Mockito.any(), Mockito.any(), Mockito.isNull(),
 			Mockito.eq("storage"), Mockito.isNull(), Mockito.eq(Map.of()),
 			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE), Mockito.eq(200.0),
 			Mockito.eq(_SKU_EXTERNAL_REFERENCE_CODE), Mockito.isNull()
@@ -590,10 +596,11 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
@@ -602,10 +609,11 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
-			Mockito.eq(2.0), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.eq(2.0), Mockito.any(), Mockito.any()
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.eq(2.0), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(2.0),
+			Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -666,10 +674,11 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 
 		Assertions.assertSame(
@@ -744,10 +753,11 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 
 		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
@@ -756,20 +766,20 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.eq(_ORDER_ITEM_ID), Mockito.anyLong(),
-			Mockito.eq(2L), Mockito.any(), Mockito.anyBoolean(), Mockito.any(),
-			Mockito.anyInt(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.eq(2L), Mockito.any(), Mockito.any(), Mockito.anyBoolean(),
+			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 
 		Mockito.verify(
 			_entitlementService, Mockito.never()
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.eq(1L), Mockito.any(), Mockito.anyBoolean(), Mockito.any(),
-			Mockito.anyInt(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.eq(1L), Mockito.any(), Mockito.any(), Mockito.anyBoolean(),
+			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -789,10 +799,11 @@ public class EntitlementServiceTest {
 			_entitlementService, Mockito.never()
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 
 		Mockito.verify(
@@ -846,10 +857,11 @@ public class EntitlementServiceTest {
 			_entitlementService, Mockito.never()
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -903,10 +915,11 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 
 		_entitlementService.generateOrderEntitlements(_ORDER_ID);
@@ -915,17 +928,17 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.eq(_ORDER_ITEM_ID), Mockito.anyLong(),
-			Mockito.eq(1L), Mockito.any(), Mockito.anyBoolean(), Mockito.any(),
-			Mockito.anyInt(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.eq(1L), Mockito.any(), Mockito.any(), Mockito.anyBoolean(),
+			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 
 		Mockito.verify(
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.eq(_ORDER_ITEM_ID + 1),
-			Mockito.anyLong(), Mockito.eq(1L), Mockito.any(),
+			Mockito.anyLong(), Mockito.eq(1L), Mockito.any(), Mockito.any(),
 			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
@@ -1397,7 +1410,7 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
-	public void testUpdateEntitlementDatesPatchesEndDateAndStartDate()
+	public void testUpdateEntitlementDatesPatchesEffectiveEndDateEndDateAndStartDate()
 		throws Exception {
 
 		_entitlementService.updateEntitlementDates(
@@ -1411,10 +1424,12 @@ public class EntitlementServiceTest {
 		JSONObject jsonObject = new JSONObject(_patchBodies.get(0));
 
 		Assertions.assertEquals(
+			"2026-11-14T00:00:00Z", jsonObject.getString("effectiveEndDate"));
+		Assertions.assertEquals(
 			"2026-11-14T00:00:00Z", jsonObject.getString("endDate"));
 		Assertions.assertEquals(
 			"2026-10-15T00:00:00Z", jsonObject.getString("startDate"));
-		Assertions.assertEquals(2, jsonObject.length());
+		Assertions.assertEquals(3, jsonObject.length());
 	}
 
 	@Test
@@ -1539,6 +1554,42 @@ public class EntitlementServiceTest {
 
 		Assertions.assertEquals(200.0, jsonObject.getDouble("quantity"));
 		Assertions.assertEquals(1, jsonObject.length());
+	}
+
+	@Test
+	public void testUpdateEntitlementsSyncsTheGracePeriod() throws Exception {
+		OrderItem orderItem = _createOrderItem();
+
+		orderItem.setCustomFields(
+			new CustomField[] {
+				_createCustomField("effectiveEndDate", "2026-12-01T00:00:00Z"),
+				_createCustomField("endDate", "2026-11-01T00:00:00Z"),
+				_createCustomField("startDate", "2025-11-01T00:00:00Z")
+			});
+
+		_setUpOrderItem(orderItem);
+
+		Mockito.doReturn(
+			List.of(
+				_createEntitlementWithDates(
+					11, "2025-11-01T00:00:00Z", "2026-10-31T00:00:00Z"))
+		).when(
+			_entitlementService
+		).getEntitlements(
+			_ORDER_ITEM_ID
+		);
+
+		_entitlementService.updateEntitlements(_ORDER_ITEM_ID);
+
+		Assertions.assertEquals(1, _patchBodies.size());
+
+		JSONObject jsonObject = new JSONObject(_patchBodies.get(0));
+
+		Assertions.assertEquals(
+			"2026-12-01T00:00:00Z", jsonObject.getString("effectiveEndDate"));
+		Assertions.assertEquals(
+			"2026-11-01T00:00:00Z", jsonObject.getString("endDate"));
+		Assertions.assertEquals(2, jsonObject.length());
 	}
 
 	@Test
@@ -1842,10 +1893,11 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -1904,10 +1956,11 @@ public class EntitlementServiceTest {
 			_entitlementService, Mockito.never()
 		).addEntitlement(
 			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
-			Mockito.anyLong(), Mockito.any(), Mockito.anyBoolean(),
-			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -1936,7 +1989,7 @@ public class EntitlementServiceTest {
 			_entitlementService
 		).addEntitlement(
 			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_ORDER_ITEM_ID),
-			Mockito.anyLong(), Mockito.eq(1L), Mockito.any(),
+			Mockito.anyLong(), Mockito.eq(1L), Mockito.any(), Mockito.any(),
 			Mockito.anyBoolean(), Mockito.eq("fixed"),
 			Mockito.eq(licenseKeyDurationDays), Mockito.any(), Mockito.any(),
 			Mockito.any(), Mockito.eq("cmp-trial"), Mockito.any(),

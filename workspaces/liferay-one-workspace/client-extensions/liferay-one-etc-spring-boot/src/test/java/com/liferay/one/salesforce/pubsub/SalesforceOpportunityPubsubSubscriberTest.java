@@ -689,6 +689,65 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveDoesNotWarnWhenLineEndsOnTheLastDayOfContract()
+		throws Exception {
+
+		Mockito.when(
+			_contractService.fetchLatestContractByOpportunityId(
+				Mockito.anyString())
+		).thenReturn(
+			new Contract(
+				new JSONObject(
+				).put(
+					"endDate", "2025-06-01T00:00:00Z"
+				).put(
+					"id", 999L
+				))
+		);
+
+		JSONObject opportunityJSONObject =
+			SalesforceModelTestUtil.createOpportunityJSONObject(
+				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "", "",
+				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+
+		JSONObject lineItemJSONObject =
+			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+				"USD", "2025-06-01", "LINE-1", "PROD-1", "Widget",
+				"Subscription", 5, null);
+
+		JSONObject recordJSONObject =
+			SalesforceModelTestUtil.createOpportunityRecordJSONObject(
+				SalesforceModelTestUtil.createAccountJSONObject(
+					_ACCOUNT_ID_SF, "Test Salesforce Account"),
+				opportunityJSONObject,
+				new JSONArray(
+				).put(
+					lineItemJSONObject
+				),
+				new JSONArray(), null);
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService, Mockito.atMost(1)
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		for (List<String> warningMessages :
+				warningMessagesArgumentCaptor.getAllValues()) {
+
+			Assertions.assertFalse(
+				_containsSubstring(
+					"differs from the end date of contract", warningMessages));
+		}
+	}
+
+	@Test
 	public void testReceiveDoesNothingWhenRecordsArrayIsEmpty()
 		throws Exception {
 

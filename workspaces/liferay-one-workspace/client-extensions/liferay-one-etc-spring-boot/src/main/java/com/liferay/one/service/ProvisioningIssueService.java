@@ -19,6 +19,9 @@ import com.liferay.portal.kernel.util.StackTraceUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -138,7 +141,9 @@ public class ProvisioningIssueService {
 							salesforceOpportunityLineItem.
 								getServiceDateInstant(),
 							" - ",
-							salesforceOpportunityLineItem.getEndDateInstant()),
+							_getLastDayInstant(
+								salesforceOpportunityLineItem.
+									getEndDateInstant())),
 						false)
 				).put(
 					JiraDocumentUtil.createHorizontalRule()
@@ -299,6 +304,14 @@ public class ProvisioningIssueService {
 				"Unable to add Jira issue for the provisioning error",
 				exception2);
 		}
+	}
+
+	private Instant _getLastDayInstant(Instant endDateInstant) {
+		if (endDateInstant == null) {
+			return null;
+		}
+
+		return endDateInstant.minus(1, ChronoUnit.DAYS);
 	}
 
 	private void _putJiraOrganizationCustomFields(
