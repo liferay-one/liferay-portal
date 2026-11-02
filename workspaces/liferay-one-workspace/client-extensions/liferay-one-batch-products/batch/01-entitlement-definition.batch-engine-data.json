@@ -2795,6 +2795,14 @@
 		{
 			"active": true,
 			"defaultQuantity": 1,
+			"displayName": "Premium Subscription",
+			"externalReferenceCode": "premium-subscription",
+			"maxQuantity": 1,
+			"name": "premium-subscription"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
 			"displayName": "Production Environments",
 			"externalReferenceCode": "production-environments",
 			"maxQuantity": 1,
