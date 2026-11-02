@@ -99,6 +99,9 @@ public class EntitlementConstants {
 	public static final String NAME_PREMIER_24_7_SUPPORT =
 		"premier-24-7-support";
 
+	public static final String NAME_PREMIUM_SUBSCRIPTION =
+		"premium-subscription";
+
 	public static final String NAME_PRODUCTION_ENVIRONMENTS =
 		"production-environments";
 
@@ -155,8 +158,9 @@ public class EntitlementConstants {
 			NAME_GLOBAL_24_7_SUPPORT, NAME_GLOBAL_SUPPORT, NAME_GOLD_SUPPORT,
 			NAME_LIFERAY_SAAS_SUPPORT, NAME_LIMITED_SUPPORT,
 			NAME_PLATINUM_SUPPORT, NAME_PREMIER_24_7_SUPPORT,
-			NAME_SELF_SERVICE_SUPPORT, NAME_STANDARD_8_5_SUPPORT,
-			NAME_STANDARD_SUPPORT, NAME_STRATEGIC_24_7_SUPPORT));
+			NAME_PREMIUM_SUBSCRIPTION, NAME_SELF_SERVICE_SUPPORT,
+			NAME_STANDARD_8_5_SUPPORT, NAME_STANDARD_SUPPORT,
+			NAME_STRATEGIC_24_7_SUPPORT));
 	public static final List<String> terminationStatuses =
 		Collections.unmodifiableList(
 			Arrays.asList(
