@@ -772,6 +772,11 @@
 			"skuExternalReferenceCode": "01tVO000000jLLGYA2"
 		},
 		{
+			"externalReferenceCode": "active-subscription_01t4u00000dZBxIAAW",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "active-subscription",
+			"skuExternalReferenceCode": "01t4u00000dZBxIAAW"
+		},
+		{
 			"externalReferenceCode": "active-subscription_01tVO00000MWE86YAH",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "active-subscription",
 			"skuExternalReferenceCode": "01tVO00000MWE86YAH"
@@ -6765,6 +6770,11 @@
 			"externalReferenceCode": "premier-24-7-support_01tVO00000QYrklYAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "premier-24-7-support",
 			"skuExternalReferenceCode": "01tVO00000QYrklYAD"
+		},
+		{
+			"externalReferenceCode": "premium-subscription_01t4u00000dZBxIAAW",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "premium-subscription",
+			"skuExternalReferenceCode": "01t4u00000dZBxIAAW"
 		},
 		{
 			"externalReferenceCode": "production-environments_01tVO00000QYrl0YAD",
