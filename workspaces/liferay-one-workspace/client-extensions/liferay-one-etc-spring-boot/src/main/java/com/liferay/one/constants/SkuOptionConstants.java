@@ -21,4 +21,6 @@ public class SkuOptionConstants {
 
 	public static final String VALUE_CONSUMPTION_ROLE_OVERAGE = "overage";
 
+	public static final String VALUE_PREFIX_LICENSE_USAGE_TYPE_PLAN = "plan-";
+
 }

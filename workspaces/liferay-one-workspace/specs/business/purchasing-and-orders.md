@@ -98,7 +98,7 @@ Terms used in this file:
 | --- | --- | --- | --- | --- |
 | REQ-ORDERS-070 | An app order takes its order type from the app type specification: `ai-hub`, `client-extension`, `cloud`, `composite-app`, `dxp`, `low-code-configuration`, `other`, or `ssa-saas`. An unknown app type gives the order type `NOTYPE`. An SEO Studio order is always `SEO_STUDIO`. | P1 | LPD-102451 | `MOD-GETPRODUCTORDERTYPES`, `CLIENT-COMMERCE-PRODUCTPURCHASEAPP` |
 | REQ-ORDERS-071 | The system defines 19 order types, and all of them are active. | P2 | LPD-102451 | — |
-| REQ-ORDERS-072 | An order from Salesforce gets an order type only when all its products agree: `cmp` gives `CMP`, `dsr` gives `DSR`, and `liferay-data-platform` gives `LDP`. A mix of types leaves the order type empty and logs a warning. | P1 | LPD-88254 | `SUB-SALESFORCEOPPORTUNITYPUBSUBSUBSCRIBER`, `FLOW-SALESFORCE-ORDER-SYNC` |
+| REQ-ORDERS-072 | An order from Salesforce gets an order type only when all its products agree: `cmp` gives `CMP`, `dsr` gives `DSR`, and `liferay-data-platform` gives `LDP`. An `ai-hub` product gives `AI_HUB` only for a SKU that sells a plan (`plan-activate` or `plan-studio`). Its token and trial SKUs give no type. A mix of types leaves the order type empty and logs a warning. | P1 | LPD-88254, LPD-111800 | `SUB-SALESFORCEOPPORTUNITYPUBSUBSUBSCRIBER`, `FLOW-SALESFORCE-ORDER-SYNC` |
 | REQ-ORDERS-073 | A buyer can download an order of type `CLIENT_EXTENSION`, `COMPOSITE_APP`, `DXP_APP`, `LOW_CODE_CONFIGURATION`, or `OTHER`. A buyer can generate licenses only for a paid order of type `CLIENT_EXTENSION`, `COMPOSITE_APP`, or `DXP_APP`. | P0 | — | `CLIENT-MODELS-DELIVERYORDERMODEL` |
 
 ## Order Status Labels

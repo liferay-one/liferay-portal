@@ -96,7 +96,7 @@ sequenceDiagram
 | Order `salesforceProjectId` | `ProjectId` of the opportunity | `_getCustomFields` |
 | Order `salesforceOpportunityId` | Opportunity ID | `_getCustomFields` |
 | Order `renewal`, `opportunityType`, `opportunityStageName`, `parentOpportunityId` | From the opportunity | `_getCustomFields` |
-| Order type | `CMP`, `DSR`, or `LDP` when all SKUs share one `solution-type` specification, otherwise none | `_getOrderTypeExternalReferenceCode` (`CommerceOrderService.java:1326`) |
+| Order type | `CMP`, `DSR`, or `LDP` when all SKUs share one `solution-type` specification, and `AI_HUB` when an AI Hub plan SKU is the only type (AI Hub token and trial SKUs add no type), otherwise none | `_getOrderTypeExternalReferenceCode` (`CommerceOrderService.java:1633`) |
 | Order total | Sum of line item `TotalPrice`, or not set when the sum is negative | `_getTotal` (`CommerceOrderService.java:1525`) |
 | Order item ERC | Salesforce line item ID | `CommerceOrderItemService.upsertOrderItem` (`…/one/service/CommerceOrderItemService.java:91`) |
 | Order item SKU | `Product2Id`, which is the SKU ERC | `upsertOrderItem` |
@@ -191,6 +191,8 @@ sequenceDiagram
 ### AI Hub Orders Loop Through Salesforce
 
 An `AI_HUB` order in pending status triggers `createAIHubOpportunity` (`CommerceOrderService.java:254`). The sidecar posts a Salesforce opportunity, renames the order ERC to the new opportunity ID, and renames each order item ERC to its Salesforce line item ID (`_createSalesforceOpportunity`, `CommerceOrderService.java:908`). When Salesforce later sends the closed won message, Source 1 finds the same order and items by ERC, completes the order, and provisions AI Hub. The ERCs are what keep this from creating a second order.
+
+An AI Hub sale that starts in Salesforce has no order in One. Source 1 creates an `AI_HUB` order and, before it completes the order, writes into the order metadata the Salesforce opportunity ID, the project, the tier of the plan SKU, and an AI Hub form (`updateAIHubOrderMetadata`). The form takes the tenant name from `AI_Hub_Account_Name__c` of the project and the administrator from the project contact with the `AI Hub Administrator` role. The opportunity ID stops `createAIHubOpportunity` from posting a second opportunity. A renewal or an amendment gets no form, so it does not provision AI Hub again. Without the project, the tenant name, or the administrator, the order completes with no tenant and the subscriber logs a warning.
 
 ## Source 3: Trials and Free Keys
 
