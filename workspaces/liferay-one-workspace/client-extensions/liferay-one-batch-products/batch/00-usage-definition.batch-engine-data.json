@@ -12,6 +12,12 @@
 	},
 	"items": [
 		{
+			"aggregationType": "sum",
+			"externalReferenceCode": "ai-tokens-monthly",
+			"period": "per month",
+			"unit": "AI tokens"
+		},
+		{
 			"aggregationType": "peak",
 			"externalReferenceCode": "experience-database-monthly",
 			"overageBucketSize": 1,

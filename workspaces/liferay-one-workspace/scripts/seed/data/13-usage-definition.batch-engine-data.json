@@ -11,12 +11,6 @@
 	},
 	"items": [
 		{
-			"aggregationType": "sum",
-			"externalReferenceCode": "ai-tokens-monthly",
-			"period": "per month",
-			"unit": "AI tokens"
-		},
-		{
 			"aggregationType": "count",
 			"externalReferenceCode": "api-requests-monthly",
 			"period": "per month",

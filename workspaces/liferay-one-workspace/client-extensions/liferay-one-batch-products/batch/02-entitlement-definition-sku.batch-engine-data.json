@@ -307,6 +307,21 @@
 			"skuExternalReferenceCode": "01tVO00000QYrkfYAD"
 		},
 		{
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE_TOKENS_01tVO00000TVrljYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_ACTIVATE_TOKENS",
+			"skuExternalReferenceCode": "01tVO00000TVrljYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO_TOKENS_01tVO00000UlE1RYAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_STUDIO_TOKENS",
+			"skuExternalReferenceCode": "01tVO00000UlE1RYAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_TOKENS_01tVO00000TVrlhYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_TOKENS",
+			"skuExternalReferenceCode": "01tVO00000TVrlhYAD"
+		},
+		{
 			"externalReferenceCode": "C_ENT_DEF_ANALYTICS_CLOUD_01t4u00000fKEejAAG",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_ANALYTICS_CLOUD",
 			"skuExternalReferenceCode": "01t4u00000fKEejAAG"
@@ -435,6 +450,21 @@
 			"externalReferenceCode": "C_ENT_DEF_LIFERAY_PAAS_BUSINESS_01t4u00000dchPoAAI",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_LIFERAY_PAAS_BUSINESS",
 			"skuExternalReferenceCode": "01t4u00000dchPoAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_20000_01tVO00000TVrllYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_LR_TOKENS_20000",
+			"skuExternalReferenceCode": "01tVO00000TVrllYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_50000_01tVO00000TVrlmYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_LR_TOKENS_50000",
+			"skuExternalReferenceCode": "01tVO00000TVrlmYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_5000_01tVO00000TVrlkYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_LR_TOKENS_5000",
+			"skuExternalReferenceCode": "01tVO00000TVrlkYAD"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_MANAGED_SERVICES_BASE_01tVO000005Hh2TYAS",
