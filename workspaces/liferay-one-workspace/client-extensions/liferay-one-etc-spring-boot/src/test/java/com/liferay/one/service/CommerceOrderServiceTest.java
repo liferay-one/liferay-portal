@@ -27,6 +27,7 @@ import com.liferay.one.model.Environment;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
+import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
@@ -2467,6 +2468,64 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testGetOrderTypeExternalReferenceCodeForAIHubPlan()
+		throws Exception {
+
+		_setUpAIHubSku("01tVO00000TVrljYAD", "activate");
+
+		Assertions.assertEquals(
+			"AI_HUB",
+			(String)ReflectionTestUtils.invokeMethod(
+				_commerceOrderService, "_getOrderTypeExternalReferenceCode",
+				"OPP-1",
+				List.of(
+					_createSalesforceOpportunityLineItem(
+						"01tVO00000TVrljYAD"))));
+	}
+
+	@Test
+	public void testGetOrderTypeExternalReferenceCodeForAIHubPlanAndCMP()
+		throws Exception {
+
+		_setUpAIHubSku("01tVO00000TVrljYAD", "activate");
+
+		Mockito.when(
+			_commerceSkuService.fetchProductId("PRDCT-CMP")
+		).thenReturn(
+			9L
+		);
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(9L)
+		).thenReturn(
+			_createProduct("cmp")
+		);
+
+		Assertions.assertNull(
+			(String)ReflectionTestUtils.invokeMethod(
+				_commerceOrderService, "_getOrderTypeExternalReferenceCode",
+				"OPP-1",
+				List.of(
+					_createSalesforceOpportunityLineItem("01tVO00000TVrljYAD"),
+					_createSalesforceOpportunityLineItem("PRDCT-CMP"))));
+	}
+
+	@Test
+	public void testGetOrderTypeExternalReferenceCodeForAIHubTokens()
+		throws Exception {
+
+		_setUpAIHubSku("01tVO00000TVrlkYAD", null);
+
+		Assertions.assertNull(
+			(String)ReflectionTestUtils.invokeMethod(
+				_commerceOrderService, "_getOrderTypeExternalReferenceCode",
+				"OPP-1",
+				List.of(
+					_createSalesforceOpportunityLineItem(
+						"01tVO00000TVrlkYAD"))));
+	}
+
+	@Test
 	public void testGetOrderTypeExternalReferenceCodeFromSolutionType()
 		throws Exception {
 
@@ -2897,6 +2956,62 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testProvisionAIHubPutsTheAdministratorNamesOfTheAIHubForm()
+		throws Exception {
+
+		Order order = _createProvisionableAIHubOrder();
+
+		Map<String, String> customFields =
+			(Map<String, String>)order.getCustomFields();
+
+		JSONObject orderMetadataJSONObject = new JSONObject(
+			customFields.get("order-metadata"));
+
+		JSONObject aiHubFormJSONObject = orderMetadataJSONObject.getJSONObject(
+			"aiHubForm");
+
+		aiHubFormJSONObject.put(
+			"administratorFirstName", "Jane"
+		).put(
+			"administratorLastName", "Doe"
+		);
+
+		customFields.put("order-metadata", orderMetadataJSONObject.toString());
+
+		_whenFetchContract("a1tTEST");
+		_whenFetchProject(_ACCOUNT_ID);
+
+		Mockito.doReturn(
+			new JSONObject(
+			).put(
+				"accountEntryId", 4321L
+			)
+		).when(
+			_aiHubService
+		).provision(
+			ArgumentMatchers.any()
+		);
+
+		ReflectionTestUtils.invokeMethod(
+			_commerceOrderService, "_provisionAiHub", order);
+
+		ArgumentCaptor<JSONObject> jsonObjectArgumentCaptor =
+			ArgumentCaptor.forClass(JSONObject.class);
+
+		Mockito.verify(
+			_aiHubService
+		).putAIHubEnvironment(
+			ArgumentMatchers.eq("AI-HUB-a1tTEST"),
+			jsonObjectArgumentCaptor.capture()
+		);
+
+		JSONObject jsonObject = jsonObjectArgumentCaptor.getValue();
+
+		Assertions.assertEquals("Jane", jsonObject.getString("adminFirstName"));
+		Assertions.assertEquals("Doe", jsonObject.getString("adminLastName"));
+	}
+
+	@Test
 	public void testProvisionAIHubSkipsProjectOfAnotherAccount()
 		throws Exception {
 
@@ -2918,6 +3033,165 @@ public class CommerceOrderServiceTest {
 		).putAIHubEnvironment(
 			ArgumentMatchers.anyString(), ArgumentMatchers.any()
 		);
+	}
+
+	@Test
+	public void testUpdateAIHubOrderMetadataKeepsTheCheckoutForm()
+		throws Exception {
+
+		_setUpUpdateAIHubOrderMetadata(
+			"{\"aiHubForm\": {\"aiHubAccountName\": \"Checkout\"}}");
+
+		Assertions.assertTrue(
+			_commerceOrderService.updateAIHubOrderMetadata(
+				"Acme AI", _ORDER_ID,
+				_createAIHubSalesforceOpportunity("PRJCT-AIHUB"),
+				List.of(
+					_createSalesforceOpportunityLineItem("01tVO00000TVrljYAD")),
+				_createAdministratorSalesforceProjectContactRole()));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
+	}
+
+	@Test
+	public void testUpdateAIHubOrderMetadataSkipsOtherOrderTypes()
+		throws Exception {
+
+		Mockito.doReturn(
+			_createOrder(
+				CommerceOrderConstants.ORDER_STATUS_OPEN, "CMP",
+				_PAYMENT_STATUS_PENDING)
+		).when(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			_ORDER_ID
+		);
+
+		Assertions.assertFalse(
+			_commerceOrderService.updateAIHubOrderMetadata(
+				"Acme AI", _ORDER_ID,
+				_createAIHubSalesforceOpportunity("PRJCT-AIHUB"),
+				List.of(
+					_createSalesforceOpportunityLineItem("01tVO00000TVrljYAD")),
+				_createAdministratorSalesforceProjectContactRole()));
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
+	}
+
+	@Test
+	public void testUpdateAIHubOrderMetadataWhenAdministratorIsNull()
+		throws Exception {
+
+		_setUpUpdateAIHubOrderMetadata("{}");
+
+		Assertions.assertFalse(
+			_commerceOrderService.updateAIHubOrderMetadata(
+				"Acme AI", _ORDER_ID,
+				_createAIHubSalesforceOpportunity("PRJCT-AIHUB"),
+				List.of(
+					_createSalesforceOpportunityLineItem("01tVO00000TVrljYAD")),
+				null));
+
+		JSONObject orderMetadataJSONObject =
+			_captureAIHubOrderMetadataJSONObject();
+
+		Assertions.assertFalse(orderMetadataJSONObject.has("aiHubForm"));
+		Assertions.assertEquals(
+			"006AIHUB",
+			orderMetadataJSONObject.getString("salesforceOpportunityId"));
+	}
+
+	@Test
+	public void testUpdateAIHubOrderMetadataWhenProjectIsNull()
+		throws Exception {
+
+		_setUpUpdateAIHubOrderMetadata("{}");
+
+		Assertions.assertFalse(
+			_commerceOrderService.updateAIHubOrderMetadata(
+				"Acme AI", _ORDER_ID, _createAIHubSalesforceOpportunity(null),
+				List.of(
+					_createSalesforceOpportunityLineItem("01tVO00000TVrljYAD")),
+				_createAdministratorSalesforceProjectContactRole()));
+
+		JSONObject orderMetadataJSONObject =
+			_captureAIHubOrderMetadataJSONObject();
+
+		Assertions.assertFalse(orderMetadataJSONObject.has("aiHubForm"));
+		Assertions.assertEquals(
+			"006AIHUB",
+			orderMetadataJSONObject.getString("salesforceOpportunityId"));
+	}
+
+	@Test
+	public void testUpdateAIHubOrderMetadataWhenTierIsNull() throws Exception {
+		_setUpUpdateAIHubOrderMetadata("{}");
+
+		_setUpAIHubSku("01tVO00000TVrlkYAD", null);
+
+		Assertions.assertTrue(
+			_commerceOrderService.updateAIHubOrderMetadata(
+				"Acme AI", _ORDER_ID,
+				_createAIHubSalesforceOpportunity("PRJCT-AIHUB"),
+				List.of(
+					_createSalesforceOpportunityLineItem("01tVO00000TVrlkYAD")),
+				_createAdministratorSalesforceProjectContactRole()));
+
+		JSONObject orderMetadataJSONObject =
+			_captureAIHubOrderMetadataJSONObject();
+
+		Assertions.assertFalse(orderMetadataJSONObject.has("tier"));
+	}
+
+	@Test
+	public void testUpdateAIHubOrderMetadataWritesTheAIHubForm()
+		throws Exception {
+
+		_setUpUpdateAIHubOrderMetadata("{}");
+
+		Assertions.assertTrue(
+			_commerceOrderService.updateAIHubOrderMetadata(
+				"Acme AI", _ORDER_ID,
+				_createAIHubSalesforceOpportunity("PRJCT-AIHUB"),
+				List.of(
+					_createSalesforceOpportunityLineItem("01tVO00000TVrljYAD")),
+				_createAdministratorSalesforceProjectContactRole()));
+
+		JSONObject orderMetadataJSONObject =
+			_captureAIHubOrderMetadataJSONObject();
+
+		JSONObject aiHubFormJSONObject = orderMetadataJSONObject.getJSONObject(
+			"aiHubForm");
+
+		Assertions.assertEquals(
+			"admin@acme.com",
+			aiHubFormJSONObject.getString("administratorEmailAddress"));
+		Assertions.assertEquals(
+			"Jane", aiHubFormJSONObject.getString("administratorFirstName"));
+		Assertions.assertEquals(
+			"Doe", aiHubFormJSONObject.getString("administratorLastName"));
+		Assertions.assertEquals(
+			"Acme AI", aiHubFormJSONObject.getString("aiHubAccountName"));
+		Assertions.assertEquals(
+			"PRJCT-AIHUB",
+			aiHubFormJSONObject.getString("salesforceProjectId"));
+
+		Assertions.assertEquals(
+			"006AIHUB",
+			orderMetadataJSONObject.getString("salesforceOpportunityId"));
+		Assertions.assertEquals(
+			"PRJCT-AIHUB",
+			orderMetadataJSONObject.getString("salesforceProjectId"));
+		Assertions.assertEquals(
+			"activate", orderMetadataJSONObject.getString("tier"));
 	}
 
 	@Test
@@ -3089,6 +3363,21 @@ public class CommerceOrderServiceTest {
 		return orderResource;
 	}
 
+	private JSONObject _captureAIHubOrderMetadataJSONObject() throws Exception {
+		ArgumentCaptor<Map<String, ?>> customFieldsArgumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			ArgumentMatchers.eq(_ORDER_ID), customFieldsArgumentCaptor.capture()
+		);
+
+		Map<String, ?> customFields = customFieldsArgumentCaptor.getValue();
+
+		return new JSONObject((String)customFields.get("order-metadata"));
+	}
+
 	private Environment _createAIHubEnvironment(
 		long accountEntryId, String externalEnvironmentId,
 		String externalReferenceCode) {
@@ -3113,6 +3402,34 @@ public class CommerceOrderServiceTest {
 		_setAIHubOrderFields(order, orderMetadata);
 
 		return order;
+	}
+
+	private SalesforceOpportunity _createAIHubSalesforceOpportunity(
+		String projectId) {
+
+		return new SalesforceOpportunity(
+			new JSONObject(
+			).put(
+				"Id", "006AIHUB"
+			).put(
+				"Project__c", projectId
+			));
+	}
+
+	private SalesforceProjectContactRole
+		_createAdministratorSalesforceProjectContactRole() {
+
+		return new SalesforceProjectContactRole(
+			new JSONObject(
+			).put(
+				"Contact__r.Email", "admin@acme.com"
+			).put(
+				"Contact__r.FirstName", "Jane"
+			).put(
+				"Contact__r.LastName", "Doe"
+			).put(
+				"Contact_Role__c", "AI Hub Administrator"
+			));
 	}
 
 	private Order _createAIHubTokenOrder() {
@@ -3399,6 +3716,48 @@ public class CommerceOrderServiceTest {
 		).build();
 
 		order.setCustomFields(() -> customFields);
+	}
+
+	private void _setUpAIHubSku(String skuExternalReferenceCode, String tier)
+		throws Exception {
+
+		Mockito.when(
+			_commerceSkuService.fetchProductId(skuExternalReferenceCode)
+		).thenReturn(
+			8L
+		);
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(8L)
+		).thenReturn(
+			_createProduct("ai-hub")
+		);
+
+		Mockito.when(
+			_commerceSkuService.fetchAIHubTier(skuExternalReferenceCode)
+		).thenReturn(
+			tier
+		);
+	}
+
+	private void _setUpUpdateAIHubOrderMetadata(String orderMetadata)
+		throws Exception {
+
+		Order order = _createOrder(
+			CommerceOrderConstants.ORDER_STATUS_OPEN, "AI_HUB",
+			_PAYMENT_STATUS_PENDING);
+
+		_setAIHubOrderFields(order, orderMetadata);
+
+		Mockito.doReturn(
+			order
+		).when(
+			_commerceOrderService
+		).fetchCommerceOrder(
+			_ORDER_ID
+		);
+
+		_setUpAIHubSku("01tVO00000TVrljYAD", "activate");
 	}
 
 	private OrderResource _upsertProjectEntitlementOrder(Order sourceOrder)

@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
 
 import org.mockito.Mockito;
 
+import org.springframework.test.util.ReflectionTestUtils;
+
 /**
  * @author Drew Brokke
  */
@@ -25,6 +27,67 @@ public class CommerceSkuServiceTest {
 	@BeforeEach
 	public void setUp() {
 		_commerceSkuService = Mockito.spy(new CommerceSkuService());
+
+		ReflectionTestUtils.setField(
+			_commerceSkuService, "_commerceSkuService", _commerceSkuService);
+	}
+
+	@Test
+	public void testFetchAIHubTierIsNullForTokenBlock() throws Exception {
+		_setUpSku(
+			_createSku(
+				_createSkuOption("dxp-license-usage-type", "5000-lr-tokens")));
+
+		Assertions.assertNull(
+			_commerceSkuService.fetchAIHubTier(_SKU_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testFetchAIHubTierIsNullForTrial() throws Exception {
+		_setUpSku(
+			_createSku(
+				_createSkuOption("dxp-license-usage-type", "plan-trial")));
+
+		Assertions.assertNull(
+			_commerceSkuService.fetchAIHubTier(_SKU_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testFetchAIHubTierIsNullWithoutOptions() throws Exception {
+		_setUpSku(_createSku((SkuOption[])null));
+
+		Assertions.assertNull(
+			_commerceSkuService.fetchAIHubTier(_SKU_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testFetchAIHubTierIsNullWithoutSku() throws Exception {
+		_setUpSku(null);
+
+		Assertions.assertNull(
+			_commerceSkuService.fetchAIHubTier(_SKU_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testFetchAIHubTierReadsActivate() throws Exception {
+		_setUpSku(
+			_createSku(
+				_createSkuOption("dxp-license-usage-type", "plan-activate")));
+
+		Assertions.assertEquals(
+			"activate",
+			_commerceSkuService.fetchAIHubTier(_SKU_EXTERNAL_REFERENCE_CODE));
+	}
+
+	@Test
+	public void testFetchAIHubTierReadsStudio() throws Exception {
+		_setUpSku(
+			_createSku(
+				_createSkuOption("dxp-license-usage-type", "plan-studio")));
+
+		Assertions.assertEquals(
+			"studio",
+			_commerceSkuService.fetchAIHubTier(_SKU_EXTERNAL_REFERENCE_CODE));
 	}
 
 	@Test
