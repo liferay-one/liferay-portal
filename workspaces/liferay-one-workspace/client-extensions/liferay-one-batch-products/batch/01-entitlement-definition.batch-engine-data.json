@@ -1729,6 +1729,14 @@
 		},
 		{
 			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Content Marketing Platform",
+			"externalReferenceCode": "content-marketing-platform",
+			"maxQuantity": 1,
+			"name": "content-marketing-platform"
+		},
+		{
+			"active": true,
 			"defaultQuantity": 100,
 			"displayName": "Database Size",
 			"externalReferenceCode": "database-size_100",
@@ -2092,6 +2100,14 @@
 			"externalReferenceCode": "liferay-commerce-prod-sizing-4",
 			"maxQuantity": 1,
 			"name": "liferay-commerce-prod-sizing-4"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 1,
+			"displayName": "Liferay Data Platform",
+			"externalReferenceCode": "liferay-data-platform",
+			"maxQuantity": 1,
+			"name": "liferay-data-platform"
 		},
 		{
 			"active": true,

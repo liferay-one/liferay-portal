@@ -2177,6 +2177,26 @@
 			"skuExternalReferenceCode": "01tVO00000QaVMsYAN"
 		},
 		{
+			"externalReferenceCode": "ai-hub_01tVO00000TVrlhYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "ai-hub",
+			"skuExternalReferenceCode": "01tVO00000TVrlhYAD"
+		},
+		{
+			"externalReferenceCode": "ai-hub_01tVO00000TVrliYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "ai-hub",
+			"skuExternalReferenceCode": "01tVO00000TVrliYAD"
+		},
+		{
+			"externalReferenceCode": "ai-hub_01tVO00000TVrljYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "ai-hub",
+			"skuExternalReferenceCode": "01tVO00000TVrljYAD"
+		},
+		{
+			"externalReferenceCode": "ai-hub_01tVO00000UlE1RYAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "ai-hub",
+			"skuExternalReferenceCode": "01tVO00000UlE1RYAV"
+		},
+		{
 			"externalReferenceCode": "apv_1000000_01t4u00000f7jQnAAI",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "apv_1000000",
 			"skuExternalReferenceCode": "01t4u00000f7jQnAAI"
@@ -2315,6 +2335,11 @@
 			"externalReferenceCode": "content-management-system_01tVO00000QYrkVYAT",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "content-management-system",
 			"skuExternalReferenceCode": "01tVO00000QYrkVYAT"
+		},
+		{
+			"externalReferenceCode": "content-marketing-platform_01tVO00000UccNzYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "content-marketing-platform",
+			"skuExternalReferenceCode": "01tVO00000UccNzYAJ"
 		},
 		{
 			"externalReferenceCode": "database-size_100_01t0g00000UvVonAAF",
@@ -3205,6 +3230,11 @@
 			"externalReferenceCode": "digital-asset-management_01tVO00000QYrkWYAT",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "digital-asset-management",
 			"skuExternalReferenceCode": "01tVO00000QYrkWYAT"
+		},
+		{
+			"externalReferenceCode": "digital-sales-room_01tVO00000UccNyYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "digital-sales-room",
+			"skuExternalReferenceCode": "01tVO00000UccNyYAJ"
 		},
 		{
 			"externalReferenceCode": "document-library-size_100_01t0g00000UvVonAAF",
@@ -5480,6 +5510,11 @@
 			"externalReferenceCode": "liferay-commerce_01tVO00000QYrkUYAT",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-commerce",
 			"skuExternalReferenceCode": "01tVO00000QYrkUYAT"
+		},
+		{
+			"externalReferenceCode": "liferay-data-platform_01tVO00000UccNxYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-data-platform",
+			"skuExternalReferenceCode": "01tVO00000UccNxYAJ"
 		},
 		{
 			"externalReferenceCode": "liferay-enterprise-search_01t0g00000aN0VrAAK",
