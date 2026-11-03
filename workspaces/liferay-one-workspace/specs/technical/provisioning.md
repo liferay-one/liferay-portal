@@ -210,9 +210,9 @@ The file order respects all 12 edges. No file references an entity that a later 
 
 | File | Entity | Items | Create, Update in the File | Depends On |
 | --- | --- | --- | --- | --- |
-| `00-usage-definition` | `C_USAGE_DEFINITION` | 8 | `UPSERT`, `UPDATE` | batch `03` |
-| `01-entitlement-definition` | `C_ENTITLEMENT_DEFINITION` | 335 | `UPSERT`, `UPDATE` | batch `03`, `04`; `00` (8 usage definitions) |
-| `02-entitlement-definition-sku` | `C_ENTITLEMENT_DEFINITION_SKU` | 1,436 | `UPSERT`, `UPDATE` | batch `03`, `04`; `01` (335 definitions) |
+| `00-usage-definition` | `C_USAGE_DEFINITION` | 9 | `UPSERT`, `UPDATE` | batch `03` |
+| `01-entitlement-definition` | `C_ENTITLEMENT_DEFINITION` | 348 | `UPSERT`, `UPDATE` | batch `03`, `04`; `00` (9 usage definitions) |
+| `02-entitlement-definition-sku` | `C_ENTITLEMENT_DEFINITION_SKU` | 1,953 | `UPSERT`, `UPDATE` | batch `03`, `04`; `01` (348 definitions) |
 | `03-commerce-option` | `Option` | 49 | `INSERT`, `PARTIAL_UPDATE` | nothing |
 | `04-commerce-specification` | `Specification` | 62 | `UPSERT`, `PARTIAL_UPDATE` | batch `08` (5 option categories) |
 | `05-commerce-product` | `Product` | 48 | `UPSERT`, `PARTIAL_UPDATE` | batch `06`, `09`; `03`, `04` |
@@ -239,11 +239,11 @@ The object entry files use the `com.liferay.object.rest.dto.v1_0.ObjectEntry` cl
 | `09-publisher-account-request` | `C_PUBLISHER_ACCOUNT_REQUEST` | 4 | `UPSERT`, `UPDATE` |
 | `10-publisher-sales-summary` | `C_PUBLISHER_SALES_SUMMARY` | 3 | `UPSERT`, `UPDATE` |
 | `11-publisher-details` | `C_PUBLISHER_DETAILS` | 1 | `UPSERT`, `UPDATE` |
-| `13-usage-definition` | `C_USAGE_DEFINITION` (the 4 that no Salesforce definition uses) | 4 | `UPSERT`, `UPDATE` |
+| `13-usage-definition` | `C_USAGE_DEFINITION` (the 3 that no Salesforce definition uses) | 3 | `UPSERT`, `UPDATE` |
 | `14-environment` | `C_ENVIRONMENT` | 25 | `UPSERT`, `UPDATE` |
-| `15-entitlement-definition` | `C_ENTITLEMENT_DEFINITION` (test and marketplace definitions) | 40 | `UPSERT`, `UPDATE` |
+| `15-entitlement-definition` | `C_ENTITLEMENT_DEFINITION` (test and marketplace definitions) | 34 | `UPSERT`, `UPDATE` |
 | `16-oauth2-dxp-authorization` | `C_OAUTH2_DXP_AUTHORIZATION` | 3 | `UPSERT`, `UPDATE` |
-| `17-entitlement-definition-sku` | `C_ENTITLEMENT_DEFINITION_SKU` (links to SKUs that are not Salesforce SKUs) | 42 | `UPSERT`, `UPDATE` |
+| `17-entitlement-definition-sku` | `C_ENTITLEMENT_DEFINITION_SKU` (links to SKUs that are not Salesforce SKUs) | 36 | `UPSERT`, `UPDATE` |
 
 The import URLs pass `createStrategy` but not `updateStrategy` (`scripts/seed/seed_test_data.sh:84`, `:92`). So every seed file updates with `UPDATE`, and the `PARTIAL_UPDATE` in `05` and `06` has no effect. See finding 9.
 
@@ -276,7 +276,7 @@ The workspace rule is: the batch client extension holds definitions, configurati
 | Vocabulary `article-categories` (site) | site initializer | site initializer (60 categories) | none | none |
 | Search blueprint | batch `17` | none | none | none |
 | Usage definitions | batch `03` | Salesforce product batch `00` (8); seed `13` (4), finding 4 | none | none |
-| Entitlement definitions and SKU links | batch `03` | Salesforce product batch `01`, `02` (the 342 definitions and 1,947 links of the Salesforce SKUs) | seed `15`, `17` (40 and 42) | migration `CreateEntitlementDefinitions` |
+| Entitlement definitions and SKU links | batch `03` | Salesforce product batch `01`, `02` (the 348 definitions and 1,953 links of the Salesforce SKUs) | seed `15`, `17` (34 and 36) | migration `CreateEntitlementDefinitions` |
 | Accounts, users | Liferay | none | seed `01`, `02` and the assign scripts | migration and runtime |
 | Orders, order items, entitlements, license keys, usage events | Liferay and batch `03` | none | `populate_orders.sh`, `populate_overages.sh` | migration and runtime |
 | Pages, fragments, templates, style books, menus, documents | site initializer | none | none | none |
@@ -376,7 +376,7 @@ Sources: `scripts/_common.sh:87-97`, `:209-221`, `:296-317`; `scripts/instance.s
 
 1. **`/one-site-reset` can delete the site and not create it again.** `scripts/seed/site_reset.sh:53` deploys the site initializer without `clean`. `scripts/seed/instance_reset.sh:62-67` explains that an unchanged source copies a byte identical zip, which Liferay does not process. On a second site reset with no source change, the site stays deleted and the wait times out after 600 seconds. Add `:client-extensions:liferay-one-site-initializer:clean` as `instance_reset.sh:78` does.
 
-1. **Reference data that every environment needs lives only in the seed, which UAT and production never run.** The 8 usage definitions of the Salesforce definitions moved to the Salesforce product batch. The other 4 in `scripts/seed/data/13-usage-definition.batch-engine-data.json` (`ai-tokens-monthly`, `api-requests-monthly`, `events-monthly`, `license-generations`) have no other source, so their usage reports find no metric on an environment without the seed. `link_product_display_pages.sh` and `configure_tier_cards.sh` are site configuration in `scripts/seed.sh:42-43`. `configure_tier_cards.sh` says to run it by hand on UAT and production, but nothing does. Move the usage definitions to the batch, and move the two site configuration steps to bootstrap, as `set_redirect_entries.sh` is.
+1. **Reference data that every environment needs lives only in the seed, which UAT and production never run.** The 9 usage definitions of the Salesforce definitions moved to the Salesforce product batch, with `ai-tokens-monthly` and the AI Hub token definitions on 2026-11-02. The other 3 in `scripts/seed/data/13-usage-definition.batch-engine-data.json` (`api-requests-monthly`, `events-monthly`, `license-generations`) have no other source, so their usage reports find no metric on an environment without the seed. `link_product_display_pages.sh` and `configure_tier_cards.sh` are site configuration in `scripts/seed.sh:42-43`. `configure_tier_cards.sh` says to run it by hand on UAT and production, but nothing does. Move the usage definitions to the batch, and move the two site configuration steps to bootstrap, as `set_redirect_entries.sh` is.
 
 ### Medium
 

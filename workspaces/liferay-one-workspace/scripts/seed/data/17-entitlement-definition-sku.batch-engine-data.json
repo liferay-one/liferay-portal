@@ -11,21 +11,6 @@
 	},
 	"items": [
 		{
-			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE_TOKENS_01tVO00000TVrljYAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_ACTIVATE_TOKENS",
-			"skuExternalReferenceCode": "01tVO00000TVrljYAD"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO_TOKENS_01tVO00000UlE1RYAV",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_STUDIO_TOKENS",
-			"skuExternalReferenceCode": "01tVO00000UlE1RYAV"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_AIHUB_TOKENS_01tVO00000TVrlhYAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_TOKENS",
-			"skuExternalReferenceCode": "01tVO00000TVrlhYAD"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_AI_BLOG_WORKSPACE_450b1d15-46c1-4fbc-3625-e68e6ca78c51",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AI_BLOG_WORKSPACE",
 			"skuExternalReferenceCode": "450b1d15-46c1-4fbc-3625-e68e6ca78c51"
@@ -159,21 +144,6 @@
 			"externalReferenceCode": "C_ENT_DEF_INSURANCE_AGENT_PORTAL_e3bbeeea-9a1e-b0e1-2d1f-a480f2befd9d",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_INSURANCE_AGENT_PORTAL",
 			"skuExternalReferenceCode": "e3bbeeea-9a1e-b0e1-2d1f-a480f2befd9d"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_20000_01tVO00000TVrllYAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_LR_TOKENS_20000",
-			"skuExternalReferenceCode": "01tVO00000TVrllYAD"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_50000_01tVO00000TVrlmYAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_LR_TOKENS_50000",
-			"skuExternalReferenceCode": "01tVO00000TVrlmYAD"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_5000_01tVO00000TVrlkYAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_LR_TOKENS_5000",
-			"skuExternalReferenceCode": "01tVO00000TVrlkYAD"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_MINIUM_THEME_e4313820-500a-f500-81ad-0b56b37acce2",

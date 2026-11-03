@@ -495,6 +495,39 @@
 		},
 		{
 			"active": true,
+			"defaultQuantity": 50000000,
+			"displayName": "AI Tokens",
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE_TOKENS",
+			"grantType": "fixed",
+			"maxQuantity": 50000000,
+			"name": "aiTokens",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "ai-tokens-monthly",
+			"unit": "tokens"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 50000000,
+			"displayName": "AI Tokens",
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO_TOKENS",
+			"grantType": "fixed",
+			"maxQuantity": 50000000,
+			"name": "aiTokens",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "ai-tokens-monthly",
+			"unit": "tokens"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 50000000,
+			"displayName": "AI Tokens",
+			"externalReferenceCode": "C_ENT_DEF_AIHUB_TOKENS",
+			"grantType": "fixed",
+			"maxQuantity": 50000000,
+			"name": "aiTokens",
+			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "ai-tokens-monthly",
+			"unit": "tokens"
+		},
+		{
+			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Analytics Cloud",
 			"externalReferenceCode": "C_ENT_DEF_ANALYTICS_CLOUD",
@@ -770,6 +803,36 @@
 			"maxQuantity": 1,
 			"name": "liferay-paas-business-solution-bundle",
 			"unit": "boolean"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 20000,
+			"displayName": "AI Token Block",
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_20000",
+			"grantType": "fixed",
+			"maxQuantity": 20000,
+			"name": "aiTokenBlock",
+			"unit": "tokens"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 5000,
+			"displayName": "AI Token Block",
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_5000",
+			"grantType": "fixed",
+			"maxQuantity": 5000,
+			"name": "aiTokenBlock",
+			"unit": "tokens"
+		},
+		{
+			"active": true,
+			"defaultQuantity": 50000,
+			"displayName": "AI Token Block",
+			"externalReferenceCode": "C_ENT_DEF_LR_TOKENS_50000",
+			"grantType": "fixed",
+			"maxQuantity": 50000,
+			"name": "aiTokenBlock",
+			"unit": "tokens"
 		},
 		{
 			"active": true,
