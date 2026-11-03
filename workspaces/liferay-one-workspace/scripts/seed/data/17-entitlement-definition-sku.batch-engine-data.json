@@ -11,24 +11,9 @@
 	},
 	"items": [
 		{
-			"externalReferenceCode": "C_ENT_DEF_AIHUB_01tVO00000TVrlhYAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB",
-			"skuExternalReferenceCode": "01tVO00000TVrlhYAD"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE_01tVO00000TVrljYAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_ACTIVATE",
-			"skuExternalReferenceCode": "01tVO00000TVrljYAD"
-		},
-		{
 			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE_TOKENS_01tVO00000TVrljYAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_ACTIVATE_TOKENS",
 			"skuExternalReferenceCode": "01tVO00000TVrljYAD"
-		},
-		{
-			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO_01tVO00000UlE1RYAV",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB_STUDIO",
-			"skuExternalReferenceCode": "01tVO00000UlE1RYAV"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO_TOKENS_01tVO00000UlE1RYAV",

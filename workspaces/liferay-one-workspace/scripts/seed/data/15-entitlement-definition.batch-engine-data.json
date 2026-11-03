@@ -12,30 +12,6 @@
 	"items": [
 		{
 			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "AI Hub",
-			"externalReferenceCode": "C_ENT_DEF_AIHUB",
-			"generatesActivationKey": false,
-			"grantType": "fixed",
-			"licenseKeyFamily": "AIHUB",
-			"maxQuantity": 1,
-			"name": "ai-hub",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "AI Hub",
-			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE",
-			"generatesActivationKey": false,
-			"grantType": "fixed",
-			"licenseKeyFamily": "AIHUB",
-			"maxQuantity": 1,
-			"name": "ai-hub",
-			"unit": "boolean"
-		},
-		{
-			"active": true,
 			"defaultQuantity": 50000000,
 			"displayName": "AI Tokens",
 			"externalReferenceCode": "C_ENT_DEF_AIHUB_ACTIVATE_TOKENS",
@@ -44,18 +20,6 @@
 			"name": "aiTokens",
 			"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC": "ai-tokens-monthly",
 			"unit": "tokens"
-		},
-		{
-			"active": true,
-			"defaultQuantity": 1,
-			"displayName": "AI Hub",
-			"externalReferenceCode": "C_ENT_DEF_AIHUB_STUDIO",
-			"generatesActivationKey": false,
-			"grantType": "fixed",
-			"licenseKeyFamily": "AIHUB",
-			"maxQuantity": 1,
-			"name": "ai-hub",
-			"unit": "boolean"
 		},
 		{
 			"active": true,

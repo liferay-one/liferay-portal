@@ -11,7 +11,7 @@
 			"quantity": 1,
 			"r_accountEntryToEntitlement_accountEntryERC": "ACCNT-030",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_NO_CONTRACT_AIHUB",
-			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_AIHUB",
+			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "ai-hub",
 			"r_projectToEntitlement_c_projectERC": "PRJCT-030",
 			"startDate": "2026-08-09T00:00:00Z"
 		},

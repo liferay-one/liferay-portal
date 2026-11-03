@@ -241,9 +241,9 @@ The object entry files use the `com.liferay.object.rest.dto.v1_0.ObjectEntry` cl
 | `11-publisher-details` | `C_PUBLISHER_DETAILS` | 1 | `UPSERT`, `UPDATE` |
 | `13-usage-definition` | `C_USAGE_DEFINITION` (the 4 that no Salesforce definition uses) | 4 | `UPSERT`, `UPDATE` |
 | `14-environment` | `C_ENVIRONMENT` | 25 | `UPSERT`, `UPDATE` |
-| `15-entitlement-definition` | `C_ENTITLEMENT_DEFINITION` (test and marketplace definitions) | 43 | `UPSERT`, `UPDATE` |
+| `15-entitlement-definition` | `C_ENTITLEMENT_DEFINITION` (test and marketplace definitions) | 40 | `UPSERT`, `UPDATE` |
 | `16-oauth2-dxp-authorization` | `C_OAUTH2_DXP_AUTHORIZATION` | 3 | `UPSERT`, `UPDATE` |
-| `17-entitlement-definition-sku` | `C_ENTITLEMENT_DEFINITION_SKU` (links to SKUs that are not Salesforce SKUs) | 45 | `UPSERT`, `UPDATE` |
+| `17-entitlement-definition-sku` | `C_ENTITLEMENT_DEFINITION_SKU` (links to SKUs that are not Salesforce SKUs) | 42 | `UPSERT`, `UPDATE` |
 
 The import URLs pass `createStrategy` but not `updateStrategy` (`scripts/seed/seed_test_data.sh:84`, `:92`). So every seed file updates with `UPDATE`, and the `PARTIAL_UPDATE` in `05` and `06` has no effect. See finding 9.
 
@@ -276,7 +276,7 @@ The workspace rule is: the batch client extension holds definitions, configurati
 | Vocabulary `article-categories` (site) | site initializer | site initializer (60 categories) | none | none |
 | Search blueprint | batch `17` | none | none | none |
 | Usage definitions | batch `03` | Salesforce product batch `00` (8); seed `13` (4), finding 4 | none | none |
-| Entitlement definitions and SKU links | batch `03` | Salesforce product batch `01`, `02` (the 335 definitions and 1,436 links of the Salesforce SKUs) | seed `15`, `17` (43 and 45) | migration `CreateEntitlementDefinitions` |
+| Entitlement definitions and SKU links | batch `03` | Salesforce product batch `01`, `02` (the 342 definitions and 1,947 links of the Salesforce SKUs) | seed `15`, `17` (40 and 42) | migration `CreateEntitlementDefinitions` |
 | Accounts, users | Liferay | none | seed `01`, `02` and the assign scripts | migration and runtime |
 | Orders, order items, entitlements, license keys, usage events | Liferay and batch `03` | none | `populate_orders.sh`, `populate_overages.sh` | migration and runtime |
 | Pages, fragments, templates, style books, menus, documents | site initializer | none | none | none |
