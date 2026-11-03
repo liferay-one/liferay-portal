@@ -33,6 +33,7 @@ import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.salesforce.model.SalesforceProject;
+import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
 import com.liferay.one.util.CommerceOrderUtil;
 import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.one.util.SupportLanguageUtil;
@@ -684,6 +685,107 @@ public class CommerceOrderService extends OneBaseService {
 		finally {
 			_inFlightOrderIds.remove(orderId);
 		}
+	}
+
+	/**
+	 * Writes the AI Hub provisioning data of an AI Hub sale that started in
+	 * Salesforce, so that completing the order provisions the AI Hub tenant.
+	 * The checkout writes the same data for a purchase in One, so an order
+	 * that already has an AI Hub form keeps it.
+	 *
+	 * <p>
+	 * The Salesforce opportunity ID is always written, which stops the order
+	 * update from creating a second opportunity for the same sale. The AI Hub
+	 * form is written only when the project, the AI Hub account name, and the
+	 * administrator are known, because the provisioning cannot create a tenant
+	 * of the right project without them.
+	 * </p>
+	 *
+	 * @return <code>true</code> when the order has an AI Hub form after the
+	 *         update
+	 */
+	public boolean updateAIHubOrderMetadata(
+			String aiHubAccountName, long orderId,
+			SalesforceOpportunity salesforceOpportunity,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
+			SalesforceProjectContactRole salesforceProjectContactRole)
+		throws Exception {
+
+		Order order = fetchCommerceOrder(orderId);
+
+		if ((order == null) ||
+			!Objects.equals(
+				order.getOrderTypeExternalReferenceCode(), "AI_HUB")) {
+
+			return false;
+		}
+
+		JSONObject orderMetadataJSONObject =
+			CommerceOrderUtil.getOrderMetadataJSONObject(order);
+
+		if (orderMetadataJSONObject.has("aiHubForm")) {
+			return true;
+		}
+
+		String projectId = salesforceOpportunity.getProjectId();
+
+		if ((salesforceProjectContactRole != null) &&
+			Validator.isNotNull(aiHubAccountName) &&
+			Validator.isNotNull(projectId)) {
+
+			JSONObject aiHubFormJSONObject = new JSONObject(
+			).put(
+				"administratorEmailAddress",
+				salesforceProjectContactRole.getEmailAddress()
+			).put(
+				"aiHubAccountName", aiHubAccountName
+			).put(
+				"salesforceProjectId", projectId
+			);
+
+			if (Validator.isNotNull(
+					salesforceProjectContactRole.getFirstName())) {
+
+				aiHubFormJSONObject.put(
+					"administratorFirstName",
+					salesforceProjectContactRole.getFirstName());
+			}
+
+			if (Validator.isNotNull(
+					salesforceProjectContactRole.getLastName())) {
+
+				aiHubFormJSONObject.put(
+					"administratorLastName",
+					salesforceProjectContactRole.getLastName());
+			}
+
+			orderMetadataJSONObject.put("aiHubForm", aiHubFormJSONObject);
+		}
+
+		orderMetadataJSONObject.put(
+			"salesforceOpportunityId", salesforceOpportunity.getId()
+		).put(
+			"salesforceProjectId", projectId
+		);
+
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
+			String aiHubTier = _commerceSkuService.fetchAIHubTier(
+				salesforceOpportunityLineItem.getProduct2Id());
+
+			if (aiHubTier != null) {
+				orderMetadataJSONObject.put("tier", aiHubTier);
+
+				break;
+			}
+		}
+
+		patchOrderCustomFields(
+			orderId,
+			Map.of("order-metadata", orderMetadataJSONObject.toString()));
+
+		return orderMetadataJSONObject.has("aiHubForm");
 	}
 
 	public void updateOrder(
@@ -1574,6 +1676,17 @@ public class CommerceOrderService extends OneBaseService {
 			String solutionType = CommerceProductUtil.getSpecificationValue(
 				product, ProductSpecificationConstants.KEY_SOLUTION_TYPE);
 
+			if (Objects.equals(
+					solutionType,
+					ProductSpecificationConstants.SOLUTION_TYPE_AI_HUB)) {
+
+				if (_commerceSkuService.fetchAIHubTier(product2Id) != null) {
+					orderTypeExternalReferenceCodes.add("AI_HUB");
+				}
+
+				continue;
+			}
+
 			String orderTypeExternalReferenceCode =
 				_orderTypeExternalReferenceCodes.get(solutionType);
 
@@ -1892,8 +2005,12 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	private JSONObject _getUserAccountJSONObject(String emailAddress) {
-		String firstName = "AI Hub";
-		String lastName = "Administrator";
+		return _getUserAccountJSONObject(
+			emailAddress, "AI Hub", "Administrator");
+	}
+
+	private JSONObject _getUserAccountJSONObject(
+		String emailAddress, String firstName, String lastName) {
 
 		try {
 			UserAccount userAccount =
@@ -2192,7 +2309,11 @@ public class CommerceOrderService extends OneBaseService {
 				orderMetadataJSONObject.getJSONObject("aiHubForm");
 
 			JSONObject userAccountJSONObject = _getUserAccountJSONObject(
-				aiHubFormJSONObject.getString("administratorEmailAddress"));
+				aiHubFormJSONObject.getString("administratorEmailAddress"),
+				aiHubFormJSONObject.optString(
+					"administratorFirstName", "AI Hub"),
+				aiHubFormJSONObject.optString(
+					"administratorLastName", "Administrator"));
 
 			JSONObject provisionJSONObject = new JSONObject(
 			).put(

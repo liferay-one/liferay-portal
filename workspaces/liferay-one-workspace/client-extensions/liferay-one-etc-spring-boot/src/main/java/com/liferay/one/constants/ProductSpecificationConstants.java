@@ -34,6 +34,8 @@ public class ProductSpecificationConstants {
 
 	public static final String PROJECT_ITEM_TYPE_APPLICATION = "application";
 
+	public static final String SOLUTION_TYPE_AI_HUB = "ai-hub";
+
 	public static final String SOLUTION_TYPE_CMP = "cmp";
 
 	public static final String SOLUTION_TYPE_DSR = "dsr";

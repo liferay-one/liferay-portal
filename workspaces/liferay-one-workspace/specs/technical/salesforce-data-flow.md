@@ -210,7 +210,7 @@ The order is written by `service/CommerceOrderService.java:673`. Its custom fiel
 | `StageName` | Gate. Also mapped to the item status. | `CommerceOrder.opportunityStageName` (expando) | Yes | Record skipped | `service/CommerceOrderService.java:1225` |
 | `Type` | Gate for renewals, project warnings, and contacts | `CommerceOrder.opportunityType` (expando) | No | Keeps | `service/CommerceOrderService.java:1230` |
 | line item `CurrencyIsoCode` | One code for all provisionable lines, else `USD` | `CommerceOrder.currencyCode` | No | **Overwrites** with `USD` | `salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java:141`, `service/CommerceOrderService.java:703` |
-| line item `Product2Id` | SKU, then product, then the `solution-type` specification | `CommerceOrder.orderTypeExternalReferenceCode` (`CMP`, `DSR`, or `LDP`) | No | Keeps. Not set when the lines give more than one type. | `service/CommerceOrderService.java:1326` |
+| line item `Product2Id` | SKU, then product, then the `solution-type` specification | `CommerceOrder.orderTypeExternalReferenceCode` (`CMP`, `DSR`, or `LDP`, and `AI_HUB` for an AI Hub plan SKU) | No | Keeps. Not set when the lines give more than one type. | `service/CommerceOrderService.java:1633` |
 | line item `TotalPrice` | Sum of the provisionable lines. A negative sum is dropped. | `CommerceOrder.total` | No | Keeps | `service/CommerceOrderService.java:1525` |
 | project `LDP_Workspace_Name__c` | As is | `CommerceOrder.ldpWorkspaceName` (expando) | No | Keeps | `service/CommerceOrderService.java:1207` |
 | project `Name` | As is | `CommerceOrder.projectName` (expando) | No | Keeps | `service/CommerceOrderService.java:1252` |
