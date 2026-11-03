@@ -40,6 +40,7 @@ import com.liferay.petra.string.StringBundler;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -689,6 +690,37 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveDoesNotWarnWhenAIHubFormExists() throws Exception {
+		_setUpAIHubOrder();
+
+		Mockito.when(
+			_commerceOrderService.updateAIHubOrderMetadata(
+				Mockito.any(), Mockito.anyLong(), Mockito.any(),
+				Mockito.anyList(), Mockito.any())
+		).thenReturn(
+			true
+		);
+
+		_receiveOpportunityMessage(
+			_createAIHubRecordJSONObject(new JSONArray()));
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertFalse(
+			_containsSubstring(
+				"Unable to provision AI Hub",
+				warningMessagesArgumentCaptor.getValue()));
+	}
+
+	@Test
 	public void testReceiveDoesNotWarnWhenLineEndsOnTheLastDayOfContract()
 		throws Exception {
 
@@ -816,6 +848,39 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			contactRoles.get(
 				0
 			).getEmailAddress());
+	}
+
+	@Test
+	public void testReceiveIgnoresAIHubAccountNameOfAnotherProject()
+		throws Exception {
+
+		_setUpAIHubOrder();
+
+		JSONObject recordJSONObject = _createAIHubRecordJSONObject(
+			new JSONArray(
+			).put(
+				SalesforceModelTestUtil.createProjectContactRoleJSONObject(
+					"AI Hub Administrator", "admin@example.com", "Jane", "Doe",
+					_PROJECT_ID)
+			));
+
+		JSONObject projectJSONObject = recordJSONObject.getJSONObject(
+			"project");
+
+		projectJSONObject.put("Id", "PROJECT-2");
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		Mockito.verify(
+			_commerceOrderService
+		).updateAIHubOrderMetadata(
+			Mockito.isNull(), Mockito.eq(_NEW_ORDER_ID), Mockito.any(),
+			Mockito.anyList(),
+			Mockito.argThat(
+				salesforceProjectContactRole -> Objects.equals(
+					salesforceProjectContactRole.getEmailAddress(),
+					"admin@example.com"))
+		);
 	}
 
 	@Test
@@ -1407,6 +1472,106 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveSkipsAIHubFormForAmendment() throws Exception {
+		_setUpAIHubOrder();
+
+		JSONObject recordJSONObject = _createAIHubRecordJSONObject(
+			new JSONArray(
+			).put(
+				SalesforceModelTestUtil.createProjectContactRoleJSONObject(
+					"AI Hub Administrator", "admin@example.com", "Jane", "Doe",
+					_PROJECT_ID)
+			));
+
+		JSONObject opportunityJSONObject = recordJSONObject.getJSONObject(
+			"opportunity");
+
+		opportunityJSONObject.put(
+			"SBQQ__AmendedContract__r.SBQQ__Opportunity__c",
+			_PARENT_OPPORTUNITY_ID);
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		Mockito.verify(
+			_commerceOrderService
+		).updateAIHubOrderMetadata(
+			Mockito.isNull(), Mockito.eq(_NEW_ORDER_ID), Mockito.any(),
+			Mockito.anyList(), Mockito.isNull()
+		);
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertFalse(
+			_containsSubstring(
+				"Unable to provision AI Hub",
+				warningMessagesArgumentCaptor.getValue()));
+	}
+
+	@Test
+	public void testReceiveSkipsAIHubFormForRenewal() throws Exception {
+		_setUpAIHubOrder();
+
+		JSONObject recordJSONObject = _createAIHubRecordJSONObject(
+			new JSONArray(
+			).put(
+				SalesforceModelTestUtil.createProjectContactRoleJSONObject(
+					"AI Hub Administrator", "admin@example.com", "Jane", "Doe",
+					_PROJECT_ID)
+			));
+
+		JSONObject opportunityJSONObject = recordJSONObject.getJSONObject(
+			"opportunity");
+
+		opportunityJSONObject.put("Has_Renewal__c", 1);
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		Mockito.verify(
+			_commerceOrderService
+		).updateAIHubOrderMetadata(
+			Mockito.isNull(), Mockito.eq(_NEW_ORDER_ID), Mockito.any(),
+			Mockito.anyList(), Mockito.isNull()
+		);
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertFalse(
+			_containsSubstring(
+				"Unable to provision AI Hub",
+				warningMessagesArgumentCaptor.getValue()));
+	}
+
+	@Test
+	public void testReceiveSkipsAIHubOrderMetadataForOtherOrderTypes()
+		throws Exception {
+
+		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).updateAIHubOrderMetadata(
+			Mockito.any(), Mockito.anyLong(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
+		);
+	}
+
+	@Test
 	public void testReceiveSkipsLineItemWithoutMatchingSku() throws Exception {
 		Mockito.when(
 			_commerceSkuService.fetchSku(Mockito.anyString())
@@ -1777,6 +1942,42 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveUpdatesAIHubOrderMetadataBeforeCompletingOrder()
+		throws Exception {
+
+		_setUpAIHubOrder();
+
+		_receiveOpportunityMessage(
+			_createAIHubRecordJSONObject(
+				new JSONArray(
+				).put(
+					SalesforceModelTestUtil.createProjectContactRoleJSONObject(
+						"AI Hub Administrator", "admin@example.com", "Jane",
+						"Doe", _PROJECT_ID)
+				)));
+
+		InOrder inOrder = Mockito.inOrder(_commerceOrderService);
+
+		inOrder.verify(
+			_commerceOrderService
+		).updateAIHubOrderMetadata(
+			Mockito.eq("Acme AI"), Mockito.eq(_NEW_ORDER_ID), Mockito.any(),
+			Mockito.anyList(),
+			Mockito.argThat(
+				salesforceProjectContactRole -> Objects.equals(
+					salesforceProjectContactRole.getEmailAddress(),
+					"admin@example.com"))
+		);
+
+		inOrder.verify(
+			_commerceOrderService
+		).completeOrder(
+			_NEW_ORDER_ID,
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED
+		);
+	}
+
+	@Test
 	public void testReceiveUpdatesPreStampedOrderItemInPlace()
 		throws Exception {
 
@@ -2130,6 +2331,45 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveWarnsWhenAIHubAdministratorIsMissing()
+		throws Exception {
+
+		_setUpAIHubOrder();
+
+		_receiveOpportunityMessage(
+			_createAIHubRecordJSONObject(
+				new JSONArray(
+				).put(
+					SalesforceModelTestUtil.createProjectContactRoleJSONObject(
+						"Account Member", "member@example.com", "Jane", "Doe",
+						_PROJECT_ID)
+				)));
+
+		Mockito.verify(
+			_commerceOrderService
+		).updateAIHubOrderMetadata(
+			Mockito.eq("Acme AI"), Mockito.eq(_NEW_ORDER_ID), Mockito.any(),
+			Mockito.anyList(), Mockito.isNull()
+		);
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertTrue(
+			_containsSubstring(
+				"without its project, an AI Hub account name, and an AI Hub " +
+					"administrator",
+				warningMessagesArgumentCaptor.getValue()));
+	}
+
+	@Test
 	public void testReceiveWarnsWhenAmendmentHasNoParentOpportunity()
 		throws Exception {
 
@@ -2461,6 +2701,33 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		return false;
 	}
 
+	private JSONObject _createAIHubRecordJSONObject(
+		JSONArray projectContactRolesJSONArray) {
+
+		return SalesforceModelTestUtil.createOpportunityRecordJSONObject(
+			SalesforceModelTestUtil.createAccountJSONObject(
+				_ACCOUNT_ID_SF, "Test Salesforce Account"),
+			SalesforceModelTestUtil.createOpportunityJSONObject(
+				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "S",
+				_PROJECT_ID, "", "Closed Won",
+				OpportunityConstants.TYPE_NEW_BUSINESS),
+			new JSONArray(
+			).put(
+				SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+					"USD", null, "LINE-1", "01tVO00000TVrljYAD",
+					"PLAN ACTIVATE", "Subscription", 1, null)
+			),
+			projectContactRolesJSONArray,
+			new JSONObject(
+			).put(
+				"AI_Hub_Account_Name__c", "Acme AI"
+			).put(
+				"Id", _PROJECT_ID
+			).put(
+				"Name", "Acme Project"
+			));
+	}
+
 	private JSONObject _createNewBusinessRecordJSONObject() {
 		return _createNewBusinessRecordJSONObject(_OPPORTUNITY_ID);
 	}
@@ -2528,6 +2795,21 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			"test-topic");
 
 		_subscriber.receive(message);
+	}
+
+	private void _setUpAIHubOrder() throws Exception {
+		Order newOrder = new Order();
+
+		newOrder.setId(_NEW_ORDER_ID);
+		newOrder.setOrderTypeExternalReferenceCode("AI_HUB");
+
+		Mockito.when(
+			_commerceOrderService.upsertOrder(
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.anyList(), Mockito.any())
+		).thenReturn(
+			newOrder
+		);
 	}
 
 	private void _verifyNoProvisioningInteractions() {
