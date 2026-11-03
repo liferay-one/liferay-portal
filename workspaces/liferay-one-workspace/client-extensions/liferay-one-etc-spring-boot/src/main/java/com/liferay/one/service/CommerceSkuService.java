@@ -16,6 +16,7 @@ import com.liferay.one.util.CommerceOrderUtil;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -37,6 +38,43 @@ public class CommerceSkuService extends OneBaseService {
 
 		return skuResource.postProductByExternalReferenceCodeSku(
 			productExternalReferenceCode, sku);
+	}
+
+	/**
+	 * Returns the AI Hub tier that the SKU sells, which is its license usage
+	 * type option value without the <code>plan-</code> prefix. Returns
+	 * <code>null</code> when the SKU does not exist or does not sell a tier
+	 * that AI Hub provisions, such as a token block or a trial.
+	 */
+	@Cacheable(unless = "#result == null", value = "skuAIHubTier")
+	public String fetchAIHubTier(String skuExternalReferenceCode)
+		throws Exception {
+
+		Sku sku = _commerceSkuService.fetchSku(skuExternalReferenceCode);
+
+		if ((sku == null) || (sku.getSkuOptions() == null)) {
+			return null;
+		}
+
+		String skuOptionValue = CommerceOrderUtil.getSkuOptionValue(
+			SkuOptionConstants.KEY_SUFFIX_LICENSE_USAGE_TYPE,
+			sku.getSkuOptions());
+
+		if ((skuOptionValue == null) ||
+			!skuOptionValue.startsWith(
+				SkuOptionConstants.VALUE_PREFIX_LICENSE_USAGE_TYPE_PLAN)) {
+
+			return null;
+		}
+
+		String tier = skuOptionValue.substring(
+			SkuOptionConstants.VALUE_PREFIX_LICENSE_USAGE_TYPE_PLAN.length());
+
+		if (!_aiHubTiers.contains(tier)) {
+			return null;
+		}
+
+		return tier;
 	}
 
 	/**
@@ -105,7 +143,7 @@ public class CommerceSkuService extends OneBaseService {
 		return new ArrayList<>(skusPage.getItems());
 	}
 
-	@CacheEvict(allEntries = true, cacheNames = "sku")
+	@CacheEvict(allEntries = true, cacheNames = {"sku", "skuAIHubTier"})
 	public Sku patchSku(String externalReferenceCode, Sku sku)
 		throws Exception {
 
@@ -136,6 +174,8 @@ public class CommerceSkuService extends OneBaseService {
 	}
 
 	private static final int _PAGE_SIZE = 500;
+
+	private static final Set<String> _aiHubTiers = Set.of("activate", "studio");
 
 	@Autowired
 	@Lazy

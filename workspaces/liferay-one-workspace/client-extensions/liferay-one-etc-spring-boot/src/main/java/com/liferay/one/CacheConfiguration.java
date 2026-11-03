@@ -178,6 +178,15 @@ public class CacheConfiguration {
 			).build());
 
 		caffeineCacheManager.registerCustomCache(
+			"skuAIHubTier",
+			Caffeine.newBuilder(
+			).expireAfterWrite(
+				Duration.ofHours(1)
+			).maximumSize(
+				1000
+			).build());
+
+		caffeineCacheManager.registerCustomCache(
 			"skuConsumptionRole",
 			Caffeine.newBuilder(
 			).expireAfterWrite(

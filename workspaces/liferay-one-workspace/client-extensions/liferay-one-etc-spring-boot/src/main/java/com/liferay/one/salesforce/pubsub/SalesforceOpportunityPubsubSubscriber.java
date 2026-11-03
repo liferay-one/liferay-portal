@@ -539,9 +539,21 @@ public class SalesforceOpportunityPubsubSubscriber
 			}
 		}
 
+		List<SalesforceProjectContactRole> salesforceProjectContactRoles =
+			_getSalesforceProjectContactRoles(recordJSONObject);
+
 		Order newOrder = _commerceOrderService.upsertOrder(
 			account, contractId, currencyCode, salesforceOpportunity,
 			provisionableSalesforceOpportunityLineItems, salesforceProject);
+
+		if (Objects.equals(
+				newOrder.getOrderTypeExternalReferenceCode(), "AI_HUB")) {
+
+			_updateAIHubOrderMetadata(
+				newOrder, renewal, salesforceOpportunity,
+				provisionableSalesforceOpportunityLineItems, salesforceProject,
+				salesforceProjectContactRoles, warningMessages);
+		}
 
 		if ((contract != null) && (contract.getEndDateInstant() != null)) {
 			Instant contractEndDateInstant = contract.getEndDateInstant(
@@ -625,9 +637,6 @@ public class SalesforceOpportunityPubsubSubscriber
 		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
 			account, contract, provisionableSalesforceOpportunityLineItems);
 
-		List<SalesforceProjectContactRole> salesforceProjectContactRoles =
-			_getSalesforceProjectContactRoles(recordJSONObject);
-
 		if (provisionedOrderItemCount > 0) {
 			_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
 				account, newOrder.getId(), salesforceOpportunity,
@@ -668,6 +677,79 @@ public class SalesforceOpportunityPubsubSubscriber
 			_provisioningIssueService.addOpportunityInvoicedIssue(
 				account, salesforceAccount, salesforceOpportunity,
 				provisionableSalesforceOpportunityLineItems, warningMessages);
+		}
+	}
+
+	private void _updateAIHubOrderMetadata(
+		Order order, boolean renewal,
+		SalesforceOpportunity salesforceOpportunity,
+		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
+		SalesforceProject salesforceProject,
+		List<SalesforceProjectContactRole> salesforceProjectContactRoles,
+		List<String> warningMessages) {
+
+		SalesforceProjectContactRole administratorSalesforceProjectContactRole =
+			null;
+		String aiHubAccountName = null;
+
+		boolean purchase = false;
+
+		if (!renewal &&
+			Validator.isNull(
+				salesforceOpportunity.getAmendedContractOpportunityId())) {
+
+			purchase = true;
+		}
+
+		if (purchase) {
+			for (SalesforceProjectContactRole salesforceProjectContactRole :
+					salesforceProjectContactRoles) {
+
+				if (Objects.equals(
+						salesforceProjectContactRole.getContactRole(),
+						"AI Hub Administrator") &&
+					Validator.isNotNull(
+						salesforceProjectContactRole.getEmailAddress())) {
+
+					administratorSalesforceProjectContactRole =
+						salesforceProjectContactRole;
+
+					break;
+				}
+			}
+
+			if ((salesforceProject != null) &&
+				Objects.equals(
+					salesforceProject.getId(),
+					salesforceOpportunity.getProjectId())) {
+
+				aiHubAccountName = salesforceProject.getAIHubAccountName();
+			}
+		}
+
+		try {
+			boolean aiHubForm = _commerceOrderService.updateAIHubOrderMetadata(
+				aiHubAccountName, order.getId(), salesforceOpportunity,
+				salesforceOpportunityLineItems,
+				administratorSalesforceProjectContactRole);
+
+			if (purchase && !aiHubForm) {
+				_addWarning(
+					warningMessages,
+					StringBundler.concat(
+						"Unable to provision AI Hub for opportunity ",
+						salesforceOpportunity.getId(),
+						" without its project, an AI Hub account name, and an ",
+						"AI Hub administrator"),
+					null);
+			}
+		}
+		catch (Exception exception) {
+			_addWarning(
+				warningMessages,
+				"Unable to update the AI Hub order metadata of opportunity " +
+					salesforceOpportunity.getId(),
+				exception);
 		}
 	}
 
