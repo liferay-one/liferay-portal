@@ -81,6 +81,13 @@ export default class SolutionPublish extends BaseAppPublish {
 			);
 		}
 
+		if (!this.config.isDraft) {
+			await HeadlessCommerceAdminCatalogImpl.updateProduct(
+				product.productId as number,
+				this.getProductStatus()
+			);
+		}
+
 		return product;
 	}
 
@@ -90,8 +97,8 @@ export default class SolutionPublish extends BaseAppPublish {
 		);
 	}
 
-	private getProductStatus() {
-		const productStatus = this.config.isDraft
+	private getProductStatus(isDraft = this.config.isDraft) {
+		const productStatus = isDraft
 			? ProductWorkflowStatusCode.DRAFT
 			: ProductWorkflowStatusCode.PENDING;
 
@@ -262,7 +269,7 @@ export default class SolutionPublish extends BaseAppPublish {
 					categories: productCategories,
 					description: {en_US: description},
 					name: {en_US: name},
-					...this.getProductStatus(),
+					...this.getProductStatus(true),
 				}
 			);
 
@@ -275,7 +282,7 @@ export default class SolutionPublish extends BaseAppPublish {
 				categories: productCategories,
 				description,
 				name,
-				...this.getProductStatus(),
+				...this.getProductStatus(true),
 			});
 
 		product.productSpecifications = [];
