@@ -94,38 +94,26 @@ describe('[MOD-SCHEMAS-ZODSCHEMA] zodSchema', () => {
 		).toBe(false);
 	});
 
-	it('aiHubForm and aiHubOpenBetaForm require an AI Hub account name and admin email', () => {
-		const openBeta = {
+	it('aiHubForm requires an AI Hub account name of 3 or more and an admin email', () => {
+		const aiHubForm = {
 			...personalInformation,
 			administratorEmailAddress: 'admin@liferay.com',
 			aiHubAccountName: 'Hub',
 		};
 
-		expect(zodSchema.aiHubOpenBetaForm.safeParse(openBeta).success).toBe(
-			true
-		);
+		expect(zodSchema.aiHubForm.safeParse(aiHubForm).success).toBe(true);
 		expect(
-			zodSchema.aiHubOpenBetaForm.safeParse({
-				...openBeta,
+			zodSchema.aiHubForm.safeParse({
+				...aiHubForm,
 				aiHubAccountName: 'Hu',
 			}).success
 		).toBe(false);
 		expect(
 			zodSchema.aiHubForm.safeParse({
-				...openBeta,
-				purpose: 'Testing',
-				termsAndConditions: true,
-				userAgreement: false,
+				...aiHubForm,
+				administratorEmailAddress: 'admin',
 			}).success
 		).toBe(false);
-		expect(
-			zodSchema.aiHubForm.safeParse({
-				...openBeta,
-				purpose: 'Testing',
-				termsAndConditions: true,
-				userAgreement: true,
-			}).success
-		).toBe(true);
 	});
 
 	it('activationKey requires accepted consents', () => {

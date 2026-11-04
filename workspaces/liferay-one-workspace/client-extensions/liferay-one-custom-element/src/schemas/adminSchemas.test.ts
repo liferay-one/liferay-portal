@@ -30,9 +30,6 @@ const aiHubForm = {
 	...personalInformation,
 	administratorEmailAddress: 'admin@liferay.com',
 	aiHubAccountName: 'Hub',
-	purpose: 'Testing',
-	termsAndConditions: true,
-	userAgreement: true,
 };
 
 const provisioning = {
@@ -104,18 +101,12 @@ describe('[MOD-SCHEMAS-ADMINSCHEMAS] adminSchemas', () => {
 		).toBe(false);
 	});
 
-	it('aiHubForm requires terms, user agreement, and an admin email', () => {
+	it('aiHubForm requires an AI Hub account name of 3 or more and an admin email', () => {
 		expect(adminSchemas.aiHubForm.safeParse(aiHubForm).success).toBe(true);
 		expect(
 			adminSchemas.aiHubForm.safeParse({
 				...aiHubForm,
-				termsAndConditions: false,
-			}).success
-		).toBe(false);
-		expect(
-			adminSchemas.aiHubForm.safeParse({
-				...aiHubForm,
-				userAgreement: false,
+				aiHubAccountName: 'Hu',
 			}).success
 		).toBe(false);
 		expect(

@@ -148,8 +148,8 @@ describe('productPurchaseRoutes', () => {
 		});
 	});
 
-	describe('[ROUTE-PRODUCT-PURCHASE-AI-HUB-FORM] ai-hub', () => {
-		it('emits the account step then the AI Hub form step', () => {
+	describe('ai-hub', () => {
+		it('[ROUTE-PRODUCT-PURCHASE-AI-HUB-FORM] [ROUTE-PRODUCT-PURCHASE-CONTRACT] [ROUTE-PRODUCT-PURCHASE-PROJECT] [ROUTE-PRODUCT-PURCHASE-SUMMARY] emits the account, project, contract, form, and summary steps', () => {
 			expect(
 				toStepItems(
 					getProductPurchaseSteps({
@@ -159,26 +159,10 @@ describe('productPurchaseRoutes', () => {
 				)
 			).toEqual([
 				{key: '/', title: i18n.translate('account')},
-				{key: '/ai-hub-form', title: i18n.translate('ai-hub')},
-			]);
-		});
-	});
-
-	describe('ai-hub-open-beta', () => {
-		it('[ROUTE-PRODUCT-PURCHASE-AI-HUB-OPEN-BETA-FORM] [ROUTE-PRODUCT-PURCHASE-CONTRACT] [ROUTE-PRODUCT-PURCHASE-PROJECT] [ROUTE-PRODUCT-PURCHASE-SUMMARY] emits the account, project, contract, form, and summary steps', () => {
-			expect(
-				toStepItems(
-					getProductPurchaseSteps({
-						isPaidApp: true,
-						product: solutionTypeProduct('ai-hub-open-beta'),
-					})
-				)
-			).toEqual([
-				{key: '/', title: i18n.translate('account')},
 				{key: '/project', title: i18n.translate('project')},
 				{key: '/contract', title: i18n.translate('contract')},
 				{
-					key: '/ai-hub-open-beta-form',
+					key: '/ai-hub-form',
 					title: i18n.translate('account-details'),
 				},
 				{key: '/summary', title: i18n.translate('summary')},
