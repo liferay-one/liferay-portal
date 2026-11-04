@@ -35,13 +35,6 @@ vi.mock('~/components/EmptyState/EmptyState', () => ({
 }));
 
 vi.mock(
-	'~/pages/ProductPurchase/LiferayProduct/AIHub/AIHubForm/AIHubForm',
-	() => ({
-		PURPOSE_OPTIONS: [],
-	})
-);
-
-vi.mock(
 	'~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout',
 	() => ({
 		useProductPurchaseLayoutContext: vi.fn(),
