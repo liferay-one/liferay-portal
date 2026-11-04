@@ -92,7 +92,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 		for (long activationKeyId : activationKeyIds) {
 			_subscriptionEntryService.deleteSubscriptionEntry(
-				jwt, ClassNameConstants.ACTIVATION_KEY, activationKeyId,
+				ClassNameConstants.ACTIVATION_KEY, activationKeyId,
 				userAccount.getId());
 		}
 	}
@@ -259,7 +259,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 		SubscriptionEntry subscriptionEntry =
 			_subscriptionEntryService.fetchSubscriptionEntry(
-				jwt, ClassNameConstants.ACTIVATION_KEY, activationKeyId,
+				ClassNameConstants.ACTIVATION_KEY, activationKeyId,
 				userAccount.getId());
 
 		return ResponseEntity.ok(
@@ -421,7 +421,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 		for (long activationKeyId : activationKeyIds) {
 			_subscriptionEntryService.addSubscriptionEntry(
-				jwt, ClassNameConstants.ACTIVATION_KEY, activationKeyId,
+				ClassNameConstants.ACTIVATION_KEY, activationKeyId,
 				userAccount.getId());
 		}
 	}
