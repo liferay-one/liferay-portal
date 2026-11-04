@@ -1,0 +1,71 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "20515281",
+					"label": "Channel Id",
+					"name": "channelId",
+					"type": "text"
+				}
+			]
+		},
+		{
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "Publisher Spotlight",
+					"description": "button-text",
+					"label": "Section Title",
+					"name": "sectionTitle",
+					"type": "text",
+					"typeOptions": {
+						"placeholder": "Publisher Spotlight"
+					}
+				}
+			]
+		},
+		{
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "38744115",
+					"description": "button-text",
+					"label": "Publisher Details Object Id",
+					"name": "publisherDetailsObjectId",
+					"type": "text",
+					"typeOptions": {
+						"placeholder": "00000"
+					}
+				}
+			]
+		},
+		{
+			"fields": [
+				{
+					"dataType": "string",
+					"defaultValue": "Fragments and client extensions to foster your prouctivity",
+					"description": "button-text",
+					"label": "Section Decription",
+					"name": "sectionDescription",
+					"type": "text",
+					"typeOptions": {
+						"placeholder": "Fragments and client extensions to foster your prouctivity"
+					}
+				}
+			]
+		},
+		{
+			"fields": [
+				{
+					"defaultValue": false,
+					"description": "hide-rating-info",
+					"label": "Hide Rating Info",
+					"name": "hideRatingInfo",
+					"type": "checkbox"
+				}
+			]
+		}
+	]
+}

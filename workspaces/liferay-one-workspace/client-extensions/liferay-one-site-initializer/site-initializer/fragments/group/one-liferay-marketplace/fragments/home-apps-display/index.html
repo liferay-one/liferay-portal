@@ -78,12 +78,22 @@
 			<p class="lo-section-subtitle mb-5">${displaySectionDescription}</p>
 		</div>
 
-		[#if configuration.specificationFilterValue?has_content && channelId?has_content]
-		[#assign response =
-		restClient.get("/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?accountId=-1&nestedFields=categories,productSpecifications&pageSize=${configuration.pageSize}&filter=specificationValues/any(x:contains(x,'${configuration.specificationFilterValue}'))")
-		/]
-		[#assign products = response.items /]
+		[#assign products = [] /]
 
+		[#if configuration.specificationFilterValue?has_content && channelId?has_content]
+			[#attempt]
+				[#assign response =
+				restClient.get("/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?accountId=-1&nestedFields=categories,productSpecifications&pageSize=${configuration.pageSize}&filter=specificationValues/any(x:contains(x,'${configuration.specificationFilterValue}'))")
+				/]
+
+				[#if response?is_hash && response.items?has_content]
+					[#assign products = response.items /]
+				[/#if]
+			[#recover]
+			[/#attempt]
+		[/#if]
+
+		[#if products?has_content]
 		<div id="section-body">
 			<div class="apps-container d-flex flex-row flex-wrap mb-5">
 				[#list products as product]

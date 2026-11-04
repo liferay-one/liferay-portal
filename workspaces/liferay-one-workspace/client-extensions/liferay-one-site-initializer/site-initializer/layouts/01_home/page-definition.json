@@ -2067,6 +2067,7 @@
 							},
 							"name": "What Is New on Marketplace"
 						},
+						"id": "9a2da114-bd42-888f-09b7-9ad62d57f38a",
 						"pageElements": [
 							{
 								"definition": {
@@ -2076,14 +2077,82 @@
 									},
 									"fragmentConfig": {
 										"cardSize": "large",
+										"channelId": "",
 										"hideRatingInfo": true,
-										"pageSize": "4",
-										"sectionDescription": "Fragments and client extensions help foster your productivity.",
-										"sectionTitle": "What Is New on Marketplace",
-										"specificationFilterValue": "true"
+										"pageSize": 4,
+										"sectionDescription": "The latest releases and updates from our growing Marketplace ecosystem.",
+										"sectionTitle": "What's new",
+										"specificationFilterValue": "What Is new"
 									},
+									"fragmentFields": [
+									],
 									"indexed": true
 								},
+								"id": "1bd18479-f7ea-475f-afce-b3f5ed5e5ab0",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"fragment": {
+										"key": "home-apps-display",
+										"siteKey": "[$GROUP_KEY$]"
+									},
+									"fragmentConfig": {
+										"cardSize": "large",
+										"channelId": "",
+										"hideRatingInfo": true,
+										"pageSize": 4,
+										"sectionDescription": "Featured apps and extensions curated to help you get the most out of Liferay",
+										"sectionTitle": "Highlights",
+										"specificationFilterValue": "Highlights"
+									},
+									"fragmentFields": [
+									],
+									"indexed": true
+								},
+								"id": "7a923981-9b83-6a68-65a4-ccf8e5000c72",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"fragment": {
+										"key": "home-apps-display",
+										"siteKey": "[$GROUP_KEY$]"
+									},
+									"fragmentConfig": {
+										"cardSize": "large",
+										"channelId": "",
+										"hideRatingInfo": true,
+										"pageSize": 4,
+										"sectionDescription": "Explore the most popular apps chosen by businesses worldwide to power their Liferay solutions",
+										"sectionTitle": "Most Popular",
+										"specificationFilterValue": "Most Popular"
+									},
+									"fragmentFields": [
+									],
+									"indexed": true
+								},
+								"id": "37465f07-cf96-411f-5626-a86af3504b55",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"fragment": {
+										"key": "home-publisher-display",
+										"siteKey": "[$GROUP_KEY$]"
+									},
+									"fragmentConfig": {
+										"channelId": "",
+										"hideRatingInfo": true,
+										"publisherDetailsObjectId": "38744115",
+										"sectionDescription": "Fragments and client extensions to foster your prouctivity",
+										"sectionTitle": "Publisher Spotlight"
+									},
+									"fragmentFields": [
+									],
+									"indexed": true
+								},
+								"id": "89e605f8-8293-790c-20b7-84c6cbd66e7a",
 								"type": "Fragment"
 							}
 						],
