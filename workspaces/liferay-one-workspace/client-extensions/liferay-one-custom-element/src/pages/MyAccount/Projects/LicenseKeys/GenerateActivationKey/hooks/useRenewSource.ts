@@ -55,13 +55,21 @@ export function useRenewSource(
 		const entitlementIds = new Set<number>();
 		const servers = new Map<string, GenerateActivationKeyServer>();
 
-		const orderedLicenseKeys = licenseKeys
-			.filter((licenseKey) => licenseKey.active)
-			.sort(
-				(a, b) =>
-					getLicenseKeyFamilyRank(a.licenseKeyFamily) -
-					getLicenseKeyFamilyRank(b.licenseKeyFamily)
-			);
+		const activeLicenseKeys = licenseKeys.filter(
+			(licenseKey) => licenseKey.active
+		);
+
+		let renewedLicenseKeys = activeLicenseKeys;
+
+		if (!activeLicenseKeys.length) {
+			renewedLicenseKeys = licenseKeys;
+		}
+
+		const orderedLicenseKeys = [...renewedLicenseKeys].sort(
+			(a, b) =>
+				getLicenseKeyFamilyRank(a.licenseKeyFamily) -
+				getLicenseKeyFamilyRank(b.licenseKeyFamily)
+		);
 
 		for (const licenseKey of orderedLicenseKeys) {
 			if (licenseKey.entitlementId) {
