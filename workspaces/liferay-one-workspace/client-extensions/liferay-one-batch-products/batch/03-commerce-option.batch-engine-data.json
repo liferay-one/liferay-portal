@@ -417,6 +417,19 @@
 			"skuContributor": true
 		},
 		{
+			"externalReferenceCode": "salesforce-product-liferay-saas-trial-option",
+			"facetable": false,
+			"fieldType": "select",
+			"key": "liferay-saas-trial",
+			"name": {
+				"en_US": "Liferay SaaS - Trial"
+			},
+			"optionValues": [
+			],
+			"required": false,
+			"skuContributor": true
+		},
+		{
 			"externalReferenceCode": "salesforce-product-liferay-saas-user-traffic-tiers-option",
 			"facetable": false,
 			"fieldType": "select",

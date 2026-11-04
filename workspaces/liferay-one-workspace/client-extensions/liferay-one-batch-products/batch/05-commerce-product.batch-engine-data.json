@@ -11583,44 +11583,9 @@
 							"priority": 0
 						},
 						{
-							"key": "01tvo000000jllgya2",
-							"name": {
-								"en_US": "Liferay Experience Cloud - Trial Plan"
-							},
-							"priority": 0
-						},
-						{
 							"key": "01tvo00000mwe85yah",
 							"name": {
 								"en_US": "Saas Pro"
-							},
-							"priority": 0
-						},
-						{
-							"key": "01tvo00000qyrl8yad",
-							"name": {
-								"en_US": "Liferay SaaS - Digital Accelerator Bundle"
-							},
-							"priority": 0
-						},
-						{
-							"key": "01tvo00000qyrl9yad",
-							"name": {
-								"en_US": "Liferay SaaS - Standard Operations Bundle"
-							},
-							"priority": 0
-						},
-						{
-							"key": "01tvo00000qyrlayat",
-							"name": {
-								"en_US": "Liferay SaaS - Enhanced Resilience Bundle"
-							},
-							"priority": 0
-						},
-						{
-							"key": "01tvo00000qyrlbyat",
-							"name": {
-								"en_US": "Liferay SaaS - Maximum Resilience Bundle"
 							},
 							"priority": 0
 						}
@@ -11743,20 +11708,6 @@
 					]
 				},
 				{
-					"externalReferenceCode": "01tVO000000jLLGYA2",
-					"neverExpire": true,
-					"price": 0,
-					"published": false,
-					"purchasable": false,
-					"sku": "01tVO000000jLLGYA2",
-					"skuOptions": [
-						{
-							"key": "liferay-saas",
-							"value": "01tvo000000jllgya2"
-						}
-					]
-				},
-				{
 					"externalReferenceCode": "01tVO00000MWE85YAH",
 					"neverExpire": true,
 					"price": 0,
@@ -11767,62 +11718,6 @@
 						{
 							"key": "liferay-saas",
 							"value": "01tvo00000mwe85yah"
-						}
-					]
-				},
-				{
-					"externalReferenceCode": "01tVO00000QYrl8YAD",
-					"neverExpire": true,
-					"price": 0,
-					"published": false,
-					"purchasable": false,
-					"sku": "01tVO00000QYrl8YAD",
-					"skuOptions": [
-						{
-							"key": "liferay-saas",
-							"value": "01tvo00000qyrl8yad"
-						}
-					]
-				},
-				{
-					"externalReferenceCode": "01tVO00000QYrl9YAD",
-					"neverExpire": true,
-					"price": 0,
-					"published": false,
-					"purchasable": false,
-					"sku": "01tVO00000QYrl9YAD",
-					"skuOptions": [
-						{
-							"key": "liferay-saas",
-							"value": "01tvo00000qyrl9yad"
-						}
-					]
-				},
-				{
-					"externalReferenceCode": "01tVO00000QYrlAYAT",
-					"neverExpire": true,
-					"price": 0,
-					"published": false,
-					"purchasable": false,
-					"sku": "01tVO00000QYrlAYAT",
-					"skuOptions": [
-						{
-							"key": "liferay-saas",
-							"value": "01tvo00000qyrlayat"
-						}
-					]
-				},
-				{
-					"externalReferenceCode": "01tVO00000QYrlBYAT",
-					"neverExpire": true,
-					"price": 0,
-					"published": false,
-					"purchasable": false,
-					"sku": "01tVO00000QYrlBYAT",
-					"skuOptions": [
-						{
-							"key": "liferay-saas",
-							"value": "01tvo00000qyrlbyat"
 						}
 					]
 				}
@@ -11989,6 +11884,122 @@
 		{
 			"active": true,
 			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
+			"externalReferenceCode": "salesforce-product-liferay-saas-trial",
+			"name": {
+				"en_US": "Liferay SaaS - Trial"
+			},
+			"productOptions": [
+				{
+					"facetable": false,
+					"fieldType": "select",
+					"key": "liferay-saas-trial",
+					"name": {
+						"en_US": "Liferay SaaS - Trial"
+					},
+					"optionExternalReferenceCode": "salesforce-product-liferay-saas-trial-option",
+					"productOptionValues": [
+						{
+							"key": "01tvo000000jllgya2",
+							"name": {
+								"en_US": "Liferay Experience Cloud - Trial Plan"
+							},
+							"priority": 0
+						}
+					],
+					"required": false,
+					"skuContributor": true
+				}
+			],
+			"productSpecifications": [
+				{
+					"specificationKey": "liferay-product-categories",
+					"value": {
+						"en_US": "Platform"
+					}
+				},
+				{
+					"specificationKey": "price-model",
+					"value": {
+						"en_US": "Paid"
+					}
+				},
+				{
+					"specificationKey": "product-type",
+					"value": {
+						"en_US": "primary"
+					}
+				},
+				{
+					"specificationKey": "project-activation-profile",
+					"value": {
+						"en_US": "status"
+					}
+				},
+				{
+					"specificationKey": "project-contacts-role-ercs",
+					"value": {
+						"en_US": "C_CRITICAL_INCIDENT_CONTACT,C_DATA_BREACH_CONTACT,C_SECURITY_INCIDENT_CONTACT"
+					}
+				},
+				{
+					"specificationKey": "project-details-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-environment-profile",
+					"value": {
+						"en_US": "saas"
+					}
+				},
+				{
+					"specificationKey": "project-item-type",
+					"value": {
+						"en_US": "product"
+					}
+				},
+				{
+					"specificationKey": "project-utilization-profile",
+					"value": {
+						"en_US": "none"
+					}
+				},
+				{
+					"specificationKey": "publisher-name",
+					"value": {
+						"en_US": "Liferay, Inc."
+					}
+				},
+				{
+					"specificationKey": "type",
+					"value": {
+						"en_US": "cloud"
+					}
+				}
+			],
+			"productStatus": 2,
+			"productType": "virtual",
+			"skus": [
+				{
+					"externalReferenceCode": "01tVO000000jLLGYA2",
+					"neverExpire": true,
+					"price": 0,
+					"published": false,
+					"purchasable": false,
+					"sku": "01tVO000000jLLGYA2",
+					"skuOptions": [
+						{
+							"key": "liferay-saas-trial",
+							"value": "01tvo000000jllgya2"
+						}
+					]
+				}
+			]
+		},
+		{
+			"active": true,
+			"catalogExternalReferenceCode": "LIFERAY_INC_CATALOG",
 			"externalReferenceCode": "salesforce-product-liferay-saas-add-ons",
 			"name": {
 				"en_US": "Liferay SaaS - Add-ons"
@@ -12098,6 +12109,34 @@
 							"key": "01tvo00000hmpthyaf",
 							"name": {
 								"en_US": "Liferay SaaS Subscription - Private Cluster (PROD AND DR)"
+							},
+							"priority": 0
+						},
+						{
+							"key": "01tvo00000qyrl8yad",
+							"name": {
+								"en_US": "Liferay SaaS - Digital Accelerator Bundle"
+							},
+							"priority": 0
+						},
+						{
+							"key": "01tvo00000qyrl9yad",
+							"name": {
+								"en_US": "Liferay SaaS - Standard Operations Bundle"
+							},
+							"priority": 0
+						},
+						{
+							"key": "01tvo00000qyrlayat",
+							"name": {
+								"en_US": "Liferay SaaS - Enhanced Resilience Bundle"
+							},
+							"priority": 0
+						},
+						{
+							"key": "01tvo00000qyrlbyat",
+							"name": {
+								"en_US": "Liferay SaaS - Maximum Resilience Bundle"
 							},
 							"priority": 0
 						}
@@ -12328,6 +12367,62 @@
 						{
 							"key": "liferay-saas-add-ons",
 							"value": "01tvo00000hmpthyaf"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "01tVO00000QYrl8YAD",
+					"neverExpire": true,
+					"price": 0,
+					"published": false,
+					"purchasable": false,
+					"sku": "01tVO00000QYrl8YAD",
+					"skuOptions": [
+						{
+							"key": "liferay-saas-add-ons",
+							"value": "01tvo00000qyrl8yad"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "01tVO00000QYrl9YAD",
+					"neverExpire": true,
+					"price": 0,
+					"published": false,
+					"purchasable": false,
+					"sku": "01tVO00000QYrl9YAD",
+					"skuOptions": [
+						{
+							"key": "liferay-saas-add-ons",
+							"value": "01tvo00000qyrl9yad"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "01tVO00000QYrlAYAT",
+					"neverExpire": true,
+					"price": 0,
+					"published": false,
+					"purchasable": false,
+					"sku": "01tVO00000QYrlAYAT",
+					"skuOptions": [
+						{
+							"key": "liferay-saas-add-ons",
+							"value": "01tvo00000qyrlayat"
+						}
+					]
+				},
+				{
+					"externalReferenceCode": "01tVO00000QYrlBYAT",
+					"neverExpire": true,
+					"price": 0,
+					"published": false,
+					"purchasable": false,
+					"sku": "01tVO00000QYrlBYAT",
+					"skuOptions": [
+						{
+							"key": "liferay-saas-add-ons",
+							"value": "01tvo00000qyrlbyat"
 						}
 					]
 				}
