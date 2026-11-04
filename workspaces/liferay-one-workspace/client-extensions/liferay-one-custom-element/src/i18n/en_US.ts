@@ -556,6 +556,8 @@ export default {
 	'download-app': 'Download App',
 	'download-in-progress': 'Download in Progress',
 	'download-key': 'Download Key',
+	'download-large-files-associated-with-your-support-tickets':
+		'Download large files associated with your support tickets.',
 	'download-offline-activation-bundle': 'Download Offline Activation Bundle',
 	'download-offline-activation-package':
 		'Download Offline Activation Package',
@@ -1138,7 +1140,6 @@ export default {
 	'new-activation-key': 'New Activation Key',
 	'new-address': 'New Address',
 	'new-app': 'New App',
-	'new-attachment': 'New Attachment',
 	'new-key': 'New Key',
 	'new-potential-expiration-date': 'New Potential Expiration Date',
 	'new-projects-using-marketplace-apps':
@@ -1196,7 +1197,6 @@ export default {
 	'no-records': 'No records.',
 	'no-results-found': 'No Results Found',
 	'no-role': 'No Role',
-	'no-support-tickets-were-found': 'No support tickets were found.',
 	'no-ticket-attachments-were-found': 'No ticket attachments were found.',
 	'no-tokens-available': 'No tokens available',
 	'no-trials-yet': 'No Trials Yet',
@@ -1665,7 +1665,6 @@ export default {
 	'select-a-role': 'Select a role',
 	'select-a-server-to-store-your-data-this-could-have-implications-to-your-organizations-policy-on-user-data-storage':
 		"Select a server to store your data. This could have implications to your organization's policy on user data storage.",
-	'select-a-ticket': 'Select a Ticket',
 	'select-a-topic': 'Select a Topic',
 	'select-account': 'Select Account',
 	'select-all': 'Select All',
@@ -1699,8 +1698,6 @@ export default {
 	'select-the-option': 'Select the Option',
 	'select-the-product-and-key-type-you-would-like-to-generate':
 		'Select the product and key type you would like to generate.',
-	'select-the-project-and-ticket-you-want-to-attach-a-file-to':
-		'Select the project and ticket you want to attach a file to.',
 	'select-the-subscription-and-key-type-you-would-like-to-generate':
 		'Select the subscription and key type you would like to generate.',
 	'select-the-versions-of-liferay-that-your-app-is-compatible-with':
@@ -2153,8 +2150,6 @@ export default {
 	'unused-usage-definitions': 'Unused Usage Definitions',
 	'upgrade': 'Upgrade',
 	'upload': 'Upload',
-	'upload-and-download-large-files-associated-with-your-support-tickets':
-		'Upload and download large files associated with your support tickets.',
 	'upload-at-least-one-image-or-add-a-video-url':
 		'Upload at least one image, or add a video URL',
 	'upload-confirmation': 'Upload Confirmation',

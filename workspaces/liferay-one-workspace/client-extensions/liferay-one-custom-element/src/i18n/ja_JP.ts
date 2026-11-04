@@ -495,6 +495,8 @@ export default {
 	'download-app': 'アプリをダウンロード',
 	'download-in-progress': 'ダウンロード中',
 	'download-key': 'キーのダウンロード',
+	'download-large-files-associated-with-your-support-tickets':
+		'サポートチケットに関連付けられた大容量ファイルをダウンロードします。',
 	'download-offline-activation-bundle':
 		'オフラインアクティベーションバンドルのダウンロード',
 	'download-your-activation-key-file-below-and-upload-it-to-the-dedicated-portal-within-your-dxp-environment-to-get-started':
@@ -974,7 +976,6 @@ export default {
 	'new-activation-key': '新しいアクティベーションキー',
 	'new-address': '新しい住所',
 	'new-app': '新しいアプリ',
-	'new-attachment': '新しい添付ファイル',
 	'new-key': '新しいキー',
 	'new-potential-expiration-date': '新しい潜在的な有効期限',
 	'new-projects-using-marketplace-apps':
@@ -1017,7 +1018,6 @@ export default {
 		'更新するパブリッシャープロフィールがありません',
 	'no-results-found': '結果が見つかりません。',
 	'no-role': 'ロールなし',
-	'no-support-tickets-were-found': 'サポートチケットが見つかりませんでした。',
 	'no-ticket-attachments-were-found':
 		'チケットの添付ファイルが見つかりませんでした。',
 	'no-tokens-available': '利用可能なトークンはありません',
@@ -1390,7 +1390,6 @@ export default {
 	'select-a-role': 'ロールを選択',
 	'select-a-server-to-store-your-data-this-could-have-implications-to-your-organizations-policy-on-user-data-storage':
 		'データを保存するサーバーを選択してください。これは、ユーザーデータ保存に関する組織のポリシーに影響を与える可能性があります。',
-	'select-a-ticket': 'チケットを選択',
 	'select-a-topic': 'トピックを選択',
 	'select-account': 'アカウントを選択',
 	'select-an-account-to-view-this-page':
@@ -1417,8 +1416,6 @@ export default {
 	'select-the-offering-of-liferay-your-app-is-compatible-with-the-compatibility-selections-will-determine-on-what-platforms-your-app-is-tested':
 		'アプリと互換性のあるLiferay製品を選択してください。互換性の選択によって、アプリがテストされるプラットフォームが決まります。',
 	'select-the-option': 'オプションの選択',
-	'select-the-project-and-ticket-you-want-to-attach-a-file-to':
-		'ファイルを添付するプロジェクトとチケットを選択してください。',
 	'select-the-versions-of-liferay-that-your-app-is-compatible-with':
 		'アプリと互換性のあるLiferayのバージョンを選択してください。',
 	'select-your-desired-publisher-type':
@@ -1768,8 +1765,6 @@ export default {
 	'unpaid': '未払い',
 	'upgrade': 'アップグレード',
 	'upload': 'アップロード',
-	'upload-and-download-large-files-associated-with-your-support-tickets':
-		'サポートチケットに関連付けられた大容量ファイルをアップロードおよびダウンロードします。',
 	'upload-at-least-one-image-or-add-a-video-url':
 		'少なくとも1つの画像をアップロードするか、動画URLを追加してください',
 	'upload-confirmation': 'アップロードの確認',

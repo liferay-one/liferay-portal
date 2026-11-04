@@ -499,6 +499,8 @@ export default {
 	'download-app': 'Baixar aplicativo',
 	'download-in-progress': 'Download em andamento',
 	'download-key': 'Baixar chave',
+	'download-large-files-associated-with-your-support-tickets':
+		'Baixe arquivos grandes associados aos seus chamados de suporte.',
 	'download-offline-activation-bundle': 'Baixar pacote de ativação offline',
 	'download-your-activation-key-file-below-and-upload-it-to-the-dedicated-portal-within-your-dxp-environment-to-get-started':
 		'Baixe o arquivo de chave de ativação abaixo e faça o upload no portal dedicado do seu ambiente DXP para começar.',
@@ -990,7 +992,6 @@ export default {
 	'new-activation-key': 'Nova chave de ativação',
 	'new-address': 'Novo endereço',
 	'new-app': 'Novo aplicativo',
-	'new-attachment': 'Novo anexo',
 	'new-key': 'Nova chave',
 	'new-potential-expiration-date': 'Nova data potencial de expiração',
 	'new-projects-using-marketplace-apps':
@@ -1032,7 +1033,6 @@ export default {
 		'Não há perfil de publicador para atualizar',
 	'no-results-found': 'Nenhum Resultado Encontrado',
 	'no-role': 'Sem função',
-	'no-support-tickets-were-found': 'Nenhum ticket de suporte foi encontrado.',
 	'no-ticket-attachments-were-found':
 		'Nenhum anexo de ticket foi encontrado.',
 	'no-tokens-available': 'Nenhum token disponível',
@@ -1405,7 +1405,6 @@ export default {
 	'select-a-role': 'Selecione uma função',
 	'select-a-server-to-store-your-data-this-could-have-implications-to-your-organizations-policy-on-user-data-storage':
 		'Selecione um servidor para armazenar seus dados. Isso pode ter implicações na política de armazenamento de dados de usuários da sua organização.',
-	'select-a-ticket': 'Selecione um chamado',
 	'select-a-topic': 'Selecione um tópico',
 	'select-account': 'Selecionar conta',
 	'select-an-account-to-view-this-page':
@@ -1433,8 +1432,6 @@ export default {
 	'select-the-offering-of-liferay-your-app-is-compatible-with-the-compatibility-selections-will-determine-on-what-platforms-your-app-is-tested':
 		'Selecione a oferta do Liferay com a qual seu aplicativo é compatível. As seleções de compatibilidade determinarão em quais plataformas seu aplicativo será testado.',
 	'select-the-option': 'Selecione a Opção',
-	'select-the-project-and-ticket-you-want-to-attach-a-file-to':
-		'Selecione o projeto e o chamado ao qual deseja anexar um arquivo.',
 	'select-the-versions-of-liferay-that-your-app-is-compatible-with':
 		'Selecione as versões do Liferay com as quais seu aplicativo é compatível.',
 	'select-your-desired-publisher-type':
@@ -1785,8 +1782,6 @@ export default {
 	'unpaid': 'Não pago',
 	'upgrade': 'Atualização',
 	'upload': 'Enviar',
-	'upload-and-download-large-files-associated-with-your-support-tickets':
-		'Faça upload e download de arquivos grandes associados aos seus chamados de suporte.',
 	'upload-at-least-one-image-or-add-a-video-url':
 		'Faça upload de pelo menos uma imagem ou adicione uma URL de vídeo',
 	'upload-confirmation': 'Confirmação de upload',
