@@ -725,7 +725,7 @@ export function useAccountProducts() {
 	return {loading: contractsLoading || productsLoading, products};
 }
 
-export function useHasActiveExperienceOffering() {
+export function useActiveProductExternalReferenceCodes() {
 	const {
 		data,
 		error,
@@ -738,35 +738,52 @@ export function useHasActiveExperienceOffering() {
 		isLoading: productsLoading,
 	} = useProjectProducts();
 
-	const hasActiveExperienceOffering = useMemo(() => {
+	const activeProductExternalReferenceCodes = useMemo(() => {
 		const productsBySkuExternalReferenceCode =
 			toProductsBySkuExternalReferenceCode(productsData?.items ?? []);
 
-		return (data?.items ?? [])
+		const externalReferenceCodes = new Set<string>();
+
+		(data?.items ?? [])
 			.flatMap((contract) =>
 				toProductEntitlements(contract.contractToEntitlement)
 			)
-			.some((entitlement) => {
+			.forEach((entitlement) => {
 				const product = productsBySkuExternalReferenceCode.get(
 					entitlement.skuExternalReferenceCode as string
 				);
 
-				return (
-					!!product &&
-					EXPERIENCE_OFFERING_PRODUCT_EXTERNAL_REFERENCE_CODES.some(
-						(code) => code === product.externalReferenceCode
-					) &&
+				if (
+					product &&
 					getEntitlementStatus(
 						entitlement.effectiveEndDate ?? entitlement.endDate
 					) === 'active'
-				);
+				) {
+					externalReferenceCodes.add(product.externalReferenceCode);
+				}
 			});
+
+		return externalReferenceCodes;
 	}, [data, productsData]);
 
 	return {
+		activeProductExternalReferenceCodes,
 		error: error ?? productsError,
-		hasActiveExperienceOffering,
 		loading: loading || productsLoading,
+	};
+}
+
+export function useHasActiveExperienceOffering() {
+	const {activeProductExternalReferenceCodes, error, loading} =
+		useActiveProductExternalReferenceCodes();
+
+	return {
+		error,
+		hasActiveExperienceOffering:
+			EXPERIENCE_OFFERING_PRODUCT_EXTERNAL_REFERENCE_CODES.some((code) =>
+				activeProductExternalReferenceCodes.has(code)
+			),
+		loading,
 	};
 }
 

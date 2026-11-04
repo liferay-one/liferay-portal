@@ -10,6 +10,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useProject} from '~/context/ProjectContext';
 import {useDeliveryProductByExternalReferenceCode} from '~/hooks/useDeliveryProductByExternalReferenceCode';
 import {
+	useActiveProductExternalReferenceCodes,
 	useHasActiveExperienceOffering,
 	useProjectCommerce,
 	useProjectProducts,
@@ -30,6 +31,7 @@ vi.mock('~/hooks/useDeliveryProductByExternalReferenceCode', () => ({
 }));
 
 vi.mock('~/hooks/useProjectCommerce', () => ({
+	useActiveProductExternalReferenceCodes: vi.fn(),
 	useHasActiveExperienceOffering: vi.fn(),
 	useProjectCommerce: vi.fn(),
 	useProjectProducts: vi.fn(),
@@ -75,6 +77,13 @@ describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 			contract: undefined,
 			loading: false,
 		} as unknown as ReturnType<typeof useProjectCommerce>);
+
+		vi.mocked(useActiveProductExternalReferenceCodes).mockReturnValue({
+			activeProductExternalReferenceCodes: new Set(),
+			loading: false,
+		} as unknown as ReturnType<
+			typeof useActiveProductExternalReferenceCodes
+		>);
 
 		vi.mocked(useHasActiveExperienceOffering).mockReturnValue({
 			hasActiveExperienceOffering: false,
