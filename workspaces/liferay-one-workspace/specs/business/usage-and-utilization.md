@@ -100,6 +100,7 @@ Terms used in this file:
 | REQ-USAGE-063 | The usage card of any other profile sums the usage events of the project against its allowances. Add on buckets multiply by the bucket size, and overage buckets do not count. A monthly metric counts only the latest month. | P1 | — | `HOOK-USEPROJECTUSAGE`, `FLOW-UTILIZATION-TRACKING` |
 | REQ-USAGE-064 | When the usage request fails, the tab shows that usage is not available. When no metric has a value, the tab shows the empty utilization card. | P2 | — | `FLOW-UTILIZATION-TRACKING` |
 | REQ-USAGE-065 | The Utilization tab of a product is shown only when the project has an unexpired entitlement to a SKU of that product. Without one, the tab is hidden, whatever the utilization profile. | P1 | LPD-91383, LPD-113133 | `MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG` |
+| REQ-USAGE-066 | Some Salesforce products group SKUs that need different views, and the migration fixes that grouping. A hardcoded list sets the profile of these SKUs instead of the product: the Engage, Support and Transact Site plans of Liferay SaaS show the legacy notice, and the Trial Plan, the four Liferay SaaS bundles and every Liferay PaaS - Environments SKU show no tab. When a project has several active SKUs of one product, a dashboard wins over the legacy notice, and the legacy notice wins over none. | P1 | LPD-112403, LPD-113937 | `MOD-MYACCOUNT-PROJECTS-RESOLVEUTILIZATIONPROFILE` |
 
 ## AI Hub Tokens
 

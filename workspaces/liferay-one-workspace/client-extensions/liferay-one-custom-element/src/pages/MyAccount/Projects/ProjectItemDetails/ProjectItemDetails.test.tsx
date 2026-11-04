@@ -10,7 +10,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useProject} from '~/context/ProjectContext';
 import {useDeliveryProductByExternalReferenceCode} from '~/hooks/useDeliveryProductByExternalReferenceCode';
 import {
-	useActiveProductExternalReferenceCodes,
+	useActiveSkuExternalReferenceCodes,
 	useHasActiveExperienceOffering,
 	useProjectCommerce,
 	useProjectProducts,
@@ -31,7 +31,7 @@ vi.mock('~/hooks/useDeliveryProductByExternalReferenceCode', () => ({
 }));
 
 vi.mock('~/hooks/useProjectCommerce', () => ({
-	useActiveProductExternalReferenceCodes: vi.fn(),
+	useActiveSkuExternalReferenceCodes: vi.fn(),
 	useHasActiveExperienceOffering: vi.fn(),
 	useProjectCommerce: vi.fn(),
 	useProjectProducts: vi.fn(),
@@ -78,12 +78,10 @@ describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 			loading: false,
 		} as unknown as ReturnType<typeof useProjectCommerce>);
 
-		vi.mocked(useActiveProductExternalReferenceCodes).mockReturnValue({
-			activeProductExternalReferenceCodes: new Set(),
+		vi.mocked(useActiveSkuExternalReferenceCodes).mockReturnValue({
+			activeSkuExternalReferenceCodesByProduct: new Map(),
 			loading: false,
-		} as unknown as ReturnType<
-			typeof useActiveProductExternalReferenceCodes
-		>);
+		} as unknown as ReturnType<typeof useActiveSkuExternalReferenceCodes>);
 
 		vi.mocked(useHasActiveExperienceOffering).mockReturnValue({
 			hasActiveExperienceOffering: false,

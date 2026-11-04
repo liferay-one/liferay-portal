@@ -6,6 +6,7 @@
 import {getProductSpecificationValue} from '~/utils/productUtils';
 
 import {resolveProfile} from './resolveProfile';
+import {SKU_UTILIZATION_PROFILES} from './skuUtilizationProfiles';
 
 import type {DeliveryProduct} from '~/types/product';
 
@@ -26,14 +27,42 @@ const UTILIZATION_PROFILES: UtilizationProfile[] = [
 	'usage-metrics',
 ];
 
+function getPriority(utilizationProfile: UtilizationProfile): number {
+	if (utilizationProfile === 'none') {
+		return 0;
+	}
+
+	if (utilizationProfile === 'legacy') {
+		return 1;
+	}
+
+	return 2;
+}
+
 export function resolveUtilizationProfile(
-	product: DeliveryProduct
+	product: DeliveryProduct,
+	activeSkuExternalReferenceCodes: string[]
 ): UtilizationProfile {
-	return resolveProfile(
+	const productUtilizationProfile = resolveProfile(
 		getProductSpecificationValue('project-utilization-profile', product),
 		UTILIZATION_PROFILES,
 		'none'
 	);
+
+	return activeSkuExternalReferenceCodes
+		.map(
+			(skuExternalReferenceCode) =>
+				SKU_UTILIZATION_PROFILES[skuExternalReferenceCode] ??
+				productUtilizationProfile
+		)
+		.reduce<UtilizationProfile>(
+			(utilizationProfile1, utilizationProfile2) =>
+				getPriority(utilizationProfile2) >
+				getPriority(utilizationProfile1)
+					? utilizationProfile2
+					: utilizationProfile1,
+			'none'
+		);
 }
 
 export default resolveUtilizationProfile;
