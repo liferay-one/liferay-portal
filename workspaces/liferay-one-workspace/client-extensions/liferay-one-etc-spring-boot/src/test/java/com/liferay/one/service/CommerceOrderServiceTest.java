@@ -2442,6 +2442,23 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testFetchCommerceOrderRequestsEveryOrderItem()
+		throws Exception {
+
+		_mockOrderResource(
+			() -> _commerceOrderService.fetchCommerceOrder(_ORDER_ID));
+
+		Mockito.verify(
+			_orderResourceBuilder
+		).parameters(
+			"nestedFields",
+			"account,billingAddress,customFields,orderItems," +
+				"orderItems.customFields",
+			"orderItems.pageSize", "-1"
+		);
+	}
+
+	@Test
 	public void testGetLatestOrdersSkipsDuplicateOrders() throws Exception {
 		List<Order> orders = _getLatestOrders(
 			10, _createOrdersPage(4, 1L, 2L), _createOrdersPage(4, 2L, 3L));
@@ -3659,6 +3676,8 @@ public class CommerceOrderServiceTest {
 		OrderResource.Builder builder = Mockito.mock(
 			OrderResource.Builder.class, Mockito.RETURNS_SELF);
 
+		_orderResourceBuilder = builder;
+
 		Mockito.when(
 			builder.build()
 		).thenReturn(
@@ -4156,6 +4175,7 @@ public class CommerceOrderServiceTest {
 	private EnvironmentService _environmentService;
 	private NotificationQueueEntryService _notificationQueueEntryService;
 	private NotificationTemplateService _notificationTemplateService;
+	private OrderResource.Builder _orderResourceBuilder;
 	private PostalAddressService _postalAddressService;
 	private ProjectService _projectService;
 	private SalesforceService _salesforceService;
