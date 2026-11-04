@@ -80,10 +80,7 @@ public class AccountConverterTest {
 		Account account = new Account();
 
 		account.setCustomFields(
-			new CustomField[] {
-				_customField("accountCode", "test-account-code"),
-				_customField("accountTier", "Gold")
-			});
+			new CustomField[] {_customField("accountTier", "Gold")});
 		account.setDateCreated(new Date(0));
 		account.setDateModified(new Date(86400000));
 		account.setDescription("Test description");
@@ -94,10 +91,6 @@ public class AccountConverterTest {
 		JiraAssetObject jiraAssetObject = _accountConverter.toAssetObject(
 			account);
 
-		Assertions.assertEquals(
-			"test-account-code",
-			jiraAssetObject.getAttributeValue(
-				AccountConstants.ATTRIBUTE_NAME_CODE));
 		Assertions.assertEquals(
 			"Test description",
 			jiraAssetObject.getAttributeValue(
@@ -210,19 +203,30 @@ public class AccountConverterTest {
 	}
 
 	@Test
-	public void testToAssetObjectSkipsMissingValues() {
+	public void testToAssetObjectSkipsAccountCode() {
 		Account account = new Account();
 
 		account.setCustomFields(
-			new CustomField[] {_customField("accountCode", null)});
+			new CustomField[] {
+				_customField("accountCode", "test-account-code")
+			});
 
 		JiraAssetObject jiraAssetObject = _accountConverter.toAssetObject(
 			account);
 
-		Assertions.assertEquals(
-			"",
-			jiraAssetObject.getAttributeValue(
-				AccountConstants.ATTRIBUTE_NAME_CODE));
+		Assertions.assertEquals("", jiraAssetObject.getAttributeValue("Code"));
+	}
+
+	@Test
+	public void testToAssetObjectSkipsMissingValues() {
+		Account account = new Account();
+
+		account.setCustomFields(
+			new CustomField[] {_customField("accountTier", null)});
+
+		JiraAssetObject jiraAssetObject = _accountConverter.toAssetObject(
+			account);
+
 		Assertions.assertEquals(
 			"",
 			jiraAssetObject.getAttributeValue(
