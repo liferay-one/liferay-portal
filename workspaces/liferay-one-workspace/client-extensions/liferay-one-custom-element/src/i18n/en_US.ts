@@ -1590,8 +1590,6 @@ export default {
 	'request-a-marketplace-publisher-account':
 		'Request a Marketplace Publisher Account',
 	'request-access': 'Request Access',
-	'request-access-to-ai-hub-private-beta':
-		'Request Access to AI Hub Private Beta',
 	'request-access-to-seo-and-aeo-studio-beta':
 		'Request Access to SEO&AEO Studio Beta',
 	'request-account': 'Request Account',

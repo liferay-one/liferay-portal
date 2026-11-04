@@ -6,7 +6,7 @@
 import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import useSWR from 'swr';
-import checkCircleIcon from '~/assets/icons/check_circle_icon.svg';
+import documentCircleIcon from '~/assets/icons/document_circle_icon.svg';
 import {AccountAndAppCard} from '~/components/AccountAndAppCard/AccountAndAppCard';
 import {Header} from '~/components/Header/Header';
 import {PageRenderer} from '~/components/Page/Page';
@@ -53,9 +53,6 @@ const AIHubNextSteps: React.FC<AIHubNextStepsProps> = ({
 						title={
 							<div className="align-items-center d-flex">
 								{productName}{' '}
-								<label className="beta-badge-label ml-2 mt-1">
-									Private Beta
-								</label>{' '}
 							</div>
 						}
 					/>
@@ -81,33 +78,40 @@ const AIHubNextSteps: React.FC<AIHubNextStepsProps> = ({
 						<Header
 							description={
 								<span className="text-center">
-									<p className="mb-1">
-										We&apos;ve received your submission and
-										will review it. You&apos;ll receive an
-										email confirming
+									<p className="mb-1 next-step-page-description">
+										Thank you for your purchase of{' '}
+										<strong>AI Hub.</strong> An order form
+										will be sent to your{' '}
+										<strong>email via DocuSign</strong>.
+										Please review, sign, and return it to
+										confirm your subscription. Once
+										received, we will provision your AI Hub
+										and notify you by email when it is ready
+										for use. If the message does not appear
+										in your inbox, please check your Spam or
+										Promotions folder.
 									</p>
-									<p className="mb-5">
-										whether your access to the{' '}
-										<strong>
-											Liferay AI Hub Private Beta
-										</strong>{' '}
-										has been approved.
+									<p className="mt-5">
+										Order ID:{' '}
+										<span className="next-step-page-text-highlight">
+											{placedOrder?.id}
+										</span>
 									</p>
 								</span>
 							}
 							icon={
-								<span className="d-flex justify-content-center">
+								<span className="d-flex justify-content-center mb-4">
 									<img
 										alt="payment pending icon"
 										draggable="false"
-										src={checkCircleIcon}
+										src={documentCircleIcon}
 									/>
 								</span>
 							}
 							title={
-								<span className="d-flex justify-content-center mb-5 next-step-page-title">
+								<span className="d-flex justify-content-center mb-5 next-step-page-title text-center">
 									{i18n.translate(
-										'thank-you-for-your-request'
+										'order-received-awaiting-signature'
 									)}
 								</span>
 							}
@@ -115,16 +119,41 @@ const AIHubNextSteps: React.FC<AIHubNextStepsProps> = ({
 					</div>
 				</div>
 
-				<div className="d-flex justify-content-center mt-4 next-step-page-footer-button-container w-100">
-					<ClayButton
-						className="mr-3 next-step-page-footer-button-back"
-						displayType="secondary"
-						onClick={() => {
-							Liferay.Util.navigate(`${getSiteURL()}/my-account`);
-						}}
-					>
-						{i18n.translate('go-to-dashboard')}
-					</ClayButton>
+				<div className="d-flex flex-column justify-content-center mt-4 next-step-page-footer-button-container w-100">
+					<div>
+						<ClayButton
+							className="mr-5 next-step-page-footer-button-secondary"
+							displayType="secondary"
+							onClick={() => {
+								Liferay.Util.navigate(
+									`${getSiteURL()}/products`
+								);
+							}}
+						>
+							{i18n.translate('browse-products')}
+						</ClayButton>
+						<ClayButton
+							className="mr-3 next-step-page-footer-button-primary"
+							displayType="primary"
+							onClick={() => {
+								Liferay.Util.navigate(
+									`${getSiteURL()}/my-account`
+								);
+							}}
+						>
+							{i18n.translate('go-to-dashboard')}
+						</ClayButton>
+					</div>
+
+					<span className="font-weight-semi-bold">
+						Didn&apos;t receive the email?{' '}
+						<a
+							className="font-weight-bold"
+							href="mailto:support@liferay.com"
+						>
+							support@liferay.com
+						</a>
+					</span>
 				</div>
 			</div>
 		</PageRenderer>

@@ -32,7 +32,7 @@ Terms used in this file:
 | TECH-PAYMENTS-013 | Commerce returns the payment URL as plain text. An empty answer sends the buyer to the callback URL directly. An answer that is not a success raises an error, and the buyer stays on the summary step with a general error message. | P0 | LPD-104214 | `CLIENT-HEADLESS-HEADLESSCOMMERCEDELIVERYCART` |
 | TECH-PAYMENTS-014 | Known defect: the checkout runs before the payment URL request. When the payment URL request fails, the order stays in Commerce with no payment, and the buyer does not see its order ID. | P1 | LPD-104214 | — |
 | TECH-PAYMENTS-015 | The browser accepts one purchase submit at a time. It holds the guard until the browser leaves for the payment page, so a second click does not place a second order. | P1 | LPD-104108 | — |
-| TECH-PAYMENTS-016 | The AI Hub token purchase and the AI Hub open beta purchase also send the buyer to the payment URL after checkout, with the same callback URL rules. | P1 | LPD-102570 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBTOKEN`, `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBOPENBETA` |
+| TECH-PAYMENTS-016 | The AI Hub token purchase and the AI Hub purchase also send the buyer to the payment URL after checkout, with the same callback URL rules. | P1 | LPD-102570 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBTOKEN`, `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUB` |
 
 ## Payment Result
 

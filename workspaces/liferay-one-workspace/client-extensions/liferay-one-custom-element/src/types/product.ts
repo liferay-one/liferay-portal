@@ -302,7 +302,6 @@ export type SkuOptions =
 
 export type SolutionTypes =
 	| 'ai-hub'
-	| 'ai-hub-open-beta'
 	| 'analytics'
 	| 'cmp'
 	| 'cms'
