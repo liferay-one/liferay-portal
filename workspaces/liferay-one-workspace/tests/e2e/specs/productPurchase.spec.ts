@@ -970,7 +970,7 @@ test.describe('[FLOW-PRODUCT-PURCHASE-ENTRY] product specific steps', () => {
 		await expect(continueButton).toBeDisabled();
 	});
 
-	test('[FLOW-PRODUCT-PURCHASE-CONTRACT] [ROUTE-PRODUCT-PURCHASE-AI-HUB-OPEN-BETA-FORM] AI Hub holds the buyer on Contract Selection until a contract is chosen', async ({
+	test('[FLOW-PRODUCT-PURCHASE-CONTRACT] [ROUTE-PRODUCT-PURCHASE-AI-HUB-FORM] AI Hub holds the buyer on Contract Selection until a contract is chosen', async ({
 		adminAPI,
 		page,
 		signIn,
