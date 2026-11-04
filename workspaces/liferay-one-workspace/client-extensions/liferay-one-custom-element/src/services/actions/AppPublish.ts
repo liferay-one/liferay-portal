@@ -235,8 +235,8 @@ export default class AppPublish extends BaseAppPublish {
 		}));
 	}
 
-	private getProductStatus() {
-		const productStatus = this.config.isDraft
+	private getProductStatus(isDraft = this.config.isDraft) {
+		const productStatus = isDraft
 			? ProductWorkflowStatusCode.DRAFT
 			: ProductWorkflowStatusCode.PENDING;
 
@@ -340,7 +340,7 @@ export default class AppPublish extends BaseAppPublish {
 				categories: [...productCategories, ...compatibleOfferings],
 				description,
 				name,
-				...this.getProductStatus(),
+				...this.getProductStatus(true),
 				productTaxConfiguration:
 					await this.getProductTaxConfiguration(),
 			});
