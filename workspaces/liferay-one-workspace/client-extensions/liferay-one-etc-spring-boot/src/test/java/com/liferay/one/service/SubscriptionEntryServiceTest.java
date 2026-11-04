@@ -35,7 +35,6 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import org.springframework.context.MessageSource;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.util.ReflectionTestUtils;
 
 /**
@@ -120,6 +119,9 @@ public class SubscriptionEntryServiceTest {
 		Assertions.assertEquals(
 			List.of("POST /o/c/subscriptionentries"),
 			_testSubscriptionEntryService.requests);
+		Assertions.assertEquals(
+			List.of("Bearer test"),
+			_testSubscriptionEntryService.authorizations);
 
 		JSONObject jsonObject = new JSONObject(
 			_testSubscriptionEntryService.bodies.get(0));
@@ -137,8 +139,7 @@ public class SubscriptionEntryServiceTest {
 			_createSubscriptionEntryJSONObject(9, 2));
 
 		SubscriptionEntry subscriptionEntry =
-			_testSubscriptionEntryService.addSubscriptionEntry(
-				(Jwt)null, "Class", 1L, 2L);
+			_testSubscriptionEntryService.addSubscriptionEntry("Class", 1L, 2L);
 
 		Assertions.assertEquals(9, subscriptionEntry.getSubscriptionEntryId());
 
@@ -220,6 +221,28 @@ public class SubscriptionEntryServiceTest {
 				"DELETE /o/c/subscriptionentries/1",
 				"DELETE /o/c/subscriptionentries/3"),
 			_testSubscriptionEntryService.requests);
+	}
+
+	@Test
+	public void testDeleteSubscriptionEntryDeletesWithTheServiceAccount()
+		throws Exception {
+
+		_testSubscriptionEntryService.itemsFunction = filterString -> List.of(
+			_createSubscriptionEntryJSONObject(9, 2));
+
+		_testSubscriptionEntryService.deleteSubscriptionEntry("Class", 1L, 2L);
+
+		Assertions.assertEquals(
+			List.of(
+				"(className eq 'Class') and (classPK eq 1) and (customUserId " +
+					"eq 2)"),
+			_testSubscriptionEntryService.filterStrings);
+		Assertions.assertEquals(
+			List.of("DELETE /o/c/subscriptionentries/9"),
+			_testSubscriptionEntryService.requests);
+		Assertions.assertEquals(
+			List.of("Bearer test"),
+			_testSubscriptionEntryService.authorizations);
 	}
 
 	@Test
@@ -586,6 +609,7 @@ public class SubscriptionEntryServiceTest {
 	private static class TestSubscriptionEntryService
 		extends SubscriptionEntryService {
 
+		public final List<String> authorizations = new ArrayList<>();
 		public final List<String> bodies = new ArrayList<>();
 		public final List<String> filterStrings = new ArrayList<>();
 		public Function<String, List<JSONObject>> itemsFunction =
@@ -595,6 +619,7 @@ public class SubscriptionEntryServiceTest {
 
 		@Override
 		protected String delete(String authorization, String body, URI uri) {
+			authorizations.add(authorization);
 			requests.add("DELETE " + uri.getPath());
 
 			return null;
@@ -602,8 +627,8 @@ public class SubscriptionEntryServiceTest {
 
 		@Override
 		protected <T> List<T> getAllItems(
-			String path, String filterString, Function<JSONObject, T> function,
-			Jwt jwt) {
+			String path, String filterString,
+			Function<JSONObject, T> function) {
 
 			filterStrings.add(filterString);
 
@@ -623,6 +648,7 @@ public class SubscriptionEntryServiceTest {
 
 		@Override
 		protected String post(String authorization, String body, URI uri) {
+			authorizations.add(authorization);
 			bodies.add(body);
 			requests.add("POST " + uri.getPath());
 

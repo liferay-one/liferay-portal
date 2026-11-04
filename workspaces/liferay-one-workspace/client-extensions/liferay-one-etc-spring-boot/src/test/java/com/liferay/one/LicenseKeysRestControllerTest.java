@@ -73,13 +73,13 @@ public class LicenseKeysRestControllerTest {
 		Mockito.verify(
 			_subscriptionEntryService
 		).deleteSubscriptionEntry(
-			null, ClassNameConstants.LICENSE_KEY, 1L, _USER_ID
+			ClassNameConstants.LICENSE_KEY, 1L, _USER_ID
 		);
 
 		Mockito.verify(
 			_subscriptionEntryService
 		).deleteSubscriptionEntry(
-			null, ClassNameConstants.LICENSE_KEY, 2L, _USER_ID
+			ClassNameConstants.LICENSE_KEY, 2L, _USER_ID
 		);
 	}
 
@@ -586,7 +586,7 @@ public class LicenseKeysRestControllerTest {
 
 		Mockito.when(
 			_subscriptionEntryService.fetchSubscriptionEntry(
-				null, ClassNameConstants.LICENSE_KEY, 5L, _USER_ID)
+				ClassNameConstants.LICENSE_KEY, 5L, _USER_ID)
 		).thenReturn(
 			null
 		);
@@ -612,7 +612,7 @@ public class LicenseKeysRestControllerTest {
 
 		Mockito.when(
 			_subscriptionEntryService.fetchSubscriptionEntry(
-				null, ClassNameConstants.LICENSE_KEY, 5L, _USER_ID)
+				ClassNameConstants.LICENSE_KEY, 5L, _USER_ID)
 		).thenReturn(
 			Mockito.mock(SubscriptionEntry.class)
 		);
@@ -1105,13 +1105,13 @@ public class LicenseKeysRestControllerTest {
 		Mockito.verify(
 			_subscriptionEntryService
 		).addSubscriptionEntry(
-			null, ClassNameConstants.LICENSE_KEY, 1L, _USER_ID
+			ClassNameConstants.LICENSE_KEY, 1L, _USER_ID
 		);
 
 		Mockito.verify(
 			_subscriptionEntryService
 		).addSubscriptionEntry(
-			null, ClassNameConstants.LICENSE_KEY, 2L, _USER_ID
+			ClassNameConstants.LICENSE_KEY, 2L, _USER_ID
 		);
 	}
 
@@ -1153,8 +1153,7 @@ public class LicenseKeysRestControllerTest {
 		Mockito.verify(
 			_subscriptionEntryService, Mockito.never()
 		).addSubscriptionEntry(
-			Mockito.any(), Mockito.anyString(), Mockito.anyLong(),
-			Mockito.anyLong()
+			Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong()
 		);
 	}
 
