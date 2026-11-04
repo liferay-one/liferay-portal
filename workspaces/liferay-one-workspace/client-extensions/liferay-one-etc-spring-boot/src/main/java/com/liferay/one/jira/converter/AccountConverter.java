@@ -58,9 +58,6 @@ public class AccountConverter extends BaseJiraAssetObjectConverter {
 			_status(account.getStatus()));
 
 		jiraAssetObject.setAttributeValue(
-			AccountConstants.ATTRIBUTE_NAME_CODE,
-			_customFieldData(account, _CUSTOM_FIELD_NAME_ACCOUNT_CODE));
-		jiraAssetObject.setAttributeValue(
 			AccountConstants.ATTRIBUTE_NAME_TIER,
 			_customFieldData(account, _CUSTOM_FIELD_NAME_ACCOUNT_TIER));
 
@@ -204,8 +201,6 @@ public class AccountConverter extends BaseJiraAssetObjectConverter {
 
 		return AccountConstants.STATUS_CLOSED;
 	}
-
-	private static final String _CUSTOM_FIELD_NAME_ACCOUNT_CODE = "accountCode";
 
 	private static final String _CUSTOM_FIELD_NAME_ACCOUNT_TIER = "accountTier";
 

@@ -15,8 +15,6 @@ public interface AccountConstants {
 	public static final String ATTRIBUTE_NAME_BUSINESS_EVENTS =
 		"Business Events";
 
-	public static final String ATTRIBUTE_NAME_CODE = "Code";
-
 	public static final String ATTRIBUTE_NAME_CONTACT_EMAIL_ADDRESS =
 		"Contact Email Address";
 
