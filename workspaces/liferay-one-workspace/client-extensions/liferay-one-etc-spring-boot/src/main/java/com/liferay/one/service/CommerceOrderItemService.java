@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -196,10 +197,9 @@ public class CommerceOrderItemService extends OneBaseService {
 		orderItem.setCustomFields(() -> customFields);
 
 		if (existingOrderItem != null) {
-			OrderItemResource orderItemResource = _buildOrderItemResource();
+			orderItem.setId(existingOrderItem::getId);
 
-			return orderItemResource.patchOrderItem(
-				existingOrderItem.getId(), orderItem);
+			return _patchOrderItem(order, orderItem);
 		}
 
 		return _postOrderItem(order, orderItem);
@@ -223,7 +223,8 @@ public class CommerceOrderItemService extends OneBaseService {
 		).header(
 			HttpHeaders.AUTHORIZATION, getAuthorization()
 		).parameters(
-			"nestedFields", "orderItems,orderItems.customFields"
+			"nestedFields", "orderItems,orderItems.customFields",
+			"orderItems.pageSize", "-1"
 		).build();
 	}
 
@@ -291,6 +292,40 @@ public class CommerceOrderItemService extends OneBaseService {
 		}
 
 		return "On Hold";
+	}
+
+	private OrderItem _patchOrderItem(Order order, OrderItem orderItem)
+		throws Exception {
+
+		List<OrderItem> orderItems = new ArrayList<>();
+
+		for (OrderItem existingOrderItem : order.getOrderItems()) {
+			if (Objects.equals(
+					existingOrderItem.getExternalReferenceCode(),
+					orderItem.getExternalReferenceCode())) {
+
+				orderItems.add(orderItem);
+			}
+			else {
+				orderItems.add(existingOrderItem);
+			}
+		}
+
+		OrderItem[] patchedOrderItems = orderItems.toArray(new OrderItem[0]);
+
+		Order patchedOrder = new Order();
+
+		patchedOrder.setOrderItems(() -> patchedOrderItems);
+
+		OrderResource orderResource = _buildOrderResource();
+
+		Order updatedOrder = orderResource.patchOrder(
+			order.getId(), patchedOrder);
+
+		order.setOrderItems(updatedOrder::getOrderItems);
+
+		return CommerceOrderItemUtil.fetchOrderItem(
+			orderItem.getExternalReferenceCode(), updatedOrder);
 	}
 
 	private OrderItem _postOrderItem(Order order, OrderItem orderItem)

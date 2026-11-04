@@ -1010,7 +1010,8 @@ public class CommerceOrderService extends OneBaseService {
 		).parameters(
 			"nestedFields",
 			"account,billingAddress,customFields,orderItems," +
-				"orderItems.customFields"
+				"orderItems.customFields",
+			"orderItems.pageSize", "-1"
 		).build();
 	}
 
