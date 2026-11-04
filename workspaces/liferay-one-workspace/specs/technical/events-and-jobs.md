@@ -24,7 +24,7 @@ In the tables, `…/one/` stands for `client-extensions/liferay-one-etc-spring-b
 | 7 | Startup listeners (`ApplicationReadyEvent`) |
 | 6 | Pub/Sub subscribers |
 | 31 | Notification templates, of which 11 have no sender in the code |
-| 1 | Liferay workflow definition (`Product Approver`) |
+| 1 | Liferay workflow definition (`One Product Review`) |
 | 0 | Distributed locks (no ShedLock or database lock) |
 
 ## How the Events Run
@@ -91,7 +91,7 @@ flowchart LR
         J6("scheduledProcessTrials")
         J7("Jira role syncs")
     end
-    Workflow{{"Product Approver workflow"}}
+    Workflow{{"One Product Review workflow"}}
 
     SFOPP --> Account
     SFOPP --> Contract
@@ -286,7 +286,7 @@ The site initializer creates 31 templates from `client-extensions/liferay-one-si
 
 ## Workflows and Other Listeners
 
-The site initializer defines one workflow, **Product Approver**, in `client-extensions/liferay-one-site-initializer/site-initializer/workflow-definitions/product-approver-workflow/`. It applies to `com.liferay.commerce.product.model.CPDefinition` (`workflow-definition.properties.json`). A publisher submits a product, an Administrator reviews it, and the `approved` state sets the status to `0` (`workflow-definition.xml:56`). That status fires `OA_COMMERCE_PRODUCT_DEFINITION_UPDATE`. The workflow sends its own email and user notifications on assignment and review. It does not call any CET.
+The site initializer defines one workflow, **One Product Review**, in `client-extensions/liferay-one-site-initializer/site-initializer/workflow-definitions/one-product-review/`. It applies to `com.liferay.commerce.product.model.CPDefinition` for the whole company (`workflow-definition.properties.json`). The site initializer runs only when it creates the One site, so an environment whose site already exists does not get a change to this workflow. Import the XML in Process Builder there, and link the Product asset type to it. A publisher submits a product, an Administrator approves or rejects it, and the `approved` state sets the status to `0`. A reject moves the product to the `update` task, which sets the status to `2` (draft) so that the publisher can edit and resubmit it. The `review` task sets the status to `1` (pending) each time a product enters review. Status `0` fires `OA_COMMERCE_PRODUCT_DEFINITION_UPDATE`. The workflow sends its own email and user notifications on assignment and review. It does not call any CET.
 
 The trees hold no model listener, no dispatch trigger, and no other workflow definition.
 
@@ -304,7 +304,7 @@ A chain is a handler whose write fires another action. The list below names each
 
 1. **Contract reconcile to commerce order.** `reconcileOpportunityContracts` patches the `contractId` custom field of an order when it differs (`…/one/service/ContractService.java:615`). That fires chain 3. Its contract patches change `dateModified`, so the next run 15 minutes later reads the same contracts again, but every write is conditional and makes no change. Loop risk: none.
 
-1. **Workflow to entitlement definitions.** Product Approver sets the product status to `0`, which fires `OA_COMMERCE_PRODUCT_DEFINITION_UPDATE` and generates Entitlement Definitions. The condition is `status == 0`, not a change of status, so every later edit of an approved product runs the sync again. Loop risk: none. The sync writes no product.
+1. **Workflow to entitlement definitions.** One Product Review sets the product status to `0`, which fires `OA_COMMERCE_PRODUCT_DEFINITION_UPDATE` and generates Entitlement Definitions. The condition is `status == 0`, not a change of status, so every later edit of an approved product runs the sync again. Loop risk: none. The sync writes no product.
 
 1. **Trial expiry to trial start email.** `postExpire` calls `completeOrder` (`…/one/TrialRestController.java:171`), which first sets the order to `PENDING` (status `1`). `TRIAL-ADMIN-NOTIFICATION-EMAIL` fires on `orderStatus == 1 AND orderTypeExternalReferenceCode == "SSA_SAAS"`. So an expiring `SSA_SAAS` trial sends the "New Trial Started" email again. Loop risk: none, but the email is wrong.
 
