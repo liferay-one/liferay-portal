@@ -37,6 +37,7 @@ Terms used in this file:
 | REQ-SUPPORT-014 | The attachment page checks access before it shows the uploader or the downloader. An upload page without a ticket number shows an invalid ticket number. A download link to an attachment that does not exist shows an invalid attachment. | P1 | LPD-90456 | `HOOK-TICKETATTACHMENTS-USECHECKATTACHMENTACCESS`, `ROUTE-TICKET-ATTACHMENTS-NEW`, `ROUTE-TICKET-ATTACHMENTS-NEW-TICKETID`, `ROUTE-TICKET-ATTACHMENTS-TICKETID`, `ROUTE-TICKET-ATTACHMENTS-ID-TICKETATTACHMENTID`, `ROUTE-TICKET-ATTACHMENTS-ERC-TICKETATTACHMENTERC` |
 | REQ-SUPPORT-015 | Each failure has a stated reason that the page can show: forbidden access, invalid ticket number, closed ticket, attachment not found, file not found in storage, file server unavailable, Jira organization error, or unexpected error. | P2 | LPD-90456 | `HOOK-TICKETATTACHMENTS-USECHECKATTACHMENTACCESS`, `REST-GET-TICKET-ATTACHMENTS-BY-ID-ID-DOWNLOAD` |
 | REQ-SUPPORT-016 | Before an upload starts, the user must confirm that the file contains no personal data. Liferay support can then read the file from any support location. | P0 | LPD-90456 | `FLOW-TICKET-UPLOAD` |
+| REQ-SUPPORT-017 | The attachment list does not let a user add a file. A user adds a file only through the link in the support ticket, which opens the uploader for that ticket. The attachment list shows the attachments of a project and lets the user download them. | P1 | LPD-112856 | `ROUTE-TICKET-ATTACHMENTS-NEW`, `ROUTE-TICKET-ATTACHMENTS-NEW-TICKETID`, `FLOW-TICKET-UPLOAD` |
 
 ## Ticket Attachment Upload
 

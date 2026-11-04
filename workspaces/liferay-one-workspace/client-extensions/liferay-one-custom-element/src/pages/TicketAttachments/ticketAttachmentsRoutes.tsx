@@ -9,9 +9,6 @@ import {AppRoute} from '~/utils/routeUtils';
 
 import TicketAttachmentsLayout from './components/TicketAttachmentsLayout/TicketAttachmentsLayout';
 
-const TicketAttachmentsAdd = lazy(
-	() => import('./TicketAttachmentsAdd/TicketAttachmentsAdd')
-);
 const TicketAttachmentsDownloaderOutlet = lazy(
 	() =>
 		import(
@@ -29,7 +26,7 @@ export const ticketAttachmentsRoutes: AppRoute[] = [
 	{
 		children: [
 			{element: <TicketAttachmentsList />, index: true},
-			{element: <TicketAttachmentsAdd />, path: 'new'},
+			{element: <Navigate replace to=".." />, path: 'new'},
 			{
 				element: <TicketAttachmentsUploaderOutlet />,
 				path: 'new/:ticketId',

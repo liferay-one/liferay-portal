@@ -3,9 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import Button from '@clayui/button';
 import ClayLink from '@clayui/link';
-import {useNavigate} from 'react-router';
 import Table, {
 	IRow,
 } from '~/components/BusinessEventsTable/BusinessEventsTable';
@@ -62,8 +60,6 @@ const columns = [
 ];
 
 const TicketAttachmentsList = () => {
-	const navigate = useNavigate();
-
 	const confirmationModal = useConfirmationModal();
 
 	const {userAccountModel} = useOneContext();
@@ -122,32 +118,18 @@ const TicketAttachmentsList = () => {
 
 				<h6 className="font-weight-normal text-neutral-7">
 					{translate(
-						'upload-and-download-large-files-associated-with-your-support-tickets'
+						'download-large-files-associated-with-your-support-tickets'
 					)}
 				</h6>
 			</div>
 
-			<div
-				className="align-items-center d-flex"
-				style={{gap: 'var(--spacer-3)'}}
-			>
-				{!!projects.length && (
-					<ProjectSelector
-						onSelect={selectProject}
-						projects={projects}
-						selectedProjectERC={projectERC}
-					/>
-				)}
-
-				{!!projects.length && (
-					<Button
-						displayType="primary"
-						onClick={() => navigate('/new')}
-					>
-						{translate('new-attachment')}
-					</Button>
-				)}
-			</div>
+			{!!projects.length && (
+				<ProjectSelector
+					onSelect={selectProject}
+					projects={projects}
+					selectedProjectERC={projectERC}
+				/>
+			)}
 		</div>
 	);
 
