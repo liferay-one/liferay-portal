@@ -68,12 +68,13 @@
 			</label>
 		</labels>
 	</state>
-	<task>
-		<name>update</name>
-		<description>Ask a user to work on the item.</description>
+	<state>
+		<name>rejected</name>
+		<description>Conclude the workflow and return the product to the publisher as a draft.</description>
 		<metadata>
 			<![CDATA[
 				{
+					"terminal": true,
 					"xy": [
 						164,
 						533
@@ -87,7 +88,7 @@
 				<description></description>
 				<status>2</status>
 				<priority>1</priority>
-				<execution-type>onAssignment</execution-type>
+				<execution-type>onEntry</execution-type>
 			</action>
 			<notification>
 				<name>Creator Modification Notification</name>
@@ -100,30 +101,15 @@
 				<recipients receptionType="to">
 					<user />
 				</recipients>
-				<execution-type>onAssignment</execution-type>
+				<execution-type>onEntry</execution-type>
 			</notification>
 		</actions>
-		<assignments>
-			<user />
-		</assignments>
 		<labels>
 			<label language-id="en_US">
-				Update
+				Rejected
 			</label>
 		</labels>
-		<transitions>
-			<transition>
-				<labels>
-					<label language-id="en_US">
-						Resubmit
-					</label>
-				</labels>
-				<name>resubmit</name>
-				<target>review</target>
-				<default>true</default>
-			</transition>
-		</transitions>
-	</task>
+	</state>
 	<task>
 		<name>review</name>
 		<description>Ask a user to work on the item.</description>
@@ -208,7 +194,7 @@
 					</label>
 				</labels>
 				<name>reject</name>
-				<target>update</target>
+				<target>rejected</target>
 				<default>false</default>
 			</transition>
 		</transitions>
