@@ -99,6 +99,7 @@ Terms used in this file:
 | REQ-USAGE-062 | The One Time Purchases project shows no usage dashboard and sends no usage request. | P1 | — | `HOOK-MYACCOUNT-PROJECTS-USEPROJECTUSAGEDASHBOARD`, `HOOK-MYACCOUNT-PROJECTS-USEPROJECTEVENTUSAGE`, `HOOK-MYACCOUNT-PROJECTS-USEPROJECTEVENTHISTORY` |
 | REQ-USAGE-063 | The usage card of any other profile sums the usage events of the project against its allowances. Add on buckets multiply by the bucket size, and overage buckets do not count. A monthly metric counts only the latest month. | P1 | — | `HOOK-USEPROJECTUSAGE`, `FLOW-UTILIZATION-TRACKING` |
 | REQ-USAGE-064 | When the usage request fails, the tab shows that usage is not available. When no metric has a value, the tab shows the empty utilization card. | P2 | — | `FLOW-UTILIZATION-TRACKING` |
+| REQ-USAGE-065 | The Utilization tab of a product is shown only when the project has an unexpired entitlement to a SKU of that product. Without one, the tab is hidden, whatever the utilization profile. | P1 | LPD-91383, LPD-113133 | `MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG` |
 
 ## AI Hub Tokens
 

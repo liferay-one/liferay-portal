@@ -25,6 +25,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 	it('always includes details and orders', () => {
 		expect(
 			resolveProductTabConfig({
+				hasActiveEntitlement: false,
 				hasActiveExperienceOffering: false,
 				itemType: 'product',
 				product: toProduct(),
@@ -41,6 +42,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 			'none',
 		]) {
 			const config = resolveProductTabConfig({
+				hasActiveEntitlement: false,
 				hasActiveExperienceOffering: false,
 				itemType: 'product',
 				product: toProduct({'project-activation-profile': profile}),
@@ -53,6 +55,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 
 	it('shows activation for other profiles', () => {
 		const config = resolveProductTabConfig({
+			hasActiveEntitlement: false,
 			hasActiveExperienceOffering: false,
 			itemType: 'product',
 			product: toProduct({'project-activation-profile': 'status'}),
@@ -69,6 +72,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 
 		expect(
 			resolveProductTabConfig({
+				hasActiveEntitlement: false,
 				hasActiveExperienceOffering: true,
 				itemType: 'product',
 				product,
@@ -76,6 +80,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 		).not.toContain('activation');
 		expect(
 			resolveProductTabConfig({
+				hasActiveEntitlement: false,
 				hasActiveExperienceOffering: false,
 				itemType: 'product',
 				product,
@@ -85,6 +90,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 
 	it('shows download, environment, and utilization when their profiles are not none, in PROJECT_TAB_ORDER', () => {
 		const config = resolveProductTabConfig({
+			hasActiveEntitlement: true,
 			hasActiveExperienceOffering: false,
 			itemType: 'product',
 			product: toProduct({
@@ -115,8 +121,23 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 		});
 	});
 
+	it('hides utilization when the product has no active entitlement', () => {
+		const config = resolveProductTabConfig({
+			hasActiveEntitlement: false,
+			hasActiveExperienceOffering: false,
+			itemType: 'product',
+			product: toProduct({
+				'project-utilization-profile': 'experience-dashboard',
+			}),
+		});
+
+		expect(config.tabKeys).not.toContain('utilization');
+		expect(config.utilizationProfile).toBeUndefined();
+	});
+
 	it('shows activation and download tabs for a cloud application', () => {
 		const config = resolveProductTabConfig({
+			hasActiveEntitlement: false,
 			hasActiveExperienceOffering: false,
 			itemType: 'application',
 			product: toProduct({type: 'cloud'}),
@@ -135,6 +156,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 	it('shows help and support for an application with support specifications', () => {
 		expect(
 			resolveProductTabConfig({
+				hasActiveEntitlement: false,
 				hasActiveExperienceOffering: false,
 				itemType: 'application',
 				product: toProduct({
@@ -148,6 +170,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 	it('ignores support specifications for a non application without a learn URL', () => {
 		expect(
 			resolveProductTabConfig({
+				hasActiveEntitlement: false,
 				hasActiveExperienceOffering: false,
 				itemType: 'product',
 				product: toProduct({

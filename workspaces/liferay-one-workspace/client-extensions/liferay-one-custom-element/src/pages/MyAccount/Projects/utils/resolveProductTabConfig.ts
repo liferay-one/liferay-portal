@@ -39,10 +39,12 @@ export type ProductTabConfig = {
 };
 
 export function resolveProductTabConfig({
+	hasActiveEntitlement,
 	hasActiveExperienceOffering,
 	itemType,
 	product,
 }: {
+	hasActiveEntitlement: boolean;
 	hasActiveExperienceOffering: boolean;
 	itemType: ProjectItemType;
 	product: DeliveryProduct;
@@ -51,7 +53,9 @@ export function resolveProductTabConfig({
 	const detailsProfile = resolveDetailsProfile({itemType, product});
 	const downloadProfile = resolveDownloadProfile({itemType, product});
 	const environmentProfile = resolveEnvironmentProfile(product);
-	const utilizationProfile = resolveUtilizationProfile(product);
+	const utilizationProfile = hasActiveEntitlement
+		? resolveUtilizationProfile(product)
+		: 'none';
 	const learnUrl = getProductSpecificationValue('project-learn-url', product);
 
 	const hasSupportInfo =
