@@ -30,7 +30,7 @@ set -o pipefail
 # Environment:
 # LCP_PROJECT (required) The project and environment ID
 # LIFERAY_URL (required when the batch client extension and the product batch
-#   deploy together) The URL of the environment
+# deploy together) The URL of the environment
 # DRY_RUN (optional) Set to true to print the commands and not run them
 #
 

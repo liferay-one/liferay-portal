@@ -3416,22 +3416,6 @@ public class CommerceOrderServiceTest {
 			));
 	}
 
-	private SalesforceProjectContactRole
-		_createAdministratorSalesforceProjectContactRole() {
-
-		return new SalesforceProjectContactRole(
-			new JSONObject(
-			).put(
-				"Contact__r.Email", "admin@acme.com"
-			).put(
-				"Contact__r.FirstName", "Jane"
-			).put(
-				"Contact__r.LastName", "Doe"
-			).put(
-				"Contact_Role__c", "AI Hub Administrator"
-			));
-	}
-
 	private Order _createAIHubTokenOrder() {
 		Order order = _createOrder(
 			CommerceOrderConstants.ORDER_STATUS_PENDING, "AI_HUB_TOKEN",
@@ -3450,6 +3434,22 @@ public class CommerceOrderServiceTest {
 		order.setOrderItems(new OrderItem[] {orderItem});
 
 		return order;
+	}
+
+	private SalesforceProjectContactRole
+		_createAdministratorSalesforceProjectContactRole() {
+
+		return new SalesforceProjectContactRole(
+			new JSONObject(
+			).put(
+				"Contact__r.Email", "admin@acme.com"
+			).put(
+				"Contact__r.FirstName", "Jane"
+			).put(
+				"Contact__r.LastName", "Doe"
+			).put(
+				"Contact_Role__c", "AI Hub Administrator"
+			));
 	}
 
 	private Order _createOrder(
