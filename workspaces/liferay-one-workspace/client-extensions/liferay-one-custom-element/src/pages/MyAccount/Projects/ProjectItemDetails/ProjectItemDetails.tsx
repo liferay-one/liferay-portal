@@ -12,7 +12,7 @@ import {useProject} from '~/context/ProjectContext';
 import {ProductExternalReferenceCode} from '~/enums/Product';
 import {useDeliveryProductByExternalReferenceCode} from '~/hooks/useDeliveryProductByExternalReferenceCode';
 import {
-	useActiveProductExternalReferenceCodes,
+	useActiveSkuExternalReferenceCodes,
 	useHasActiveExperienceOffering,
 	useProjectCommerce,
 	useProjectProducts,
@@ -87,9 +87,9 @@ export default function ProjectItemDetails({
 		useHasActiveExperienceOffering();
 
 	const {
-		activeProductExternalReferenceCodes,
+		activeSkuExternalReferenceCodesByProduct,
 		loading: activeProductsLoading,
-	} = useActiveProductExternalReferenceCodes();
+	} = useActiveSkuExternalReferenceCodes();
 
 	const productId =
 		(itemType === 'application' ? applications : products).find(
@@ -165,9 +165,10 @@ export default function ProjectItemDetails({
 		tabKeys,
 		utilizationProfile,
 	} = resolveProductTabConfig({
-		hasActiveEntitlement: activeProductExternalReferenceCodes.has(
-			product.externalReferenceCode
-		),
+		activeSkuExternalReferenceCodes:
+			activeSkuExternalReferenceCodesByProduct.get(
+				product.externalReferenceCode
+			) ?? [],
 		hasActiveExperienceOffering,
 		itemType,
 		product,

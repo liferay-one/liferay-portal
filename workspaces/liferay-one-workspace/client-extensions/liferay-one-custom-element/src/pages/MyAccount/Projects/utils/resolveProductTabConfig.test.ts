@@ -25,7 +25,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 	it('always includes details and orders', () => {
 		expect(
 			resolveProductTabConfig({
-				hasActiveEntitlement: false,
+				activeSkuExternalReferenceCodes: [],
 				hasActiveExperienceOffering: false,
 				itemType: 'product',
 				product: toProduct(),
@@ -42,7 +42,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 			'none',
 		]) {
 			const config = resolveProductTabConfig({
-				hasActiveEntitlement: false,
+				activeSkuExternalReferenceCodes: [],
 				hasActiveExperienceOffering: false,
 				itemType: 'product',
 				product: toProduct({'project-activation-profile': profile}),
@@ -55,7 +55,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 
 	it('shows activation for other profiles', () => {
 		const config = resolveProductTabConfig({
-			hasActiveEntitlement: false,
+			activeSkuExternalReferenceCodes: [],
 			hasActiveExperienceOffering: false,
 			itemType: 'product',
 			product: toProduct({'project-activation-profile': 'status'}),
@@ -72,7 +72,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 
 		expect(
 			resolveProductTabConfig({
-				hasActiveEntitlement: false,
+				activeSkuExternalReferenceCodes: [],
 				hasActiveExperienceOffering: true,
 				itemType: 'product',
 				product,
@@ -80,7 +80,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 		).not.toContain('activation');
 		expect(
 			resolveProductTabConfig({
-				hasActiveEntitlement: false,
+				activeSkuExternalReferenceCodes: [],
 				hasActiveExperienceOffering: false,
 				itemType: 'product',
 				product,
@@ -90,7 +90,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 
 	it('shows download, environment, and utilization when their profiles are not none, in PROJECT_TAB_ORDER', () => {
 		const config = resolveProductTabConfig({
-			hasActiveEntitlement: true,
+			activeSkuExternalReferenceCodes: ['SKU-1'],
 			hasActiveExperienceOffering: false,
 			itemType: 'product',
 			product: toProduct({
@@ -121,9 +121,9 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 		});
 	});
 
-	it('hides utilization when the product has no active entitlement', () => {
+	it('hides utilization when the product has no active SKU', () => {
 		const config = resolveProductTabConfig({
-			hasActiveEntitlement: false,
+			activeSkuExternalReferenceCodes: [],
 			hasActiveExperienceOffering: false,
 			itemType: 'product',
 			product: toProduct({
@@ -137,7 +137,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 
 	it('shows the activation tab and no download tab for a cloud application', () => {
 		const config = resolveProductTabConfig({
-			hasActiveEntitlement: false,
+			activeSkuExternalReferenceCodes: [],
 			hasActiveExperienceOffering: false,
 			itemType: 'application',
 			product: toProduct({type: 'cloud'}),
@@ -151,7 +151,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 	it('shows help and support for an application with support specifications', () => {
 		expect(
 			resolveProductTabConfig({
-				hasActiveEntitlement: false,
+				activeSkuExternalReferenceCodes: [],
 				hasActiveExperienceOffering: false,
 				itemType: 'application',
 				product: toProduct({
@@ -165,7 +165,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 	it('ignores support specifications for a non application without a learn URL', () => {
 		expect(
 			resolveProductTabConfig({
-				hasActiveEntitlement: false,
+				activeSkuExternalReferenceCodes: [],
 				hasActiveExperienceOffering: false,
 				itemType: 'product',
 				product: toProduct({

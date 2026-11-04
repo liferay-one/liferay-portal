@@ -725,7 +725,7 @@ export function useAccountProducts() {
 	return {loading: contractsLoading || productsLoading, products};
 }
 
-export function useActiveProductExternalReferenceCodes() {
+export function useActiveSkuExternalReferenceCodes() {
 	const {
 		data,
 		error,
@@ -738,11 +738,11 @@ export function useActiveProductExternalReferenceCodes() {
 		isLoading: productsLoading,
 	} = useProjectProducts();
 
-	const activeProductExternalReferenceCodes = useMemo(() => {
+	const activeSkuExternalReferenceCodesByProduct = useMemo(() => {
 		const productsBySkuExternalReferenceCode =
 			toProductsBySkuExternalReferenceCode(productsData?.items ?? []);
 
-		const externalReferenceCodes = new Set<string>();
+		const skuExternalReferenceCodesByProduct = new Map<string, string[]>();
 
 		(data?.items ?? [])
 			.flatMap((contract) =>
@@ -754,34 +754,54 @@ export function useActiveProductExternalReferenceCodes() {
 				);
 
 				if (
-					product &&
+					!product ||
 					getEntitlementStatus(
 						entitlement.effectiveEndDate ?? entitlement.endDate
-					) === 'active'
+					) !== 'active'
 				) {
-					externalReferenceCodes.add(product.externalReferenceCode);
+					return;
 				}
+
+				const skuExternalReferenceCodes =
+					skuExternalReferenceCodesByProduct.get(
+						product.externalReferenceCode
+					) ?? [];
+
+				if (
+					!skuExternalReferenceCodes.includes(
+						entitlement.skuExternalReferenceCode as string
+					)
+				) {
+					skuExternalReferenceCodes.push(
+						entitlement.skuExternalReferenceCode as string
+					);
+				}
+
+				skuExternalReferenceCodesByProduct.set(
+					product.externalReferenceCode,
+					skuExternalReferenceCodes
+				);
 			});
 
-		return externalReferenceCodes;
+		return skuExternalReferenceCodesByProduct;
 	}, [data, productsData]);
 
 	return {
-		activeProductExternalReferenceCodes,
+		activeSkuExternalReferenceCodesByProduct,
 		error: error ?? productsError,
 		loading: loading || productsLoading,
 	};
 }
 
 export function useHasActiveExperienceOffering() {
-	const {activeProductExternalReferenceCodes, error, loading} =
-		useActiveProductExternalReferenceCodes();
+	const {activeSkuExternalReferenceCodesByProduct, error, loading} =
+		useActiveSkuExternalReferenceCodes();
 
 	return {
 		error,
 		hasActiveExperienceOffering:
 			EXPERIENCE_OFFERING_PRODUCT_EXTERNAL_REFERENCE_CODES.some((code) =>
-				activeProductExternalReferenceCodes.has(code)
+				activeSkuExternalReferenceCodesByProduct.has(code)
 			),
 		loading,
 	};
