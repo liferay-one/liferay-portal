@@ -114,13 +114,13 @@ public class ActivationKeysRestControllerTest {
 		Mockito.verify(
 			_subscriptionEntryService
 		).deleteSubscriptionEntry(
-			null, ClassNameConstants.ACTIVATION_KEY, 7L, _USER_ID
+			ClassNameConstants.ACTIVATION_KEY, 7L, _USER_ID
 		);
 
 		Mockito.verify(
 			_subscriptionEntryService
 		).deleteSubscriptionEntry(
-			null, ClassNameConstants.ACTIVATION_KEY, 8L, _USER_ID
+			ClassNameConstants.ACTIVATION_KEY, 8L, _USER_ID
 		);
 	}
 
@@ -1042,7 +1042,7 @@ public class ActivationKeysRestControllerTest {
 
 		Mockito.when(
 			_subscriptionEntryService.fetchSubscriptionEntry(
-				null, ClassNameConstants.ACTIVATION_KEY, 7L, _USER_ID)
+				ClassNameConstants.ACTIVATION_KEY, 7L, _USER_ID)
 		).thenReturn(
 			Mockito.mock(SubscriptionEntry.class)
 		);
@@ -1994,13 +1994,13 @@ public class ActivationKeysRestControllerTest {
 		Mockito.verify(
 			_subscriptionEntryService
 		).addSubscriptionEntry(
-			null, ClassNameConstants.ACTIVATION_KEY, 7L, _USER_ID
+			ClassNameConstants.ACTIVATION_KEY, 7L, _USER_ID
 		);
 
 		Mockito.verify(
 			_subscriptionEntryService
 		).addSubscriptionEntry(
-			null, ClassNameConstants.ACTIVATION_KEY, 8L, _USER_ID
+			ClassNameConstants.ACTIVATION_KEY, 8L, _USER_ID
 		);
 	}
 
