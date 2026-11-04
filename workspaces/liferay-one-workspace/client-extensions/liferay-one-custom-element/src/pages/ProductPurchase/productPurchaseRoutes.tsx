@@ -29,9 +29,6 @@ const Summary = lazy(() => import('./Summary/Summary'));
 const AIHubForm = lazy(
 	() => import('./LiferayProduct/AIHub/AIHubForm/AIHubForm')
 );
-const AIHubOpenBetaForm = lazy(
-	() => import('./LiferayProduct/AIHub/AIHubOpenBetaForm/AIHubOpenBetaForm')
-);
 const AIHubOrderSummary = lazy(
 	() => import('./LiferayProduct/AIHub/AIHubOrderSummary/AIHubOrderSummary')
 );
@@ -109,21 +106,6 @@ export function getProductPurchaseSteps({
 			product
 		);
 
-		if (solutionType === 'ai-hub') {
-			return [
-				{
-					element: <AccountSelection />,
-					index: true,
-					title: i18n.translate('account'),
-				},
-				{
-					element: <AIHubForm />,
-					path: 'ai-hub-form',
-					title: i18n.translate('ai-hub'),
-				},
-			];
-		}
-
 		if (solutionType === 'lr-tokens') {
 			return [
 				{
@@ -144,7 +126,7 @@ export function getProductPurchaseSteps({
 			];
 		}
 
-		if (solutionType === 'ai-hub-open-beta') {
+		if (solutionType === 'ai-hub') {
 			return [
 				{
 					element: <AccountSelection />,
@@ -162,8 +144,8 @@ export function getProductPurchaseSteps({
 					title: i18n.translate('contract'),
 				},
 				{
-					element: <AIHubOpenBetaForm />,
-					path: 'ai-hub-open-beta-form',
+					element: <AIHubForm />,
+					path: 'ai-hub-form',
 					title: i18n.translate('account-details'),
 				},
 				{

@@ -6,73 +6,82 @@
 import {z} from 'zod';
 import {adminSchemas as zodSchema} from '~/schemas/adminSchemas';
 import {OrderCustomFields} from '~/utils/orderUtils';
-import {getSiteURL} from '~/utils/siteUtils';
 
-import ProductPurchase from './ProductPurchase';
+import ProductPurchase, {
+	INVALID_BILLING_ADDRESS_ERROR_MESSAGE,
+} from './ProductPurchase';
 
-import type {Account} from '~/types/accounts';
 import type {Cart, OrderTypes} from '~/types/orders';
-import type {DeliveryProduct} from '~/types/product';
-import type {SalesforceProject} from '~/types/salesforceProject';
+import type {SalesforceContract} from '~/types/salesforceContract';
 
-type AIHubForm = z.infer<typeof zodSchema.aiHubForm>;
+type AIHubForm = z.infer<typeof zodSchema.aiHubForm> & {
+	salesforceProjectId: string;
+};
 
 export class ProductPurchaseAIHub extends ProductPurchase {
 	private form?: AIHubForm;
 	protected orderTypeExternalReferenceCode: OrderTypes = 'AI_HUB';
-
-	constructor(
-		account: Account,
-		product: DeliveryProduct,
-		private salesforceProject?: SalesforceProject | null
-	) {
-		super(account, product);
-	}
+	private salesforceContract?: SalesforceContract;
+	private skuId?: number;
+	private tier?: string;
+	protected toleratedCheckoutErrorMessages = [
+		INVALID_BILLING_ADDRESS_ERROR_MESSAGE,
+	];
 
 	setForm(form: AIHubForm) {
 		this.form = form;
 	}
 
+	setSalesforceContract(salesforceContract: SalesforceContract) {
+		this.salesforceContract = salesforceContract;
+	}
+
+	setSKUId(skuId: number) {
+		this.skuId = skuId;
+	}
+
+	setTier(tier: string) {
+		this.tier = tier;
+	}
+
 	protected getCart() {
 		const baseCart = super.getCart();
-		const cartItems = super.getCartItems();
 
 		return {
 			...baseCart,
-			cartItems,
+			cartItems: super.getCartItems(this.skuId),
 			customFields: {
 				...baseCart?.customFields,
 				[OrderCustomFields.ORDER_METADATA]: JSON.stringify({
 					aiHubForm: this.form,
-					...(this.salesforceProject
-						? {
-								salesforceProjectId:
-									this.salesforceProject
-										.externalReferenceCode,
-							}
-						: {}),
+					contractEntityId: this.salesforceContract?.id,
+					salesforceContractId:
+						this.salesforceContract?.externalReferenceCode,
+					salesforceProjectId: this.form?.salesforceProjectId,
+					tier: this.tier,
 				}),
 			},
 		} as Cart;
 	}
 
-	public async createOrder() {
+	public async createOrder(cart: Cart, cartOptions: unknown) {
 		if (!this.form) {
 			throw new Error('Form is missing.');
 		}
 
-		const cart = this.getCart();
+		const serviceCart = this.getCart();
 
-		const order = await super.createOrder(cart);
-
-		return order;
+		return super.createOrder(
+			{
+				...serviceCart,
+				...cart,
+				customFields: serviceCart.customFields,
+			},
+			cartOptions
+		);
 	}
 
 	public async getNextStepsLink(cart: Cart) {
-		if (cart.orderTypeExternalReferenceCode !== 'AI_HUB') {
-			return super.getNextStepsLink(cart);
-		}
-
-		return `${window.location.origin}${getSiteURL()}/next-steps?orderId=${cart.id}`;
+		return super.getPaymentNextStepsLink(cart);
 	}
 }

@@ -8,28 +8,10 @@
 	text-align: justify;
 }
 
-.liferay-ai-hub-form-aggreements-check-box,
-.liferay-ai-hub-form-label-check-box,
-.liferay-ai-hub-form-purpose-helper-text {
-	font-size: 11px;
-}
-
-.liferay-ai-hub-form-fail {
-	border: solid 1px red !important;
-}
-
-.liferay-ai-hub-form-select-input {
-	height: 40px;
-}
-
 .liferay-ai-hub-form {
 	& .loading-animation {
 		margin: 0px !important;
 	}
-}
-
-.liferay-ai-hub-form-container {
-	max-width: 610px;
 }
 
 .liferay-ai-hub-form-next-step-page-icon {

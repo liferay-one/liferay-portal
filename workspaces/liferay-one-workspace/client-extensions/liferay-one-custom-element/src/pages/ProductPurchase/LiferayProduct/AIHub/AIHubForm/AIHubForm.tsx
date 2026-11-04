@@ -4,60 +4,28 @@
  */
 
 import ClayButton from '@clayui/button';
-import ClayDropDown, {Align} from '@clayui/drop-down';
-import ClayForm, {ClayCheckbox, ClayInput} from '@clayui/form';
+import ClayDropDown from '@clayui/drop-down';
+import ClayForm, {ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {zodResolver} from '@hookform/resolvers/zod';
-import classNames from 'classnames';
-import {useState} from 'react';
+import {useEffect} from 'react';
 import {useForm} from 'react-hook-form';
+import {Navigate} from 'react-router';
 import {z} from 'zod';
-import {RequiredMask} from '~/components/FieldBase/FieldBase';
 import {Input} from '~/components/Input/Input';
-import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import Select from '~/components/Select/Select';
 import i18n from '~/i18n';
 import {useProductPurchaseLayoutContext as useProductPurchaseOutletContext} from '~/pages/ProductPurchase/components/ProductPurchaseLayout/ProductPurchaseLayout';
-import {useAppPurchaseContext} from '~/pages/ProductPurchase/context/AppPurchaseContext';
+import {useAppPurchaseContext} from '~/pages/ProductPurchase/context';
 import useCommerceRegions from '~/pages/ProductPurchase/hooks/useCommerceRegions';
 import {adminSchemas as zodSchema} from '~/schemas/adminSchemas';
-import {ProductPurchaseAIHub} from '~/services/commerce/ProductPurchaseAIHub';
 import {Liferay} from '~/services/liferay/liferay';
 import phones from '~/utils/phones';
-import {productAgreements} from '~/utils/productAgreements';
 
 import './AIHubForm.css';
 
 import '../../LiferayProduct.css';
-
-export const PURPOSE_OPTIONS = [
-	{
-		subtitle: 'For students or individuals upskilling.',
-		title: 'Personal Learning / Education',
-		value: 'personal-learning-education',
-	},
-	{
-		subtitle: 'Testing for a specific project at work..',
-		title: 'Proof of Concept (POC)',
-		value: 'proof-of-concept',
-	},
-	{
-		subtitle: 'Developers building or debugging integrations.',
-		title: 'Development & Testing',
-		value: 'development-and-testing',
-	},
-	{
-		subtitle: 'For non-production hobbyist tools within a company.',
-		title: 'Internal Side Project',
-		value: 'internal-side-project',
-	},
-	{
-		subtitle: 'For professional firms or small companies.',
-		title: 'Small Business Production Use',
-		value: 'small-business-production',
-	},
-];
 
 const setValuesOptions = {
 	shouldDirty: true,
@@ -65,6 +33,15 @@ const setValuesOptions = {
 };
 
 const AIHubForm = () => {
+	const {
+		actions: {nextStep, previousStep},
+		form,
+		selectedAccount,
+		setForm,
+	} = useProductPurchaseOutletContext();
+
+	const {salesforceContract, salesforceProject} = useAppPurchaseContext();
+
 	const {
 		formState: {errors, isValid},
 		handleSubmit,
@@ -74,19 +51,24 @@ const AIHubForm = () => {
 	} = useForm<z.infer<typeof zodSchema.aiHubForm>>({
 		defaultValues: {
 			administratorEmailAddress:
+				(form?.administratorEmailAddress as string) ||
 				Liferay.ThemeDisplay.getUserEmailAddress(),
-			aiHubAccountName: '',
-			businessEmailAddress: Liferay.ThemeDisplay.getUserEmailAddress(),
-			companyName: '',
-			country: '',
-			extension: '',
-			fullName: Liferay.ThemeDisplay.getUserName(),
-			intlCode: {code: '+1', flag: 'en-us'},
-			jobTitle: '',
-			phoneNumber: '',
-			purpose: '',
-			termsAndConditions: false,
-			userAgreement: false,
+			aiHubAccountName: (form?.aiHubAccountName as string) || '',
+			businessEmailAddress:
+				(form?.businessEmailAddress as string) ||
+				Liferay.ThemeDisplay.getUserEmailAddress(),
+			companyName: (form?.companyName as string) || '',
+			country: (form?.country as string) || '',
+			extension: (form?.extension as string) || '',
+			fullName:
+				(form?.fullName as string) ||
+				Liferay.ThemeDisplay.getUserName(),
+			intlCode: (form?.intlCode as {code: string; flag: string}) || {
+				code: '+1',
+				flag: 'en-us',
+			},
+			jobTitle: (form?.jobTitle as string) || '',
+			phoneNumber: (form?.phoneNumber as string) || '',
 		},
 		mode: 'all',
 		reValidateMode: 'onChange',
@@ -95,55 +77,44 @@ const AIHubForm = () => {
 
 	const watchedValues = watch();
 
-	const {intlCode, purpose, termsAndConditions, userAgreement} =
-		watchedValues;
+	const {intlCode} = watchedValues;
 
-	const [active, setActive] = useState(false);
-	const [currentPhonesFlags, setCurrentPhonesFlags] = useState(intlCode);
-	const [loading, setLoading] = useState(false);
 	const {data: regionsResponse} = useCommerceRegions();
-	const {handlePurchase, product, selectedAccount} =
-		useProductPurchaseOutletContext();
-
-	const {salesforceProject} = useAppPurchaseContext();
 
 	const countries = regionsResponse?.items ?? [];
 
+	useEffect(() => {
+		if (!selectedAccount) {
+			previousStep();
+		}
+	}, [selectedAccount, previousStep]);
+
 	const onSubmit = async (form: z.infer<typeof zodSchema.aiHubForm>) => {
-		setLoading(true);
+		setForm(form);
 
-		try {
-			const productPurchase = new ProductPurchaseAIHub(
-				selectedAccount,
-				product,
-				salesforceProject
-			);
-
-			productPurchase.setForm(form);
-
-			await handlePurchase(productPurchase);
-		}
-		catch (error) {
-			console.error(error);
-		}
-
-		setLoading(false);
+		nextStep();
 	};
+
+	if (!salesforceProject) {
+		return <Navigate replace to="/" />;
+	}
+
+	if (!salesforceContract) {
+		return <Navigate replace to="/contract" />;
+	}
 
 	return (
 		<ProductPurchase.Shell
 			className="liferay-ai-hub-form"
-			title={i18n.translate('request-access-to-ai-hub-private-beta')}
+			title={i18n.translate('ai-hub-account-details')}
 		>
 			<p className="mb-6 text-black-50">
 				{i18n.translate(
-					'submit-your-request-to-join-the-beta-program-all-submissions-will-be-reviewed-and-youll-receive-an-email-with-the-outcome'
+					'submit-your-request-to-getting-started-with-ai-hub-after-submission-you-will-receive-a-docusign-email-with-an-order-form-to-be-signed'
 				)}
 			</p>
 
-			<p className="h4 mb-0">
-				{i18n.translate('personal-information-purpose')}
-			</p>
+			<p className="h4 mb-0">{i18n.translate('personal-information')}</p>
 
 			<hr className="mb-5 mt-3" />
 
@@ -224,12 +195,10 @@ const AIHubForm = () => {
 									<div className="align-items-center custom-input custom-select d-flex form-control p-2 rounded-xs">
 										<ClayIcon
 											className="mr-2"
-											symbol={
-												currentPhonesFlags?.flag as string
-											}
+											symbol={intlCode?.flag as string}
 										/>
 
-										{currentPhonesFlags?.code}
+										{intlCode?.code}
 									</div>
 								}
 							>
@@ -238,11 +207,6 @@ const AIHubForm = () => {
 										<ClayDropDown.Item
 											key={index}
 											onClick={() => {
-												setCurrentPhonesFlags({
-													code: phone.code,
-													flag: phone.flag,
-												});
-
 												setValue(
 													'intlCode',
 													{
@@ -293,61 +257,7 @@ const AIHubForm = () => {
 					</div>
 				</ClayForm.Group>
 
-				<p className="h4">
-					{i18n.translate('purpose')} <RequiredMask />
-				</p>
-
-				<ClayDropDown
-					active={active}
-					alignmentPosition={Align.BottomLeft}
-					className="w-100"
-					menuElementAttrs={{className: 'dropdown-menu-purpose'}}
-					onActiveChange={setActive}
-					trigger={
-						<ClayButton
-							className="align-items-center d-flex justify-content-between liferay-ai-hub-form-select-input rounded-lg w-100"
-							displayType="secondary"
-							onClick={() => setActive(!active)}
-						>
-							<div className="align-items-center d-flex justify-content-between w-100">
-								<span>
-									{
-										PURPOSE_OPTIONS.find(
-											(item) => item.value === purpose
-										)?.title
-									}
-								</span>
-
-								<ClayIcon symbol="caret-bottom" />
-							</div>
-						</ClayButton>
-					}
-				>
-					<ClayDropDown.ItemList>
-						{PURPOSE_OPTIONS.map((option, index) => (
-							<ClayDropDown.Item
-								className="d-flex flex-column"
-								key={index}
-								onClick={() => {
-									setActive(false);
-
-									setValue(
-										'purpose',
-										option.value,
-										setValuesOptions
-									);
-								}}
-							>
-								<strong>{option.title}</strong>
-								<span>{option.subtitle}</span>
-							</ClayDropDown.Item>
-						))}
-					</ClayDropDown.ItemList>
-				</ClayDropDown>
-
-				<p className="h4 mt-6">
-					{i18n.translate('ai-hub-information')}
-				</p>
+				<p className="h4">{i18n.translate('ai-hub-information')}</p>
 
 				<hr className="mb-5 mt-3" />
 				<ClayInput.Group>
@@ -380,129 +290,15 @@ const AIHubForm = () => {
 						/>
 					</ClayInput.GroupItem>
 				</ClayInput.Group>
-
-				<p className="liferay-ai-hub-form-aggreements-text">
-					<span>Please read</span>
-
-					<span className="ml-1">
-						carefully before accessing or in any way using the AI
-						Hub Private Beta experience.
-					</span>
-				</p>
-
-				<div className="d-flex flex-row mb-3 text-justify">
-					<ClayCheckbox
-						checked={termsAndConditions}
-						className="liferay-ai-hub-form-fail"
-						id="terms-and-conditions"
-						onChange={(event) => {
-							setValue(
-								'termsAndConditions',
-								event.target.checked,
-								setValuesOptions
-							);
-						}}
-						required
-					/>
-
-					<label
-						className={classNames('font-weight-normal px-1', {
-							'text-red': isValid && !termsAndConditions,
-						})}
-						htmlFor="terms-and-conditions"
-					>
-						I signify my assent to and acceptance of
-						<a
-							className="mx-1"
-							href={productAgreements.links.aiHub.agreement}
-							target="_blank"
-						>
-							this agreement
-						</a>
-						and acknowledge that I have read and you understand the
-						terms. If I am an individual acting on behalf of an
-						entity, I represent that I have the authority to enter
-						into this agreement on behalf of that entity.
-						<RequiredMask />
-					</label>
-				</div>
-
-				<div className="d-flex flex-row text-justify">
-					<ClayCheckbox
-						checked={userAgreement}
-						id="user-agreement"
-						onChange={(event) => {
-							setValue(
-								'userAgreement',
-								event.target.checked,
-								setValuesOptions
-							);
-						}}
-						required
-					/>
-
-					<label
-						className={classNames('font-weight-normal px-1', {
-							'text-red': isValid && !userAgreement,
-						})}
-						htmlFor="user-agreement"
-					>
-						<span>
-							{i18n.translate(
-								'i-agree-to-the-processing-of-my-personal-data-for-the-purpose-of-evaluating-my-beta-access-request-in-accordance-with'
-							)}
-							<a
-								className="ml-1"
-								href={productAgreements.links.privacyPolicy}
-								target="_blank"
-							>
-								{i18n.translate('liferay-s-privacy-policy')}
-							</a>
-						</span>
-						<RequiredMask />
-					</label>
-				</div>
 			</ClayForm.Group>
-
-			<p className="liferay-ai-hub-form-aggreements-text text-justify">
-				<span>
-					You can stop receiving marketing emails by clicking the
-					unsubscribe link in each email or withdraw your consent at
-					any time by either using opt-out functionality accessible
-					through the messages you receive or via email to
-				</span>
-
-				<a className="ml-1" href="mailto:dataprotection@liferay.com">
-					dataprotection@liferay.com
-				</a>
-
-				<span className="ml-1">See</span>
-
-				<a
-					className="ml-1"
-					href={productAgreements.links.privacyPolicy}
-					target="_blank"
-				>
-					privacy policy for details.
-				</a>
-
-				<span className="ml-1">
-					carefully before accessing or in any way using the AI Hub
-					Private Beta experience.
-				</span>
-			</p>
 
 			<ClayButton
 				className="w-100"
-				disabled={loading || !isValid}
+				disabled={!isValid}
 				onClick={handleSubmit(onSubmit)}
 			>
 				<div className="align-items-center d-flex justify-content-center">
-					<span>{i18n.translate('send-request')}</span>
-
-					{loading && (
-						<Loading.Inline className="ml-3" displayType="light" />
-					)}
+					<span>{i18n.translate('continue')}</span>
 				</div>
 			</ClayButton>
 		</ProductPurchase.Shell>

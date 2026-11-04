@@ -178,8 +178,7 @@ sequenceDiagram
 | Purchase class | Order type | Extra custom fields | Follow up call |
 | --- | --- | --- | --- |
 | `ProductPurchaseApp` | From the `app-type` specification, or `SEO_STUDIO` | `order-metadata.salesforceProjectId` when a project is chosen | `postGetAppInformation` |
-| `ProductPurchaseAIHub` | `AI_HUB` | `order-metadata` with the form and `salesforceProjectId` | None. `CommerceOrderUpdate` creates the Salesforce opportunity. |
-| `ProductPurchaseAIHubOpenBeta` | `AI_HUB` | `order-metadata` with `contractEntityId`, `salesforceContractId`, `salesforceProjectId`, `tier` | Payment URL |
+| `ProductPurchaseAIHub` | `AI_HUB` | `order-metadata` with `contractEntityId`, `salesforceContractId`, `salesforceProjectId`, `tier` | Payment URL |
 | `ProductPurchaseDSR` | `DSR` | `dsrSettings` | `POST /digital-sales-room/provisioning/{id}` |
 | `ProductPurchaseDXPFree` | `DXP` | None | `POST /license-keys/type-free`, then a `C_DXP_FREE_ACTIVATION_KEY_REQUEST` |
 | `ProductPurchaseLDP` | `LDP` | `ldpSettings` | `POST /liferay-data-platform/provisioning/{id}` |
@@ -505,7 +504,7 @@ Only `EntitlementUpdate` moves the dates, and only from the order item custom fi
 
 1. **High. Self service entitlements have no dates.** Self service order items carry no `startDate` or `endDate` custom fields, and generation copies those fields as they are (`EntitlementService.java:214`). The entitlement then never expires (`EntitlementService._getActiveEntitlements`, `:608`).
 
-1. **Medium. The sidecar and the custom element disagree on the project of a self service order.** `ProductPurchaseApp`, `ProductPurchaseAIHub`, and `ProductPurchaseAIHubOpenBeta` write the project to `order-metadata.salesforceProjectId`. `EntitlementService._getProjectExternalReferenceCode` (`:710`) reads only the `salesforceProjectId` custom field. The custom element shows the order under the project (`useProjectOrders.ts:110`), but its entitlements have no project, so the Products list contract filter and the Utilization tab do not see them. `createAIHubOpportunity` copies the field for `AI_HUB` orders only, and only after the items exist (`CommerceOrderService.java:329`).
+1. **Medium. The sidecar and the custom element disagree on the project of a self service order.** `ProductPurchaseApp` and `ProductPurchaseAIHub` write the project to `order-metadata.salesforceProjectId`. `EntitlementService._getProjectExternalReferenceCode` (`:710`) reads only the `salesforceProjectId` custom field. The custom element shows the order under the project (`useProjectOrders.ts:110`), but its entitlements have no project, so the Products list contract filter and the Utilization tab do not see them. `createAIHubOpportunity` copies the field for `AI_HUB` orders only, and only after the items exist (`CommerceOrderService.java:329`).
 
 1. **Medium. Nothing repairs a missing entitlement.** A failed `POST /o/c/entitlements`, a definition created after the order, or a definition that becomes active later leaves the order item without its entitlement. Contract reconcile fixes only the contract and project links (`…/one/service/ContractService.java:602`).
 

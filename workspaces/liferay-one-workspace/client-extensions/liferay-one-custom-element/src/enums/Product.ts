@@ -210,7 +210,6 @@ export type SkuOptions = (typeof SkuOptions)[keyof typeof SkuOptions];
 
 export const SolutionTypes = {
 	AI_HUB: 'ai-hub',
-	AI_HUB_OPEN_BETA: 'ai-hub-open-beta',
 	ANALYTICS: 'analytics',
 	CMP: 'cmp',
 	CMP_TRIAL: 'cmp-trial',
@@ -270,7 +269,6 @@ export const ProductTypeLabels = {
 
 export const SolutionTypeLabels = {
 	[SolutionTypes.AI_HUB]: 'AI Hub',
-	[SolutionTypes.AI_HUB_OPEN_BETA]: 'AI Hub Open Beta',
 	[SolutionTypes.ANALYTICS]: 'Analytics',
 	[SolutionTypes.CMP]: 'CMP',
 	[SolutionTypes.CMS]: 'CMS',

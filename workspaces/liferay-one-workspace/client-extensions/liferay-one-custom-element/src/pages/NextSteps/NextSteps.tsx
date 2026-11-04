@@ -33,7 +33,6 @@ import {getSiteURL} from '~/utils/siteUtils';
 
 import LDPNextSteps from '../ProductPurchase/LDPNextSteps/LDPNextSteps';
 import AIHubNextSteps from '../ProductPurchase/LiferayProduct/AIHub/AIHubNextSteps';
-import AIHubOpenBetaNextSteps from '../ProductPurchase/LiferayProduct/AIHub/AIHubOpenBetaNextSteps';
 import AIHubTokenNextSteps from '../ProductPurchase/LiferayProduct/AIHub/AIHubTokenNextSteps';
 
 import './NextSteps.css';
@@ -68,7 +67,6 @@ const PaymentStatus = {
 
 const SolutionTypes = {
 	AI_HUB: 'ai-hub',
-	AI_HUB_OPEN_BETA: 'ai-hub-open-beta',
 	ANALYTICS: 'analytics',
 	LIFERAY_DATA_PLATFORM: 'liferay-data-platform',
 	LR_TOKENS: 'lr-tokens',
@@ -354,15 +352,6 @@ function NextStepsPage() {
 		productTypeCategory === ProductTypeVocabulary.LIFERAY_PRODUCT &&
 		solutionTypeSpecificationValue === SolutionTypes.AI_HUB
 	) {
-		return (
-			<AIHubNextSteps data={data} error={error} isLoading={isLoading} />
-		);
-	}
-
-	if (
-		productTypeCategory === ProductTypeVocabulary.LIFERAY_PRODUCT &&
-		solutionTypeSpecificationValue === SolutionTypes.AI_HUB_OPEN_BETA
-	) {
 		if (
 			data?.placedOrder?.orderTypeExternalReferenceCode ===
 			OrderTypes.AI_HUB_TOKEN
@@ -377,11 +366,7 @@ function NextStepsPage() {
 		}
 
 		return (
-			<AIHubOpenBetaNextSteps
-				data={data}
-				error={error}
-				isLoading={isLoading}
-			/>
+			<AIHubNextSteps data={data} error={error} isLoading={isLoading} />
 		);
 	}
 

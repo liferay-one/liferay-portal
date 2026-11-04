@@ -30,9 +30,8 @@ Terms used in this file:
 | REQ-ORDERS-010 | The default purchase flow has four steps: account, license selection, payment method, and summary. Only a paid product shows the license selection step and the payment method step. | P0 | LPD-88250 | `ROUTE-PRODUCT-PURCHASE-LICENSE`, `ROUTE-PRODUCT-PURCHASE-PAYMENT-METHOD`, `ROUTE-PRODUCT-PURCHASE-SUMMARY`, `FLOW-CHECKOUT-FREE`, `FLOW-CHECKOUT-PAID` |
 | REQ-ORDERS-011 | A free DXP product has two steps: account and activation key. It has no summary step. The free license rules are in `REQ-LICENSING-070`, `REQ-LICENSING-071`, and `REQ-LICENSING-072`. | P1 | LPD-89423 | `ROUTE-PRODUCT-PURCHASE-ACTIVATION-KEY-FORM`, `CLIENT-COMMERCE-PRODUCTPURCHASEDXPFREE` |
 | REQ-ORDERS-012 | A product in the Solution product type category has two steps: account and the solution form. | P1 | LPD-94844 | `ROUTE-PRODUCT-PURCHASE-SOLUTION` |
-| REQ-ORDERS-013 | An AI Hub product has two steps: account and the AI Hub form. | P1 | LPD-90605 | `ROUTE-PRODUCT-PURCHASE-AI-HUB-FORM`, `FLOW-AI-HUB-PURCHASE` |
-| REQ-ORDERS-014 | The AI Hub open beta product has five steps: account, project, contract, account details, and summary. A token purchase has three steps instead: token amount, payment method, and summary. | P1 | LPD-102570 | `ROUTE-PRODUCT-PURCHASE-AI-HUB-OPEN-BETA-FORM`, `ROUTE-PRODUCT-PURCHASE-PROJECT`, `ROUTE-PRODUCT-PURCHASE-CONTRACT`, `FLOW-PRODUCT-PURCHASE-CONTRACT` |
-| REQ-ORDERS-015 | The contract step lists the contracts of the selected project. The buyer cannot continue until the buyer selects a contract. The order records the selected contract. | P0 | LPD-102570 | `ROUTE-PRODUCT-PURCHASE-CONTRACT`, `FLOW-PRODUCT-PURCHASE-CONTRACT`, `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBOPENBETA` |
+| REQ-ORDERS-014 | The AI Hub product has five steps: account, project, contract, account details, and summary. A token purchase has three steps instead: token amount, payment method, and summary. | P1 | LPD-102570 | `ROUTE-PRODUCT-PURCHASE-AI-HUB-FORM`, `ROUTE-PRODUCT-PURCHASE-PROJECT`, `ROUTE-PRODUCT-PURCHASE-CONTRACT`, `FLOW-PRODUCT-PURCHASE-CONTRACT`, `FLOW-AI-HUB-PURCHASE` |
+| REQ-ORDERS-015 | The contract step lists the contracts of the selected project. The buyer cannot continue until the buyer selects a contract. The order records the selected contract. | P0 | LPD-102570 | `ROUTE-PRODUCT-PURCHASE-CONTRACT`, `FLOW-PRODUCT-PURCHASE-CONTRACT`, `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUB` |
 | REQ-ORDERS-016 | An SEO Studio product has three steps: account, project, and request access. It has no paid steps. | P1 | LPD-102451 | `ROUTE-PRODUCT-PURCHASE-SEO-STUDIO-FORM` |
 | REQ-ORDERS-017 | The license selection step lists only the purchasable SKUs that have a price and are not trial SKUs. The buyer cannot continue until the cart holds at least one license. | P0 | — | `ROUTE-PRODUCT-PURCHASE-LICENSE`, `HOOK-PRODUCTPURCHASE-USEPRODUCTPURCHASECART` |
 
@@ -116,8 +115,8 @@ Terms used in this file:
 | REQ-ORDERS-090 | An order names its project in its project name field. When that field is empty, the order uses the first project name of its Koroneiki project field. | P1 | LPD-90960 | `HOOK-USEPROJECTORDERS`, `ROUTE-MY-ACCOUNT-ORDERS` |
 | REQ-ORDERS-091 | An order that names no project belongs to One Time Purchases. | P1 | LPD-90955 | `HOOK-USEPROJECTITEMS`, `HOOK-USEPROJECTORDERS` |
 | REQ-ORDERS-092 | When a buyer buys an app for a Salesforce project, the order metadata records the external reference code of that project. | P0 | LPD-90605 | `CLIENT-COMMERCE-PRODUCTPURCHASEAPP` |
-| REQ-ORDERS-093 | An AI Hub order records the project in its metadata only when the buyer selects a project. The system writes the project name onto the order only when the project belongs to the account of the order. | P0 | LPD-102570 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUB`, `FLOW-AI-HUB-PURCHASE` |
-| REQ-ORDERS-094 | The contract ID field of an order links the order to its contract. | P0 | LPD-102570 | `FLOW-PRODUCT-PURCHASE-CONTRACT`, `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBOPENBETA` |
+| REQ-ORDERS-093 | An AI Hub order records the project that the buyer selects in its metadata. The system writes the project name onto the order only when the project belongs to the account of the order. | P0 | LPD-102570 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUB`, `FLOW-AI-HUB-PURCHASE` |
+| REQ-ORDERS-094 | The contract ID field of an order links the order to its contract. | P0 | LPD-102570 | `FLOW-PRODUCT-PURCHASE-CONTRACT`, `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUB` |
 | REQ-ORDERS-095 | A token order takes its project and contract from a completed AI Hub order of the same project. When the project has no completed AI Hub order, the system refuses the token order. | P0 | LPD-102570 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBTOKEN` |
 
 ## My Account Orders
@@ -138,7 +137,7 @@ Terms used in this file:
 | REQ-ORDERS-111 | A failed or canceled payment shows "Purchase failed" and the Marketplace support email address. | P1 | LPD-104214 | `HOOK-USEGETPRODUCTBYORDERID` |
 | REQ-ORDERS-112 | When the next steps page shows a paid order, the system asks to complete that order. | P0 | LPD-104570 | `REST-POST-COMMERCE-ORDERS-COMMERCEORDERID-COMPLETE-SETTLED` |
 | REQ-ORDERS-113 | After a paid cloud app order, the continue button opens the applications of One Time Purchases for the install. After another paid order, it opens the Orders page. Otherwise it opens the catalog. | P2 | LPD-104214 | — |
-| REQ-ORDERS-114 | The next steps page uses a dedicated page for Liferay Data Platform, AI Hub, AI Hub open beta, and AI Hub token orders. | P1 | LPD-90605 | — |
+| REQ-ORDERS-114 | The next steps page uses a dedicated page for Liferay Data Platform, AI Hub, and AI Hub token orders. | P1 | LPD-90605 | — |
 | REQ-ORDERS-115 | When the product of an order no longer exists, the order pages show "Product unavailable" and a placeholder image. | P1 | — | `HOOK-USEGETPRODUCTBYORDERID` |
 | REQ-ORDERS-116 | After a paid app purchase with a failed or canceled payment, the purchase completed page shows "Payment failed" and lets the buyer try again. | P1 | — | `ROUTE-PRODUCT-PURCHASE-PURCHASE-COMPLETED` |
 
@@ -155,7 +154,7 @@ Terms used in this file:
 | --- | --- | --- | --- | --- |
 | REQ-ORDERS-130 | Liferay sells SEO Studio only to an account that already has an AI Hub order. For another account, the account step opens the requirements dialog. The request form also refuses the submit when the selected project has no completed and provisioned AI Hub order. | P0 | LPD-102451, LPD-105834 | `FLOW-SEO-STUDIO-SIGNUP`, `HOOK-PRODUCTPURCHASE-USEAIHUBORDERS` |
 | REQ-ORDERS-131 | The requirements dialog sends the buyer to the AI Hub product page. When that page is unknown, it sends the buyer to the products page. | P2 | LPD-102451 | `HOOK-PRODUCTPURCHASE-USESEOSTUDIOREQUIREMENTSMODAL` |
-| REQ-ORDERS-132 | An AI Hub order, an AI Hub open beta order, and an SEO Studio order each need the completed form. The system refuses the order without it. The order metadata keeps the form. | P0 | LPD-90605, LPD-102451 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUB`, `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBOPENBETA`, `CLIENT-COMMERCE-PRODUCTPURCHASESEOSTUDIO` |
+| REQ-ORDERS-132 | An AI Hub order and an SEO Studio order each need the completed form. The system refuses the order without it. The order metadata keeps the form. | P0 | LPD-90605, LPD-102451 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUB`, `CLIENT-COMMERCE-PRODUCTPURCHASESEOSTUDIO` |
 | REQ-ORDERS-133 | The system adds the SEO&AEO Studio Beta add on to the AI Hub of the project after the payment of the order settles, with the administrator from the request and the tier of the AI Hub order, and then completes the order. It cancels the order when the project does not belong to the account or has no AI Hub. It leaves the order pending, to try again, when AI Hub does not respond. | P0 | LPD-105834 | `SVC-COMMERCEORDERSERVICE` |
 
 ## Order Item Changes
