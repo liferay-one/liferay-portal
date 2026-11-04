@@ -97,5 +97,5 @@ Every SPA route in the custom element. The `route` attribute of the host widget 
 | ROUTE-TICKET-ATTACHMENTS-TICKETID | Route table wires the `:ticketId` path to the TicketAttachmentsUploaderOutlet under the TicketAttachmentsLayout | unit | P1 | planned | route:ticket-attachments::ticketId |
 | ROUTE-TICKET-ATTACHMENTS-ERC-TICKETATTACHMENTERC | Route table wires `erc/:ticketAttachmentERC` to the TicketAttachmentsDownloaderOutlet | unit | P1 | planned | route:ticket-attachments:erc/:ticketAttachmentERC |
 | ROUTE-TICKET-ATTACHMENTS-ID-TICKETATTACHMENTID | Route table wires `id/:ticketAttachmentId` to the TicketAttachmentsDownloaderOutlet | unit | P1 | planned | route:ticket-attachments:id/:ticketAttachmentId |
-| ROUTE-TICKET-ATTACHMENTS-NEW | Route table wires `new` to the TicketAttachmentsAdd page under the TicketAttachmentsLayout | unit | P1 | planned | route:ticket-attachments:new |
+| ROUTE-TICKET-ATTACHMENTS-NEW | Route table redirects `new` to the TicketAttachmentsList page, so the page offers no way to pick a ticket and add a file | unit | P1 | planned | route:ticket-attachments:new |
 | ROUTE-TICKET-ATTACHMENTS-NEW-TICKETID | Route table wires `new/:ticketId` to the TicketAttachmentsUploaderOutlet | unit | P1 | planned | route:ticket-attachments:new/:ticketId |

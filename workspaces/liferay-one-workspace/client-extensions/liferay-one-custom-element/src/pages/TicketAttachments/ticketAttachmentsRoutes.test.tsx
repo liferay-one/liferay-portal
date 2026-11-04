@@ -11,9 +11,6 @@ import {toRouteObjects} from '~/utils/routeUtils';
 
 import {ticketAttachmentsRoutes} from './ticketAttachmentsRoutes';
 
-vi.mock('./TicketAttachmentsAdd/TicketAttachmentsAdd', () => ({
-	default: () => 'TicketAttachmentsAdd page',
-}));
 vi.mock(
 	'./TicketAttachmentsDownloader/TicketAttachmentsDownloaderOutlet',
 	() => ({default: () => 'TicketAttachmentsDownloaderOutlet page'})
@@ -83,8 +80,18 @@ describe('ticketAttachmentsRoutes', () => {
 		expect(screen.getByText('TicketAttachmentsLayout')).toBeInTheDocument();
 	});
 
+	it('[ROUTE-TICKET-ATTACHMENTS-NEW] redirects /new to the TicketAttachmentsList page', async () => {
+		renderAt('/new');
+
+		expect(
+			await screen.findByText('TicketAttachmentsList page')
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText('TicketAttachmentsUploaderOutlet page')
+		).not.toBeInTheDocument();
+	});
+
 	it.each([
-		['ROUTE-TICKET-ATTACHMENTS-NEW', '/new', 'TicketAttachmentsAdd page'],
 		[
 			'ROUTE-TICKET-ATTACHMENTS-NEW-TICKETID',
 			'/new/12345',

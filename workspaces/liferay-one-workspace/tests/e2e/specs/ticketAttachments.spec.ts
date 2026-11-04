@@ -86,7 +86,7 @@ test.describe('[FLOW-TICKET-UPLOAD] [FLOW-TICKET-DOWNLOAD] ticket attachments', 
 		}
 	});
 
-	test('[FLOW-TICKET-DOWNLOAD] [ROUTE-TICKET-ATTACHMENTS-ID-TICKETATTACHMENTID] the list shows the project attachments with a download link', async ({
+	test('[FLOW-TICKET-DOWNLOAD] [ROUTE-TICKET-ATTACHMENTS-ID-TICKETATTACHMENTID] the list shows the project attachments with a download link and no New Attachment button', async ({
 		adminAPI,
 		page,
 		signIn,
@@ -109,9 +109,13 @@ test.describe('[FLOW-TICKET-UPLOAD] [FLOW-TICKET-DOWNLOAD] ticket attachments', 
 			'href',
 			`#/id/${attachment.id}`
 		);
+
+		await expect(
+			page.getByRole('button', {name: 'New Attachment'})
+		).toHaveCount(0);
 	});
 
-	test('[FLOW-TICKET-UPLOAD] [ROUTE-TICKET-ATTACHMENTS-NEW] [ROUTE-TICKET-ATTACHMENTS-NEW-TICKETID] a requester picks a ticket and uploads a file to it', async ({
+	test('[FLOW-TICKET-UPLOAD] [ROUTE-TICKET-ATTACHMENTS-NEW-TICKETID] a requester opens the uploader from a ticket link and uploads a file to it', async ({
 		adminAPI,
 		page,
 		signIn,
@@ -130,23 +134,7 @@ test.describe('[FLOW-TICKET-UPLOAD] [FLOW-TICKET-DOWNLOAD] ticket attachments', 
 
 		await signIn('PROJECT_REQUESTER');
 
-		await openAttachments(page, adminAPI);
-
-		await page.getByRole('button', {name: 'New Attachment'}).click();
-
-		await expect(
-			page.getByRole('heading', {name: 'New Attachment'})
-		).toBeVisible();
-
-		const continueButton = page.getByRole('button', {name: 'Continue'});
-
-		await expect(continueButton).toBeDisabled();
-
-		await page.locator('#newAttachmentTicket').selectOption('LRHC-1002');
-
-		await continueButton.click();
-
-		await expect(page).toHaveURL(/#\/new\/LRHC-1002$/);
+		await openAttachments(page, adminAPI, 'new/LRHC-1002');
 
 		await expect(
 			page.getByText('Attach File to Ticket #LRHC-1002')
