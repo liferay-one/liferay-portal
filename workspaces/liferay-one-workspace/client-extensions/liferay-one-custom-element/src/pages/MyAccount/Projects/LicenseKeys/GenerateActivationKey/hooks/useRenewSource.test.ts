@@ -213,9 +213,45 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USERENEWSOU
 		expect(result.current.loading).toBe(false);
 	});
 
-	it('returns empty values when no active license key exists', () => {
-		mocks.licenseKeys = [licenseKey({active: false, entitlementId: 5})];
+	it('renews a deactivated key from its inactive license keys', () => {
+		mocks.licenseKeys = [
+			licenseKey({
+				active: false,
+				description: 'Supplier portal',
+				entitlementId: 5,
+				hostName: 'supplier-host',
+				licenseKeyFamily: 'DXP',
+				name: 'supplier-env',
+				productVersion: '2026.q3',
+			}),
+		];
 
+		const {result} = renderHook(() =>
+			useRenewSource('KEY-1', generateForm)
+		);
+
+		expect(result.current.renewSource).toEqual({
+			bundleEntitlementIds: [5],
+			description: 'Supplier portal',
+			domain: '',
+			environmentName: 'supplier-env',
+			keyType: 'production',
+			maxClusterNodes: 0,
+			productExternalReferenceCode: 'marketplace-product-2',
+			servers: [
+				{
+					hostName: 'supplier-host',
+					ipAddresses: '10.0.0.1',
+					macAddresses: 'aa',
+				},
+			],
+			subscriptionEntitlementId: 5,
+			version: '2026.q3',
+			virtualCluster: false,
+		});
+	});
+
+	it('returns empty values when the key has no license keys', () => {
 		const {result} = renderHook(() =>
 			useRenewSource('KEY-1', generateForm)
 		);
