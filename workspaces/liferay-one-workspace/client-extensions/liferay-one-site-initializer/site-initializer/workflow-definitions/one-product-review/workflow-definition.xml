@@ -5,11 +5,11 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="urn:liferay.com:liferay-workflow_7.4.0 http://www.liferay.com/dtd/liferay-workflow-definition_7_4_0.xsd"
 >
-	<name>Product Approver</name>
+	<name>One Product Review</name>
 	<description>This workflow is triggered when a publisher submits a product, allowing a single admin to review and approve the content before it goes live.</description>
-	<version>1</version>
 	<state>
 		<name>created</name>
+		<description>Begin a workflow.</description>
 		<metadata>
 			<![CDATA[
 				{
@@ -33,7 +33,7 @@
 						Review
 					</label>
 				</labels>
-				<name>review</name>
+				<name>created_review_review</name>
 				<target>review</target>
 				<default>true</default>
 			</transition>
@@ -41,6 +41,7 @@
 	</state>
 	<state>
 		<name>approved</name>
+		<description>Conclude the workflow.</description>
 		<metadata>
 			<![CDATA[
 				{
@@ -54,8 +55,10 @@
 		</metadata>
 		<actions>
 			<action>
-				<name>approve</name>
+				<name>Approved</name>
+				<description></description>
 				<status>0</status>
+				<priority>1</priority>
 				<execution-type>onEntry</execution-type>
 			</action>
 		</actions>
@@ -80,7 +83,8 @@
 		</metadata>
 		<actions>
 			<action>
-				<name>draft</name>
+				<name>Draft</name>
+				<description></description>
 				<status>2</status>
 				<priority>1</priority>
 				<execution-type>onAssignment</execution-type>
@@ -122,6 +126,7 @@
 	</task>
 	<task>
 		<name>review</name>
+		<description>Ask a user to work on the item.</description>
 		<metadata>
 			<![CDATA[
 				{
@@ -133,13 +138,22 @@
 			]]>
 		</metadata>
 		<actions>
+			<action>
+				<name>Pending</name>
+				<description></description>
+				<status>1</status>
+				<priority>1</priority>
+				<execution-type>onAssignment</execution-type>
+			</action>
 			<notification>
 				<name>Review Notification</name>
+				<description>
+					<![CDATA[]]>
+				</description>
 				<template>
 					<![CDATA[${userName} sent you a ${entryType} for review in the workflow.]]>
 				</template>
 				<template-language>freemarker</template-language>
-				<notification-type>email</notification-type>
 				<notification-type>user-notification</notification-type>
 				<recipients receptionType="to">
 					<assignees />
@@ -148,11 +162,14 @@
 			</notification>
 			<notification>
 				<name>Review Completion Notification</name>
+				<description>
+					<![CDATA[]]>
+				</description>
 				<template>
 					<![CDATA[Your submission was reviewed<#if taskComments?has_content> and the reviewer applied the following ${taskComments}</#if>.]]>
 				</template>
 				<template-language>freemarker</template-language>
-				<notification-type>email</notification-type>
+				<notification-type>user-notification</notification-type>
 				<recipients receptionType="to">
 					<user />
 				</recipients>
@@ -164,6 +181,7 @@
 				<role>
 					<role-type>regular</role-type>
 					<name>Administrator</name>
+					<auto-create>false</auto-create>
 				</role>
 			</roles>
 		</assignments>
