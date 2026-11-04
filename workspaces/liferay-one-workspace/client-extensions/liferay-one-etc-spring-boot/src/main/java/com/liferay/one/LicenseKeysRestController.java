@@ -84,7 +84,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 		for (long licenseKeyId : licenseKeyIds) {
 			_subscriptionEntryService.deleteSubscriptionEntry(
-				jwt, ClassNameConstants.LICENSE_KEY, licenseKeyId,
+				ClassNameConstants.LICENSE_KEY, licenseKeyId,
 				userAccount.getId());
 		}
 	}
@@ -204,7 +204,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 		SubscriptionEntry subscriptionEntry =
 			_subscriptionEntryService.fetchSubscriptionEntry(
-				jwt, ClassNameConstants.LICENSE_KEY, licenseKeyId,
+				ClassNameConstants.LICENSE_KEY, licenseKeyId,
 				userAccount.getId());
 
 		if (subscriptionEntry != null) {
@@ -350,7 +350,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 
 		for (long licenseKeyId : licenseKeyIds) {
 			_subscriptionEntryService.addSubscriptionEntry(
-				jwt, ClassNameConstants.LICENSE_KEY, licenseKeyId,
+				ClassNameConstants.LICENSE_KEY, licenseKeyId,
 				userAccount.getId());
 		}
 	}

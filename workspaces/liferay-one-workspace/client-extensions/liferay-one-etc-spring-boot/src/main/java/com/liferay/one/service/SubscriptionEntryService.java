@@ -35,7 +35,6 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.MessageSource;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -47,17 +46,33 @@ import org.springframework.web.util.UriComponentsBuilder;
 public class SubscriptionEntryService extends OneBaseService {
 
 	public SubscriptionEntry addSubscriptionEntry(
-			Jwt jwt, String className, long classPK, long userId)
-		throws Exception {
-
-		return _addSubscriptionEntry(jwt, className, classPK, userId);
-	}
-
-	public SubscriptionEntry addSubscriptionEntry(
 			String className, long classPK, long userId)
 		throws Exception {
 
-		return _addSubscriptionEntry(null, className, classPK, userId);
+		SubscriptionEntry existingSubscriptionEntry = fetchSubscriptionEntry(
+			className, classPK, userId);
+
+		if (existingSubscriptionEntry != null) {
+			return existingSubscriptionEntry;
+		}
+
+		JSONObject subscriptionEntryJSONObject = new JSONObject(
+		).put(
+			"className", className
+		).put(
+			"classPK", classPK
+		).put(
+			"customUserId", userId
+		);
+
+		String response = post(
+			getAuthorization(), subscriptionEntryJSONObject.toString(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/subscriptionentries"
+			).build(
+			).toUri());
+
+		return new SubscriptionEntry(new JSONObject(response));
 	}
 
 	public void deleteAccountActivationKeySubscriptionEntries(
@@ -94,49 +109,45 @@ public class SubscriptionEntryService extends OneBaseService {
 
 		for (SubscriptionEntry subscriptionEntry : subscriptionEntries) {
 			_deleteSubscriptionEntry(
-				null, subscriptionEntry.getSubscriptionEntryId());
+				subscriptionEntry.getSubscriptionEntryId());
 		}
 	}
 
 	public void deleteSubscriptionEntry(
-			Jwt jwt, String className, long classPK, long userId)
-		throws Exception {
-
-		_deleteSubscriptionEntry(jwt, className, classPK, userId);
-	}
-
-	public void deleteSubscriptionEntry(
 			String className, long classPK, long userId)
 		throws Exception {
 
-		_deleteSubscriptionEntry(null, className, classPK, userId);
-	}
+		SubscriptionEntry subscriptionEntry = fetchSubscriptionEntry(
+			className, classPK, userId);
 
-	public SubscriptionEntry fetchSubscriptionEntry(
-			Jwt jwt, String className, long classPK, long userId)
-		throws Exception {
+		if (subscriptionEntry == null) {
+			return;
+		}
 
-		return _fetchSubscriptionEntry(jwt, className, classPK, userId);
+		_deleteSubscriptionEntry(subscriptionEntry.getSubscriptionEntryId());
 	}
 
 	public SubscriptionEntry fetchSubscriptionEntry(
 			String className, long classPK, long userId)
 		throws Exception {
 
-		return _fetchSubscriptionEntry(null, className, classPK, userId);
-	}
+		List<SubscriptionEntry> subscriptionEntries = getSubscriptionEntries(
+			StringBundler.concat(
+				"(className eq '", className, "') and (classPK eq ", classPK,
+				") and (customUserId eq ", userId, ")"));
 
-	public List<SubscriptionEntry> getSubscriptionEntries(
-			Jwt jwt, String filterString)
-		throws Exception {
+		if (subscriptionEntries.isEmpty()) {
+			return null;
+		}
 
-		return _getSubscriptionEntries(jwt, filterString);
+		return subscriptionEntries.get(0);
 	}
 
 	public List<SubscriptionEntry> getSubscriptionEntries(String filterString)
 		throws Exception {
 
-		return _getSubscriptionEntries(null, filterString);
+		return getAllItems(
+			"/o/c/subscriptionentries", filterString, SubscriptionEntry::new);
 	}
 
 	@Scheduled(cron = "0 0 0 * * *")
@@ -148,77 +159,15 @@ public class SubscriptionEntryService extends OneBaseService {
 		}
 	}
 
-	private SubscriptionEntry _addSubscriptionEntry(
-			Jwt jwt, String className, long classPK, long userId)
-		throws Exception {
-
-		SubscriptionEntry existingSubscriptionEntry = _fetchSubscriptionEntry(
-			jwt, className, classPK, userId);
-
-		if (existingSubscriptionEntry != null) {
-			return existingSubscriptionEntry;
-		}
-
-		JSONObject subscriptionEntryJSONObject = new JSONObject(
-		).put(
-			"className", className
-		).put(
-			"classPK", classPK
-		).put(
-			"customUserId", userId
-		);
-
-		String response = post(
-			getAuthorization(jwt), subscriptionEntryJSONObject.toString(),
-			UriComponentsBuilder.fromPath(
-				"/o/c/subscriptionentries"
-			).build(
-			).toUri());
-
-		return new SubscriptionEntry(new JSONObject(response));
-	}
-
-	private void _deleteSubscriptionEntry(Jwt jwt, long subscriptionEntryId)
+	private void _deleteSubscriptionEntry(long subscriptionEntryId)
 		throws Exception {
 
 		delete(
-			getAuthorization(jwt), StringPool.BLANK,
+			getAuthorization(), StringPool.BLANK,
 			UriComponentsBuilder.fromPath(
 				"/o/c/subscriptionentries/" + subscriptionEntryId
 			).build(
 			).toUri());
-	}
-
-	private void _deleteSubscriptionEntry(
-			Jwt jwt, String className, long classPK, long userId)
-		throws Exception {
-
-		SubscriptionEntry subscriptionEntry = _fetchSubscriptionEntry(
-			jwt, className, classPK, userId);
-
-		if (subscriptionEntry == null) {
-			return;
-		}
-
-		_deleteSubscriptionEntry(
-			jwt, subscriptionEntry.getSubscriptionEntryId());
-	}
-
-	private SubscriptionEntry _fetchSubscriptionEntry(
-			Jwt jwt, String className, long classPK, long userId)
-		throws Exception {
-
-		List<SubscriptionEntry> subscriptionEntries = _getSubscriptionEntries(
-			jwt,
-			StringBundler.concat(
-				"(className eq '", className, "') and (classPK eq ", classPK,
-				") and (customUserId eq ", userId, ")"));
-
-		if (subscriptionEntries.isEmpty()) {
-			return null;
-		}
-
-		return subscriptionEntries.get(0);
 	}
 
 	private String _getExpirationMessage(
@@ -266,15 +215,6 @@ public class SubscriptionEntryService extends OneBaseService {
 		}
 
 		return _DEFAULT_LANGUAGE_ID;
-	}
-
-	private List<SubscriptionEntry> _getSubscriptionEntries(
-			Jwt jwt, String filterString)
-		throws Exception {
-
-		return getAllItems(
-			"/o/c/subscriptionentries", filterString, SubscriptionEntry::new,
-			jwt);
 	}
 
 	private void _sendExpiringActivationKeyEmails(
