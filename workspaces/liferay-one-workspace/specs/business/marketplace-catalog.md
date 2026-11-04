@@ -46,7 +46,7 @@ Terms used in this file:
 | REQ-CATALOG-021 | The catalog offers 20 of the specifications as filters. Examples are the price model, the app type, the Liferay version, and the developer name. | P2 | LPD-102706 | — |
 | REQ-CATALOG-022 | A missing product, specification, category, or name reads as an empty value. A product with no specifications does not stop a page or a process. | P1 | LPD-102706 | `CLS-COMMERCEPRODUCTUTIL`, `MOD-PRODUCTUTILS` |
 | REQ-CATALOG-023 | The price model specification decides whether a product is free or paid. A free product shows the price "Free". A paid product shows the price of its purchasable standard SKU. A product with no price model counts as free. | P0 | — | `MOD-PRODUCTUTILS`, `CLIENT-MODELS-MARKETPLACEDELIVERYPRODUCT` |
-| REQ-CATALOG-024 | The solution type specification selects the purchase path of a Liferay product. The known values are `ai-hub`, `ai-hub-open-beta`, `seo-studio`, `dsr`, `cmp`, `liferay-data-platform`, and `pre-built-trial`. | P1 | LPD-102451 | `MOD-PRODUCTUTILS` |
+| REQ-CATALOG-024 | The solution type specification selects the purchase path of a Liferay product. The known values are `ai-hub`, `seo-studio`, `dsr`, `cmp`, `liferay-data-platform`, and `pre-built-trial`. | P1 | LPD-102451 | `MOD-PRODUCTUTILS` |
 | REQ-CATALOG-025 | A product is a free DXP product only when its price model is free and its app type is `dxp`. | P0 | — | `MOD-PRODUCTUTILS` |
 
 ## Product Display Pages
@@ -86,7 +86,7 @@ Terms used in this file:
 | REQ-CATALOG-060 | An order is a beta order when one of its items has the SKU option value `beta`, `open-beta`, or `private-beta`. | P2 | LPD-102451 | `MOD-ORDERUTILS` |
 | REQ-CATALOG-061 | The beta checkout of Content Marketing Platform creates `CMP_BETA` orders. Only the sales pipeline creates `CMP` orders for the general release. Both show the name Content Marketing Platform. | P1 | LPD-102451 | `MOD-ORDERUTILS` |
 | REQ-CATALOG-062 | A product with the license type "3 Months Limited Beta" gives a purchase term of three months. A trial SKU gives one month. Every other SKU gives one year. | P1 | — | `CLS-COMMERCEORDERUTIL` |
-| REQ-CATALOG-063 | The AI Hub open beta product sells access and token packs to a project. The purchase flows for it are in `REQ-ORDERS-014`. | P1 | LPD-102570 | `ROUTE-PRODUCT-PURCHASE-AI-HUB-OPEN-BETA-FORM` |
+| REQ-CATALOG-063 | The AI Hub product sells access and token packs to a project. The purchase flows for it are in `REQ-ORDERS-014`. | P1 | LPD-102570 | `ROUTE-PRODUCT-PURCHASE-AI-HUB-FORM` |
 
 ## Catalog Content From Salesforce
 

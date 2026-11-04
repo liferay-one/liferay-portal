@@ -20,7 +20,7 @@ import {useAppPurchaseContext} from '~/pages/ProductPurchase/context';
 import useAccountAddresses from '~/pages/ProductPurchase/hooks/useAccountAddresses';
 import {adminSchemas as zodSchema} from '~/schemas/adminSchemas';
 import {commerceSchemas as commerceZodSchema} from '~/schemas/commerceSchemas';
-import {ProductPurchaseAIHubOpenBeta} from '~/services/commerce/ProductPurchaseAIHubOpenBeta';
+import {ProductPurchaseAIHub} from '~/services/commerce/ProductPurchaseAIHub';
 import {Liferay} from '~/services/liferay/liferay';
 import {formatCurrency} from '~/utils/formatCurrency';
 import {isBillingAddress} from '~/utils/orderUtils';
@@ -135,11 +135,11 @@ const AIHubOrderSummary = () => {
 	};
 
 	const onSubmit = async (
-		form: z.infer<typeof zodSchema.aiHubOpenBetaForm> & {
+		form: z.infer<typeof zodSchema.aiHubForm> & {
 			salesforceProjectId: string;
 		}
 	) => {
-		const productPurchase = new ProductPurchaseAIHubOpenBeta(
+		const productPurchase = new ProductPurchaseAIHub(
 			selectedAccount,
 			product
 		);
@@ -391,9 +391,9 @@ const AIHubOrderSummary = () => {
 					displayType="primary"
 					onClick={() =>
 						onSubmit(
-							form as z.infer<
-								typeof zodSchema.aiHubOpenBetaForm
-							> & {salesforceProjectId: string}
+							form as z.infer<typeof zodSchema.aiHubForm> & {
+								salesforceProjectId: string;
+							}
 						)
 					}
 					size="regular"

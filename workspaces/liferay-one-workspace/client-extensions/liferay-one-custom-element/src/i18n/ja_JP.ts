@@ -1324,8 +1324,6 @@ export default {
 	'request-a-marketplace-publisher-account':
 		'Marketplaceパブリッシャーアカウントをリクエスト',
 	'request-access': 'アクセスをリクエスト',
-	'request-access-to-ai-hub-private-beta':
-		'AI Hubプライベートベータへのアクセスをリクエスト',
 	'request-access-to-seo-and-aeo-studio-beta':
 		'SEO&AEO Studioベータへのアクセスをリクエスト',
 	'request-account': 'アカウントをリクエスト',
