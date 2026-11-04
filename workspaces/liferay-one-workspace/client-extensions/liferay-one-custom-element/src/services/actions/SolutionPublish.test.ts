@@ -181,6 +181,9 @@ describe('[CLIENT-ACTIONS-SOLUTIONPUBLISH] SolutionPublish', () => {
 			/^Unable to publish the solution because the following steps did not complete .*syncHeader.*, .*syncLastUpdatedBy$/
 		);
 		expect(error.message).not.toMatch(/syncDetails|syncCompanyProfile/);
+		expect(
+			HeadlessCommerceAdminCatalog.updateProduct
+		).not.toHaveBeenCalled();
 		expect(getSpecificationValue('solution-contact-email')).toBeDefined();
 		expect(getSpecificationValue('solution-details-blocks')).toBeDefined();
 	});
@@ -333,7 +336,7 @@ describe('[CLIENT-ACTIONS-SOLUTIONPUBLISH] SolutionPublish', () => {
 		});
 	});
 
-	it('updates an existing product as pending and skips an unchanged uploaded profile icon', async () => {
+	it('updates an existing product as a draft, submits it as pending after every step, and skips an unchanged uploaded profile icon', async () => {
 		const existingProduct = createProduct();
 
 		const context = createContext({
@@ -358,21 +361,42 @@ describe('[CLIENT-ACTIONS-SOLUTIONPUBLISH] SolutionPublish', () => {
 		expect(
 			HeadlessCommerceAdminCatalog.createVirtualProduct
 		).not.toHaveBeenCalled();
-		expect(HeadlessCommerceAdminCatalog.updateProduct).toHaveBeenCalledWith(
-			10,
-			{
-				categories: [
-					{id: 11, name: 'category'},
-					{id: 21, name: 'solution'},
-					{id: 13, name: 'tag'},
-				],
-				description: {en_US: 'Profile description'},
-				name: {en_US: 'Solution'},
-				productStatus: 1,
-				workflowStatusInfo: 1,
-			}
-		);
+		expect(
+			vi.mocked(HeadlessCommerceAdminCatalog.updateProduct).mock.calls
+		).toEqual([
+			[
+				10,
+				{
+					categories: [
+						{id: 11, name: 'category'},
+						{id: 21, name: 'solution'},
+						{id: 13, name: 'tag'},
+					],
+					description: {en_US: 'Profile description'},
+					name: {en_US: 'Solution'},
+					productStatus: 2,
+					workflowStatusInfo: 2,
+				},
+			],
+			[10, {productStatus: 1, workflowStatusInfo: 1}],
+		]);
 		expect(getImageCalls()).toEqual([]);
+	});
+
+	it('creates a new product as a draft and submits it as pending after every step succeeds', async () => {
+		await new SolutionPublish(createContext()).sync({
+			editorName: 'Ann',
+			isDraft: false,
+		});
+
+		expect(
+			HeadlessCommerceAdminCatalog.createVirtualProduct
+		).toHaveBeenCalledWith(
+			expect.objectContaining({productStatus: 2, workflowStatusInfo: 2})
+		);
+		expect(
+			vi.mocked(HeadlessCommerceAdminCatalog.updateProduct).mock.calls
+		).toEqual([[10, {productStatus: 1, workflowStatusInfo: 1}]]);
 	});
 
 	it('uploads a changed profile icon for an existing product', async () => {

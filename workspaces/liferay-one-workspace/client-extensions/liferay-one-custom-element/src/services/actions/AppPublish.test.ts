@@ -764,6 +764,58 @@ describe('[CLIENT-ACTIONS-APPPUBLISH] AppPublish', () => {
 		);
 	});
 
+	it('creates a new app as a draft so that only the final update submits it', async () => {
+		catalog.createVirtualProduct.mockResolvedValue(createProduct());
+		channel.getTaxCategories.mockResolvedValue({
+			items: [
+				{
+					id: 30130,
+					name: {en_US: ProductTaxCategoryName.ELECTRONIC_SERVICES},
+				},
+			],
+		} as never);
+
+		await new AppPublish(createNewAppContext()).syncProfile();
+
+		expect(catalog.createVirtualProduct).toHaveBeenCalledWith(
+			expect.objectContaining({
+				productStatus: ProductWorkflowStatusCode.DRAFT,
+				workflowStatusInfo: ProductWorkflowStatusCode.DRAFT,
+			})
+		);
+	});
+
+	it('submits a new app as pending only in the final update after every step succeeds', async () => {
+		catalog.createVirtualProduct.mockResolvedValue(createProduct());
+		channel.getTaxCategories.mockResolvedValue({
+			items: [
+				{
+					id: 30130,
+					name: {en_US: ProductTaxCategoryName.ELECTRONIC_SERVICES},
+				},
+			],
+		} as never);
+
+		await new AppPublish(createNewAppContext()).sync({
+			isDraft: false,
+			properties: {} as never,
+		});
+
+		expect(catalog.createVirtualProduct).toHaveBeenCalledWith(
+			expect.objectContaining({
+				productStatus: ProductWorkflowStatusCode.DRAFT,
+				workflowStatusInfo: ProductWorkflowStatusCode.DRAFT,
+			})
+		);
+		expect(catalog.updateProduct.mock.calls.at(-1)).toEqual([
+			1,
+			expect.objectContaining({
+				productStatus: ProductWorkflowStatusCode.PENDING,
+				workflowStatusInfo: ProductWorkflowStatusCode.PENDING,
+			}),
+		]);
+	});
+
 	it('does not create a new app when the electronic services tax category does not exist', async () => {
 		channel.getTaxCategories.mockResolvedValue({
 			items: [{id: 30131, name: {en_US: 'Other Tax Category'}}],
