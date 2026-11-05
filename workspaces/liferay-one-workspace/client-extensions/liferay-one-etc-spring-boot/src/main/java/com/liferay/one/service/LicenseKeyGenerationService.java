@@ -536,9 +536,16 @@ public class LicenseKeyGenerationService {
 	private LicenseEntry _fetchLicenseEntry(
 		GenerateRequest generateRequest, Entitlement entitlement) {
 
+		return _fetchLicenseEntry(
+			generateRequest,
+			LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement));
+	}
+
+	private LicenseEntry _fetchLicenseEntry(
+		GenerateRequest generateRequest, String licenseKeyFamily) {
+
 		return _licenseKeyGenerateFormService.fetchLicenseEntry(
-			generateRequest.getKeyType(),
-			LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
+			generateRequest.getKeyType(), licenseKeyFamily,
 			generateRequest.getVersion(), _isVirtualCluster(generateRequest));
 	}
 
@@ -1149,12 +1156,9 @@ public class LicenseKeyGenerationService {
 				LicenseKeyGenerateFormService.getLicenseKeyFamily(
 					subscriptionEntitlement))) {
 
-			leadingLicenseEntry =
-				_licenseKeyGenerateFormService.fetchLicenseEntry(
-					generateRequest.getKeyType(),
-					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP,
-					generateRequest.getVersion(),
-					_isVirtualCluster(generateRequest));
+			leadingLicenseEntry = _fetchLicenseEntry(
+				generateRequest,
+				LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP);
 		}
 
 		for (Entitlement entitlement : bundleEntitlements) {

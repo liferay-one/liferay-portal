@@ -712,6 +712,81 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetKeyTypesGivesAStandaloneAddOnTheDXPLicenseEntry() {
+		LicenseEntryService licenseEntryService = Mockito.mock(
+			LicenseEntryService.class);
+
+		Mockito.when(
+			licenseEntryService.getLicenseEntriesByNameVersion(
+				Mockito.anyString(), Mockito.anyString())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		Mockito.when(
+			licenseEntryService.getLicenseEntriesByNameVersion(
+				"DXP%", "2026.Q1")
+		).thenReturn(
+			Collections.singletonList(
+				new LicenseEntry(
+					"portal", "DXP Production", "production", "2026.Q1",
+					"2026.Q1"))
+		);
+
+		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
+			LicenseKeyTypeService.class);
+
+		Mockito.when(
+			licenseKeyTypeService.getLicenseKeyTypes()
+		).thenReturn(
+			Collections.singletonList(LicenseKeyType.PRODUCTION)
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseEntryService",
+			licenseEntryService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyTypeService",
+			licenseKeyTypeService);
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
+			true, false, false, Collections.emptyMap(), "DSR",
+			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
+				"DSR",
+				(Map<String, List<Entitlement>>)HashMapBuilder.put(
+					"production",
+					Collections.singletonList(
+						_toEntitlement(1L, "digital-sales-room-production"))
+				).build()
+			).build(),
+			Collections.singletonList(
+				_toProductVersion("2026.Q1", "DXP 2026.Q1")),
+			true, false);
+
+		JSONObject keyTypeJSONObject = jsonArray.getJSONObject(0);
+
+		Assertions.assertEquals(
+			"production", keyTypeJSONObject.getString("licenseEntryType"));
+
+		JSONObject subscriptionJSONObject = keyTypeJSONObject.getJSONArray(
+			"subscriptions"
+		).getJSONObject(
+			0
+		);
+
+		Instant licenseKeyExpirationInstant = Instant.parse(
+			subscriptionJSONObject.getString("licenseKeyExpirationDate"));
+
+		Assertions.assertTrue(
+			licenseKeyExpirationInstant.isAfter(
+				Instant.parse("2100-01-01T00:00:00Z")));
+	}
+
+	@Test
 	public void testGetKeyTypesKeepsASpentKeyType() {
 		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
 			LicenseKeyTypeService.class);

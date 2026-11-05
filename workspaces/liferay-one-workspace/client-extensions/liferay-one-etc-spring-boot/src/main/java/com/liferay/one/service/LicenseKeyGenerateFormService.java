@@ -750,6 +750,15 @@ public class LicenseKeyGenerateFormService {
 			LicenseEntry licenseEntry = _fetchLicenseEntry(
 				licenseKeyFamily, licenseKeyType, productVersions, false);
 
+			if ((licenseEntry == null) &&
+				LicenseKeyGenerationConstants.standaloneLicenseKeyFamilies.
+					contains(licenseKeyFamily)) {
+
+				licenseEntry = _fetchLicenseEntry(
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP,
+					licenseKeyType, productVersions, false);
+			}
+
 			if ((licenseEntry == null) && hasLicenseEntries &&
 				licenseKeyType.isLicenseEntryBacked()) {
 
