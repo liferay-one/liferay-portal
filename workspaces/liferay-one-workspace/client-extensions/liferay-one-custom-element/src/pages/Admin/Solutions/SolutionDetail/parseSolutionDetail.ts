@@ -8,6 +8,7 @@ import {
 	getProductCategoriesByVocabularyName,
 } from '~/utils/productUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
+import {toRelativeURL} from '~/utils/toRelativeURL';
 
 import type {Product, ProductImages} from '~/types/product';
 
@@ -70,7 +71,7 @@ function toSolutionImage(image: ProductImages): SolutionImage {
 	return {
 		description: image.title?.en_US,
 		fileName: image.title?.en_US,
-		preview: image.src,
+		preview: toRelativeURL(image.src),
 	};
 }
 

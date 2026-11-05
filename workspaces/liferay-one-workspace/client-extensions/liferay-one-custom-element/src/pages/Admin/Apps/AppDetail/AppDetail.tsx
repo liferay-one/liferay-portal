@@ -23,6 +23,7 @@ import {
 	getAdminProductSpecificationValue,
 	getProductCategoriesByVocabularyName,
 } from '~/utils/productUtils';
+import {toRelativeURL} from '~/utils/toRelativeURL';
 
 import type {Word} from '~/i18n';
 import type {Product} from '~/types/product';
@@ -340,7 +341,7 @@ function AppDetailContent({product}: {product: Product}) {
 								<div className="d-flex mt-3" key={index}>
 									<img
 										draggable={false}
-										src={image.src}
+										src={toRelativeURL(image.src)}
 										style={{maxWidth: '12rem'}}
 									/>
 
