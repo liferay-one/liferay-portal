@@ -353,11 +353,26 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 
 			expect(
 				getLeadingProducts([
-					toProduct('PRDCT-COMMERCE', 'CMP'),
+					toProduct('PRDCT-ADDON', 'Add-On'),
 					portal,
 					dxp,
 				])
 			).toEqual([dxp]);
+		});
+
+		it('keeps CMP and DSR next to the leading product', () => {
+			const cmp = toProduct('PRDCT-CMP', 'CMP');
+			const dsr = toProduct('PRDCT-DSR', 'DSR');
+			const dxp = toProduct('PRDCT-DXP', 'DXP');
+
+			expect(
+				getLeadingProducts([
+					cmp,
+					toProduct('PRDCT-ADDON', 'Add-On'),
+					dxp,
+					dsr,
+				])
+			).toEqual([dxp, cmp, dsr]);
 		});
 
 		it('keeps every product when none has a leading family', () => {
@@ -371,8 +386,9 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 	});
 
 	describe('getSelectableProducts', () => {
+		const addOn = toProduct('PRDCT-ADDON', 'Add-On');
 		const app = {...toProduct('PRDCT-APP'), app: true};
-		const commerce = toProduct('PRDCT-COMMERCE', 'CMP');
+		const cmp = toProduct('PRDCT-CMP', 'CMP');
 		const dxp = toProduct('PRDCT-DXP', 'DXP');
 		const trial = toProduct('PRDCT-DXP-TRIAL', 'DXP');
 
@@ -391,16 +407,17 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			).toEqual([trial]);
 		});
 
-		it('keeps only the leading product of a project', () => {
-			expect(getSelectableProducts(null, [commerce, dxp], true)).toEqual([
-				dxp,
-			]);
+		it('keeps the leading product of a project and its CMP', () => {
+			expect(
+				getSelectableProducts(null, [addOn, cmp, dxp], true)
+			).toEqual([dxp, cmp]);
 		});
 
 		it('keeps every product of an account', () => {
-			expect(getSelectableProducts(null, [commerce, dxp], false)).toEqual(
-				[commerce, dxp]
-			);
+			expect(getSelectableProducts(null, [cmp, dxp], false)).toEqual([
+				cmp,
+				dxp,
+			]);
 		});
 	});
 

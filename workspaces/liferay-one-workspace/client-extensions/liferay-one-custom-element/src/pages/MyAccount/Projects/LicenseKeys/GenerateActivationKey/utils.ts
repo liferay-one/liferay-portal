@@ -54,6 +54,8 @@ export const NON_PRODUCTION_KEY_TYPE = 'non-production';
 
 const SERVERLESS_KEY_TYPES = ['enterprise', 'oem'];
 
+const STANDALONE_LICENSE_KEY_FAMILIES = ['CMP', 'DSR'];
+
 export const SERVER_FIELDS: GenerateActivationKeyServerField[] = [
 	'hostName',
 	'ipAddresses',
@@ -295,7 +297,16 @@ export function getLeadingProducts(
 		}
 	}
 
-	return leadingProduct ? [leadingProduct] : products;
+	if (!leadingProduct) {
+		return products;
+	}
+
+	return [
+		leadingProduct,
+		...products.filter((product) =>
+			STANDALONE_LICENSE_KEY_FAMILIES.includes(product.licenseKeyFamily)
+		),
+	];
 }
 
 export function getSelectableProducts(
