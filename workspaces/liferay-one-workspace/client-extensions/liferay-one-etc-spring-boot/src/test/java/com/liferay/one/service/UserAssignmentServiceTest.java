@@ -575,7 +575,7 @@ public class UserAssignmentServiceTest {
 	}
 
 	@Test
-	public void testAssignOrganizationSkipsJSMForOktaGroupOrganization()
+	public void testAssignOrganizationSkipsOktaAndJSMForOktaGroupOrganization()
 		throws Exception {
 
 		_whenOktaGroupOrganization();
@@ -589,7 +589,7 @@ public class UserAssignmentServiceTest {
 		);
 
 		Mockito.verifyNoInteractions(
-			_organizationSynchronizer, _userAccountSynchronizer);
+			_oktaService, _organizationSynchronizer, _userAccountSynchronizer);
 	}
 
 	@Test
