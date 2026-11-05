@@ -5,10 +5,6 @@
 	commerceContext = (renderRequest.getAttribute("COMMERCE_CONTEXT"))!
 />
 
-<#if !commerceContext?has_content>
-	<#assign commerceContext = (request.getAttribute("COMMERCE_CONTEXT"))! />
-</#if>
-
 <#if commerceContext?has_content>
 	<#if commerceContext.getAccountEntry()??>
 		<#assign
