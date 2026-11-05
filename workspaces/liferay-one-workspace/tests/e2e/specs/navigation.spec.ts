@@ -93,6 +93,21 @@ test.describe('[FLOW-NAVIGATION] site header and navigation', () => {
 		).toHaveCount(0);
 	});
 
+	test('[FLOW-NAVIGATION] the footer links Privacy Policy and Contact Us to liferay.com', async ({
+		page,
+	}) => {
+		await page.goto(HOME_PATH);
+
+		const footer = page.locator('.liferay-one-footer');
+
+		await expect(
+			footer.getByRole('link', {name: 'Privacy Policy'})
+		).toHaveAttribute('href', 'https://www.liferay.com/privacy-policy');
+		await expect(
+			footer.getByRole('link', {name: 'Contact Us'})
+		).toHaveAttribute('href', 'https://www.liferay.com/contact-us');
+	});
+
 	test('[FLOW-NAVIGATION] the guest menu links Create An Account to registration', async ({
 		page,
 	}) => {
