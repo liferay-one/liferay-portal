@@ -8,7 +8,6 @@
 			"externalReferenceCode": "C_ENT_OMNI_2_AIHUB",
 			"generatesActivationKey": false,
 			"grantType": "fixed",
-			"licenseKeyFamily": "AIHUB",
 			"maxQuantity": 1,
 			"name": "AI Hub",
 			"quantity": 1,
