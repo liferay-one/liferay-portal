@@ -32,6 +32,7 @@ import {IBusinessEvent} from '~/pages/BusinessEvents/types';
 import {containsOption} from '~/pages/BusinessEvents/utils/containsOption';
 import {getFormattedEventDateTime} from '~/pages/BusinessEvents/utils/getFormattedEventDateUtils';
 import getInitialEvent from '~/pages/BusinessEvents/utils/getInitialEvent';
+import getNewLiferayVersionOptions from '~/pages/BusinessEvents/utils/getNewLiferayVersionOptions';
 import {Liferay} from '~/services/liferay/liferay';
 import {createBusinessEvent} from '~/services/spring-boot/Jira';
 import {ITicket} from '~/types/ticket';
@@ -278,23 +279,12 @@ const BusinessEventsAddPage: React.FC = () => {
 
 	useEffect(() => {
 		if (productVersions?.length) {
-			setNewLiferayVersionOptions([
-				...productVersions.filter((version, index, versions) => {
-					if (businessEvent.currentLiferayVersion?.key) {
-						return (
-							index <
-							versions.findIndex((version) => {
-								return (
-									version.value ===
-									businessEvent.currentLiferayVersion?.key
-								);
-							})
-						);
-					}
-
-					return true;
-				}),
-			]);
+			setNewLiferayVersionOptions(
+				getNewLiferayVersionOptions(
+					productVersions,
+					businessEvent.currentLiferayVersion?.key
+				)
+			);
 		}
 	}, [
 		businessEvent.currentLiferayVersion?.key,
