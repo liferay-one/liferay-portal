@@ -120,6 +120,23 @@ public class AnalyticsCloudService extends BaseService {
 		return "Basic " + encodedAuthorization;
 	}
 
+	public String getDataSourceAccessToken(
+		String analyticsCloudEnvironment, String groupId) {
+
+		JSONObject analyticsCloudContextJSONObject =
+			getAnalyticsCloudContextJSONObject(analyticsCloudEnvironment);
+
+		return get(
+			getAuthorization(analyticsCloudContextJSONObject),
+			UriComponentsBuilder.fromUriString(
+				analyticsCloudContextJSONObject.getString("url")
+			).path(
+				"/o/faro/contacts/{groupId}/data_source/token"
+			).buildAndExpand(
+				groupId
+			).toUri());
+	}
+
 	public JSONObject provisionAnalyticsCloudProject(
 			JSONObject analyticsCloudContextJSONObject,
 			JSONObject analyticsCloudProjectJSONObject)

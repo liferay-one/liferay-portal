@@ -124,6 +124,22 @@ public class AnalyticsCloudServiceTest {
 	}
 
 	@Test
+	public void testGetDataSourceAccessToken() {
+		_testAnalyticsCloudService._response = "token-1";
+
+		Assertions.assertEquals(
+			"token-1",
+			_testAnalyticsCloudService.getDataSourceAccessToken(null, "7"));
+
+		Assertions.assertEquals(
+			_basic("external@example.com:external-password"),
+			_testAnalyticsCloudService._authorization);
+		Assertions.assertEquals(
+			"/o/faro/contacts/7/data_source/token",
+			_testAnalyticsCloudService._uri.getPath());
+	}
+
+	@Test
 	public void testGetProjectJSONObjectReturnsNullOnError() {
 		_testAnalyticsCloudService._webClientResponseException =
 			WebClientResponseException.create(
