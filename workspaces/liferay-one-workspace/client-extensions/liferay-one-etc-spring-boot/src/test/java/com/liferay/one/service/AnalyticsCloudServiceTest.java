@@ -131,9 +131,15 @@ public class AnalyticsCloudServiceTest {
 			"token-1",
 			_testAnalyticsCloudService.getDataSourceAccessToken(null, "7"));
 
+		Map<String, String> httpHeadersMap =
+			_testAnalyticsCloudService._httpHeadersMap;
+
+		Assertions.assertEquals(
+			"text/plain", httpHeadersMap.get(HttpHeaders.ACCEPT));
 		Assertions.assertEquals(
 			_basic("external@example.com:external-password"),
-			_testAnalyticsCloudService._authorization);
+			httpHeadersMap.get(HttpHeaders.AUTHORIZATION));
+
 		Assertions.assertEquals(
 			"/o/faro/contacts/7/data_source/token",
 			_testAnalyticsCloudService._uri.getPath());
@@ -315,6 +321,14 @@ public class AnalyticsCloudServiceTest {
 		extends AnalyticsCloudService {
 
 		@Override
+		protected String get(Map<String, String> httpHeadersMap, URI uri) {
+			_httpHeadersMap = httpHeadersMap;
+			_uri = uri;
+
+			return _response;
+		}
+
+		@Override
 		protected String get(String authorization, URI uri) {
 			_authorization = authorization;
 			_uri = uri;
@@ -327,6 +341,7 @@ public class AnalyticsCloudServiceTest {
 		}
 
 		private String _authorization;
+		private Map<String, String> _httpHeadersMap;
 		private String _response;
 		private URI _uri;
 		private WebClientResponseException _webClientResponseException;
