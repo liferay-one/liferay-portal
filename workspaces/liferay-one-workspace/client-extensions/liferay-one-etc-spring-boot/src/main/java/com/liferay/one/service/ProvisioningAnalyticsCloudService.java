@@ -6,11 +6,15 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
+import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
+import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -19,6 +23,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -34,6 +39,7 @@ import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
  * @author Wellington Barbosa
@@ -44,6 +50,7 @@ public class ProvisioningAnalyticsCloudService {
 	public void provisionAnalyticsCloudProject(
 			Account account, long orderId,
 			SalesforceOpportunity salesforceOpportunity,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			SalesforceProject salesforceProject,
 			List<SalesforceProjectContactRole> salesforceProjectContactRoles,
 			List<String> warningMessages)
@@ -52,7 +59,8 @@ public class ProvisioningAnalyticsCloudService {
 		_keyedLock.withLock(
 			account.getExternalReferenceCode(),
 			() -> _provisionAnalyticsCloudProject(
-				account, orderId, salesforceOpportunity, salesforceProject,
+				account, orderId, salesforceOpportunity,
+				salesforceOpportunityLineItems, salesforceProject,
 				salesforceProjectContactRoles, warningMessages));
 	}
 
@@ -85,7 +93,7 @@ public class ProvisioningAnalyticsCloudService {
 	}
 
 	private JSONObject _getAnalyticsCloudProjectJSONObject(
-		Account account, boolean ldp,
+		Account account, boolean ldp, JSONArray offeringEntriesJSONArray,
 		SalesforceOpportunity salesforceOpportunity,
 		SalesforceProject salesforceProject,
 		List<SalesforceProjectContactRole> salesforceProjectContactRoles) {
@@ -112,10 +120,14 @@ public class ProvisioningAnalyticsCloudService {
 		).put(
 			"name", salesforceProject.getLDPWorkspaceName()
 		).put(
+			"offeringEntries", offeringEntriesJSONArray
+		).put(
 			"ownerEmailAddress",
 			_getOwnerEmailAddress(
 				incidentReportEmailAddressesJSONArray, ldp,
 				salesforceOpportunity, salesforceProjectContactRoles)
+		).put(
+			"salesforceAccountId", account.getExternalReferenceCode()
 		).put(
 			"serverLocation",
 			_getServerLocation(salesforceProject.getDataCenterLocation())
@@ -128,6 +140,21 @@ public class ProvisioningAnalyticsCloudService {
 		}
 
 		return jsonObject;
+	}
+
+	private String _getErrorMessage(Exception exception) {
+		if (exception instanceof
+				WebClientResponseException webClientResponseException) {
+
+			String responseBody =
+				webClientResponseException.getResponseBodyAsString();
+
+			if (Validator.isNotNull(responseBody)) {
+				return responseBody;
+			}
+		}
+
+		return GetterUtil.getString(exception.getMessage());
 	}
 
 	private String _getFriendlyURL(String friendlyURL) {
@@ -145,6 +172,81 @@ public class ProvisioningAnalyticsCloudService {
 		}
 
 		return StringPool.SLASH + friendlyURL;
+	}
+
+	private JSONArray _getOfferingEntriesJSONArray(
+			boolean ldp,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems)
+		throws Exception {
+
+		JSONArray offeringEntriesJSONArray = new JSONArray();
+
+		String solutionType = ProductSpecificationConstants.SOLUTION_TYPE_DSR;
+
+		if (ldp) {
+			solutionType =
+				ProductSpecificationConstants.
+					SOLUTION_TYPE_LIFERAY_DATA_PLATFORM;
+		}
+
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
+			String product2Id = salesforceOpportunityLineItem.getProduct2Id();
+
+			if (Validator.isNull(product2Id)) {
+				continue;
+			}
+
+			Long productId = _commerceSkuService.fetchProductId(product2Id);
+
+			if (productId == null) {
+				continue;
+			}
+
+			Product product = _commerceProductService.fetchProduct(productId);
+
+			if (!Objects.equals(
+					CommerceProductUtil.getSpecificationValue(
+						product,
+						ProductSpecificationConstants.KEY_SOLUTION_TYPE),
+					solutionType)) {
+
+				continue;
+			}
+
+			Double quantity = salesforceOpportunityLineItem.getQuantity();
+
+			JSONObject offeringEntryJSONObject = new JSONObject(
+			).put(
+				"productEntryId", product2Id
+			).put(
+				"quantity",
+				(quantity == null) ? 1 : Math.max(1, quantity.intValue())
+			).put(
+				"status", 1
+			);
+
+			Instant serviceDateInstant =
+				salesforceOpportunityLineItem.getServiceDateInstant();
+
+			if (serviceDateInstant != null) {
+				offeringEntryJSONObject.put(
+					"startDate", serviceDateInstant.toEpochMilli());
+			}
+
+			Instant endDateInstant =
+				salesforceOpportunityLineItem.getEndDateInstant();
+
+			if (endDateInstant != null) {
+				offeringEntryJSONObject.put(
+					"supportEndDate", endDateInstant.toEpochMilli());
+			}
+
+			offeringEntriesJSONArray.put(offeringEntryJSONObject);
+		}
+
+		return offeringEntriesJSONArray;
 	}
 
 	private String _getOwnerEmailAddress(
@@ -206,6 +308,7 @@ public class ProvisioningAnalyticsCloudService {
 	private void _provisionAnalyticsCloudProject(
 			Account account, long orderId,
 			SalesforceOpportunity salesforceOpportunity,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			SalesforceProject salesforceProject,
 			List<SalesforceProjectContactRole> salesforceProjectContactRoles,
 			List<String> warningMessages)
@@ -277,12 +380,30 @@ public class ProvisioningAnalyticsCloudService {
 					return;
 				}
 
+				JSONArray offeringEntriesJSONArray =
+					_getOfferingEntriesJSONArray(
+						ldp, salesforceOpportunityLineItems);
+
+				if (offeringEntriesJSONArray.isEmpty()) {
+					_addWarning(
+						null,
+						StringBundler.concat(
+							"Unable to provision the Analytics Cloud ",
+							"workspace for opportunity ",
+							salesforceOpportunity.getId(),
+							" without a line for an Analytics Cloud product"),
+						warningMessages);
+
+					return;
+				}
+
 				analyticsCloudProjectJSONObject =
 					_analyticsCloudService.provisionAnalyticsCloudProject(
 						StringPool.BLANK,
 						_getAnalyticsCloudProjectJSONObject(
-							account, ldp, salesforceOpportunity,
-							salesforceProject, salesforceProjectContactRoles),
+							account, ldp, offeringEntriesJSONArray,
+							salesforceOpportunity, salesforceProject,
+							salesforceProjectContactRoles),
 						account.getExternalReferenceCode());
 			}
 			else if (_log.isInfoEnabled()) {
@@ -315,7 +436,7 @@ public class ProvisioningAnalyticsCloudService {
 					orderId,
 					HashMapBuilder.put(
 						customFieldPrefix + "Error",
-						GetterUtil.getString(exception1.getMessage())
+						_getErrorMessage(exception1)
 					).put(
 						customFieldPrefix + "ErrorDate",
 						ZonedDateTime.now(
@@ -355,6 +476,12 @@ public class ProvisioningAnalyticsCloudService {
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
+
+	@Autowired
+	private CommerceProductService _commerceProductService;
+
+	@Autowired
+	private CommerceSkuService _commerceSkuService;
 
 	@Autowired
 	private KeyedLock _keyedLock;

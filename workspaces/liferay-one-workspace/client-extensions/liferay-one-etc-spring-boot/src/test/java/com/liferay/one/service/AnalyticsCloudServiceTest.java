@@ -137,6 +137,13 @@ public class AnalyticsCloudServiceTest {
 	}
 
 	@Test
+	public void testGetProjectJSONObjectReturnsNullWithoutBody() {
+		Assertions.assertNull(
+			_testAnalyticsCloudService.getAnalyticsCloudProjectJSONObject(
+				"external", "uuid-1"));
+	}
+
+	@Test
 	public void testGetProjectJSONObjectReturnsNullWithoutGroupId() {
 		_testAnalyticsCloudService._response = "{\"groupId\": 0}";
 
@@ -182,9 +189,20 @@ public class AnalyticsCloudServiceTest {
 		Assertions.assertEquals("true", form.get("enableAutoConfiguration"));
 		Assertions.assertEquals(
 			"[\"ops@example.com\"]", form.get("incidentReportEmailAddresses"));
+
+		JSONArray offeringEntriesJSONArray = new JSONArray(
+			form.get("offeringEntries"));
+
+		JSONObject offeringEntryJSONObject =
+			offeringEntriesJSONArray.getJSONObject(0);
+
+		Assertions.assertEquals(
+			"PRODUCT-DSR", offeringEntryJSONObject.getString("productEntryId"));
+
+		Assertions.assertEquals("uuid-1", form.get("salesforceAccountId"));
 		Assertions.assertEquals("us-east1", form.get("serverLocation"));
-		Assertions.assertEquals("false", form.get("sharedCluster"));
-		Assertions.assertEquals("false", form.get("trial"));
+		Assertions.assertFalse(form.containsKey("sharedCluster"));
+		Assertions.assertFalse(form.containsKey("trial"));
 	}
 
 	@Test
@@ -237,6 +255,17 @@ public class AnalyticsCloudServiceTest {
 			)
 		).put(
 			"name", "Project One"
+		).put(
+			"offeringEntries",
+			new JSONArray(
+			).put(
+				new JSONObject(
+				).put(
+					"productEntryId", "PRODUCT-DSR"
+				).put(
+					"quantity", 1
+				)
+			)
 		).put(
 			"ownerEmailAddress", "owner@example.com"
 		).put(
