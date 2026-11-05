@@ -11,7 +11,10 @@ const {liferay, preloadDataQuery} = vi.hoisted(() => ({
 		CommerceContext: {} as {
 			account?: {accountId?: number};
 		},
-		ThemeDisplay: {isSignedIn: (): boolean => true},
+		ThemeDisplay: {
+			getUserId: (): string => '42',
+			isSignedIn: (): boolean => true,
+		},
 	},
 	preloadDataQuery: vi.fn(),
 }));
@@ -47,6 +50,9 @@ vi.mock('~/hooks/useProjectOrders', () => ({
 }));
 
 vi.mock('~/pages/MyAccount/Projects/hooks/useUserProjects', () => ({
+	userProjectMembershipsQuery: (accountId: number, userId: string) => ({
+		key: `userProjectMemberships:${accountId}:${userId}`,
+	}),
 	userProjectsQuery: (accountId: number) => ({
 		key: `userProjects:${accountId}`,
 	}),
@@ -140,6 +146,7 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 				'currentAccount:101',
 				'accounts:101',
 				'userProjects:101',
+				'userProjectMemberships:101:42',
 				'projectOrders:101',
 			]);
 		}
@@ -172,6 +179,7 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 				'currentAccount:101',
 				'accounts:101',
 				'userProjects:101',
+				'userProjectMemberships:101:42',
 			]);
 		}
 	);
@@ -201,6 +209,7 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 				'currentAccount:101',
 				'accounts:101',
 				'userProjects:101',
+				'userProjectMemberships:101:42',
 				'accountLevelContracts:101',
 				'projectContracts:PRJCT-001',
 				'projectEntitlements:PRJCT-001',
