@@ -1840,6 +1840,55 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyLicensesAStandaloneAddOn()
+		throws Exception {
+
+		Entitlement addOnEntitlement = _toEntitlement(2L, 5.0, "PRDCT-DSR");
+
+		_stubEntitlements(addOnEntitlement);
+
+		_stubBundledProducts(
+			addOnEntitlement, _toEntitlement(1L, 5.0, "PRDCT-DXP"));
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toGenerateRequest(Collections.singletonList(2L), 2L));
+
+		ArgumentCaptor<String> licenseEntryNameArgumentCaptor =
+			ArgumentCaptor.forClass(String.class);
+		ArgumentCaptor<String> productNameArgumentCaptor =
+			ArgumentCaptor.forClass(String.class);
+
+		Mockito.verify(
+			_licenseKeyGenerator
+		).generateKey(
+			Mockito.any(), licenseEntryNameArgumentCaptor.capture(),
+			Mockito.any(), Mockito.anyInt(),
+			productNameArgumentCaptor.capture(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt(),
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		Assertions.assertEquals(
+			"DXP Backup", licenseEntryNameArgumentCaptor.getValue());
+		Assertions.assertEquals(
+			"Digital Sales Room", productNameArgumentCaptor.getValue());
+
+		Assertions.assertEquals(
+			Collections.singletonList("DSR"),
+			_getInvocationArguments(
+				_activationKeyService, "addActivationKey", 3));
+		Assertions.assertEquals(
+			Collections.singletonList("DSR"),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 14));
+	}
+
+	@Test
 	public void testGenerateActivationKeyLicensesAnAddOnAsItsApp()
 		throws Exception {
 
@@ -2089,6 +2138,29 @@ public class LicenseKeyGenerationServiceTest {
 			licenseKeyEntitlementException.getMessage());
 
 		_verifyNoActivationKeyAdded();
+	}
+
+	@Test
+	public void testGenerateActivationKeyRejectsAnotherAddOnWithoutALicenseEntry()
+		throws Exception {
+
+		Entitlement addOnEntitlement = _toEntitlement(2L, 5.0, "PRDCT-ADDON");
+
+		_stubEntitlements(addOnEntitlement);
+
+		_stubBundledProducts(
+			addOnEntitlement, _toEntitlement(1L, 5.0, "PRDCT-DXP"));
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		Assertions.assertThrows(
+			LicenseKeyEntitlementException.class,
+			() -> _licenseKeyGenerationService.generateActivationKey(
+				_toGenerateRequest(Collections.singletonList(2L), 2L)));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerator);
 	}
 
 	@Test
