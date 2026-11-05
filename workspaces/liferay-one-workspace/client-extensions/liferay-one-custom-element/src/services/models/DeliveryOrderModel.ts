@@ -17,8 +17,6 @@ export default class DeliveryOrderModel {
 	get canDownload() {
 		return [
 			'CLIENT_EXTENSION',
-			'CLOUD_APP',
-			'CLOUDAPP',
 			'COMPOSITE_APP',
 			'DXP_APP',
 			'LOW_CODE_CONFIGURATION',
