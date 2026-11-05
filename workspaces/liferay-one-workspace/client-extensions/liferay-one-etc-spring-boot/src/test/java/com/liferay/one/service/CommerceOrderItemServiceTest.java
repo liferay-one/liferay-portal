@@ -17,6 +17,9 @@ import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 
 import java.math.BigDecimal;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
@@ -55,7 +58,7 @@ public class CommerceOrderItemServiceTest {
 	}
 
 	@Test
-	public void testUpsertOrderItemKeepsCanceledStatus() throws Exception {
+	public void testUpsertOrderItemsKeepsCanceledStatus() throws Exception {
 		OrderItem existingOrderItem = _createOrderItem(
 			11L, _ERC_A, "customStatus",
 			CommerceOrderItemConstants.STATUS_CANCELED);
@@ -69,7 +72,7 @@ public class CommerceOrderItemServiceTest {
 			order
 		);
 
-		_upsertOrderItem(order, _createLineItemJSON(_ERC_A, 3, null));
+		_upsertOrderItems(order, _createLineItemJSON(_ERC_A, 3, null));
 
 		OrderItem[] patchedOrderItems = _getPatchedOrderItems();
 
@@ -80,7 +83,7 @@ public class CommerceOrderItemServiceTest {
 	}
 
 	@Test
-	public void testUpsertOrderItemKeepsEffectiveEndDateWhenEndDateIsUnchanged()
+	public void testUpsertOrderItemsKeepsEffectiveEndDateWhenEndDateIsUnchanged()
 		throws Exception {
 
 		OrderItem existingOrderItem = _createOrderItem(
@@ -95,7 +98,7 @@ public class CommerceOrderItemServiceTest {
 			order
 		);
 
-		_upsertOrderItem(order, _createLineItemJSON(_ERC_A, 3, "2027-10-31"));
+		_upsertOrderItems(order, _createLineItemJSON(_ERC_A, 3, "2027-10-31"));
 
 		OrderItem[] patchedOrderItems = _getPatchedOrderItems();
 
@@ -105,9 +108,7 @@ public class CommerceOrderItemServiceTest {
 	}
 
 	@Test
-	public void testUpsertOrderItemPatchesOrderWithOtherOrderItems()
-		throws Exception {
-
+	public void testUpsertOrderItemsPatchesOrderOnce() throws Exception {
 		OrderItem orderItemA = _createOrderItem(11L, _ERC_A, null, null);
 		OrderItem orderItemB = _createOrderItem(12L, _ERC_B, null, null);
 
@@ -123,7 +124,9 @@ public class CommerceOrderItemServiceTest {
 		try (MockedStatic<OrderItemResource> orderItemResourceMockedStatic =
 				Mockito.mockStatic(OrderItemResource.class)) {
 
-			_upsertOrderItem(order, _createLineItemJSON(_ERC_A, 3, null));
+			_upsertOrderItems(
+				order, _createLineItemJSON(_ERC_A, 3, null),
+				_createLineItemJSON(_ERC_C, 1, null));
 
 			orderItemResourceMockedStatic.verifyNoInteractions();
 		}
@@ -132,7 +135,7 @@ public class CommerceOrderItemServiceTest {
 			Order.class);
 
 		Mockito.verify(
-			_orderResource
+			_orderResource, Mockito.times(1)
 		).patchOrder(
 			ArgumentMatchers.eq(_ORDER_ID), orderArgumentCaptor.capture()
 		);
@@ -144,7 +147,7 @@ public class CommerceOrderItemServiceTest {
 
 		OrderItem[] patchedOrderItems = patchedOrder.getOrderItems();
 
-		Assertions.assertEquals(2, patchedOrderItems.length);
+		Assertions.assertEquals(3, patchedOrderItems.length);
 
 		Assertions.assertEquals(
 			_ERC_A, patchedOrderItems[0].getExternalReferenceCode());
@@ -156,42 +159,20 @@ public class CommerceOrderItemServiceTest {
 		Assertions.assertEquals(
 			BigDecimal.valueOf(3000.0), patchedOrderItems[0].getFinalPrice());
 		Assertions.assertSame(orderItemB, patchedOrderItems[1]);
-	}
-
-	@Test
-	public void testUpsertOrderItemPostsNewOrderItem() throws Exception {
-		OrderItem orderItemA = _createOrderItem(11L, _ERC_A, null, null);
-
-		Order order = _createOrder(orderItemA);
-
-		Mockito.when(
-			_orderResource.patchOrder(
-				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
-		).thenReturn(
-			order
-		);
-
-		_upsertOrderItem(order, _createLineItemJSON(_ERC_B, 1, null));
-
-		OrderItem[] patchedOrderItems = _getPatchedOrderItems();
-
-		Assertions.assertEquals(2, patchedOrderItems.length);
-		Assertions.assertSame(orderItemA, patchedOrderItems[0]);
 		Assertions.assertEquals(
-			_ERC_B, patchedOrderItems[1].getExternalReferenceCode());
-		Assertions.assertNull(patchedOrderItems[1].getId());
+			_ERC_C, patchedOrderItems[2].getExternalReferenceCode());
+		Assertions.assertNull(patchedOrderItems[2].getId());
 	}
 
 	@Test
-	public void testUpsertOrderItemRefreshesOrderItems() throws Exception {
+	public void testUpsertOrderItemsRefreshesOrderItems() throws Exception {
 		Order order = _createOrder(
 			_createOrderItem(11L, _ERC_A, null, null),
 			_createOrderItem(12L, _ERC_B, null, null));
 
-		OrderItem updatedOrderItemA = _createOrderItem(11L, _ERC_A, null, null);
-
 		OrderItem[] updatedOrderItems = {
-			updatedOrderItemA, _createOrderItem(12L, _ERC_B, null, null)
+			_createOrderItem(11L, _ERC_A, null, null),
+			_createOrderItem(12L, _ERC_B, null, null)
 		};
 
 		Order updatedOrder = new Order();
@@ -205,16 +186,13 @@ public class CommerceOrderItemServiceTest {
 			updatedOrder
 		);
 
-		OrderItem orderItem = _upsertOrderItem(
-			order, _createLineItemJSON(_ERC_A, 3, null));
-
-		Assertions.assertSame(updatedOrderItemA, orderItem);
+		_upsertOrderItems(order, _createLineItemJSON(_ERC_A, 3, null));
 
 		Assertions.assertSame(updatedOrderItems, order.getOrderItems());
 	}
 
 	@Test
-	public void testUpsertOrderItemRequestsEveryOrderItem() throws Exception {
+	public void testUpsertOrderItemsRequestsEveryOrderItem() throws Exception {
 		Order order = _createOrder(_createOrderItem(11L, _ERC_A, null, null));
 
 		Mockito.when(
@@ -224,7 +202,7 @@ public class CommerceOrderItemServiceTest {
 			order
 		);
 
-		_upsertOrderItem(order, _createLineItemJSON(_ERC_A, 3, null));
+		_upsertOrderItems(order, _createLineItemJSON(_ERC_A, 3, null));
 
 		Mockito.verify(
 			_orderResourceBuilder
@@ -235,7 +213,7 @@ public class CommerceOrderItemServiceTest {
 	}
 
 	@Test
-	public void testUpsertOrderItemThrowsWhenPatchOrderFails()
+	public void testUpsertOrderItemsThrowsWhenPatchOrderFails()
 		throws Exception {
 
 		Order order = _createOrder(_createOrderItem(11L, _ERC_A, null, null));
@@ -249,7 +227,7 @@ public class CommerceOrderItemServiceTest {
 
 		Assertions.assertThrows(
 			Problem.ProblemException.class,
-			() -> _upsertOrderItem(
+			() -> _upsertOrderItems(
 				order, _createLineItemJSON(_ERC_A, 3, null)));
 	}
 
@@ -339,7 +317,7 @@ public class CommerceOrderItemServiceTest {
 		return false;
 	}
 
-	private OrderItem _upsertOrderItem(Order order, JSONObject jsonObject)
+	private void _upsertOrderItems(Order order, JSONObject... jsonObjects)
 		throws Exception {
 
 		OrderResource.Builder builder = Mockito.mock(
@@ -362,15 +340,24 @@ public class CommerceOrderItemServiceTest {
 				builder
 			);
 
-			return _commerceOrderItemService.upsertOrderItem(
-				order, new SalesforceOpportunityLineItem(jsonObject),
-				"Closed Won");
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems =
+				new ArrayList<>();
+
+			for (JSONObject jsonObject : jsonObjects) {
+				salesforceOpportunityLineItems.add(
+					new SalesforceOpportunityLineItem(jsonObject));
+			}
+
+			_commerceOrderItemService.upsertOrderItems(
+				order, salesforceOpportunityLineItems, "Closed Won");
 		}
 	}
 
 	private static final String _ERC_A = "00kLPD113954TEST0A";
 
 	private static final String _ERC_B = "00kLPD113954TEST0B";
+
+	private static final String _ERC_C = "00kLPD113954TEST0C";
 
 	private static final long _ORDER_ID = 1001L;
 
