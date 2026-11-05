@@ -31,7 +31,7 @@ public class JiraBusinessEventConverter extends BaseJiraAssetObjectConverter {
 		JiraAssetObject jiraAssetObject = createJiraAssetObject();
 
 		jiraAssetObject.setAttributeValue(
-			JiraBusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE,
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_GO_LIVE_DATE,
 			jiraBusinessEvent.getActualEventDate());
 		jiraAssetObject.setAttributeValue(
 			JiraBusinessEventConstants.ATTRIBUTE_NAME_ASSOCIATED_TICKETS,
@@ -88,7 +88,7 @@ public class JiraBusinessEventConverter extends BaseJiraAssetObjectConverter {
 
 		return new JiraBusinessEvent(
 			jiraAssetObject.getAttributeValue(
-				JiraBusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE),
+				JiraBusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_GO_LIVE_DATE),
 			jiraAssetObject.getAttributeDisplayValue(
 				JiraBusinessEventConstants.ATTRIBUTE_NAME_ASSOCIATED_TICKETS),
 			jiraAssetObject.getAttributeDisplayValue(

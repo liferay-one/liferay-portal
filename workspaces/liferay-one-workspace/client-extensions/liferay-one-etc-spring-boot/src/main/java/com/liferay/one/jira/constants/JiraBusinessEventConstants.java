@@ -12,8 +12,8 @@ public interface JiraBusinessEventConstants {
 
 	public static final String ATTRIBUTE_NAME_ACCOUNT = "Account";
 
-	public static final String ATTRIBUTE_NAME_ACTUAL_EVENT_DATE =
-		"Actual Event Date";
+	public static final String ATTRIBUTE_NAME_ACTUAL_GO_LIVE_DATE =
+		"Actual Go-Live Date";
 
 	public static final String ATTRIBUTE_NAME_ASSOCIATED_TICKETS =
 		"Associated Tickets";
