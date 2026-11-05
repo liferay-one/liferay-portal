@@ -1144,6 +1144,19 @@ public class LicenseKeyGenerationService {
 		LicenseEntry leadingLicenseEntry = _fetchLicenseEntry(
 			generateRequest, subscriptionEntitlement);
 
+		if ((leadingLicenseEntry == null) &&
+			LicenseKeyGenerationConstants.standaloneLicenseKeyFamilies.contains(
+				LicenseKeyGenerateFormService.getLicenseKeyFamily(
+					subscriptionEntitlement))) {
+
+			leadingLicenseEntry =
+				_licenseKeyGenerateFormService.fetchLicenseEntry(
+					generateRequest.getKeyType(),
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP,
+					generateRequest.getVersion(),
+					_isVirtualCluster(generateRequest));
+		}
+
 		for (Entitlement entitlement : bundleEntitlements) {
 			Product product = _licenseKeyGenerateFormService.fetchProduct(
 				entitlement);
