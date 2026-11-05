@@ -423,7 +423,8 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 | `POST /console/provisioning/{orderId}` | CommerceOrderPermission | yes | `ConsoleRestController.java:62` |
 | `POST /console/uninstall-app/{orderId}` | CommerceOrderPermission | yes | `ConsoleRestController.java:112` |
 | `GET /contacts/{contactEmailAddress}/validate` | None. Tells the caller if Okta has a contact for a Liferay email address. | no | `ContactsRestController.java:25` |
-| `POST /digital-sales-room/provisioning/{orderId}` | None | no | `DigitalSalesRoomRestController.java:45` |
+| `GET /digital-sales-room/environments/{externalReferenceCode}/data-source-token` | ProjectPermission (VIEW). Reads the environment as the user, and refuses an environment with no project. | yes | `DigitalSalesRoomRestController.java:58` |
+| `POST /digital-sales-room/provisioning/{orderId}` | None | no | `DigitalSalesRoomRestController.java:104` |
 | `GET /dxp/project-usage` | None. Scoped to the caller's email address. | yes | `DXPRestController.java:50` |
 | `POST /dxp/provisioning/{orderId}` | CommerceOrderPermission | yes | `DXPRestController.java:74` |
 | `POST /entitlements/generate` | None | no | `EntitlementsRestController.java:23` |
@@ -514,7 +515,7 @@ Each finding names the file and line. The findings are ordered by risk.
 1. **The trial, provisioning, free key, and entitlement endpoints trust the caller.** Any signed in user can call them from the browser, and the pages do (`services/spring-boot/Trial.ts:21`, `LicenseKeys.ts:32`, `LiferayDataPlatform.ts:10`, `DigitalSalesRoom.ts:10`). With the service token, they:
 
 	- delete the Cloud project of any trial order (`TrialRestController.java:69`) and complete and delete any order (`:165`);
-	- provision any trial order (`:241`), any Digital Sales Room order (`DigitalSalesRoomRestController.java:45`), and any LDP order (`LiferayDataPlatformRestController.java:45`);
+	- provision any trial order (`:241`), any Digital Sales Room order (`DigitalSalesRoomRestController.java:104`), and any LDP order (`LiferayDataPlatformRestController.java:45`);
 	- create a free license key on the account of any order and complete that order (`LicenseKeysRestController.java:247`);
 	- generate entitlements for any order item (`EntitlementsRestController.java:23`).
 

@@ -399,6 +399,7 @@ Each row is one endpoint of a `*RestController` in `liferay-one-etc-spring-boot`
 | `POST /console/provisioning/{orderId}` | `ConsoleRestController.postProvisioningOrder` | `commerceOrderPermission.check` | `my-account` `/:accountERC/project/:projectERC/applications/:applicationERC/install/:orderId` |
 | `POST /console/uninstall-app/{orderId}` | `ConsoleRestController.postUninstallApp` | `commerceOrderPermission.check` | `my-account` `/:accountERC/project/:projectERC/applications/:applicationERC`, `/:accountERC/project/:projectERC/products/:productERC` |
 | `GET /contacts/{contactEmailAddress}/validate` | `ContactsRestController.getContactsValidate` | none in the method | **No caller in the custom element** |
+| `GET /digital-sales-room/environments/{externalReferenceCode}/data-source-token` | `DigitalSalesRoomRestController.getEnvironmentsDataSourceToken` | `projectPermission.check` | `my-account` `/:accountERC/project/:projectERC/products/:productERC` |
 | `POST /digital-sales-room/provisioning/{orderId}` | `DigitalSalesRoomRestController.postProvisioningOrder` | none in the method | `product-purchase` `/dsr-form` |
 | `GET /dxp/project-usage` | `DXPRestController.getProjectUsage` | none in the method | **No caller in the custom element** |
 | `POST /dxp/provisioning/{orderId}` | `DXPRestController.postProvisioning` | `commerceOrderPermission.check` | **No caller in the custom element** |
@@ -501,7 +502,7 @@ The six `TrialRestController` methods take no `Jwt` and check no permission: `DE
 
 ### Medium: Provisioning Endpoints Do Not Identify the Caller
 
-`POST /digital-sales-room/provisioning/{orderId}` (`DigitalSalesRoomRestController.java:45`) and `POST /liferay-data-platform/provisioning/{orderId}` (`LiferayDataPlatformRestController.java:45`) take no `Jwt`. They check the order type and the payment status, but not the caller. `POST /trial/provisioning/{orderId}` has the same shape and is also called from the customer flow `product-purchase` `/solution`. The callers are `services/commerce/ProductPurchaseDSR.ts:71`, `services/commerce/ProductPurchaseLDP.ts:43`, and `services/spring-boot/Trial.ts:47`.
+`POST /digital-sales-room/provisioning/{orderId}` (`DigitalSalesRoomRestController.java:104`) and `POST /liferay-data-platform/provisioning/{orderId}` (`LiferayDataPlatformRestController.java:45`) take no `Jwt`. They check the order type and the payment status, but not the caller. `POST /trial/provisioning/{orderId}` has the same shape and is also called from the customer flow `product-purchase` `/solution`. The callers are `services/commerce/ProductPurchaseDSR.ts:71`, `services/commerce/ProductPurchaseLDP.ts:43`, and `services/spring-boot/Trial.ts:47`.
 
 ### Medium: Unbounded Pagination
 
