@@ -9,6 +9,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
@@ -423,6 +424,12 @@ public class ProvisioningAnalyticsCloudService {
 					analyticsCloudProjectJSONObject.optString(
 						"name", _getWorkspaceName(salesforceProject))
 				).build());
+
+			if (!ldp) {
+				_putDSREnvironment(
+					account, analyticsCloudProjectJSONObject, salesforceProject,
+					warningMessages);
+			}
 		}
 		catch (Exception exception1) {
 			_addWarning(
@@ -455,6 +462,58 @@ public class ProvisioningAnalyticsCloudService {
 		}
 	}
 
+	private void _putDSREnvironment(
+		Account account, JSONObject analyticsCloudProjectJSONObject,
+		SalesforceProject salesforceProject, List<String> warningMessages) {
+
+		String externalReferenceCode = null;
+
+		JSONObject environmentJSONObject = new JSONObject(
+		).put(
+			"activationStatus", EnvironmentConstants.ACTIVATION_STATUS_ACTIVE
+		).put(
+			"externalEnvironmentId",
+			String.valueOf(analyticsCloudProjectJSONObject.optLong("groupId"))
+		).put(
+			"name", analyticsCloudProjectJSONObject.optString("name")
+		).put(
+			"offering", EnvironmentConstants.OFFERING_DSR
+		).put(
+			"ownerEmailAddress",
+			analyticsCloudProjectJSONObject.optString("ownerEmailAddress")
+		).put(
+			"r_accountEntryToEnvironment_accountEntryId", account.getId()
+		).put(
+			"region",
+			analyticsCloudProjectJSONObject.optString("serverLocation")
+		).put(
+			"workspaceName", analyticsCloudProjectJSONObject.optString("name")
+		);
+
+		if (salesforceProject == null) {
+			externalReferenceCode = "DSR-" + account.getExternalReferenceCode();
+		}
+		else {
+			externalReferenceCode = "DSR-" + salesforceProject.getId();
+
+			environmentJSONObject.put(
+				"r_projectToEnvironment_c_projectERC",
+				salesforceProject.getId());
+		}
+
+		try {
+			_environmentService.putEnvironment(
+				externalReferenceCode, environmentJSONObject);
+		}
+		catch (Exception exception) {
+			_addWarning(
+				exception,
+				"Unable to record the Digital Sales Room environment " +
+					externalReferenceCode,
+				warningMessages);
+		}
+	}
+
 	private static final Log _log = LogFactory.getLog(
 		ProvisioningAnalyticsCloudService.class);
 
@@ -482,6 +541,9 @@ public class ProvisioningAnalyticsCloudService {
 
 	@Autowired
 	private CommerceSkuService _commerceSkuService;
+
+	@Autowired
+	private EnvironmentService _environmentService;
 
 	@Autowired
 	private KeyedLock _keyedLock;
