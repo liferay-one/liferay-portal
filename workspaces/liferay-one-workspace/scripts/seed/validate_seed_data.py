@@ -721,11 +721,36 @@ def _check_references(report, universes, scope):
 		"entitlement definition SKU",
 	)
 	check(
-		scope["definition_skus"],
+		[
+			definition_sku
+			for definition_sku in scope["definition_skus"]
+			if not definition_sku.get("_salesforce_batch")
+		],
 		"skuExternalReferenceCode",
 		"SKU",
 		"entitlement definition SKU",
 	)
+
+	# The Salesforce batch links a definition to every SKU that Salesforce
+	# sells, and the seed cannot add a SKU to that batch, so a link to a SKU
+	# outside the catalog is reported for the batch owner and does not stop the
+	# seed
+
+	for definition_sku in scope["definition_skus"]:
+		sku = definition_sku.get("skuExternalReferenceCode")
+
+		if (
+			not definition_sku.get("_salesforce_batch")
+			or not sku
+			or sku in universes["SKU"]
+		):
+			continue
+
+		report.warning(
+			"Salesforce batch links a SKU outside the catalog",
+			"entitlement definition SKU %s points at SKU %r, which no product in the Salesforce batch or the seed sells"
+			% (definition_sku.get("externalReferenceCode"), sku),
+		)
 	check(
 		scope["definitions"],
 		"r_usageDefinitionToEntitlementDefinition_c_usageDefinitionERC",
@@ -969,9 +994,12 @@ def main():
 	definitions = definitions + salesforce_items(
 		"01-entitlement-definition.batch-engine-data.json"
 	)
-	definition_skus = definition_skus + salesforce_items(
-		"02-entitlement-definition-sku.batch-engine-data.json"
-	)
+	definition_skus = definition_skus + [
+		dict(definition_sku, _salesforce_batch=True)
+		for definition_sku in salesforce_items(
+			"02-entitlement-definition-sku.batch-engine-data.json"
+		)
+	]
 
 	orders = []
 	order_items = []

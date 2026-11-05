@@ -5,7 +5,6 @@
 			"externalReferenceCode": "C_ENT_MULTI_1_AIHUB",
 			"generatesActivationKey": false,
 			"grantType": "fixed",
-			"licenseKeyFamily": "AIHUB",
 			"maxQuantity": 1,
 			"name": "AI Hub",
 			"quantity": 1,
