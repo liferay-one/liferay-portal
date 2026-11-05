@@ -94,6 +94,28 @@ describe('[MOD-ADMIN-SOLUTIONS-SOLUTIONDETAIL-PARSESOLUTIONDETAIL] parseSolution
 		});
 	});
 
+	it('previews an image from the current origin when the portal returns an absolute URL', () => {
+		const solutionDetail = parseSolutionDetail(
+			toProduct({
+				images: [
+					{
+						...headerImage,
+						src: 'http://one-uat.liferay.net/o/commerce-media/accounts/-1/images/39238285?download=true',
+					},
+				],
+			})
+		);
+
+		expect(solutionDetail.header.images).toEqual([
+			{
+				description: 'Header',
+				fileName: 'Header',
+				preview:
+					'/o/commerce-media/accounts/-1/images/39238285?download=true',
+			},
+		]);
+	});
+
 	it('drops the header images when a header video URL exists', () => {
 		const solutionDetail = parseSolutionDetail(
 			toProduct({
