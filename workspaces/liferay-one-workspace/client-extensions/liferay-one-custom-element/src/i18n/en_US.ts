@@ -2127,6 +2127,7 @@ export default {
 		'Unable to download your activation key file. Please try again and/or contact support via the manage menu on the dashboard.',
 	'unable-to-invite-project-member': 'Unable to invite project member.',
 	'unable-to-load-the-activation-keys': 'Unable to load the activation keys.',
+	'unable-to-load-the-token': 'Unable to load the token.',
 	'unable-to-remove-member': 'Unable to remove member.',
 	'unable-to-remove-roles': 'Unable to remove roles',
 	'unable-to-resend-the-invitation': 'Unable to resend the invitation.',

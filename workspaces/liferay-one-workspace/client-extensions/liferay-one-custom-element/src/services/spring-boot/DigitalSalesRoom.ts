@@ -6,6 +6,14 @@
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
 class DigitalSalesRoomOAuth2 extends OneSpringBootOAuth2 {
+	async getEnvironmentsDataSourceToken(
+		externalReferenceCode: string
+	): Promise<{dataSourceAccessToken: string}> {
+		return this.get(
+			`/environments/${encodeURIComponent(externalReferenceCode)}/data-source-token`
+		);
+	}
+
 	async provisioningOrder(orderId: number): Promise<void> {
 		await this.post(`/provisioning/${orderId}`);
 	}
