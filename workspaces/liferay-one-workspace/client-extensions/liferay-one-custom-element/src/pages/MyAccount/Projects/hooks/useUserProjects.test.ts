@@ -7,7 +7,6 @@ import {renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useOneContext} from '~/context/OneContextProvider';
 import {useDataQuery} from '~/hooks/useDataQuery';
-import {useFetch} from '~/hooks/useFetch';
 import {Liferay} from '~/services/liferay/liferay';
 
 import {useUserProjects} from './useUserProjects';
@@ -18,10 +17,6 @@ vi.mock('~/context/OneContextProvider', () => ({
 
 vi.mock('~/hooks/useDataQuery', () => ({
 	useDataQuery: vi.fn(),
-}));
-
-vi.mock('~/hooks/useFetch', () => ({
-	useFetch: vi.fn(),
 }));
 
 vi.mock('~/services/graphql/GraphQL', () => ({
@@ -41,7 +36,6 @@ vi.mock('~/services/liferay/liferay', () => ({
 }));
 
 const mockedUseDataQuery = vi.mocked(useDataQuery);
-const mockedUseFetch = vi.mocked(useFetch);
 const mockedUseOneContext = vi.mocked(useOneContext);
 
 const projectItems = [
@@ -70,19 +64,24 @@ function mockQueries({
 	projects?: typeof projectItems;
 	projectsLoading?: boolean;
 }) {
-	mockedUseFetch.mockReturnValue({
-		data: {
-			items: membershipERCs.map((externalReferenceCode) => ({
-				r_projectToProjectMembership_c_projectERC:
-					externalReferenceCode,
-			})),
-		},
-		isLoading: membershipsLoading,
-	} as unknown as ReturnType<typeof useFetch>);
-	mockedUseDataQuery.mockReturnValue({
-		data: {items: projects, totalCount: projects.length},
-		isLoading: projectsLoading,
-	} as unknown as ReturnType<typeof useDataQuery>);
+	mockedUseDataQuery.mockImplementation(({key}) => {
+		if (key?.startsWith('/o/c/projectmemberships')) {
+			return {
+				data: {
+					items: membershipERCs.map((externalReferenceCode) => ({
+						r_projectToProjectMembership_c_projectERC:
+							externalReferenceCode,
+					})),
+				},
+				isLoading: membershipsLoading,
+			} as unknown as ReturnType<typeof useDataQuery>;
+		}
+
+		return {
+			data: {items: projects, totalCount: projects.length},
+			isLoading: projectsLoading,
+		} as unknown as ReturnType<typeof useDataQuery>;
+	});
 }
 
 function mockUserAccountModel(userAccountModel: Record<string, unknown>) {
@@ -94,10 +93,15 @@ function mockUserAccountModel(userAccountModel: Record<string, unknown>) {
 	} as unknown as ReturnType<typeof useOneContext>);
 }
 
+function membershipsKey() {
+	return mockedUseDataQuery.mock.calls
+		.map(([query]) => query.key)
+		.find((key) => key?.startsWith('/o/c/projectmemberships'));
+}
+
 describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 	beforeEach(() => {
 		mockedUseDataQuery.mockReset();
-		mockedUseFetch.mockReset();
 		mockedUseOneContext.mockReset();
 		Liferay.CommerceContext.account = {
 			accountId: 100,
@@ -110,15 +114,18 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 		'isAccountAdministrator',
 		'isAccountMember',
 	])(
-		'shows every account project to %s without a membership request',
+		'shows every account project to %s and marks the projects the user is a member of',
 		(roleFlag) => {
 			mockUserAccountModel({[roleFlag]: true});
-			mockQueries({});
+			mockQueries({membershipERCs: ['PRJCT-2']});
 
 			const {result} = renderHook(() => useUserProjects());
 
-			expect(mockedUseFetch.mock.calls[0][0]).toBeNull();
-			expect(result.current.projects).toEqual(projectItems);
+			expect(membershipsKey()).toMatch(/^\/o\/c\/projectmemberships\?/);
+			expect(result.current.projects).toEqual([
+				{...projectItems[0], member: false},
+				{...projectItems[1], member: true},
+			]);
 			expect(result.current.hasAccountProjects).toBe(true);
 		}
 	);
@@ -131,18 +138,21 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 		'Partner Sales User',
 		'Partner Technical User',
 	])(
-		'shows every account project to the %s role without a membership request',
+		'shows every account project to the %s role and marks the projects the user is a member of',
 		(roleName) => {
 			mockUserAccountModel({
 				hasAccountRoleName: (accountRoleName: string) =>
 					accountRoleName === roleName,
 			});
-			mockQueries({});
+			mockQueries({membershipERCs: ['PRJCT-1']});
 
 			const {result} = renderHook(() => useUserProjects());
 
-			expect(mockedUseFetch.mock.calls[0][0]).toBeNull();
-			expect(result.current.projects).toEqual(projectItems);
+			expect(membershipsKey()).toMatch(/^\/o\/c\/projectmemberships\?/);
+			expect(result.current.projects).toEqual([
+				{...projectItems[0], member: true},
+				{...projectItems[1], member: false},
+			]);
 		}
 	);
 
@@ -152,13 +162,14 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 
 		const {result} = renderHook(() => useUserProjects());
 
-		expect(mockedUseFetch.mock.calls[0][0]).toBe('/o/c/projectmemberships');
-		expect(mockedUseFetch.mock.calls[0][1]).toMatchObject({
-			params: {
-				filter: "r_accountEntryToProjectMembership_accountEntryId eq '100' and r_userToProjectMembership_userId eq '42'",
-			},
-		});
-		expect(result.current.projects).toEqual([projectItems[1]]);
+		expect(
+			new URLSearchParams(membershipsKey()?.split('?')[1]).get('filter')
+		).toBe(
+			"r_accountEntryToProjectMembership_accountEntryId eq '100' and r_userToProjectMembership_userId eq '42'"
+		);
+		expect(result.current.projects).toEqual([
+			{...projectItems[1], member: true},
+		]);
 	});
 
 	it('reports account projects even when the user has no memberships', () => {
@@ -187,9 +198,9 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 
 		renderHook(() => useUserProjects());
 
-		expect(mockedUseDataQuery.mock.calls[0][0].key).toBe(
-			'/graphql/projects/100'
-		);
+		expect(
+			mockedUseDataQuery.mock.calls.map(([query]) => query.key)
+		).toContain('/graphql/projects/100');
 	});
 
 	it('skips both queries without an account', () => {
@@ -199,8 +210,9 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 
 		renderHook(() => useUserProjects());
 
-		expect(mockedUseFetch.mock.calls[0][0]).toBeNull();
-		expect(mockedUseDataQuery.mock.calls[0][0].key).toBeNull();
+		expect(
+			mockedUseDataQuery.mock.calls.map(([query]) => query.key)
+		).toEqual([null, null]);
 	});
 
 	it.each([
