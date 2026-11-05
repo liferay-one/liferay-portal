@@ -247,8 +247,8 @@
 							"pt_BR": "Fale Conosco"
 						},
 						"type": "url",
-						"url": "/contact-us",
-						"useNewTab": false
+						"url": "https://www.liferay.com/contact-us",
+						"useNewTab": true
 					}
 				],
 				"name_i18n": {
