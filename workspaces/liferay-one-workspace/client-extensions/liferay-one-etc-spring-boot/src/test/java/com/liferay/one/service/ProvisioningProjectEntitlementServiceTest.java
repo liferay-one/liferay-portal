@@ -147,7 +147,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
 		).patchOrderItemCustomFields(
-			Mockito.any(Order.class), Mockito.argThat(map -> !map.isEmpty())
+			Mockito.argThat(map -> !map.isEmpty()), Mockito.any(Order.class)
 		);
 	}
 
@@ -185,7 +185,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			Mockito.eq(order), argumentCaptor.capture()
+			argumentCaptor.capture(), Mockito.eq(order)
 		);
 
 		Assertions.assertEquals(
@@ -225,7 +225,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			Mockito.eq(order), argumentCaptor.capture()
+			argumentCaptor.capture(), Mockito.eq(order)
 		);
 
 		Map<String, Object> customFieldValues = argumentCaptor.getValue(
@@ -277,7 +277,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			Mockito.eq(order), argumentCaptor.capture()
+			argumentCaptor.capture(), Mockito.eq(order)
 		);
 
 		Assertions.assertEquals(
