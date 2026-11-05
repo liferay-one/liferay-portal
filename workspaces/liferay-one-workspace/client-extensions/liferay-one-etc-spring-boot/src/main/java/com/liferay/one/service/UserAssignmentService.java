@@ -150,12 +150,17 @@ public class UserAssignmentService {
 			return;
 		}
 
-		_oktaService.activateContact(userId);
+		boolean oktaGroupOrganization = _isOktaGroupOrganization(
+			organizationId);
+
+		if (!oktaGroupOrganization) {
+			_oktaService.activateContact(userId);
+		}
 
 		_organizationService.addOrganizationUserAccountByEmailAddress(
 			userAccount.getEmailAddress(), organizationId);
 
-		if (_isOktaGroupOrganization(organizationId)) {
+		if (oktaGroupOrganization) {
 			return;
 		}
 
