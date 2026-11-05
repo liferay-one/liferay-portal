@@ -508,7 +508,7 @@ public class ProvisioningProjectEntitlementService {
 		}
 
 		_commerceOrderItemService.patchOrderItemCustomFields(
-			order, customFieldValuesMap);
+			customFieldValuesMap, order);
 	}
 
 	private void _validateSku(
