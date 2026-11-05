@@ -13,7 +13,10 @@ import {
 } from '~/hooks/useProjectCommerce';
 import {projectOrdersQuery} from '~/hooks/useProjectOrders';
 import {activationKeySummaryQuery} from '~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeySummary';
-import {userProjectsQuery} from '~/pages/MyAccount/Projects/hooks/useUserProjects';
+import {
+	userProjectMembershipsQuery,
+	userProjectsQuery,
+} from '~/pages/MyAccount/Projects/hooks/useUserProjects';
 import {toActivationKeyScope} from '~/pages/MyAccount/Projects/utils/toActivationKeyScope';
 import HeadlessAdminUser, {
 	MY_USER_ACCOUNT_URL,
@@ -108,6 +111,12 @@ export default function preloadAppData(route: string) {
 
 	if (PROJECT_LIST_ROUTES.has(route)) {
 		preloadDataQuery(userProjectsQuery(accountId));
+		preloadDataQuery(
+			userProjectMembershipsQuery(
+				accountId,
+				Liferay.ThemeDisplay.getUserId()
+			)
+		);
 
 		if (hasProjectOrders(route)) {
 			preloadDataQuery(projectOrdersQuery(accountId));
@@ -121,6 +130,9 @@ export default function preloadAppData(route: string) {
 	}
 
 	preloadDataQuery(userProjectsQuery(accountId));
+	preloadDataQuery(
+		userProjectMembershipsQuery(accountId, Liferay.ThemeDisplay.getUserId())
+	);
 	preloadDataQuery(accountLevelContractsQuery(accountId));
 	preloadDataQuery(
 		projectContractsQuery(parseHash().projectExternalReferenceCode)
