@@ -8,10 +8,16 @@ package com.liferay.one;
 import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.constants.EnvironmentConstants;
+import com.liferay.one.model.Environment;
 import com.liferay.one.permission.CommerceOrderPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.AnalyticsCloudService;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.EnvironmentService;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -28,10 +34,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -44,6 +53,53 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @RequestMapping("/digital-sales-room")
 @RestController
 public class DigitalSalesRoomRestController extends BaseRestController {
+
+	@GetMapping("environments/{externalReferenceCode}/data-source-token")
+	public ResponseEntity<String> getEnvironmentsDataSourceToken(
+			@PathVariable String externalReferenceCode,
+			@AuthenticationPrincipal Jwt jwt)
+		throws Exception {
+
+		Environment environment =
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				externalReferenceCode, jwt);
+
+		if ((environment == null) ||
+			!Objects.equals(
+				environment.getOffering(), EnvironmentConstants.OFFERING_DSR) ||
+			(GetterUtil.getLong(environment.getExternalEnvironmentId()) <= 0)) {
+
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
+		if (Validator.isNotNull(
+				environment.getProjectExternalReferenceCode())) {
+
+			_projectPermission.check(
+				ActionKeys.VIEW, jwt,
+				environment.getProjectExternalReferenceCode());
+		}
+
+		String dataSourceAccessToken =
+			_analyticsCloudService.getDataSourceAccessToken(
+				null, environment.getExternalEnvironmentId());
+
+		if (Validator.isNull(dataSourceAccessToken)) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
+		return ResponseEntity.ok(
+		).cacheControl(
+			CacheControl.noStore()
+		).contentType(
+			MediaType.APPLICATION_JSON
+		).body(
+			new JSONObject(
+			).put(
+				"dataSourceAccessToken", dataSourceAccessToken
+			).toString()
+		);
+	}
 
 	@PostMapping("provisioning/{orderId}")
 	public ResponseEntity<Void> postProvisioningOrder(
@@ -221,5 +277,11 @@ public class DigitalSalesRoomRestController extends BaseRestController {
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
+
+	@Autowired
+	private EnvironmentService _environmentService;
+
+	@Autowired
+	private ProjectPermission _projectPermission;
 
 }

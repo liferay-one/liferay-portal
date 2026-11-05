@@ -7,10 +7,14 @@ package com.liferay.one;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.model.Environment;
 import com.liferay.one.permission.CommerceOrderPermission;
+import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.AnalyticsCloudService;
 import com.liferay.one.service.CommerceOrderService;
+import com.liferay.one.service.EnvironmentService;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.Map;
@@ -25,6 +29,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -62,6 +67,114 @@ public class DigitalSalesRoomRestControllerTest {
 		ReflectionTestUtils.setField(
 			_digitalSalesRoomRestController, "_commerceOrderService",
 			_commerceOrderService);
+		ReflectionTestUtils.setField(
+			_digitalSalesRoomRestController, "_environmentService",
+			_environmentService);
+		ReflectionTestUtils.setField(
+			_digitalSalesRoomRestController, "_projectPermission",
+			_projectPermission);
+	}
+
+	@Test
+	public void testGetEnvironmentsDataSourceToken() throws Exception {
+		_whenFetchEnvironment("DSR", "42");
+
+		Mockito.when(
+			_analyticsCloudService.getDataSourceAccessToken(null, "42")
+		).thenReturn(
+			"token-1"
+		);
+
+		ResponseEntity<String> responseEntity =
+			_digitalSalesRoomRestController.getEnvironmentsDataSourceToken(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _jwt);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(
+			"token-1", jsonObject.getString("dataSourceAccessToken"));
+
+		HttpHeaders httpHeaders = responseEntity.getHeaders();
+
+		Assertions.assertEquals("no-store", httpHeaders.getCacheControl());
+
+		Mockito.verify(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, _jwt, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+	}
+
+	@Test
+	public void testGetEnvironmentsDataSourceTokenRejectsCallerWithoutProjectPermission()
+		throws Exception {
+
+		_whenFetchEnvironment("DSR", "42");
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, _jwt, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() ->
+				_digitalSalesRoomRestController.getEnvironmentsDataSourceToken(
+					_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _jwt));
+
+		Mockito.verify(
+			_analyticsCloudService, Mockito.never()
+		).getDataSourceAccessToken(
+			ArgumentMatchers.any(), ArgumentMatchers.anyString()
+		);
+	}
+
+	@Test
+	public void testGetEnvironmentsDataSourceTokenWithoutDSREnvironment()
+		throws Exception {
+
+		_whenFetchEnvironment("AI Hub", "42");
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND,
+			_digitalSalesRoomRestController.getEnvironmentsDataSourceToken(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _jwt
+			).getStatusCode());
+
+		Mockito.verify(
+			_analyticsCloudService, Mockito.never()
+		).getDataSourceAccessToken(
+			ArgumentMatchers.any(), ArgumentMatchers.anyString()
+		);
+	}
+
+	@Test
+	public void testGetEnvironmentsDataSourceTokenWithoutEnvironment()
+		throws Exception {
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND,
+			_digitalSalesRoomRestController.getEnvironmentsDataSourceToken(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _jwt
+			).getStatusCode());
+	}
+
+	@Test
+	public void testGetEnvironmentsDataSourceTokenWithoutToken()
+		throws Exception {
+
+		_whenFetchEnvironment("DSR", "42");
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND,
+			_digitalSalesRoomRestController.getEnvironmentsDataSourceToken(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _jwt
+			).getStatusCode());
 	}
 
 	@Test
@@ -301,6 +414,32 @@ public class DigitalSalesRoomRestControllerTest {
 		);
 	}
 
+	private void _whenFetchEnvironment(
+			String offering, String externalEnvironmentId)
+		throws Exception {
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _jwt)
+		).thenReturn(
+			new Environment(
+				new JSONObject(
+				).put(
+					"externalEnvironmentId", externalEnvironmentId
+				).put(
+					"externalReferenceCode",
+					_ENVIRONMENT_EXTERNAL_REFERENCE_CODE
+				).put(
+					"id", 7
+				).put(
+					"offering", offering
+				).put(
+					"r_projectToEnvironment_c_projectERC",
+					_PROJECT_EXTERNAL_REFERENCE_CODE
+				))
+		);
+	}
+
 	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE = "ACCT-1";
 
 	private static final String _DSR_SETTINGS = new JSONObject(
@@ -312,15 +451,24 @@ public class DigitalSalesRoomRestControllerTest {
 		"workspaceOwnerEmail", "owner@acme.com"
 	).toString();
 
+	private static final String _ENVIRONMENT_EXTERNAL_REFERENCE_CODE =
+		"DSR-PRJCT-1";
+
 	private static final long _ORDER_ID = 1L;
 
 	private static final int _ORDER_PAYMENT_STATUS_PENDING = 1;
+
+	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-1";
 
 	private AnalyticsCloudService _analyticsCloudService;
 	private final CommerceOrderPermission _commerceOrderPermission =
 		Mockito.mock(CommerceOrderPermission.class);
 	private CommerceOrderService _commerceOrderService;
 	private DigitalSalesRoomRestController _digitalSalesRoomRestController;
+	private final EnvironmentService _environmentService = Mockito.mock(
+		EnvironmentService.class);
 	private final Jwt _jwt = Mockito.mock(Jwt.class);
+	private final ProjectPermission _projectPermission = Mockito.mock(
+		ProjectPermission.class);
 
 }
