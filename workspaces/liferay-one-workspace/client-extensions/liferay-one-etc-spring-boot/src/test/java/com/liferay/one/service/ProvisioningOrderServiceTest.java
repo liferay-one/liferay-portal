@@ -112,8 +112,8 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			order,
-			Map.of(5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z"))
+			Map.of(5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z")),
+			order
 		);
 	}
 
@@ -136,8 +136,8 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			order,
-			Map.of(5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z"))
+			Map.of(5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z")),
+			order
 		);
 
 		boolean hasMismatchWarning = false;
@@ -172,8 +172,8 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			order,
-			Map.of(5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z"))
+			Map.of(5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z")),
+			order
 		);
 	}
 
@@ -390,17 +390,17 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			firstOrder,
 			Map.of(
 				5001L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z"),
-				5002L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z"))
+				5002L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z")),
+			firstOrder
 		);
 
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			secondOrder,
-			Map.of(5003L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z"))
+			Map.of(5003L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z")),
+			secondOrder
 		);
 
 		Mockito.verifyNoMoreInteractions(_commerceOrderItemService);
@@ -425,8 +425,8 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			order,
-			Map.of(5001L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z"))
+			Map.of(5001L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z")),
+			order
 		);
 
 		Assertions.assertEquals(0, warningMessages.size());
@@ -473,8 +473,8 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			projectOrder,
-			Map.of(5001L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z"))
+			Map.of(5001L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z")),
+			projectOrder
 		);
 
 		Mockito.verifyNoMoreInteractions(_commerceOrderItemService);
@@ -592,13 +592,13 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
 		).patchOrderItemCustomFields(
-			Mockito.any(Order.class), Mockito.argThat(map -> !map.isEmpty())
+			Mockito.argThat(map -> !map.isEmpty()), Mockito.any(Order.class)
 		);
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.atLeast(0)
 		).patchOrderItemCustomFields(
-			Mockito.any(Order.class), Mockito.anyMap()
+			Mockito.anyMap(), Mockito.any(Order.class)
 		);
 
 		Mockito.verifyNoMoreInteractions(_commerceOrderItemService);

@@ -76,10 +76,10 @@ public class CommerceOrderItemServiceTest {
 		);
 
 		_patchOrderItemCustomFields(
-			order,
 			Map.of(
 				11L, Map.of("effectiveEndDate", "2027-01-01T00:00:00Z"), 13L,
-				Map.of("effectiveEndDate", "2027-02-01T00:00:00Z")));
+				Map.of("effectiveEndDate", "2027-02-01T00:00:00Z")),
+			order);
 
 		OrderItem[] patchedOrderItems = _getPatchedOrderItems();
 
@@ -103,7 +103,7 @@ public class CommerceOrderItemServiceTest {
 
 		Order order = _createOrder(_createOrderItem(11L, _ERC_A, null, null));
 
-		_patchOrderItemCustomFields(order, Map.of());
+		_patchOrderItemCustomFields(Map.of(), order);
 
 		Mockito.verifyNoInteractions(_orderResource);
 	}
@@ -396,7 +396,7 @@ public class CommerceOrderItemServiceTest {
 	}
 
 	private void _patchOrderItemCustomFields(
-			Order order, Map<Long, Map<String, Object>> customFieldValuesMap)
+			Map<Long, Map<String, Object>> customFieldValuesMap, Order order)
 		throws Exception {
 
 		OrderResource.Builder builder = _mockOrderResourceBuilder();
@@ -411,7 +411,7 @@ public class CommerceOrderItemServiceTest {
 			);
 
 			_commerceOrderItemService.patchOrderItemCustomFields(
-				order, customFieldValuesMap);
+				customFieldValuesMap, order);
 		}
 	}
 
