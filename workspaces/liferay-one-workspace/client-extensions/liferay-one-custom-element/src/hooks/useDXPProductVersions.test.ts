@@ -37,6 +37,27 @@ describe('[HOOK-USEDXPPRODUCTVERSIONS] useDXPProductVersions', () => {
 		expect(options?.params?.filter).toContain("productGroup eq 'dxp'");
 	});
 
+	it('requests only the free tier versions when asked to', () => {
+		mockItems([]);
+
+		renderHook(() => useDXPProductVersions(true, true));
+
+		const [, options] = vi.mocked(useFetch).mock.calls[0];
+
+		expect(options?.params?.filter).toContain("productGroup eq 'dxp'");
+		expect(options?.params?.filter).toContain('freeTier eq true');
+	});
+
+	it('does not filter on the free tier by default', () => {
+		mockItems([]);
+
+		renderHook(() => useDXPProductVersions());
+
+		const [, options] = vi.mocked(useFetch).mock.calls[0];
+
+		expect(options?.params?.filter).not.toContain('freeTier');
+	});
+
 	it('sends no request when disabled', () => {
 		mockItems();
 
