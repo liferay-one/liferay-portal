@@ -16,6 +16,7 @@ import com.liferay.one.service.AnalyticsCloudService;
 import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.EnvironmentService;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -72,13 +73,13 @@ public class DigitalSalesRoomRestController extends BaseRestController {
 			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
 		}
 
-		if (Validator.isNotNull(
-				environment.getProjectExternalReferenceCode())) {
-
-			_projectPermission.check(
-				ActionKeys.VIEW, jwt,
-				environment.getProjectExternalReferenceCode());
+		if (Validator.isNull(environment.getProjectExternalReferenceCode())) {
+			throw new PrincipalException();
 		}
+
+		_projectPermission.check(
+			ActionKeys.VIEW, jwt,
+			environment.getProjectExternalReferenceCode());
 
 		String dataSourceAccessToken =
 			_analyticsCloudService.getDataSourceAccessToken(
