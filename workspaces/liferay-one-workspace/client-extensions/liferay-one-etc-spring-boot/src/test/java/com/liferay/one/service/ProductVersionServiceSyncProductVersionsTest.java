@@ -112,6 +112,54 @@ public class ProductVersionServiceSyncProductVersionsTest {
 	}
 
 	@Test
+	public void testSyncProductVersionsKeepsFreeTier() throws Exception {
+		_testProductVersionService.freeTierExternalReferenceCodes.add(
+			"DXP 2026.Q3.7");
+		_testProductVersionService.releasesResponse = new JSONArray(
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.7", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.7")
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.8", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.8")
+		).toString();
+
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.7/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.7/bundle.zip");
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.8/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.8/bundle.zip");
+
+		_productVersionService.syncProductVersions();
+
+		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+
+		Assertions.assertFalse(
+			jsonObjects.get(
+				"DXP 2026.Q3"
+			).getBoolean(
+				"freeTier"
+			));
+		Assertions.assertTrue(
+			jsonObjects.get(
+				"DXP 2026.Q3.7"
+			).getBoolean(
+				"freeTier"
+			));
+		Assertions.assertFalse(
+			jsonObjects.get(
+				"DXP 2026.Q3.8"
+			).getBoolean(
+				"freeTier"
+			));
+
+		Assertions.assertEquals(
+			"(productGroup eq 'dxp') and (freeTier eq true)",
+			_testProductVersionService.projectedFilterString);
+	}
+
+	@Test
 	public void testSyncProductVersionsRefreshesCache() throws Exception {
 		_assertCachedProductVersions();
 
@@ -347,10 +395,26 @@ public class ProductVersionServiceSyncProductVersionsTest {
 		Assertions.assertTrue(jsonObjects.containsKey("DXP 2026.Q1"));
 	}
 
+	@Test
+	public void testSyncProductVersionsWritesNothingWhenFreeTierReadFails() {
+		_testProductVersionService.freeTierFailure = new RuntimeException(
+			"Unable to read free tier product versions");
+
+		Assertions.assertThrows(
+			RuntimeException.class,
+			_productVersionService::syncProductVersions);
+
+		Assertions.assertTrue(_testProductVersionService.putBodies.isEmpty());
+	}
+
 	public static class TestProductVersionService
 		extends ProductVersionService {
 
+		public final List<String> freeTierExternalReferenceCodes =
+			new ArrayList<>();
+		public RuntimeException freeTierFailure;
 		public int getAllItemsCount;
+		public String projectedFilterString;
 		public final List<String> putBodies = new ArrayList<>();
 		public final Map<String, Object> releaseProperties = new HashMap<>();
 		public RuntimeException releasesFailure;
@@ -413,6 +477,33 @@ public class ProductVersionServiceSyncProductVersionsTest {
 			getAllItemsCount++;
 
 			return Collections.emptyList();
+		}
+
+		@Override
+		protected <T> List<T> getAllProjectedItems(
+			String path, String fields, String filterString,
+			Function<JSONObject, T> function) {
+
+			if (freeTierFailure != null) {
+				throw freeTierFailure;
+			}
+
+			projectedFilterString = filterString;
+
+			List<T> items = new ArrayList<>();
+
+			for (String externalReferenceCode :
+					freeTierExternalReferenceCodes) {
+
+				items.add(
+					function.apply(
+						new JSONObject(
+						).put(
+							"externalReferenceCode", externalReferenceCode
+						)));
+			}
+
+			return items;
 		}
 
 		@Override

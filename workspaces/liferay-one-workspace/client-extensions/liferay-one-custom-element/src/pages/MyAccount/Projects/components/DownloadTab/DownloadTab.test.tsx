@@ -106,6 +106,36 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DownloadTab', () => {
 		expect(screen.getByText('No Bundles Yet')).toBeInTheDocument();
 	});
 
+	it('requests only the free tier versions for the free tier product', () => {
+		mockProductVersions([]);
+
+		render(<DownloadTab freeTier profile="bundle" />);
+
+		expect(useFetch).toHaveBeenCalledWith(
+			'/o/c/productversions',
+			expect.objectContaining({
+				params: expect.objectContaining({
+					filter: expect.stringContaining('freeTier eq true'),
+				}),
+			})
+		);
+	});
+
+	it('requests every version for another product with the bundle profile', () => {
+		mockProductVersions([]);
+
+		render(<DownloadTab profile="bundle" />);
+
+		expect(useFetch).toHaveBeenCalledWith(
+			'/o/c/productversions',
+			expect.objectContaining({
+				params: expect.objectContaining({
+					filter: expect.not.stringContaining('freeTier'),
+				}),
+			})
+		);
+	});
+
 	it('lists the virtual items and requests no product versions for the app profile', () => {
 		const virtualItems = [
 			{url: 'https://example.com/app-1.zip', version: '1.0.0'},
