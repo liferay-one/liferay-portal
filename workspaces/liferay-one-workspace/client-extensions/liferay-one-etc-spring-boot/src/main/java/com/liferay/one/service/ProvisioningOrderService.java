@@ -161,7 +161,7 @@ public class ProvisioningOrderService {
 			}
 
 			_commerceOrderItemService.patchOrderItemCustomFields(
-				order, customFieldValuesMap);
+				customFieldValuesMap, order);
 		}
 	}
 
@@ -247,7 +247,7 @@ public class ProvisioningOrderService {
 			}
 
 			_commerceOrderItemService.patchOrderItemCustomFields(
-				order, customFieldValuesMap);
+				customFieldValuesMap, order);
 		}
 	}
 

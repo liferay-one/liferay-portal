@@ -63,10 +63,10 @@ sequenceDiagram
         SB->>LR: attach contract to account and project when missing
     end
     opt realignment line items
-        SB->>LR: PATCH each affected order once, setting effectiveEndDate on its matching parent order items
+        SB->>LR: PATCH each affected order once, setting effectiveEndDate on its matching parent order items (the other items are sent back unchanged)
     end
     opt renewal
-        SB->>LR: PATCH each affected order once, setting effectiveEndDate on its matching earlier order items of the same project
+        SB->>LR: PATCH each affected order once, setting effectiveEndDate on its matching earlier order items of the same project (the other items are sent back unchanged)
     end
     SB->>LR: upsert order by ERC = opportunity ID (custom fields include contractId, projectName, salesforceProjectId)
     SB->>LR: PATCH order once with every order item (a line item that comes again replaces its item, a new line item is added with ERC = line item ID, the other items are sent back unchanged)
@@ -103,7 +103,7 @@ On reprocessing, `upsertOrderItems` keeps a Canceled status and keeps a trimmed 
 
 ### Project Entitlements
 
-An opportunity can split its lines across projects through Salesforce `ProjectEntitlement__c` records. Each project entitlement becomes its own order, with ERC = project entitlement ID, `salesforceProjectId` = the target project, and `projectName` patched to that project's name (`…/one/service/ProvisioningProjectEntitlementService.java:344`). The same records can also arrive one at a time through `SalesforceObjectPubsubSubscriber`, which calls `upsertProjectEntitlement` and `upsertProjectEntitlementLineItem` (`ProvisioningProjectEntitlementService.java:163`, `:219`). A deleted project entitlement or line item sets `effectiveEndDate` to now on its order items, in one order PATCH.
+An opportunity can split its lines across projects through Salesforce `ProjectEntitlement__c` records. Each project entitlement becomes its own order, with ERC = project entitlement ID, `salesforceProjectId` = the target project, and `projectName` patched to that project's name (`…/one/service/ProvisioningProjectEntitlementService.java:395`). The same records can also arrive one at a time through `SalesforceObjectPubsubSubscriber`, which calls `upsertProjectEntitlement` and `upsertProjectEntitlementLineItem` (`ProvisioningProjectEntitlementService.java:162`, `:218`). A deleted project entitlement or line item sets `effectiveEndDate` to now on its order items, in one order PATCH that sends the other items back unchanged.
 
 ### A Contract That Arrives Late
 
