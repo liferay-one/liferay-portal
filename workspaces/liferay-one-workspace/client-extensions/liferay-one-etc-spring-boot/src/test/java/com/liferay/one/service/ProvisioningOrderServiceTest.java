@@ -72,7 +72,7 @@ public class ProvisioningOrderServiceTest {
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PARENT_OPPORTUNITY_ID,
 			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
 
-		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		_verifyNoOrderItemPatch();
 		Assertions.assertEquals(1, warningMessages.size());
 		Assertions.assertTrue(
 			warningMessages.get(
@@ -112,7 +112,8 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z")
+			order,
+			Map.of(5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z"))
 		);
 	}
 
@@ -124,7 +125,7 @@ public class ProvisioningOrderServiceTest {
 			"Approved", null, "2025-01-01T00:00:00Z", "ORDER-ITEM-1", 5001L,
 			_PRODUCT_2_ID, "2024-01-01T00:00:00Z");
 
-		_stubFamilyOrder(orderItem);
+		Order order = _stubFamilyOrder(orderItem);
 
 		List<String> warningMessages = new ArrayList<>();
 
@@ -135,7 +136,8 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z")
+			order,
+			Map.of(5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z"))
 		);
 
 		boolean hasMismatchWarning = false;
@@ -159,7 +161,7 @@ public class ProvisioningOrderServiceTest {
 			"Approved", "2027-01-01T00:00:00Z", "2025-01-01T00:00:00Z",
 			"ORDER-ITEM-1", 5001L, _PRODUCT_2_ID, "2024-01-01T00:00:00Z");
 
-		_stubFamilyOrder(orderItem);
+		Order order = _stubFamilyOrder(orderItem);
 
 		List<String> warningMessages = new ArrayList<>();
 
@@ -170,7 +172,8 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z")
+			order,
+			Map.of(5001L, Map.of("effectiveEndDate", "2026-01-01T00:00:00Z"))
 		);
 	}
 
@@ -190,7 +193,7 @@ public class ProvisioningOrderServiceTest {
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PARENT_OPPORTUNITY_ID,
 			List.of(_createRealignmentLineItem("2024-12-31")), warningMessages);
 
-		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		_verifyNoOrderItemPatch();
 		Assertions.assertEquals(0, warningMessages.size());
 	}
 
@@ -221,7 +224,7 @@ public class ProvisioningOrderServiceTest {
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PARENT_OPPORTUNITY_ID,
 			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
 
-		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		_verifyNoOrderItemPatch();
 		Assertions.assertEquals(1, warningMessages.size());
 		Assertions.assertTrue(
 			warningMessages.get(
@@ -247,7 +250,7 @@ public class ProvisioningOrderServiceTest {
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PARENT_OPPORTUNITY_ID,
 			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
 
-		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		_verifyNoOrderItemPatch();
 
 		Assertions.assertEquals(0, warningMessages.size());
 	}
@@ -268,7 +271,7 @@ public class ProvisioningOrderServiceTest {
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PARENT_OPPORTUNITY_ID,
 			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
 
-		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		_verifyNoOrderItemPatch();
 		Assertions.assertEquals(0, warningMessages.size());
 	}
 
@@ -288,7 +291,7 @@ public class ProvisioningOrderServiceTest {
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PARENT_OPPORTUNITY_ID,
 			List.of(_createRealignmentLineItem("2026-01-01")), warningMessages);
 
-		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		_verifyNoOrderItemPatch();
 		Assertions.assertEquals(1, warningMessages.size());
 		Assertions.assertTrue(
 			warningMessages.get(
@@ -323,7 +326,7 @@ public class ProvisioningOrderServiceTest {
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
 			List.of(_createRenewalLineItem("2025-02-01")), new ArrayList<>());
 
-		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		_verifyNoOrderItemPatch();
 	}
 
 	@Test
@@ -342,8 +345,65 @@ public class ProvisioningOrderServiceTest {
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
 			List.of(_createRenewalLineItem("2025-02-01")), warningMessages);
 
-		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		_verifyNoOrderItemPatch();
 		Assertions.assertEquals(0, warningMessages.size());
+	}
+
+	@Test
+	public void testTrimRenewedOrderItemsPatchesEachOrderOnce()
+		throws Exception {
+
+		OrderItem firstOrderItem = SalesforceModelTestUtil.createOrderItem(
+			"Approved", "2025-06-01T00:00:00Z", "2025-01-01T00:00:00Z",
+			"ORDER-ITEM-1", 5001L, _PRODUCT_2_ID, null);
+		OrderItem secondOrderItem = SalesforceModelTestUtil.createOrderItem(
+			"Approved", "2025-06-01T00:00:00Z", "2025-01-01T00:00:00Z",
+			"ORDER-ITEM-2", 5002L, _PRODUCT_2_ID, null);
+
+		Order firstOrder = new Order();
+
+		firstOrder.setCustomFields(Map.of("salesforceProjectId", _PROJECT_ID));
+		firstOrder.setExternalReferenceCode("OPP-PROJECT-1");
+		firstOrder.setOrderItems(
+			new OrderItem[] {firstOrderItem, secondOrderItem});
+
+		OrderItem thirdOrderItem = SalesforceModelTestUtil.createOrderItem(
+			"Approved", "2025-06-01T00:00:00Z", "2025-01-01T00:00:00Z",
+			"ORDER-ITEM-3", 5003L, _PRODUCT_2_ID, null);
+
+		Order secondOrder = new Order();
+
+		secondOrder.setCustomFields(Map.of("salesforceProjectId", _PROJECT_ID));
+		secondOrder.setExternalReferenceCode("OPP-PROJECT-2");
+		secondOrder.setOrderItems(new OrderItem[] {thirdOrderItem});
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(firstOrder, secondOrder)
+		);
+
+		_provisioningOrderService.trimRenewedOrderItems(
+			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
+			List.of(_createRenewalLineItem("2025-02-01")), new ArrayList<>());
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			firstOrder,
+			Map.of(
+				5001L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z"),
+				5002L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z"))
+		);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			secondOrder,
+			Map.of(5003L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z"))
+		);
+
+		Mockito.verifyNoMoreInteractions(_commerceOrderItemService);
 	}
 
 	@Test
@@ -354,7 +414,7 @@ public class ProvisioningOrderServiceTest {
 			"Approved", "2025-06-01T00:00:00Z", "2025-01-01T00:00:00Z",
 			"ORDER-ITEM-1", 5001L, _PRODUCT_2_ID, null);
 
-		_stubFamilyOrder(orderItem);
+		Order order = _stubFamilyOrder(orderItem);
 
 		List<String> warningMessages = new ArrayList<>();
 
@@ -365,7 +425,8 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			5001L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z")
+			order,
+			Map.of(5001L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z"))
 		);
 
 		Assertions.assertEquals(0, warningMessages.size());
@@ -412,7 +473,8 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			5001L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z")
+			projectOrder,
+			Map.of(5001L, Map.of("effectiveEndDate", "2025-02-01T00:00:00Z"))
 		);
 
 		Mockito.verifyNoMoreInteractions(_commerceOrderItemService);
@@ -443,7 +505,7 @@ public class ProvisioningOrderServiceTest {
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
 			List.of(_createRenewalLineItem("2025-02-01")), new ArrayList<>());
 
-		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		_verifyNoOrderItemPatch();
 	}
 
 	@Test
@@ -462,7 +524,7 @@ public class ProvisioningOrderServiceTest {
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
 			List.of(_createRenewalLineItem("2025-02-01")), warningMessages);
 
-		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		_verifyNoOrderItemPatch();
 		Assertions.assertEquals(0, warningMessages.size());
 	}
 
@@ -482,7 +544,7 @@ public class ProvisioningOrderServiceTest {
 			_ACCOUNT_ID, _OPPORTUNITY_ID, _PROJECT_ID,
 			List.of(_createRenewalLineItem("2024-12-01")), warningMessages);
 
-		Mockito.verifyNoInteractions(_commerceOrderItemService);
+		_verifyNoOrderItemPatch();
 		Assertions.assertEquals(1, warningMessages.size());
 		Assertions.assertTrue(
 			warningMessages.get(
@@ -510,7 +572,7 @@ public class ProvisioningOrderServiceTest {
 				5, serviceDate));
 	}
 
-	private void _stubFamilyOrder(OrderItem orderItem) throws Exception {
+	private Order _stubFamilyOrder(OrderItem orderItem) throws Exception {
 		Order order = new Order();
 
 		order.setCustomFields(Map.of("salesforceProjectId", _PROJECT_ID));
@@ -522,6 +584,24 @@ public class ProvisioningOrderServiceTest {
 		).thenReturn(
 			List.of(order)
 		);
+
+		return order;
+	}
+
+	private void _verifyNoOrderItemPatch() throws Exception {
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.never()
+		).patchOrderItemCustomFields(
+			Mockito.any(Order.class), Mockito.argThat(map -> !map.isEmpty())
+		);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.atLeast(0)
+		).patchOrderItemCustomFields(
+			Mockito.any(Order.class), Mockito.anyMap()
+		);
+
+		Mockito.verifyNoMoreInteractions(_commerceOrderItemService);
 	}
 
 	private static final long _ACCOUNT_ID = 1000L;
