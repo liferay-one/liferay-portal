@@ -1062,7 +1062,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_provisioningAnalyticsCloudService
 		).provisionAnalyticsCloudProject(
 			Mockito.eq(_account), Mockito.eq(_NEW_ORDER_ID), Mockito.any(),
-			Mockito.any(), Mockito.anyList(), Mockito.anyList()
+			Mockito.anyList(), Mockito.any(), Mockito.anyList(),
+			Mockito.anyList()
 		);
 	}
 
@@ -1596,8 +1597,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_provisioningAnalyticsCloudService, Mockito.never()
 		).provisionAnalyticsCloudProject(
-			Mockito.any(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
-			Mockito.anyList(), Mockito.anyList()
+			Mockito.any(), Mockito.anyLong(), Mockito.any(), Mockito.anyList(),
+			Mockito.any(), Mockito.anyList(), Mockito.anyList()
 		);
 
 		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =

@@ -640,8 +640,8 @@ public class SalesforceOpportunityPubsubSubscriber
 		if (provisionedOrderItemCount > 0) {
 			_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
 				account, newOrder.getId(), salesforceOpportunity,
-				salesforceProject, salesforceProjectContactRoles,
-				warningMessages);
+				provisionableSalesforceOpportunityLineItems, salesforceProject,
+				salesforceProjectContactRoles, warningMessages);
 		}
 
 		_provisioningSubdomainService.provisionSubdomain(

@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
 import com.liferay.one.util.HTTPTimeoutUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.nio.charset.StandardCharsets;
 
@@ -17,6 +18,7 @@ import java.util.Objects;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -63,16 +65,20 @@ public class AnalyticsCloudService extends BaseService {
 		JSONObject analyticsCloudContextJSONObject, String corpProjectUuid) {
 
 		try {
-			JSONObject jsonObject = new JSONObject(
-				get(
-					getAuthorization(analyticsCloudContextJSONObject),
-					UriComponentsBuilder.fromUriString(
-						analyticsCloudContextJSONObject.getString("url")
-					).path(
-						"/o/faro/main/project/corpProjectUuid/" +
-							corpProjectUuid
-					).build(
-					).toUri()));
+			String response = get(
+				getAuthorization(analyticsCloudContextJSONObject),
+				UriComponentsBuilder.fromUriString(
+					analyticsCloudContextJSONObject.getString("url")
+				).path(
+					"/o/faro/main/project/corpProjectUuid/" + corpProjectUuid
+				).build(
+				).toUri());
+
+			if (Validator.isNull(response)) {
+				return null;
+			}
+
+			JSONObject jsonObject = new JSONObject(response);
 
 			if (jsonObject.optInt("groupId") == 0) {
 				return null;
@@ -157,16 +163,21 @@ public class AnalyticsCloudService extends BaseService {
 				).with(
 					"name", analyticsCloudProjectJSONObject.getString("name")
 				).with(
+					"offeringEntries",
+					analyticsCloudProjectJSONObject.optJSONArray(
+						"offeringEntries", new JSONArray()
+					).toString()
+				).with(
 					"ownerEmailAddress",
 					analyticsCloudProjectJSONObject.getString(
 						"ownerEmailAddress")
 				).with(
+					"salesforceAccountId",
+					analyticsCloudProjectJSONObject.optString(
+						"salesforceAccountId")
+				).with(
 					"serverLocation",
 					analyticsCloudProjectJSONObject.getString("serverLocation")
-				).with(
-					"sharedCluster", "false"
-				).with(
-					"trial", "false"
 				)
 			).retrieve(
 			).bodyToMono(
@@ -201,6 +212,11 @@ public class AnalyticsCloudService extends BaseService {
 		}
 
 		analyticsCloudProjectJSONObject.put("corpProjectUuid", corpProjectUuid);
+
+		if (!analyticsCloudProjectJSONObject.has("salesforceAccountId")) {
+			analyticsCloudProjectJSONObject.put(
+				"salesforceAccountId", corpProjectUuid);
+		}
 
 		return provisionAnalyticsCloudProject(
 			getAnalyticsCloudContextJSONObject(analyticsCloudEnvironment),

@@ -6,13 +6,18 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
+import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
+import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+
+import java.nio.charset.StandardCharsets;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -31,7 +36,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
  * @author Wellington Barbosa
@@ -42,9 +49,11 @@ import org.springframework.test.util.ReflectionTestUtils;
 public class ProvisioningAnalyticsCloudServiceTest {
 
 	@BeforeEach
-	public void setUp() {
+	public void setUp() throws Exception {
 		_analyticsCloudService = Mockito.mock(AnalyticsCloudService.class);
 		_commerceOrderService = Mockito.mock(CommerceOrderService.class);
+		_commerceProductService = Mockito.mock(CommerceProductService.class);
+		_commerceSkuService = Mockito.mock(CommerceSkuService.class);
 		_provisioningAnalyticsCloudService =
 			new ProvisioningAnalyticsCloudService();
 
@@ -55,13 +64,78 @@ public class ProvisioningAnalyticsCloudServiceTest {
 			_provisioningAnalyticsCloudService, "_commerceOrderService",
 			_commerceOrderService);
 		ReflectionTestUtils.setField(
+			_provisioningAnalyticsCloudService, "_commerceProductService",
+			_commerceProductService);
+		ReflectionTestUtils.setField(
+			_provisioningAnalyticsCloudService, "_commerceSkuService",
+			_commerceSkuService);
+		ReflectionTestUtils.setField(
 			_provisioningAnalyticsCloudService, "_keyedLock", new KeyedLock());
+
+		_whenFetchProduct("PRODUCT-DSR", 1L, "dsr");
+		_whenFetchProduct("PRODUCT-DXP", 2L, null);
+		_whenFetchProduct("PRODUCT-LDP", 3L, "liferay-data-platform");
 
 		_account = new Account();
 
 		_account.setExternalReferenceCode(
 			() -> _ACCOUNT_EXTERNAL_REFERENCE_CODE);
 		_account.setName(() -> "Acme Corporation");
+	}
+
+	@Test
+	public void testProvisionAnalyticsCloudProjectProvisionsDSRWorkspace()
+		throws Exception {
+
+		_whenFetchCommerceOrder(null, "DSR");
+
+		Mockito.when(
+			_analyticsCloudService.provisionAnalyticsCloudProject(
+				Mockito.eq(""), ArgumentMatchers.any(),
+				Mockito.eq(_ACCOUNT_EXTERNAL_REFERENCE_CODE))
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"groupId", 42
+			)
+		);
+
+		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
+			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(),
+			_createSalesforceProject("acme-dsr"),
+			List.of(
+				_createSalesforceProjectContactRole(
+					"DSR Administrator", "dsr.admin@acme.com")),
+			new ArrayList<>());
+
+		ArgumentCaptor<JSONObject> argumentCaptor = ArgumentCaptor.forClass(
+			JSONObject.class);
+
+		Mockito.verify(
+			_analyticsCloudService
+		).provisionAnalyticsCloudProject(
+			Mockito.eq(""), argumentCaptor.capture(),
+			Mockito.eq(_ACCOUNT_EXTERNAL_REFERENCE_CODE)
+		);
+
+		JSONObject analyticsCloudProjectJSONObject = argumentCaptor.getValue();
+
+		JSONArray offeringEntriesJSONArray =
+			analyticsCloudProjectJSONObject.getJSONArray("offeringEntries");
+
+		Assertions.assertEquals(1, offeringEntriesJSONArray.length());
+
+		JSONObject offeringEntryJSONObject =
+			offeringEntriesJSONArray.getJSONObject(0);
+
+		Assertions.assertEquals(
+			"PRODUCT-DSR", offeringEntryJSONObject.getString("productEntryId"));
+		Assertions.assertEquals(1, offeringEntryJSONObject.getInt("quantity"));
+
+		Assertions.assertEquals(
+			"dsr.admin@acme.com",
+			analyticsCloudProjectJSONObject.getString("ownerEmailAddress"));
 	}
 
 	@Test
@@ -87,6 +161,7 @@ public class ProvisioningAnalyticsCloudServiceTest {
 
 		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
 			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(),
 			_createSalesforceProject("acme-ldp"),
 			List.of(
 				_createSalesforceProjectContactRole(
@@ -129,8 +204,28 @@ public class ProvisioningAnalyticsCloudServiceTest {
 			"ldp.admin@acme.com",
 			analyticsCloudProjectJSONObject.getString("ownerEmailAddress"));
 		Assertions.assertEquals(
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE,
+			analyticsCloudProjectJSONObject.getString("salesforceAccountId"));
+		Assertions.assertEquals(
 			"europe-west2-ac2-c1",
 			analyticsCloudProjectJSONObject.getString("serverLocation"));
+
+		JSONArray offeringEntriesJSONArray =
+			analyticsCloudProjectJSONObject.getJSONArray("offeringEntries");
+
+		Assertions.assertEquals(1, offeringEntriesJSONArray.length());
+
+		JSONObject offeringEntryJSONObject =
+			offeringEntriesJSONArray.getJSONObject(0);
+
+		Assertions.assertEquals(
+			"PRODUCT-LDP", offeringEntryJSONObject.getString("productEntryId"));
+		Assertions.assertEquals(2, offeringEntryJSONObject.getInt("quantity"));
+		Assertions.assertEquals(
+			1793232000000L, offeringEntryJSONObject.getLong("startDate"));
+		Assertions.assertEquals(1, offeringEntryJSONObject.getInt("status"));
+		Assertions.assertEquals(
+			1824854400000L, offeringEntryJSONObject.getLong("supportEndDate"));
 
 		Map<String, ?> customFields = _capturePatchedCustomFields();
 
@@ -158,6 +253,7 @@ public class ProvisioningAnalyticsCloudServiceTest {
 
 		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
 			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(),
 			_createSalesforceProject("acme-ldp"), Collections.emptyList(),
 			warningMessages);
 
@@ -188,6 +284,7 @@ public class ProvisioningAnalyticsCloudServiceTest {
 
 		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
 			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(),
 			_createSalesforceProject("acme-ldp"), Collections.emptyList(),
 			warningMessages);
 
@@ -202,6 +299,35 @@ public class ProvisioningAnalyticsCloudServiceTest {
 		Assertions.assertEquals(
 			"Analytics Cloud is unavailable", customFields.get("ldpError"));
 		Assertions.assertNotNull(customFields.get("ldpErrorDate"));
+	}
+
+	@Test
+	public void testProvisionAnalyticsCloudProjectRecordsFailureResponseBody()
+		throws Exception {
+
+		_whenFetchCommerceOrder(null, "LDP");
+
+		Mockito.when(
+			_analyticsCloudService.provisionAnalyticsCloudProject(
+				ArgumentMatchers.anyString(), ArgumentMatchers.any(),
+				ArgumentMatchers.anyString())
+		).thenThrow(
+			WebClientResponseException.create(
+				400, "Bad Request", HttpHeaders.EMPTY,
+				_FAILURE_RESPONSE_BODY.getBytes(StandardCharsets.UTF_8),
+				StandardCharsets.UTF_8)
+		);
+
+		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
+			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(),
+			_createSalesforceProject("acme-ldp"), Collections.emptyList(),
+			new ArrayList<>());
+
+		Map<String, ?> customFields = _capturePatchedCustomFields();
+
+		Assertions.assertEquals(
+			_FAILURE_RESPONSE_BODY, customFields.get("ldpError"));
 	}
 
 	@Test
@@ -230,6 +356,7 @@ public class ProvisioningAnalyticsCloudServiceTest {
 
 		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
 			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(),
 			_createSalesforceProject("acme-ldp"), Collections.emptyList(),
 			warningMessages);
 
@@ -263,7 +390,8 @@ public class ProvisioningAnalyticsCloudServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
-			_account, _ORDER_ID, _createSalesforceOpportunity(), null,
+			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(), null,
 			Collections.emptyList(), warningMessages);
 
 		Assertions.assertTrue(warningMessages.isEmpty());
@@ -290,6 +418,7 @@ public class ProvisioningAnalyticsCloudServiceTest {
 
 		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
 			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(),
 			_createSalesforceProject("acme-ldp"), Collections.emptyList(),
 			new ArrayList<>());
 
@@ -304,10 +433,40 @@ public class ProvisioningAnalyticsCloudServiceTest {
 
 		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
 			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(),
 			_createSalesforceProject("acme-ldp"), Collections.emptyList(),
 			new ArrayList<>());
 
 		Mockito.verifyNoInteractions(_analyticsCloudService);
+	}
+
+	@Test
+	public void testProvisionAnalyticsCloudProjectWithoutAnalyticsCloudLine()
+		throws Exception {
+
+		_whenFetchCommerceOrder(null, "LDP");
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
+			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			List.of(_createSalesforceOpportunityLineItem("PRODUCT-DXP", 1)),
+			_createSalesforceProject("acme-ldp"), Collections.emptyList(),
+			warningMessages);
+
+		Assertions.assertEquals(
+			List.of(
+				"Unable to provision the Analytics Cloud workspace for " +
+					"opportunity OPP-1 without a line for an Analytics Cloud " +
+						"product"),
+			warningMessages);
+
+		Mockito.verify(
+			_analyticsCloudService, Mockito.never()
+		).provisionAnalyticsCloudProject(
+			ArgumentMatchers.anyString(), ArgumentMatchers.any(),
+			ArgumentMatchers.anyString()
+		);
 	}
 
 	@Test
@@ -320,6 +479,7 @@ public class ProvisioningAnalyticsCloudServiceTest {
 
 		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
 			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(),
 			_createSalesforceProject(""), Collections.emptyList(),
 			warningMessages);
 
@@ -360,6 +520,31 @@ public class ProvisioningAnalyticsCloudServiceTest {
 			).put(
 				"Owner.Email", "owner@liferay.com"
 			));
+	}
+
+	private SalesforceOpportunityLineItem _createSalesforceOpportunityLineItem(
+		String product2Id, int quantity) {
+
+		return new SalesforceOpportunityLineItem(
+			new JSONObject(
+			).put(
+				"End_Date__c", "2027-10-29"
+			).put(
+				"Product2Id", product2Id
+			).put(
+				"Quantity", quantity
+			).put(
+				"ServiceDate", "2026-10-29"
+			));
+	}
+
+	private List<SalesforceOpportunityLineItem>
+		_createSalesforceOpportunityLineItems() {
+
+		return List.of(
+			_createSalesforceOpportunityLineItem("PRODUCT-DXP", 1),
+			_createSalesforceOpportunityLineItem("PRODUCT-DSR", 1),
+			_createSalesforceOpportunityLineItem("PRODUCT-LDP", 2));
 	}
 
 	private SalesforceProject _createSalesforceProject(String workspaceName) {
@@ -415,13 +600,48 @@ public class ProvisioningAnalyticsCloudServiceTest {
 		);
 	}
 
+	private void _whenFetchProduct(
+			String product2Id, long productId, String solutionType)
+		throws Exception {
+
+		Mockito.when(
+			_commerceSkuService.fetchProductId(product2Id)
+		).thenReturn(
+			productId
+		);
+
+		Product product = new Product();
+
+		if (solutionType != null) {
+			ProductSpecification productSpecification =
+				new ProductSpecification();
+
+			productSpecification.setSpecificationKey("solution-type");
+			productSpecification.setValue(Map.of("en_US", solutionType));
+
+			product.setProductSpecifications(
+				new ProductSpecification[] {productSpecification});
+		}
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(productId)
+		).thenReturn(
+			product
+		);
+	}
+
 	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE = "ACCNT-1";
+
+	private static final String _FAILURE_RESPONSE_BODY =
+		"{\"field\": \"offeringEntries\", \"status\": 400}";
 
 	private static final long _ORDER_ID = 1L;
 
 	private Account _account;
 	private AnalyticsCloudService _analyticsCloudService;
 	private CommerceOrderService _commerceOrderService;
+	private CommerceProductService _commerceProductService;
+	private CommerceSkuService _commerceSkuService;
 	private ProvisioningAnalyticsCloudService
 		_provisioningAnalyticsCloudService;
 
