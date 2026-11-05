@@ -63,10 +63,10 @@ sequenceDiagram
         SB->>LR: attach contract to account and project when missing
     end
     opt realignment line items
-        SB->>LR: PATCH effectiveEndDate on parent order items
+        SB->>LR: PATCH each affected order once, setting effectiveEndDate on its matching parent order items
     end
     opt renewal
-        SB->>LR: PATCH effectiveEndDate on earlier order items of the same project
+        SB->>LR: PATCH each affected order once, setting effectiveEndDate on its matching earlier order items of the same project
     end
     SB->>LR: upsert order by ERC = opportunity ID (custom fields include contractId, projectName, salesforceProjectId)
     SB->>LR: PATCH order once with every order item (a line item that comes again replaces its item, a new line item is added with ERC = line item ID, the other items are sent back unchanged)
@@ -103,7 +103,7 @@ On reprocessing, `upsertOrderItems` keeps a Canceled status and keeps a trimmed 
 
 ### Project Entitlements
 
-An opportunity can split its lines across projects through Salesforce `ProjectEntitlement__c` records. Each project entitlement becomes its own order, with ERC = project entitlement ID, `salesforceProjectId` = the target project, and `projectName` patched to that project's name (`…/one/service/ProvisioningProjectEntitlementService.java:344`). The same records can also arrive one at a time through `SalesforceObjectPubsubSubscriber`, which calls `upsertProjectEntitlement` and `upsertProjectEntitlementLineItem` (`ProvisioningProjectEntitlementService.java:163`, `:219`). A deleted project entitlement or line item sets `effectiveEndDate` to now on its order items.
+An opportunity can split its lines across projects through Salesforce `ProjectEntitlement__c` records. Each project entitlement becomes its own order, with ERC = project entitlement ID, `salesforceProjectId` = the target project, and `projectName` patched to that project's name (`…/one/service/ProvisioningProjectEntitlementService.java:344`). The same records can also arrive one at a time through `SalesforceObjectPubsubSubscriber`, which calls `upsertProjectEntitlement` and `upsertProjectEntitlementLineItem` (`ProvisioningProjectEntitlementService.java:163`, `:219`). A deleted project entitlement or line item sets `effectiveEndDate` to now on its order items, in one order PATCH.
 
 ### A Contract That Arrives Late
 
@@ -481,7 +481,7 @@ Only `EntitlementUpdate` moves the dates, and only from the order item custom fi
 
 | Hint | Verdict | Evidence |
 | --- | --- | --- |
-| An order item PATCH regenerates its ERC unless the ERC is in the body | Consistent with the code, not proven by it. `patchOrderItemCustomFields` copies the ERC on purpose, and the seed script says so. `calculateTax` does not copy it. | `CommerceOrderItemService.java:70`, `populate_orders.sh:513`, `CommerceOrderService.java:109` |
+| An order item PATCH regenerates its ERC unless the ERC is in the body | Consistent with the code, not proven by it. `patchOrderItemCustomFields` sends the whole order item, ERC included, in an order PATCH, and the seed script says so. `calculateTax` does not copy it. | `CommerceOrderItemService.patchOrderItemCustomFields`, `populate_orders.sh:513`, `CommerceOrderService.java:109` |
 | Seeded orders total $0 until a PATCH | True. Commerce prices from the channel price list, so the script PATCHes item prices and the order subtotal and total. | `populate_orders.sh:896`, `:929` |
 | `Entitlement.name` has two conventions | True: machine keys for seeded definitions, labels for generated App definitions | See [Entitlement Definition Sources](#entitlement-definition-sources) |
 | Orders link to project and contract only through custom fields | True | LPD-92222, `04-object-relationship.batch-engine-data.json` |
