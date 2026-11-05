@@ -247,9 +247,13 @@ public class ProvisioningProjectEntitlementService {
 				List.of(salesforceOpportunityLineItem), new ArrayList<>());
 		}
 
-		_upsertOrderItem(
-			order, projectEntitlementId, salesforceOpportunityLineItem,
-			OpportunityConstants.STAGE_NAME_CLOSED_WON, new ArrayList<>());
+		_validateSku(
+			projectEntitlementId, salesforceOpportunityLineItem,
+			new ArrayList<>());
+
+		_commerceOrderItemService.upsertOrderItems(
+			order, List.of(salesforceOpportunityLineItem),
+			OpportunityConstants.STAGE_NAME_CLOSED_WON);
 
 		if (!_isCompleted(order)) {
 			_commerceOrderService.completeOrder(
@@ -391,17 +395,19 @@ public class ProvisioningProjectEntitlementService {
 		_commerceOrderService.patchOrderCustomFields(
 			order.getId(), Map.of("projectName", project.getName()));
 
-		int provisionedOrderItemCount = 0;
+		List<SalesforceOpportunityLineItem> skuSalesforceOpportunityLineItems =
+			new ArrayList<>();
 
 		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
 				salesforceOpportunityLineItems) {
 
 			try {
-				_upsertOrderItem(
-					order, projectEntitlementId, salesforceOpportunityLineItem,
-					salesforceOpportunity.getStageName(), warningMessages);
+				_validateSku(
+					projectEntitlementId, salesforceOpportunityLineItem,
+					warningMessages);
 
-				provisionedOrderItemCount++;
+				skuSalesforceOpportunityLineItems.add(
+					salesforceOpportunityLineItem);
 			}
 			catch (Exception exception) {
 				_addWarning(
@@ -411,6 +417,33 @@ public class ProvisioningProjectEntitlementService {
 						salesforceOpportunityLineItem.getId(),
 						" on project entitlement ", projectEntitlementId),
 					exception);
+			}
+		}
+
+		int provisionedOrderItemCount = 0;
+
+		if (!skuSalesforceOpportunityLineItems.isEmpty()) {
+			try {
+				_commerceOrderItemService.upsertOrderItems(
+					order, skuSalesforceOpportunityLineItems,
+					salesforceOpportunity.getStageName());
+
+				provisionedOrderItemCount =
+					skuSalesforceOpportunityLineItems.size();
+			}
+			catch (Exception exception) {
+				for (SalesforceOpportunityLineItem
+						skuSalesforceOpportunityLineItem :
+							skuSalesforceOpportunityLineItems) {
+
+					_addWarning(
+						warningMessages,
+						StringBundler.concat(
+							"Unable to provision line item ",
+							skuSalesforceOpportunityLineItem.getId(),
+							" on project entitlement ", projectEntitlementId),
+						exception);
+				}
 			}
 		}
 
@@ -470,10 +503,10 @@ public class ProvisioningProjectEntitlementService {
 			Map.of("effectiveEndDate", effectiveEndDateInstant.toString()));
 	}
 
-	private void _upsertOrderItem(
-			Order order, String projectEntitlementId,
+	private void _validateSku(
+			String projectEntitlementId,
 			SalesforceOpportunityLineItem salesforceOpportunityLineItem,
-			String stageName, List<String> warningMessages)
+			List<String> warningMessages)
 		throws Exception {
 
 		String product2Id = salesforceOpportunityLineItem.getProduct2Id();
@@ -502,9 +535,6 @@ public class ProvisioningProjectEntitlementService {
 					projectEntitlementId),
 				null);
 		}
-
-		_commerceOrderItemService.upsertOrderItem(
-			order, salesforceOpportunityLineItem, stageName);
 	}
 
 	private static final Log _log = LogFactory.getLog(
