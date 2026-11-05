@@ -23,9 +23,14 @@ import {
 import type {UserAccountModel} from '~/services/models/UserAccountModel';
 import type {RoleBrief} from '~/types/accounts';
 
-function toUserAccountModel(roleNames: string[], canManageAllAccounts = false) {
+function toUserAccountModel(
+	roleNames: string[],
+	canManageAllAccounts = false,
+	canViewAllAccounts = canManageAllAccounts
+) {
 	return {
 		canManageAllAccounts,
+		canViewAllAccounts,
 		hasAccountRoleName: (roleName: string) => roleNames.includes(roleName),
 		isAccountMember: roleNames.includes('Account Member'),
 	} as unknown as UserAccountModel;
@@ -209,6 +214,12 @@ describe('[MOD-MYACCOUNT-ACCOUNTMEMBERS-ACCOUNTROLES] accountRoles', () => {
 			).toBe(true);
 			expect(
 				canViewAllAccountProjects(toUserAccountModel([], true))
+			).toBe(true);
+		});
+
+		it('allows a user who can view every account', () => {
+			expect(
+				canViewAllAccountProjects(toUserAccountModel([], false, true))
 			).toBe(true);
 		});
 
