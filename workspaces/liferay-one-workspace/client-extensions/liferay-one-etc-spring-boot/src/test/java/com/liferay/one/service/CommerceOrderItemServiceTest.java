@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -55,6 +56,56 @@ public class CommerceOrderItemServiceTest {
 		).getDXPEndpointAddress();
 
 		_orderResource = Mockito.mock(OrderResource.class);
+	}
+
+	@Test
+	public void testPatchOrderItemCustomFieldsPatchesOrderOnce()
+		throws Exception {
+
+		OrderItem orderItemA = _createOrderItem(11L, _ERC_A, null, null);
+		OrderItem orderItemB = _createOrderItem(12L, _ERC_B, null, null);
+		OrderItem orderItemC = _createOrderItem(13L, _ERC_C, null, null);
+
+		Order order = _createOrder(orderItemA, orderItemB, orderItemC);
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			order
+		);
+
+		_patchOrderItemCustomFields(
+			order,
+			Map.of(
+				11L, Map.of("effectiveEndDate", "2027-01-01T00:00:00Z"), 13L,
+				Map.of("effectiveEndDate", "2027-02-01T00:00:00Z")));
+
+		OrderItem[] patchedOrderItems = _getPatchedOrderItems();
+
+		Assertions.assertEquals(3, patchedOrderItems.length);
+		Assertions.assertSame(orderItemA, patchedOrderItems[0]);
+		Assertions.assertSame(orderItemB, patchedOrderItems[1]);
+		Assertions.assertSame(orderItemC, patchedOrderItems[2]);
+
+		Assertions.assertEquals(
+			"2027-01-01T00:00:00Z",
+			_getCustomFieldData(patchedOrderItems[0], "effectiveEndDate"));
+		Assertions.assertNull(patchedOrderItems[1].getCustomFields());
+		Assertions.assertEquals(
+			"2027-02-01T00:00:00Z",
+			_getCustomFieldData(patchedOrderItems[2], "effectiveEndDate"));
+	}
+
+	@Test
+	public void testPatchOrderItemCustomFieldsSkipsOrderWithoutChanges()
+		throws Exception {
+
+		Order order = _createOrder(_createOrderItem(11L, _ERC_A, null, null));
+
+		_patchOrderItemCustomFields(order, Map.of());
+
+		Mockito.verifyNoInteractions(_orderResource);
 	}
 
 	@Test
@@ -290,6 +341,18 @@ public class CommerceOrderItemServiceTest {
 		return orderItem;
 	}
 
+	private String _getCustomFieldData(OrderItem orderItem, String name) {
+		for (CustomField customField : orderItem.getCustomFields()) {
+			if (name.equals(customField.getName())) {
+				CustomValue customValue = customField.getCustomValue();
+
+				return String.valueOf(customValue.getData());
+			}
+		}
+
+		return null;
+	}
+
 	private OrderItem[] _getPatchedOrderItems() throws Exception {
 		ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(
 			Order.class);
@@ -317,9 +380,7 @@ public class CommerceOrderItemServiceTest {
 		return false;
 	}
 
-	private void _upsertOrderItems(Order order, JSONObject... jsonObjects)
-		throws Exception {
-
+	private OrderResource.Builder _mockOrderResourceBuilder() {
 		OrderResource.Builder builder = Mockito.mock(
 			OrderResource.Builder.class, Mockito.RETURNS_SELF);
 
@@ -330,6 +391,34 @@ public class CommerceOrderItemServiceTest {
 		).thenReturn(
 			_orderResource
 		);
+
+		return builder;
+	}
+
+	private void _patchOrderItemCustomFields(
+			Order order, Map<Long, Map<String, Object>> customFieldValuesMap)
+		throws Exception {
+
+		OrderResource.Builder builder = _mockOrderResourceBuilder();
+
+		try (MockedStatic<OrderResource> orderResourceMockedStatic =
+				Mockito.mockStatic(OrderResource.class)) {
+
+			orderResourceMockedStatic.when(
+				OrderResource::builder
+			).thenReturn(
+				builder
+			);
+
+			_commerceOrderItemService.patchOrderItemCustomFields(
+				order, customFieldValuesMap);
+		}
+	}
+
+	private void _upsertOrderItems(Order order, JSONObject... jsonObjects)
+		throws Exception {
+
+		OrderResource.Builder builder = _mockOrderResourceBuilder();
 
 		try (MockedStatic<OrderResource> orderResourceMockedStatic =
 				Mockito.mockStatic(OrderResource.class)) {
