@@ -725,8 +725,9 @@ body:not(.has-edit-mode-menu) .sticky-container-24 {
 	display: flex;
 	height: 454px;
 	justify-content: center;
+	max-width: 902px;
 	position: relative;
-	width: 902px;
+	width: 100%;
 
 	&:hover .nav-button {
 		opacity: 1;
@@ -741,12 +742,23 @@ body:not(.has-edit-mode-menu) .sticky-container-24 {
 	img {
 		border-radius: 8px;
 		max-height: 100%;
+		max-width: 100%;
+		object-fit: contain;
 	}
 }
 
 .marketplace-description-content {
 	font-size: 1.125rem;
 	line-height: 2rem;
+	overflow-wrap: anywhere;
+
+	iframe,
+	img,
+	table,
+	video {
+		height: auto;
+		max-width: 100%;
+	}
 }
 
 .marketplace-section-title {
@@ -975,7 +987,7 @@ body:not(.has-edit-mode-menu) .sticky-container-24 {
 	justify-content: flex-start;
 	margin-top: var(--spacer-4);
 	max-height: 86px;
-	max-width: 902px;
+	max-width: 100%;
 }
 
 .view-full-gallery {
