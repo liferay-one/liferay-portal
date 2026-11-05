@@ -155,6 +155,10 @@ public class UserAssignmentService {
 		_organizationService.addOrganizationUserAccountByEmailAddress(
 			userAccount.getEmailAddress(), organizationId);
 
+		if (_isOktaGroupOrganization(organizationId)) {
+			return;
+		}
+
 		_syncOrganizationUserAccountsToJSM(
 			_organizationService.getOrganization(organizationId), userId);
 	}
@@ -383,6 +387,10 @@ public class UserAssignmentService {
 		_organizationService.removeOrganizationUserAccountByEmailAddress(
 			userAccount.getEmailAddress(), organizationId);
 
+		if (_isOktaGroupOrganization(organizationId)) {
+			return;
+		}
+
 		_syncOrganizationRolesUnassignmentToJSM(organization, userAccount);
 
 		_syncOrganizationUserAccountsToJSM(organization, userId);
@@ -448,6 +456,22 @@ public class UserAssignmentService {
 		}
 
 		return false;
+	}
+
+	private boolean _isOktaGroupOrganization(long organizationId) {
+		try {
+			Map<Long, String> oktaGroupIds =
+				_organizationService.getOktaGroupIds();
+
+			return oktaGroupIds.containsKey(organizationId);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to get the organizations linked to Okta groups",
+				exception);
+
+			return false;
+		}
 	}
 
 	private void _sendPartnerAccountRoleEmail(

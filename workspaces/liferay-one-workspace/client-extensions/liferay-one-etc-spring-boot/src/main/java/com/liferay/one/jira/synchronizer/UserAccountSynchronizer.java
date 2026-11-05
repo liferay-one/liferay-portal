@@ -18,6 +18,7 @@ import com.liferay.one.jira.converter.PhoneConverter;
 import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
+import com.liferay.one.service.OrganizationService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
@@ -127,7 +128,7 @@ public class UserAccountSynchronizer {
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_TEAMS,
 			_jiraAssetService.fetchReferenceObjectIds(
-				_teamConverter, userAccountSyncModel.getOrganizationBriefs(),
+				_teamConverter, userAccountSyncModel.getJSMOrganizationBriefs(),
 				OrganizationBrief::getExternalReferenceCode));
 
 		_keyedLock.withLock(
@@ -162,7 +163,8 @@ public class UserAccountSynchronizer {
 	private UserAccountSyncModel _createUserAccountSyncModel(
 		UserAccount userAccount) {
 
-		return new UserAccountSyncModel(_projectMembershipService, userAccount);
+		return new UserAccountSyncModel(
+			_organizationService, _projectMembershipService, userAccount);
 	}
 
 	private List<String> _getAccountObjectIds(
@@ -207,9 +209,14 @@ public class UserAccountSynchronizer {
 	private void _syncOrganizationRoleAssignments(
 		UserAccountSyncModel userAccountSyncModel, Date startDate) {
 
-		for (OrganizationBrief organizationBrief :
-				userAccountSyncModel.getOrganizationBriefs()) {
+		List<OrganizationBrief> organizationBriefs =
+			userAccountSyncModel.getJSMOrganizationBriefs();
 
+		if (organizationBriefs == null) {
+			return;
+		}
+
+		for (OrganizationBrief organizationBrief : organizationBriefs) {
 			RoleBrief[] roleBriefs = organizationBrief.getRoleBriefs();
 
 			if (roleBriefs == null) {
@@ -261,7 +268,7 @@ public class UserAccountSynchronizer {
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_TEAMS,
 			_jiraAssetService.fetchReferenceObjectIds(
-				_teamConverter, userAccountSyncModel.getOrganizationBriefs(),
+				_teamConverter, userAccountSyncModel.getJSMOrganizationBriefs(),
 				OrganizationBrief::getExternalReferenceCode));
 		jiraAssetObject.setAttributeValue(
 			ContactConstants.ATTRIBUTE_NAME_PHONES,
@@ -296,6 +303,9 @@ public class UserAccountSynchronizer {
 
 	@Autowired
 	private KeyedLock _keyedLock;
+
+	@Autowired
+	private OrganizationService _organizationService;
 
 	@Autowired
 	private OrganizationUserAccountRoleSynchronizer

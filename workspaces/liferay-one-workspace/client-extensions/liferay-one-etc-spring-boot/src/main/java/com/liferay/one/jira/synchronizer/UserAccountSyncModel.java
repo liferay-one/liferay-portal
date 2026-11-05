@@ -12,6 +12,7 @@ import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccountContactInformation;
 import com.liferay.one.model.ProjectMembership;
+import com.liferay.one.service.OrganizationService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.util.MemoizedValue;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -19,6 +20,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -29,9 +31,11 @@ import org.apache.commons.logging.LogFactory;
 public class UserAccountSyncModel {
 
 	public UserAccountSyncModel(
+		OrganizationService organizationService,
 		ProjectMembershipService projectMembershipService,
 		UserAccount userAccount) {
 
+		_organizationService = organizationService;
 		_projectMembershipService = projectMembershipService;
 		_userAccount = userAccount;
 
@@ -45,6 +49,10 @@ public class UserAccountSyncModel {
 
 		_organizationBriefs = ListUtil.fromArray(
 			userAccount.getOrganizationBriefs());
+
+		_jsmOrganizationBriefs = new MemoizedValue<>(
+			"JSM organizations for user account " + externalReferenceCode, _log,
+			this::_toJSMOrganizationBriefs);
 		_roleBriefs = _toRoleBriefs();
 		_telephones = _toTelephones();
 	}
@@ -59,6 +67,10 @@ public class UserAccountSyncModel {
 
 	public String getExternalReferenceCode() {
 		return _userAccount.getExternalReferenceCode();
+	}
+
+	public List<OrganizationBrief> getJSMOrganizationBriefs() {
+		return _jsmOrganizationBriefs.get();
 	}
 
 	public List<OrganizationBrief> getOrganizationBriefs() {
@@ -95,6 +107,17 @@ public class UserAccountSyncModel {
 		}
 
 		return accountExternalReferenceCodes;
+	}
+
+	private List<OrganizationBrief> _toJSMOrganizationBriefs()
+		throws Exception {
+
+		Map<Long, String> oktaGroupIds = _organizationService.getOktaGroupIds();
+
+		return ListUtil.filter(
+			_organizationBriefs,
+			organizationBrief -> !oktaGroupIds.containsKey(
+				organizationBrief.getId()));
 	}
 
 	private List<RoleBrief> _toRoleBriefs() {
@@ -141,7 +164,9 @@ public class UserAccountSyncModel {
 
 	private final List<AccountBrief> _accountBriefs;
 	private final MemoizedValue<List<String>> _accountExternalReferenceCodes;
+	private final MemoizedValue<List<OrganizationBrief>> _jsmOrganizationBriefs;
 	private final List<OrganizationBrief> _organizationBriefs;
+	private final OrganizationService _organizationService;
 	private final ProjectMembershipService _projectMembershipService;
 	private final List<RoleBrief> _roleBriefs;
 	private final List<Phone> _telephones;
