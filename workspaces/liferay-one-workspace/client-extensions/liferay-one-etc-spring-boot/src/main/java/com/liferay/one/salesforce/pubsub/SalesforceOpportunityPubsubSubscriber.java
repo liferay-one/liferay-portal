@@ -585,7 +585,8 @@ public class SalesforceOpportunityPubsubSubscriber
 			}
 		}
 
-		int provisionedOrderItemCount = 0;
+		List<SalesforceOpportunityLineItem> skuSalesforceOpportunityLineItems =
+			new ArrayList<>();
 
 		for (SalesforceOpportunityLineItem
 				provisionableSalesforceOpportunityLineItem :
@@ -603,20 +604,32 @@ public class SalesforceOpportunityPubsubSubscriber
 				continue;
 			}
 
+			skuSalesforceOpportunityLineItems.add(
+				provisionableSalesforceOpportunityLineItem);
+		}
+
+		int provisionedOrderItemCount = 0;
+
+		if (!skuSalesforceOpportunityLineItems.isEmpty()) {
 			try {
-				_commerceOrderItemService.upsertOrderItem(
-					newOrder, provisionableSalesforceOpportunityLineItem,
+				_commerceOrderItemService.upsertOrderItems(
+					newOrder, skuSalesforceOpportunityLineItems,
 					salesforceOpportunity.getStageName());
 
-				provisionedOrderItemCount++;
+				provisionedOrderItemCount =
+					skuSalesforceOpportunityLineItems.size();
 			}
 			catch (Exception exception) {
-				String productName =
-					provisionableSalesforceOpportunityLineItem.getProductName();
+				for (SalesforceOpportunityLineItem
+						skuSalesforceOpportunityLineItem :
+							skuSalesforceOpportunityLineItems) {
 
-				_addWarning(
-					warningMessages, "Unable to provision line " + productName,
-					exception);
+					_addWarning(
+						warningMessages,
+						"Unable to provision line " +
+							skuSalesforceOpportunityLineItem.getProductName(),
+						exception);
+				}
 			}
 		}
 

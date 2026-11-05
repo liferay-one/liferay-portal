@@ -69,15 +69,9 @@ sequenceDiagram
         SB->>LR: PATCH effectiveEndDate on earlier order items of the same project
     end
     SB->>LR: upsert order by ERC = opportunity ID (custom fields include contractId, projectName, salesforceProjectId)
-    loop each provisionable line item with a known SKU
-        alt order item with this ERC exists
-            SB->>LR: PATCH order item (dates, customStatus, price)
-            LR-->>OA: onAfterUpdate (EntitlementUpdate)
-        else new line item
-            SB->>LR: PATCH order with orderItems array that adds the item (ERC = line item ID)
-            LR-->>OA: onAfterAdd (EntitlementGeneration)
-        end
-    end
+    SB->>LR: PATCH order once with every order item (a line item that comes again replaces its item, a new line item is added with ERC = line item ID, the other items are sent back unchanged)
+    LR-->>OA: onAfterUpdate (EntitlementUpdate) for each existing item
+    LR-->>OA: onAfterAdd (EntitlementGeneration) for each new item
     opt at least one item provisioned and order not completed
         SB->>LR: order status pending, then processing, then completed (payment not required)
     end
@@ -98,14 +92,14 @@ sequenceDiagram
 | Order `renewal`, `opportunityType`, `opportunityStageName`, `parentOpportunityId` | From the opportunity | `_getCustomFields` |
 | Order type | `CMP`, `DSR`, or `LDP` when all SKUs share one `solution-type` specification, and `AI_HUB` when an AI Hub plan SKU is the only type (AI Hub token and trial SKUs add no type), otherwise none | `_getOrderTypeExternalReferenceCode` (`CommerceOrderService.java:1633`) |
 | Order total | Sum of line item `TotalPrice`, or not set when the sum is negative | `_getTotal` (`CommerceOrderService.java:1525`) |
-| Order item ERC | Salesforce line item ID | `CommerceOrderItemService.upsertOrderItem` (`…/one/service/CommerceOrderItemService.java:91`) |
-| Order item SKU | `Product2Id`, which is the SKU ERC | `upsertOrderItem` |
+| Order item ERC | Salesforce line item ID | `CommerceOrderItemService.upsertOrderItems` (`…/one/service/CommerceOrderItemService.java`) |
+| Order item SKU | `Product2Id`, which is the SKU ERC | `upsertOrderItems` |
 | Order item `startDate` | Line item `ServiceDate` | `_getCustomFieldValues` |
 | Order item `endDate` | Line item end date | `_getCustomFieldValues` |
 | Order item `effectiveEndDate` | End date plus 30 days (`EFFECTIVE_END_DATE_GRACE`) | `_getCustomFieldValues`, `…/one/constants/CommerceOrderItemConstants.java` |
-| Order item `customStatus` | Closed Won → Approved. Closed, Closed Lost, Disqualified, Rejected → Canceled. Any other stage → On Hold. | `_stageNameCustomStatuses` (`CommerceOrderItemService.java:321`) |
+| Order item `customStatus` | Closed Won → Approved. Closed, Closed Lost, Disqualified, Rejected → Canceled. Any other stage → On Hold. | `_stageNameCustomStatuses` |
 
-On reprocessing, `upsertOrderItem` keeps a Canceled status and keeps a trimmed `effectiveEndDate` unless the new end date is earlier.
+On reprocessing, `upsertOrderItems` keeps a Canceled status and keeps a trimmed `effectiveEndDate` unless the new end date is earlier.
 
 ### Project Entitlements
 

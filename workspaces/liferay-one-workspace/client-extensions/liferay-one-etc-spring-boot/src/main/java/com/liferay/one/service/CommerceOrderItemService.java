@@ -25,12 +25,11 @@ import java.math.BigDecimal;
 import java.time.Instant;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -118,91 +117,47 @@ public class CommerceOrderItemService extends OneBaseService {
 		patchOrderItem(commerceOrderItemId, orderItem);
 	}
 
-	public OrderItem upsertOrderItem(
+	public void patchOrderItems(Order order, OrderItem[] orderItems)
+		throws Exception {
+
+		Order patchedOrder = new Order();
+
+		patchedOrder.setOrderItems(() -> orderItems);
+
+		OrderResource orderResource = _buildOrderResource();
+
+		Order updatedOrder = orderResource.patchOrder(
+			order.getId(), patchedOrder);
+
+		order.setOrderItems(updatedOrder::getOrderItems);
+	}
+
+	public void upsertOrderItems(
 			Order order,
-			SalesforceOpportunityLineItem salesforceOpportunityLineItem,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			String stageName)
 		throws Exception {
 
-		OrderItem orderItem = new OrderItem();
+		Map<String, OrderItem> orderItemsMap = new LinkedHashMap<>();
 
-		orderItem.setExternalReferenceCode(
-			salesforceOpportunityLineItem::getId);
-		orderItem.setSkuExternalReferenceCode(
-			salesforceOpportunityLineItem::getProduct2Id);
-
-		if (Validator.isNotNull(
-				salesforceOpportunityLineItem.getProductName())) {
-
-			Map<String, String> name = Map.of(
-				"en_US", salesforceOpportunityLineItem.getProductName());
-
-			orderItem.setName(() -> name);
+		for (OrderItem orderItem : order.getOrderItems()) {
+			orderItemsMap.put(orderItem.getExternalReferenceCode(), orderItem);
 		}
 
-		if (salesforceOpportunityLineItem.getQuantity() != null) {
-			BigDecimal quantity = BigDecimal.valueOf(
-				salesforceOpportunityLineItem.getQuantity());
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
 
-			orderItem.setQuantity(() -> quantity);
+			orderItemsMap.put(
+				salesforceOpportunityLineItem.getId(),
+				_toOrderItem(order, salesforceOpportunityLineItem, stageName));
 		}
 
-		if (salesforceOpportunityLineItem.getUnitPrice() != null) {
-			BigDecimal unitPrice = BigDecimal.valueOf(
-				salesforceOpportunityLineItem.getUnitPrice());
-
-			orderItem.setUnitPrice(() -> unitPrice);
-		}
-
-		if (salesforceOpportunityLineItem.getTotalPrice() != null) {
-			BigDecimal finalPrice = BigDecimal.valueOf(
-				salesforceOpportunityLineItem.getTotalPrice());
-
-			orderItem.setFinalPrice(() -> finalPrice);
-		}
-
-		if (Validator.isNotNull(
-				salesforceOpportunityLineItem.getMachineType())) {
-
-			String options = CommerceOrderItemUtil.toOptionsJSON(
-				"machinetype",
-				StringUtil.toLowerCase(
-					salesforceOpportunityLineItem.getMachineType(),
-					Locale.ROOT));
-
-			orderItem.setOptions(() -> options);
-		}
-
-		Map<String, Object> customFieldValues = _getCustomFieldValues(
-			salesforceOpportunityLineItem, stageName);
-
-		OrderItem existingOrderItem = CommerceOrderItemUtil.fetchOrderItem(
-			salesforceOpportunityLineItem.getId(), order);
-
-		if (existingOrderItem != null) {
-			if (CommerceOrderItemUtil.isCanceled(existingOrderItem)) {
-				customFieldValues.remove("customStatus");
-			}
-
-			if (!CommerceOrderItemUtil.isUpdateEffectiveEndDate(
-					existingOrderItem,
-					salesforceOpportunityLineItem.getEndDateInstant())) {
-
-				customFieldValues.remove("effectiveEndDate");
-			}
-		}
-
-		CustomField[] customFields = _toCustomFields(customFieldValues);
-
-		orderItem.setCustomFields(() -> customFields);
-
-		if (existingOrderItem != null) {
-			orderItem.setId(existingOrderItem::getId);
-
-			return _patchOrderItem(order, orderItem);
-		}
-
-		return _postOrderItem(order, orderItem);
+		patchOrderItems(
+			order,
+			orderItemsMap.values(
+			).toArray(
+				new OrderItem[0]
+			));
 	}
 
 	private OrderItemResource _buildOrderItemResource() {
@@ -294,70 +249,6 @@ public class CommerceOrderItemService extends OneBaseService {
 		return "On Hold";
 	}
 
-	private OrderItem _patchOrderItem(Order order, OrderItem orderItem)
-		throws Exception {
-
-		List<OrderItem> orderItems = new ArrayList<>();
-
-		for (OrderItem existingOrderItem : order.getOrderItems()) {
-			if (Objects.equals(
-					existingOrderItem.getExternalReferenceCode(),
-					orderItem.getExternalReferenceCode())) {
-
-				orderItems.add(orderItem);
-			}
-			else {
-				orderItems.add(existingOrderItem);
-			}
-		}
-
-		OrderItem[] patchedOrderItems = orderItems.toArray(new OrderItem[0]);
-
-		Order patchedOrder = new Order();
-
-		patchedOrder.setOrderItems(() -> patchedOrderItems);
-
-		OrderResource orderResource = _buildOrderResource();
-
-		Order updatedOrder = orderResource.patchOrder(
-			order.getId(), patchedOrder);
-
-		order.setOrderItems(updatedOrder::getOrderItems);
-
-		return CommerceOrderItemUtil.fetchOrderItem(
-			orderItem.getExternalReferenceCode(), updatedOrder);
-	}
-
-	private OrderItem _postOrderItem(Order order, OrderItem orderItem)
-		throws Exception {
-
-		List<OrderItem> orderItems = new ArrayList<>();
-
-		OrderItem[] existingOrderItems = order.getOrderItems();
-
-		if (existingOrderItems != null) {
-			Collections.addAll(orderItems, existingOrderItems);
-		}
-
-		orderItems.add(orderItem);
-
-		OrderItem[] patchedOrderItems = orderItems.toArray(new OrderItem[0]);
-
-		Order patchedOrder = new Order();
-
-		patchedOrder.setOrderItems(() -> patchedOrderItems);
-
-		OrderResource orderResource = _buildOrderResource();
-
-		Order updatedOrder = orderResource.patchOrder(
-			order.getId(), patchedOrder);
-
-		order.setOrderItems(updatedOrder::getOrderItems);
-
-		return CommerceOrderItemUtil.fetchOrderItem(
-			orderItem.getExternalReferenceCode(), updatedOrder);
-	}
-
 	private CustomField[] _toCustomFields(Map<String, ?> customFieldValues) {
 		CustomField[] customFields = new CustomField[customFieldValues.size()];
 
@@ -378,6 +269,90 @@ public class CommerceOrderItemService extends OneBaseService {
 		}
 
 		return customFields;
+	}
+
+	private OrderItem _toOrderItem(
+		Order order,
+		SalesforceOpportunityLineItem salesforceOpportunityLineItem,
+		String stageName) {
+
+		OrderItem orderItem = new OrderItem();
+
+		orderItem.setExternalReferenceCode(
+			salesforceOpportunityLineItem::getId);
+		orderItem.setSkuExternalReferenceCode(
+			salesforceOpportunityLineItem::getProduct2Id);
+
+		if (Validator.isNotNull(
+				salesforceOpportunityLineItem.getProductName())) {
+
+			Map<String, String> name = Map.of(
+				"en_US", salesforceOpportunityLineItem.getProductName());
+
+			orderItem.setName(() -> name);
+		}
+
+		if (salesforceOpportunityLineItem.getQuantity() != null) {
+			BigDecimal quantity = BigDecimal.valueOf(
+				salesforceOpportunityLineItem.getQuantity());
+
+			orderItem.setQuantity(() -> quantity);
+		}
+
+		if (salesforceOpportunityLineItem.getUnitPrice() != null) {
+			BigDecimal unitPrice = BigDecimal.valueOf(
+				salesforceOpportunityLineItem.getUnitPrice());
+
+			orderItem.setUnitPrice(() -> unitPrice);
+		}
+
+		if (salesforceOpportunityLineItem.getTotalPrice() != null) {
+			BigDecimal finalPrice = BigDecimal.valueOf(
+				salesforceOpportunityLineItem.getTotalPrice());
+
+			orderItem.setFinalPrice(() -> finalPrice);
+		}
+
+		if (Validator.isNotNull(
+				salesforceOpportunityLineItem.getMachineType())) {
+
+			String options = CommerceOrderItemUtil.toOptionsJSON(
+				"machinetype",
+				StringUtil.toLowerCase(
+					salesforceOpportunityLineItem.getMachineType(),
+					Locale.ROOT));
+
+			orderItem.setOptions(() -> options);
+		}
+
+		Map<String, Object> customFieldValues = _getCustomFieldValues(
+			salesforceOpportunityLineItem, stageName);
+
+		OrderItem existingOrderItem = CommerceOrderItemUtil.fetchOrderItem(
+			salesforceOpportunityLineItem.getId(), order);
+
+		if (existingOrderItem != null) {
+			if (CommerceOrderItemUtil.isCanceled(existingOrderItem)) {
+				customFieldValues.remove("customStatus");
+			}
+
+			if (!CommerceOrderItemUtil.isUpdateEffectiveEndDate(
+					existingOrderItem,
+					salesforceOpportunityLineItem.getEndDateInstant())) {
+
+				customFieldValues.remove("effectiveEndDate");
+			}
+		}
+
+		CustomField[] customFields = _toCustomFields(customFieldValues);
+
+		orderItem.setCustomFields(() -> customFields);
+
+		if (existingOrderItem != null) {
+			orderItem.setId(existingOrderItem::getId);
+		}
+
+		return orderItem;
 	}
 
 	private static final int _PAGE_SIZE = 500;
