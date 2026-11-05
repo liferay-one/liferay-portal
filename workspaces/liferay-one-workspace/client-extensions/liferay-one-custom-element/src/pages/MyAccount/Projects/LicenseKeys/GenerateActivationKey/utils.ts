@@ -282,7 +282,7 @@ export function getLicenseKeyFamilyRank(licenseKeyFamily: string): number {
 	return index === -1 ? LEADING_LICENSE_KEY_FAMILIES.length : index;
 }
 
-export function getLeadingProducts(
+export function getProjectProducts(
 	products: GenerateFormProduct[]
 ): GenerateFormProduct[] {
 	let leadingProduct: GenerateFormProduct | undefined;
@@ -303,8 +303,10 @@ export function getLeadingProducts(
 
 	return [
 		leadingProduct,
-		...products.filter((product) =>
-			STANDALONE_LICENSE_KEY_FAMILIES.includes(product.licenseKeyFamily)
+		...STANDALONE_LICENSE_KEY_FAMILIES.flatMap((licenseKeyFamily) =>
+			products.filter(
+				(product) => product.licenseKeyFamily === licenseKeyFamily
+			)
 		),
 	];
 }
@@ -325,7 +327,7 @@ export function getSelectableProducts(
 
 	const nonAppProducts = products.filter((product) => !product.app);
 
-	return project ? getLeadingProducts(nonAppProducts) : nonAppProducts;
+	return project ? getProjectProducts(nonAppProducts) : nonAppProducts;
 }
 
 export function hasAvailableActivations(keyType: GenerateFormKeyType): boolean {
