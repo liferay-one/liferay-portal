@@ -238,6 +238,22 @@ public class EnvironmentService extends OneBaseService {
 				escapeODataString(projectExternalReferenceCode), "')"));
 	}
 
+	public Environment putEnvironment(
+			String externalReferenceCode, JSONObject jsonObject)
+		throws Exception {
+
+		return new Environment(
+			new JSONObject(
+				put(
+					getAuthorization(), jsonObject.toString(),
+					UriComponentsBuilder.fromPath(
+						"/o/c/environments/by-external-reference-code" +
+							"/{externalReferenceCode}"
+					).buildAndExpand(
+						externalReferenceCode
+					).toUri())));
+	}
+
 	public void updateEnvironmentActivation(
 			String activationMode, String externalReferenceCode, long id,
 			String name, String publicKey)

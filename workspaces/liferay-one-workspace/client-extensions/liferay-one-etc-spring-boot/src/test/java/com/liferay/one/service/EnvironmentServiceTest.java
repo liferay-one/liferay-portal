@@ -11,6 +11,8 @@ import com.liferay.one.model.Environment;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 
+import java.net.URI;
+
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
@@ -91,6 +93,33 @@ public class EnvironmentServiceTest {
 		);
 	}
 
+	@Test
+	public void testPutEnvironmentPutsByExternalReferenceCode()
+		throws Exception {
+
+		TestEnvironmentService testEnvironmentService =
+			new TestEnvironmentService();
+
+		Environment environment = testEnvironmentService.putEnvironment(
+			"DSR-PRJCT-001",
+			new JSONObject(
+			).put(
+				"offering", EnvironmentConstants.OFFERING_DSR
+			));
+
+		Assertions.assertEquals(
+			"DSR-PRJCT-001", environment.getExternalReferenceCode());
+
+		JSONObject bodyJSONObject = new JSONObject(
+			testEnvironmentService._body);
+
+		Assertions.assertEquals("DSR", bodyJSONObject.getString("offering"));
+
+		Assertions.assertEquals(
+			"/o/c/environments/by-external-reference-code/DSR-PRJCT-001",
+			testEnvironmentService._uri.getPath());
+	}
+
 	private static final long _ACCOUNT_ENTRY_ID = 40001;
 
 	private static final long _CONTRACT_ID = 50001;
@@ -98,5 +127,25 @@ public class EnvironmentServiceTest {
 	private static final String _PROJECT_ERC = "PRJCT-001";
 
 	private EnvironmentService _environmentService;
+
+	private static class TestEnvironmentService extends EnvironmentService {
+
+		@Override
+		protected String getAuthorization() {
+			return "Bearer token";
+		}
+
+		@Override
+		protected String put(String authorization, String body, URI uri) {
+			_body = body;
+			_uri = uri;
+
+			return "{\"externalReferenceCode\": \"DSR-PRJCT-001\", \"id\": 7}";
+		}
+
+		private String _body;
+		private URI _uri;
+
+	}
 
 }
