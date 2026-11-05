@@ -97,7 +97,7 @@ public class CommerceOrderItemService extends OneBaseService {
 	}
 
 	public void patchOrderItemCustomFields(
-			Order order, Map<Long, Map<String, Object>> customFieldValuesMap)
+			Map<Long, Map<String, Object>> customFieldValuesMap, Order order)
 		throws Exception {
 
 		OrderItem[] orderItems = order.getOrderItems();
