@@ -23,6 +23,7 @@ export type UserProject = {
 	externalReferenceCode: string;
 	id: number;
 	liferayVersion?: string;
+	member?: boolean;
 	name: string;
 	unassigned?: boolean;
 };

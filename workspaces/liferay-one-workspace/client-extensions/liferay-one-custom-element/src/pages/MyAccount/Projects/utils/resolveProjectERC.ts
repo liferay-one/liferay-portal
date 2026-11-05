@@ -19,7 +19,9 @@ export function resolveProjectERC(
 		return cookieERC;
 	}
 
-	return projects[0]?.externalReferenceCode;
+	const memberProject = projects.find((project) => project.member);
+
+	return (memberProject ?? projects[0])?.externalReferenceCode;
 }
 
 export default resolveProjectERC;
