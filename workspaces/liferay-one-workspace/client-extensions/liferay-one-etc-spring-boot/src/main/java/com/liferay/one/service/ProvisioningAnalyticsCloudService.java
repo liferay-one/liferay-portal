@@ -354,6 +354,15 @@ public class ProvisioningAnalyticsCloudService {
 				customFields.get(
 					customFieldPrefix + "AnalyticsCloudProject"))) {
 
+			if (!ldp) {
+				_putDSREnvironment(
+					account,
+					new JSONObject(
+						customFields.get(
+							customFieldPrefix + "AnalyticsCloudProject")),
+					salesforceProject, warningMessages);
+			}
+
 			return;
 		}
 
