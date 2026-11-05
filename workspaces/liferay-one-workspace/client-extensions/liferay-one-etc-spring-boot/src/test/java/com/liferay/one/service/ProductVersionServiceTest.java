@@ -525,6 +525,14 @@ public class ProductVersionServiceTest {
 		}
 
 		@Override
+		protected <T> List<T> getAllProjectedItems(
+			String path, String fields, String filterString,
+			Function<JSONObject, T> function) {
+
+			return Collections.emptyList();
+		}
+
+		@Override
 		protected String getAuthorization() {
 			return "Bearer test";
 		}
