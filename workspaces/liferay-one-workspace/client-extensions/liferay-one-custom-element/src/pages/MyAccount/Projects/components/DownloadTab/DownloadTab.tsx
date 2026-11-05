@@ -14,17 +14,19 @@ import type {VirtualItem} from '~/types/orders';
 import type {DownloadProfile} from '../../utils/resolveDownloadProfile';
 
 type DownloadTabProps = {
+	freeTier?: boolean;
 	profile?: DownloadProfile;
 	virtualItems?: VirtualItem[];
 };
 
 export default function DownloadTab({
+	freeTier = false,
 	profile = 'app',
 	virtualItems = [],
 }: DownloadTabProps) {
 	const isBundle = profile === 'bundle';
 
-	const {items: productVersions} = useDXPProductVersions(isBundle);
+	const {items: productVersions} = useDXPProductVersions(isBundle, freeTier);
 
 	const items: DownloadItem[] = isBundle
 		? productVersions

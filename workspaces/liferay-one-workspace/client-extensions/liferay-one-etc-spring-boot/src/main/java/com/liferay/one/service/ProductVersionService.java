@@ -22,10 +22,12 @@ import java.time.Duration;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -297,6 +299,18 @@ public class ProductVersionService extends OneBaseService {
 		}
 	}
 
+	private Set<String> _getFreeTierExternalReferenceCodes(String productGroup)
+		throws Exception {
+
+		return new HashSet<>(
+			getAllProjectedItems(
+				"/o/c/productversions", "externalReferenceCode",
+				StringBundler.concat(
+					"(productGroup eq '", escapeODataString(productGroup),
+					"') and (freeTier eq true)"),
+				jsonObject -> jsonObject.getString("externalReferenceCode")));
+	}
+
 	private String _getMajorVersionType(String productGroupVersion) {
 		Matcher matcher = _quarterlyProductGroupVersionPattern.matcher(
 			productGroupVersion);
@@ -465,6 +479,9 @@ public class ProductVersionService extends OneBaseService {
 			return;
 		}
 
+		Set<String> freeTierExternalReferenceCodes =
+			_getFreeTierExternalReferenceCodes(productGroup);
+
 		int count = 0;
 
 		for (JSONObject productVersionJSONObject :
@@ -474,6 +491,10 @@ public class ProductVersionService extends OneBaseService {
 				"externalReferenceCode");
 			String version = productVersionJSONObject.getString(
 				"productVersion");
+
+			productVersionJSONObject.put(
+				"freeTier",
+				freeTierExternalReferenceCodes.contains(externalReferenceCode));
 
 			URI uri = UriComponentsBuilder.fromPath(
 				"/o/c/productversions/by-external-reference-code/" +
