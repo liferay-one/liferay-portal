@@ -114,6 +114,10 @@ public class OrganizationsRestController extends OneBaseRestController {
 		Set<String> oktaEmailAddresses = new HashSet<>();
 
 		for (OktaUser oktaUser : _oktaService.getGroupContacts(oktaGroupId)) {
+			if (oktaUser.isDeactivated()) {
+				continue;
+			}
+
 			String emailAddress = oktaUser.getEmail();
 
 			if (Validator.isNull(emailAddress)) {
