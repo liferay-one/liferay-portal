@@ -18,6 +18,7 @@ import com.liferay.one.jira.converter.TeamConverter;
 import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.service.JiraAssetService;
 import com.liferay.one.model.ProjectMembership;
+import com.liferay.one.service.OrganizationService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.function.UnsafeRunnable;
@@ -25,6 +26,8 @@ import com.liferay.petra.function.UnsafeRunnable;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 import org.json.JSONObject;
 
@@ -68,10 +71,12 @@ public class UserAccountSynchronizerTest {
 			null
 		);
 
+		_organizationService = Mockito.mock(OrganizationService.class);
 		_organizationUserAccountRoleSynchronizer = Mockito.mock(
 			OrganizationUserAccountRoleSynchronizer.class);
 		_projectMembershipService = Mockito.mock(
 			ProjectMembershipService.class);
+		_teamConverter = Mockito.mock(TeamConverter.class);
 
 		_jiraAssetObject = Mockito.mock(JiraAssetObject.class);
 
@@ -96,6 +101,9 @@ public class UserAccountSynchronizerTest {
 		ReflectionTestUtils.setField(
 			_userAccountSynchronizer, "_keyedLock", new KeyedLock());
 		ReflectionTestUtils.setField(
+			_userAccountSynchronizer, "_organizationService",
+			_organizationService);
+		ReflectionTestUtils.setField(
 			_userAccountSynchronizer,
 			"_organizationUserAccountRoleSynchronizer",
 			_organizationUserAccountRoleSynchronizer);
@@ -106,8 +114,7 @@ public class UserAccountSynchronizerTest {
 			_userAccountSynchronizer, "_projectMembershipService",
 			_projectMembershipService);
 		ReflectionTestUtils.setField(
-			_userAccountSynchronizer, "_teamConverter",
-			Mockito.mock(TeamConverter.class));
+			_userAccountSynchronizer, "_teamConverter", _teamConverter);
 	}
 
 	@Test
@@ -269,6 +276,42 @@ public class UserAccountSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncUserAccountOrganizationsSkipsOktaGroupOrganizations()
+		throws Exception {
+
+		_whenOktaGroupOrganization();
+
+		UserAccount userAccount = _createUserAccount();
+
+		userAccount.setOrganizationBriefs(
+			new OrganizationBrief[] {
+				_createOrganizationBrief(_OKTA_GROUP_ORGANIZATION_ID),
+				_createOrganizationBrief(_ORGANIZATION_ID)
+			});
+
+		_userAccountSynchronizer.syncUserAccountOrganizations(userAccount);
+
+		Mockito.verify(
+			_jiraAssetService
+		).fetchReferenceObjectIds(
+			Mockito.eq(_teamConverter),
+			Mockito.argThat(
+				(List<OrganizationBrief> organizationBriefs) -> {
+					if (organizationBriefs.size() != 1) {
+						return false;
+					}
+
+					OrganizationBrief organizationBrief =
+						organizationBriefs.get(0);
+
+					return Objects.equals(
+						_ORGANIZATION_ID, organizationBrief.getId());
+				}),
+			Mockito.any()
+		);
+	}
+
+	@Test
 	public void testSyncUserAccountOrganizationsUpsertsOrganizationReferences()
 		throws Exception {
 
@@ -286,6 +329,28 @@ public class UserAccountSynchronizerTest {
 			ContactConstants.ATTRIBUTE_NAME_CONTACT_ROLES,
 			() -> _userAccountSynchronizer.syncUserAccountRoles(
 				_createUserAccount()));
+	}
+
+	@Test
+	public void testSyncUserAccountSkipsRolesOfOktaGroupOrganizations()
+		throws Exception {
+
+		_whenOktaGroupOrganization();
+
+		UserAccount userAccount = _createUserAccountWithRoles();
+
+		OrganizationBrief[] organizationBriefs =
+			userAccount.getOrganizationBriefs();
+
+		organizationBriefs[0].setId(_OKTA_GROUP_ORGANIZATION_ID);
+
+		_userAccountSynchronizer.syncUserAccount(userAccount);
+
+		Mockito.verify(
+			_organizationUserAccountRoleSynchronizer, Mockito.never()
+		).syncAssignRole(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
+		);
 	}
 
 	@Test
@@ -367,6 +432,15 @@ public class UserAccountSynchronizerTest {
 		return accountBrief;
 	}
 
+	private OrganizationBrief _createOrganizationBrief(long id) {
+		OrganizationBrief organizationBrief = new OrganizationBrief();
+
+		organizationBrief.setExternalReferenceCode("organization-erc-" + id);
+		organizationBrief.setId(id);
+
+		return organizationBrief;
+	}
+
 	private UserAccount _createUserAccount() {
 		UserAccount userAccount = new UserAccount();
 
@@ -414,6 +488,15 @@ public class UserAccountSynchronizerTest {
 		);
 	}
 
+	private void _whenOktaGroupOrganization() throws Exception {
+		Mockito.when(
+			_organizationService.getOktaGroupIds()
+		).thenReturn(
+			Collections.singletonMap(
+				_OKTA_GROUP_ORGANIZATION_ID, "test-okta-group-id")
+		);
+	}
+
 	private void _whenProjectMembership() throws Exception {
 		Mockito.when(
 			_projectMembershipService.getProjectMembershipsByUserId(1L)
@@ -434,6 +517,10 @@ public class UserAccountSynchronizerTest {
 	private static final String _EXTERNAL_REFERENCE_CODE =
 		"test-external-reference-code";
 
+	private static final long _OKTA_GROUP_ORGANIZATION_ID = 1;
+
+	private static final long _ORGANIZATION_ID = 2;
+
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE =
 		"test-project-external-reference-code";
 
@@ -443,9 +530,11 @@ public class UserAccountSynchronizerTest {
 	private ContactConverter _contactConverter;
 	private JiraAssetObject _jiraAssetObject;
 	private JiraAssetService _jiraAssetService;
+	private OrganizationService _organizationService;
 	private OrganizationUserAccountRoleSynchronizer
 		_organizationUserAccountRoleSynchronizer;
 	private ProjectMembershipService _projectMembershipService;
+	private TeamConverter _teamConverter;
 	private UserAccountSynchronizer _userAccountSynchronizer;
 
 }

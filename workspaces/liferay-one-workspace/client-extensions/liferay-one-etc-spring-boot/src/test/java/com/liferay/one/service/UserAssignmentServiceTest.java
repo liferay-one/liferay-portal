@@ -575,6 +575,24 @@ public class UserAssignmentServiceTest {
 	}
 
 	@Test
+	public void testAssignOrganizationSkipsJSMForOktaGroupOrganization()
+		throws Exception {
+
+		_whenOktaGroupOrganization();
+
+		_userAssignmentService.assignOrganization(_ORGANIZATION_ID, _USER_ID);
+
+		Mockito.verify(
+			_organizationService
+		).addOrganizationUserAccountByEmailAddress(
+			_EMAIL_ADDRESS, _ORGANIZATION_ID
+		);
+
+		Mockito.verifyNoInteractions(
+			_organizationSynchronizer, _userAccountSynchronizer);
+	}
+
+	@Test
 	public void testAssignProjectRoleActivatesContactAndAddsAccountMembership()
 		throws Exception {
 
@@ -1118,6 +1136,35 @@ public class UserAssignmentServiceTest {
 	}
 
 	@Test
+	public void testUnassignOrganizationSkipsJSMForOktaGroupOrganization()
+		throws Exception {
+
+		OrganizationBrief organizationBrief = _addOrganizationBrief(
+			_ORGANIZATION_ID);
+
+		RoleBrief roleBrief = new RoleBrief();
+
+		roleBrief.setExternalReferenceCode(
+			_ORGANIZATION_ROLE_EXTERNAL_REFERENCE_CODE);
+
+		organizationBrief.setRoleBriefs(new RoleBrief[] {roleBrief});
+
+		_whenOktaGroupOrganization();
+
+		_userAssignmentService.unassignOrganization(_ORGANIZATION_ID, _USER_ID);
+
+		Mockito.verify(
+			_organizationService
+		).removeOrganizationUserAccountByEmailAddress(
+			_EMAIL_ADDRESS, _ORGANIZATION_ID
+		);
+
+		Mockito.verifyNoInteractions(
+			_organizationSynchronizer, _organizationUserAccountRoleSynchronizer,
+			_userAccountSynchronizer);
+	}
+
+	@Test
 	public void testUnassignOrganizationSkipsNonmember() throws Exception {
 		_userAssignmentService.unassignOrganization(_ORGANIZATION_ID, _USER_ID);
 
@@ -1390,6 +1437,14 @@ public class UserAssignmentServiceTest {
 			_roleService.getRole(_ORGANIZATION_ROLE_ID)
 		).thenReturn(
 			role
+		);
+	}
+
+	private void _whenOktaGroupOrganization() throws Exception {
+		Mockito.when(
+			_organizationService.getOktaGroupIds()
+		).thenReturn(
+			Map.of(_ORGANIZATION_ID, _OKTA_GROUP_ID)
 		);
 	}
 
