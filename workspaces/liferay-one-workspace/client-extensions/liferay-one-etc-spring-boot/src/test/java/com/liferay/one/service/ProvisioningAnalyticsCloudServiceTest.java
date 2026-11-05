@@ -54,6 +54,7 @@ public class ProvisioningAnalyticsCloudServiceTest {
 		_commerceOrderService = Mockito.mock(CommerceOrderService.class);
 		_commerceProductService = Mockito.mock(CommerceProductService.class);
 		_commerceSkuService = Mockito.mock(CommerceSkuService.class);
+		_environmentService = Mockito.mock(EnvironmentService.class);
 		_provisioningAnalyticsCloudService =
 			new ProvisioningAnalyticsCloudService();
 
@@ -70,6 +71,9 @@ public class ProvisioningAnalyticsCloudServiceTest {
 			_provisioningAnalyticsCloudService, "_commerceSkuService",
 			_commerceSkuService);
 		ReflectionTestUtils.setField(
+			_provisioningAnalyticsCloudService, "_environmentService",
+			_environmentService);
+		ReflectionTestUtils.setField(
 			_provisioningAnalyticsCloudService, "_keyedLock", new KeyedLock());
 
 		_whenFetchProduct("PRODUCT-DSR", 1L, "dsr");
@@ -80,6 +84,7 @@ public class ProvisioningAnalyticsCloudServiceTest {
 
 		_account.setExternalReferenceCode(
 			() -> _ACCOUNT_EXTERNAL_REFERENCE_CODE);
+		_account.setId(() -> 5L);
 		_account.setName(() -> "Acme Corporation");
 	}
 
@@ -97,6 +102,10 @@ public class ProvisioningAnalyticsCloudServiceTest {
 			new JSONObject(
 			).put(
 				"groupId", 42
+			).put(
+				"name", "acme-dsr"
+			).put(
+				"serverLocation", "europe-west2-ac2-c1"
 			)
 		);
 
@@ -136,6 +145,28 @@ public class ProvisioningAnalyticsCloudServiceTest {
 		Assertions.assertEquals(
 			"dsr.admin@acme.com",
 			analyticsCloudProjectJSONObject.getString("ownerEmailAddress"));
+
+		JSONObject environmentJSONObject = _captureDSREnvironment(
+			"DSR-PRJCT-1");
+
+		Assertions.assertEquals(
+			"active", environmentJSONObject.getString("activationStatus"));
+		Assertions.assertEquals(
+			"42", environmentJSONObject.getString("externalEnvironmentId"));
+		Assertions.assertEquals(
+			"DSR", environmentJSONObject.getString("offering"));
+		Assertions.assertEquals(
+			5L,
+			environmentJSONObject.getLong(
+				"r_accountEntryToEnvironment_accountEntryId"));
+		Assertions.assertEquals(
+			"PRJCT-1",
+			environmentJSONObject.getString(
+				"r_projectToEnvironment_c_projectERC"));
+		Assertions.assertEquals(
+			"europe-west2-ac2-c1", environmentJSONObject.getString("region"));
+		Assertions.assertEquals(
+			"acme-dsr", environmentJSONObject.getString("workspaceName"));
 	}
 
 	@Test
@@ -237,6 +268,8 @@ public class ProvisioningAnalyticsCloudServiceTest {
 
 		Assertions.assertEquals(
 			"acme-ldp", customFields.get("ldpWorkspaceName"));
+
+		Mockito.verifyNoInteractions(_environmentService);
 	}
 
 	@Test
@@ -408,6 +441,15 @@ public class ProvisioningAnalyticsCloudServiceTest {
 		Assertions.assertNotNull(customFields.get("dsrAnalyticsCloudProject"));
 		Assertions.assertEquals(
 			"Existing Sales Room", customFields.get("dsrWorkspaceName"));
+
+		JSONObject environmentJSONObject = _captureDSREnvironment(
+			"DSR-" + _ACCOUNT_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(
+			"Existing Sales Room",
+			environmentJSONObject.getString("workspaceName"));
+		Assertions.assertFalse(
+			environmentJSONObject.has("r_projectToEnvironment_c_projectERC"));
 	}
 
 	@Test
@@ -438,6 +480,49 @@ public class ProvisioningAnalyticsCloudServiceTest {
 			new ArrayList<>());
 
 		Mockito.verifyNoInteractions(_analyticsCloudService);
+	}
+
+	@Test
+	public void testProvisionAnalyticsCloudProjectWarnsWhenDSREnvironmentFails()
+		throws Exception {
+
+		_whenFetchCommerceOrder(null, "DSR");
+
+		Mockito.when(
+			_analyticsCloudService.getAnalyticsCloudProjectJSONObject(
+				"", _ACCOUNT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"groupId", 7
+			)
+		);
+
+		Mockito.when(
+			_environmentService.putEnvironment(
+				ArgumentMatchers.anyString(), ArgumentMatchers.any())
+		).thenThrow(
+			new IllegalStateException("DXP is unavailable")
+		);
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
+			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(), null,
+			Collections.emptyList(), warningMessages);
+
+		Assertions.assertEquals(
+			List.of(
+				"Unable to record the Digital Sales Room environment DSR-" +
+					_ACCOUNT_EXTERNAL_REFERENCE_CODE),
+			warningMessages);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			Mockito.eq(_ORDER_ID), ArgumentMatchers.any()
+		);
 	}
 
 	@Test
@@ -497,6 +582,21 @@ public class ProvisioningAnalyticsCloudServiceTest {
 		).patchOrderCustomFields(
 			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
 		);
+	}
+
+	private JSONObject _captureDSREnvironment(String externalReferenceCode)
+		throws Exception {
+
+		ArgumentCaptor<JSONObject> argumentCaptor = ArgumentCaptor.forClass(
+			JSONObject.class);
+
+		Mockito.verify(
+			_environmentService
+		).putEnvironment(
+			Mockito.eq(externalReferenceCode), argumentCaptor.capture()
+		);
+
+		return argumentCaptor.getValue();
 	}
 
 	private Map<String, ?> _capturePatchedCustomFields() throws Exception {
@@ -642,6 +742,7 @@ public class ProvisioningAnalyticsCloudServiceTest {
 	private CommerceOrderService _commerceOrderService;
 	private CommerceProductService _commerceProductService;
 	private CommerceSkuService _commerceSkuService;
+	private EnvironmentService _environmentService;
 	private ProvisioningAnalyticsCloudService
 		_provisioningAnalyticsCloudService;
 
