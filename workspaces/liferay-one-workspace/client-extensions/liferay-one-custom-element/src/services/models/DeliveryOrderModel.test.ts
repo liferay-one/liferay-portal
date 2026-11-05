@@ -20,8 +20,8 @@ describe('[CLIENT-MODELS-DELIVERYORDERMODEL] DeliveryOrderModel', () => {
 		['DXP_APP', true],
 		['LOW_CODE_CONFIGURATION', true],
 		['OTHER', true],
-		['CLOUD_APP', true],
-		['CLOUDAPP', true],
+		['CLOUD_APP', false],
+		['CLOUDAPP', false],
 		['AI_HUB', false],
 	])('allows download for the %s order type: %s', (orderType, expected) => {
 		expect(

@@ -135,7 +135,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 		expect(config.utilizationProfile).toBeUndefined();
 	});
 
-	it('shows activation and download tabs for a cloud application', () => {
+	it('shows the activation tab and no download tab for a cloud application', () => {
 		const config = resolveProductTabConfig({
 			hasActiveEntitlement: false,
 			hasActiveExperienceOffering: false,
@@ -144,13 +144,8 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 		});
 
 		expect(config.activationProfile).toBe('app-provisioning');
-		expect(config.downloadProfile).toBe('app');
-		expect(config.tabKeys).toEqual([
-			'details',
-			'activation',
-			'download',
-			'orders',
-		]);
+		expect(config.downloadProfile).toBeUndefined();
+		expect(config.tabKeys).toEqual(['details', 'activation', 'orders']);
 	});
 
 	it('shows help and support for an application with support specifications', () => {
