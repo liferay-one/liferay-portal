@@ -34,6 +34,19 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEDEFAULTPROJECT] resolveDefaultProject',
 		expect(resolveDefaultProject(projects)).toBe(projects[0]);
 	});
 
+	it('returns the first project the user is a member of when the last project is unknown or absent', () => {
+		const accountProjects = [
+			{externalReferenceCode: 'PRJCT-1', member: false},
+			{externalReferenceCode: 'PRJCT-2', member: true},
+		] as UserProject[];
+
+		expect(resolveDefaultProject(accountProjects)).toBe(accountProjects[1]);
+
+		localStorage.setItem(LAST_PROJECT_STORAGE_KEY, 'PRJCT-1');
+
+		expect(resolveDefaultProject(accountProjects)).toBe(accountProjects[0]);
+	});
+
 	it('returns undefined for an empty list', () => {
 		expect(resolveDefaultProject([])).toBeUndefined();
 	});

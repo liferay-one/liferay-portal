@@ -25,6 +25,17 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPROJECTERC] resolveProjectERC', () => {
 		expect(resolveProjectERC(projects)).toBe('PRJCT-1');
 	});
 
+	it('returns the first project the user is a member of when the cookie project is absent', () => {
+		const accountProjects = [
+			{externalReferenceCode: 'PRJCT-1', member: false},
+			{externalReferenceCode: 'PRJCT-2', member: true},
+		] as UserProject[];
+
+		expect(resolveProjectERC(accountProjects)).toBe('PRJCT-2');
+		expect(resolveProjectERC(accountProjects, 'PRJCT-9')).toBe('PRJCT-2');
+		expect(resolveProjectERC(accountProjects, 'PRJCT-1')).toBe('PRJCT-1');
+	});
+
 	it('returns undefined without projects', () => {
 		expect(resolveProjectERC([], 'PRJCT-1')).toBeUndefined();
 	});
