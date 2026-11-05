@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
 import com.liferay.one.util.HTTPTimeoutUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.nio.charset.StandardCharsets;
@@ -127,7 +128,12 @@ public class AnalyticsCloudService extends BaseService {
 			getAnalyticsCloudContextJSONObject(analyticsCloudEnvironment);
 
 		return get(
-			getAuthorization(analyticsCloudContextJSONObject),
+			HashMapBuilder.put(
+				HttpHeaders.ACCEPT, MediaType.TEXT_PLAIN_VALUE
+			).put(
+				HttpHeaders.AUTHORIZATION,
+				getAuthorization(analyticsCloudContextJSONObject)
+			).build(),
 			UriComponentsBuilder.fromUriString(
 				analyticsCloudContextJSONObject.getString("url")
 			).path(
