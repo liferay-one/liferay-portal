@@ -163,7 +163,7 @@ export function canViewAllAccountProjects(
 	return Boolean(
 		userAccountModel?.isAccountAdministrator ||
 			userAccountModel?.isAccountMember ||
-			userAccountModel?.canManageAllAccounts ||
+			userAccountModel?.canViewAllAccounts ||
 			PARTNER_ACCOUNT_ROLES.some((roleName) =>
 				userAccountModel?.hasAccountRoleName(roleName)
 			)
