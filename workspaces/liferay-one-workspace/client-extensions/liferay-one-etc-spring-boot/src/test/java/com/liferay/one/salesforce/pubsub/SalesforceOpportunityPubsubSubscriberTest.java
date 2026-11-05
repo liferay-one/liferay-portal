@@ -131,17 +131,6 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			newOrder
 		);
 
-		OrderItem upsertedOrderItem = new OrderItem();
-
-		upsertedOrderItem.setId(_ORDER_ITEM_ID);
-
-		Mockito.when(
-			_commerceOrderItemService.upsertOrderItem(
-				Mockito.any(), Mockito.any(), Mockito.any())
-		).thenReturn(
-			upsertedOrderItem
-		);
-
 		ReflectionTestUtils.setField(
 			_subscriber, "_accountService", _accountService);
 		ReflectionTestUtils.setField(
@@ -410,8 +399,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		inOrder.verify(
 			_commerceOrderItemService
-		).upsertOrderItem(
-			Mockito.any(), Mockito.any(), Mockito.any()
+		).upsertOrderItems(
+			Mockito.any(), Mockito.anyList(), Mockito.any()
 		);
 
 		inOrder.verify(
@@ -1130,8 +1119,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		Mockito.verify(
 			_commerceOrderItemService
-		).upsertOrderItem(
-			Mockito.any(), Mockito.any(), Mockito.any()
+		).upsertOrderItems(
+			Mockito.any(), Mockito.anyList(), Mockito.any()
 		);
 
 		Mockito.verify(
@@ -1207,10 +1196,13 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		);
 
 		Mockito.verify(
-			_commerceOrderItemService, Mockito.times(3)
-		).upsertOrderItem(
+			_commerceOrderItemService, Mockito.times(1)
+		).upsertOrderItems(
 			Mockito.argThat(order -> order.getId() == _NEW_ORDER_ID),
-			Mockito.any(), Mockito.any()
+			Mockito.argThat(
+				salesforceOpportunityLineItems ->
+					salesforceOpportunityLineItems.size() == 3),
+			Mockito.any()
 		);
 
 		Mockito.verify(
@@ -1268,8 +1260,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
-		).upsertOrderItem(
-			Mockito.any(), Mockito.any(), Mockito.any()
+		).upsertOrderItems(
+			Mockito.any(), Mockito.anyList(), Mockito.any()
 		);
 
 		Mockito.verify(
@@ -1583,8 +1575,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
-		).upsertOrderItem(
-			Mockito.any(), Mockito.any(), Mockito.any()
+		).upsertOrderItems(
+			Mockito.any(), Mockito.anyList(), Mockito.any()
 		);
 
 		Mockito.verify(
@@ -2011,21 +2003,25 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(
 			Order.class);
-		ArgumentCaptor<SalesforceOpportunityLineItem>
-			salesforceOpportunityLineItemArgumentCaptor =
-				ArgumentCaptor.forClass(SalesforceOpportunityLineItem.class);
+		ArgumentCaptor<List<SalesforceOpportunityLineItem>>
+			salesforceOpportunityLineItemsArgumentCaptor =
+				ArgumentCaptor.forClass(List.class);
 
 		Mockito.verify(
 			_commerceOrderItemService
-		).upsertOrderItem(
+		).upsertOrderItems(
 			orderArgumentCaptor.capture(),
-			salesforceOpportunityLineItemArgumentCaptor.capture(), Mockito.any()
+			salesforceOpportunityLineItemsArgumentCaptor.capture(),
+			Mockito.any()
 		);
 
 		Order capturedOrder = orderArgumentCaptor.getValue();
 
 		SalesforceOpportunityLineItem capturedSalesforceOpportunityLineItem =
-			salesforceOpportunityLineItemArgumentCaptor.getValue();
+			salesforceOpportunityLineItemsArgumentCaptor.getValue(
+			).get(
+				0
+			);
 
 		Assertions.assertEquals(
 			existingOrderItem.getExternalReferenceCode(),
@@ -2075,6 +2071,65 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		);
 
 		Assertions.assertEquals("SALES-REP-1", soldByArgumentCaptor.getValue());
+	}
+
+	@Test
+	public void testReceiveUpsertsLineItemsInOneCall() throws Exception {
+		Mockito.when(
+			_commerceSkuService.fetchSku("PROD-2")
+		).thenReturn(
+			null
+		);
+
+		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
+
+		JSONArray opportunityLineItemsJSONArray = recordJSONObject.getJSONArray(
+			"opportunityLineItems");
+
+		opportunityLineItemsJSONArray.put(
+			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+				"USD", null, "LINE-2", "PROD-2", "Gadget", "Subscription", 1,
+				null));
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		ArgumentCaptor<List<SalesforceOpportunityLineItem>>
+			salesforceOpportunityLineItemsArgumentCaptor =
+				ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.times(1)
+		).upsertOrderItems(
+			Mockito.any(),
+			salesforceOpportunityLineItemsArgumentCaptor.capture(),
+			Mockito.any()
+		);
+
+		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems =
+			salesforceOpportunityLineItemsArgumentCaptor.getValue();
+
+		Assertions.assertEquals(1, salesforceOpportunityLineItems.size());
+
+		SalesforceOpportunityLineItem salesforceOpportunityLineItem =
+			salesforceOpportunityLineItems.get(0);
+
+		Assertions.assertEquals(
+			"LINE-1", salesforceOpportunityLineItem.getId());
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertTrue(
+			_containsSubstring(
+				"Unable to find SKU for Salesforce product PROD-2",
+				warningMessagesArgumentCaptor.getValue()));
 	}
 
 	@Test
@@ -2233,15 +2288,15 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
-	public void testReceiveWarnsAndContinuesWhenUpsertOrderItemThrows()
+	public void testReceiveWarnsAndContinuesWhenUpsertOrderItemsThrows()
 		throws Exception {
 
 		Mockito.doThrow(
 			new RuntimeException("Unable to upsert order item")
 		).when(
 			_commerceOrderItemService
-		).upsertOrderItem(
-			Mockito.any(), Mockito.any(), Mockito.any()
+		).upsertOrderItems(
+			Mockito.any(), Mockito.anyList(), Mockito.any()
 		);
 
 		Assertions.assertDoesNotThrow(
@@ -2268,6 +2323,54 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_containsSubstring(
 				"Unable to provision line",
 				warningMessagesArgumentCaptor.getValue()));
+	}
+
+	@Test
+	public void testReceiveWarnsForEveryLineWhenUpsertFails() throws Exception {
+		Mockito.doThrow(
+			new RuntimeException("Unable to upsert order items")
+		).when(
+			_commerceOrderItemService
+		).upsertOrderItems(
+			Mockito.any(), Mockito.anyList(), Mockito.any()
+		);
+
+		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
+
+		JSONArray opportunityLineItemsJSONArray = recordJSONObject.getJSONArray(
+			"opportunityLineItems");
+
+		opportunityLineItemsJSONArray.put(
+			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+				"USD", null, "LINE-2", "PROD-2", "Gadget", "Subscription", 1,
+				null));
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			Mockito.anyLong(), Mockito.anyInt()
+		);
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		List<String> warningMessages = warningMessagesArgumentCaptor.getValue();
+
+		Assertions.assertTrue(
+			_containsSubstring(
+				"Unable to provision line Widget", warningMessages));
+		Assertions.assertTrue(
+			_containsSubstring(
+				"Unable to provision line Gadget", warningMessages));
 	}
 
 	@Test
@@ -2832,8 +2935,6 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	private static final long _NEW_ORDER_ID = 4000L;
 
 	private static final String _OPPORTUNITY_ID = "OPP-1";
-
-	private static final long _ORDER_ITEM_ID = 3000L;
 
 	private static final String _PARENT_OPPORTUNITY_ID = "OPP-PARENT";
 
