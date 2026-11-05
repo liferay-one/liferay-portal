@@ -27,7 +27,15 @@ describe('[MOD-BUSINESSEVENTS-SORTLIFERAYVERSIONS] sortLiferayVersions', () => {
 		).toEqual(['DXP 7.4 U92', 'DXP 7.4 U10']);
 	});
 
-	it('treats non numeric parts as zero', () => {
+	it('ignores words without digits, so a product name prefix does not change the order', () => {
+		expect(
+			sortLiferayVersions(
+				toOptions(['7.2', 'Liferay DXP 2025.Q1', 'DXP 7.4', '7.3'])
+			).map(({label}) => label)
+		).toEqual(['Liferay DXP 2025.Q1', 'DXP 7.4', '7.3', '7.2']);
+	});
+
+	it('orders a label without digits last', () => {
 		expect(
 			sortLiferayVersions(toOptions(['Other', '1.0'])).map(
 				({label}) => label
