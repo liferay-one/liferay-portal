@@ -50,12 +50,14 @@ function parseQuarterlyVersion(productVersion: string) {
 		: null;
 }
 
-export function useDXPProductVersions(enabled = true) {
+export function useDXPProductVersions(enabled = true, freeTier = false) {
 	const {data, isLoading: loading} = useFetch<
 		APIResponse<ProductVersionNode>
 	>(enabled ? '/o/c/productversions' : null, {
 		params: {
-			filter: FILTER,
+			filter: freeTier
+				? `${FILTER} and ${SearchBuilder.eq('freeTier', true)}`
+				: FILTER,
 			pageSize: -1,
 		},
 	});

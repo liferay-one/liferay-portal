@@ -1080,6 +1080,7 @@ Object name `ProductVersion`. REST `/o/c/productversions`. Title field `productV
 | Field | Type | Notes |
 | --- | --- | --- |
 | `bundleURL` | Text | |
+| `freeTier` | Boolean | |
 | `productGroup` | Text | required |
 | `productGroupVersion` | Text | required |
 | `productVersion` | Text | required |
