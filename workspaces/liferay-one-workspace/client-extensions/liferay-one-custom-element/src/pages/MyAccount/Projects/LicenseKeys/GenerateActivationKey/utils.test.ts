@@ -17,9 +17,9 @@ import {
 	getComplimentaryPurpose,
 	getEnvironmentTypeRank,
 	getGenerateButtonLabel,
-	getLeadingProducts,
 	getLicenseKeyFamilyLabel,
 	getLicenseKeyFamilyRank,
+	getProjectProducts,
 	getSelectableProducts,
 	getStepAfterSubscription,
 	getStepBeforeEnvironment,
@@ -346,13 +346,13 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 		});
 	});
 
-	describe('getLeadingProducts', () => {
+	describe('getProjectProducts', () => {
 		it('keeps only the highest ranked leading product', () => {
 			const portal = toProduct('PRDCT-PORTAL', 'Portal');
 			const dxp = toProduct('PRDCT-DXP', 'DXP');
 
 			expect(
-				getLeadingProducts([
+				getProjectProducts([
 					toProduct('PRDCT-ADDON', 'Add-On'),
 					portal,
 					dxp,
@@ -366,11 +366,11 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			const dxp = toProduct('PRDCT-DXP', 'DXP');
 
 			expect(
-				getLeadingProducts([
-					cmp,
+				getProjectProducts([
+					dsr,
 					toProduct('PRDCT-ADDON', 'Add-On'),
 					dxp,
-					dsr,
+					cmp,
 				])
 			).toEqual([dxp, cmp, dsr]);
 		});
@@ -381,7 +381,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 				toProduct('PRDCT-COMMERCE', 'CMP'),
 			];
 
-			expect(getLeadingProducts(products)).toEqual(products);
+			expect(getProjectProducts(products)).toEqual(products);
 		});
 	});
 
