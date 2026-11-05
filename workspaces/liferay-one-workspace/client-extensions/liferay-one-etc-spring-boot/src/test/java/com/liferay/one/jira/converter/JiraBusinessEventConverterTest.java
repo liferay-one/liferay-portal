@@ -40,7 +40,7 @@ public class JiraBusinessEventConverterTest {
 			JiraBusinessEventConstants.ATTRIBUTE_NAME_ACCOUNT);
 		_assertAttributeValue(
 			"2026-03-01", jiraAssetObject,
-			JiraBusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_EVENT_DATE);
+			JiraBusinessEventConstants.ATTRIBUTE_NAME_ACTUAL_GO_LIVE_DATE);
 		_assertAttributeValue(
 			"LRP-1", jiraAssetObject,
 			JiraBusinessEventConstants.ATTRIBUTE_NAME_ASSOCIATED_TICKETS);
@@ -97,6 +97,16 @@ public class JiraBusinessEventConverterTest {
 	}
 
 	@Test
+	public void testToAssetObjectWritesActualGoLiveDate() {
+		JiraAssetObject jiraAssetObject =
+			_jiraBusinessEventConverter.toAssetObject(
+				"ACCOUNT-1", _createJiraBusinessEvent());
+
+		_assertAttributeValue(
+			"2026-03-01", jiraAssetObject, "Actual Go-Live Date");
+	}
+
+	@Test
 	public void testToJiraBusinessEventFromAssetObjectJSONObject() {
 		JiraBusinessEvent jiraBusinessEvent =
 			_jiraBusinessEventConverter.toJiraBusinessEvent(
@@ -107,7 +117,7 @@ public class JiraBusinessEventConverterTest {
 					).put(
 						_createAttributeJSONObject(
 							JiraBusinessEventConstants.
-								ATTRIBUTE_NAME_ACTUAL_EVENT_DATE,
+								ATTRIBUTE_NAME_ACTUAL_GO_LIVE_DATE,
 							"2026-03-01", "Mar 1, 2026")
 					).put(
 						_createAttributeJSONObject(
@@ -208,6 +218,27 @@ public class JiraBusinessEventConverterTest {
 		Assertions.assertEquals(
 			"PROJECT_ERC", jiraBusinessEvent.getProjectExternalReferenceCode());
 		Assertions.assertEquals("UTC", jiraBusinessEvent.getTimeZoneName());
+	}
+
+	@Test
+	public void testToJiraBusinessEventReadsActualGoLiveDate() {
+		JiraBusinessEvent jiraBusinessEvent =
+			_jiraBusinessEventConverter.toJiraBusinessEvent(
+				new JSONObject(
+				).put(
+					"attributes",
+					new JSONArray(
+					).put(
+						_createAttributeJSONObject(
+							"Actual Go-Live Date", "2026-03-01", "Mar 1, 2026")
+					)
+				).put(
+					"id", "99"
+				),
+				"PROJECT_ERC");
+
+		Assertions.assertEquals(
+			"2026-03-01", jiraBusinessEvent.getActualEventDate());
 	}
 
 	private void _assertAttributeValue(
