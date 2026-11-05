@@ -5,6 +5,7 @@
 
 import {describe, expect, it} from 'vitest';
 
+import clientExtensionYAML from '../../client-extension.yaml?raw';
 import {baseAttributes, getAttributes} from './attributeUtils';
 
 function createElement(attributes: Record<string, string>) {
@@ -100,5 +101,15 @@ describe('[MOD-ATTRIBUTEUTILS] attributeUtils', () => {
 			getAttributes(createElement({useSiteTaxonomyVocabularyQuery: '1'}))
 				.useSiteTaxonomyVocabularyQuery
 		).toBe(false);
+	});
+
+	it('sets a positive annual target for every KPI in client-extension.yaml', () => {
+		for (const key of Object.keys(getAttributes(createElement({})).kpi)) {
+			const target = clientExtensionYAML.match(
+				new RegExp(`^\\s+${key}: (\\d+)$`, 'm')
+			)?.[1];
+
+			expect(Number(target), key).toBeGreaterThan(0);
+		}
 	});
 });
