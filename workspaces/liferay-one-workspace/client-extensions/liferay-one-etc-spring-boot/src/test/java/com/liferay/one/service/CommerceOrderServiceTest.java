@@ -1019,6 +1019,78 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testCreateAIHubOpportunityContinuesWhenStampingFails()
+		throws Exception {
+
+		Order order = _createAIHubOrder(
+			"{\"salesforceProjectId\": \"a1tTEST\"}",
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		order.setOrderItems(
+			new OrderItem[] {
+				_createOrderItem(null, 1L, "SKU-PLAN"),
+				_createOrderItem(null, 2L, "SKU-TOKENS")
+			});
+
+		_whenFetchCommerceOrder(order);
+
+		JSONArray lineItemsJSONArray = new JSONArray(
+		).put(
+			new JSONObject(
+			).put(
+				"id", "00k-PLAN"
+			).put(
+				"productId", "SKU-PLAN"
+			)
+		).put(
+			new JSONObject(
+			).put(
+				"id", "00k-TOKENS"
+			).put(
+				"productId", "SKU-TOKENS"
+			)
+		);
+
+		_whenPostSalesforceOpportunity(lineItemsJSONArray, "006TEST");
+
+		Mockito.doThrow(
+			new Exception()
+		).when(
+			_commerceOrderItemService
+		).patchOrderItems(
+			ArgumentMatchers.eq(order), ArgumentMatchers.any()
+		);
+
+		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItems(
+			ArgumentMatchers.eq(order), ArgumentMatchers.any()
+		);
+
+		ArgumentCaptor<Map<String, Object>> mapArgumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).updateOrder(
+			mapArgumentCaptor.capture(), ArgumentMatchers.eq(_ORDER_ID),
+			ArgumentMatchers.eq(CommerceOrderConstants.ORDER_STATUS_PROCESSING)
+		);
+
+		Map<String, Object> customFields = mapArgumentCaptor.getValue();
+
+		String orderMetadata = (String)customFields.get("order-metadata");
+
+		JSONObject orderMetadataJSONObject = new JSONObject(orderMetadata);
+
+		Assertions.assertEquals(
+			"006TEST",
+			orderMetadataJSONObject.getString("salesforceOpportunityId"));
+	}
+
+	@Test
 	public void testCreateAIHubOpportunityCreatesOpportunity()
 		throws Exception {
 
@@ -1218,7 +1290,7 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
-		).patchOrderItem(
+		).patchOrderItems(
 			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 
@@ -1334,7 +1406,7 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
-		).patchOrderItem(
+		).patchOrderItems(
 			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 	}
@@ -1375,7 +1447,7 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
-		).patchOrderItem(
+		).patchOrderItems(
 			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 	}
@@ -1412,7 +1484,7 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
-		).patchOrderItem(
+		).patchOrderItems(
 			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 	}
@@ -1442,7 +1514,7 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
-		).patchOrderItem(
+		).patchOrderItems(
 			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 	}
@@ -1482,125 +1554,30 @@ public class CommerceOrderServiceTest {
 
 		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
 
-		ArgumentCaptor<OrderItem> planOrderItemArgumentCaptor =
-			ArgumentCaptor.forClass(OrderItem.class);
+		ArgumentCaptor<OrderItem[]> orderItemsArgumentCaptor =
+			ArgumentCaptor.forClass(OrderItem[].class);
 
 		Mockito.verify(
 			_commerceOrderItemService
-		).patchOrderItem(
-			ArgumentMatchers.eq(1L), planOrderItemArgumentCaptor.capture()
+		).patchOrderItems(
+			ArgumentMatchers.eq(order), orderItemsArgumentCaptor.capture()
 		);
 
-		Assertions.assertEquals(
-			"00k-PLAN",
-			planOrderItemArgumentCaptor.getValue(
-			).getExternalReferenceCode());
+		OrderItem[] orderItems = orderItemsArgumentCaptor.getValue();
 
-		ArgumentCaptor<OrderItem> tokensOrderItemArgumentCaptor =
-			ArgumentCaptor.forClass(OrderItem.class);
+		Assertions.assertEquals(2, orderItems.length);
+		Assertions.assertEquals(
+			"00k-PLAN", orderItems[0].getExternalReferenceCode());
+		Assertions.assertEquals(1L, orderItems[0].getId());
+		Assertions.assertEquals(
+			"00k-TOKENS", orderItems[1].getExternalReferenceCode());
+		Assertions.assertEquals(2L, orderItems[1].getId());
 
 		Mockito.verify(
-			_commerceOrderItemService
-		).patchOrderItem(
-			ArgumentMatchers.eq(2L), tokensOrderItemArgumentCaptor.capture()
-		);
-
-		Assertions.assertEquals(
-			"00k-TOKENS",
-			tokensOrderItemArgumentCaptor.getValue(
-			).getExternalReferenceCode());
-
-		Mockito.verify(
-			_commerceOrderItemService, Mockito.times(2)
+			_commerceOrderItemService, Mockito.never()
 		).patchOrderItem(
 			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
-	}
-
-	@Test
-	public void testCreateAIHubOpportunityStampsOrderItemsAfterPatchFailure()
-		throws Exception {
-
-		Order order = _createAIHubOrder(
-			"{\"salesforceProjectId\": \"a1tTEST\"}",
-			CommerceOrderConstants.ORDER_STATUS_PENDING);
-
-		order.setOrderItems(
-			new OrderItem[] {
-				_createOrderItem(null, 1L, "SKU-PLAN"),
-				_createOrderItem(null, 2L, "SKU-TOKENS")
-			});
-
-		_whenFetchCommerceOrder(order);
-
-		JSONArray lineItemsJSONArray = new JSONArray(
-		).put(
-			new JSONObject(
-			).put(
-				"id", "00k-PLAN"
-			).put(
-				"productId", "SKU-PLAN"
-			)
-		).put(
-			new JSONObject(
-			).put(
-				"id", "00k-TOKENS"
-			).put(
-				"productId", "SKU-TOKENS"
-			)
-		);
-
-		_whenPostSalesforceOpportunity(lineItemsJSONArray, "006TEST");
-
-		Mockito.doThrow(
-			new Exception()
-		).when(
-			_commerceOrderItemService
-		).patchOrderItem(
-			ArgumentMatchers.eq(1L), ArgumentMatchers.any()
-		);
-
-		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
-
-		Mockito.verify(
-			_commerceOrderItemService
-		).patchOrderItem(
-			ArgumentMatchers.eq(1L), ArgumentMatchers.any()
-		);
-
-		ArgumentCaptor<OrderItem> tokensOrderItemArgumentCaptor =
-			ArgumentCaptor.forClass(OrderItem.class);
-
-		Mockito.verify(
-			_commerceOrderItemService
-		).patchOrderItem(
-			ArgumentMatchers.eq(2L), tokensOrderItemArgumentCaptor.capture()
-		);
-
-		Assertions.assertEquals(
-			"00k-TOKENS",
-			tokensOrderItemArgumentCaptor.getValue(
-			).getExternalReferenceCode());
-
-		ArgumentCaptor<Map<String, Object>> mapArgumentCaptor =
-			ArgumentCaptor.forClass(Map.class);
-
-		Mockito.verify(
-			_commerceOrderService
-		).updateOrder(
-			mapArgumentCaptor.capture(), ArgumentMatchers.eq(_ORDER_ID),
-			ArgumentMatchers.eq(CommerceOrderConstants.ORDER_STATUS_PROCESSING)
-		);
-
-		Map<String, Object> customFields = mapArgumentCaptor.getValue();
-
-		String orderMetadata = (String)customFields.get("order-metadata");
-
-		JSONObject orderMetadataJSONObject = new JSONObject(orderMetadata);
-
-		Assertions.assertEquals(
-			"006TEST",
-			orderMetadataJSONObject.getString("salesforceOpportunityId"));
 	}
 
 	@Test

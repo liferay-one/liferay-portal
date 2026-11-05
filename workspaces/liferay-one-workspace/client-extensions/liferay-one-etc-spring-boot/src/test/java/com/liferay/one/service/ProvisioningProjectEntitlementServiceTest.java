@@ -20,6 +20,7 @@ import com.liferay.petra.string.StringBundler;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -146,7 +147,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
 		).patchOrderItemCustomFields(
-			Mockito.anyLong(), Mockito.anyMap()
+			Mockito.any(Order.class), Mockito.argThat(map -> !map.isEmpty())
 		);
 	}
 
@@ -178,17 +179,19 @@ public class ProvisioningProjectEntitlementServiceTest {
 				"2027-01-01", _LINE_ITEM_ID_2, _PRODUCT_2_ID_2,
 				_ENTITLEMENT_ID_1, 1, "2026-01-01"));
 
+		ArgumentCaptor<Map<Long, Map<String, Object>>> argumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			Mockito.eq(7002L), Mockito.anyMap()
+			Mockito.eq(order), argumentCaptor.capture()
 		);
 
-		Mockito.verify(
-			_commerceOrderItemService, Mockito.never()
-		).patchOrderItemCustomFields(
-			Mockito.eq(7001L), Mockito.anyMap()
-		);
+		Assertions.assertEquals(
+			Set.of(7002L),
+			argumentCaptor.getValue(
+			).keySet());
 	}
 
 	@Test
@@ -216,16 +219,19 @@ public class ProvisioningProjectEntitlementServiceTest {
 				"2027-01-01", _LINE_ITEM_ID_1, _PRODUCT_2_ID_1,
 				_ENTITLEMENT_ID_1, 1, "2026-01-01"));
 
-		ArgumentCaptor<Map<String, Object>> argumentCaptor =
+		ArgumentCaptor<Map<Long, Map<String, Object>>> argumentCaptor =
 			ArgumentCaptor.forClass(Map.class);
 
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			Mockito.eq(7001L), argumentCaptor.capture()
+			Mockito.eq(order), argumentCaptor.capture()
 		);
 
-		Map<String, Object> customFieldValues = argumentCaptor.getValue();
+		Map<String, Object> customFieldValues = argumentCaptor.getValue(
+		).get(
+			7001L
+		);
 
 		Assertions.assertTrue(
 			String.valueOf(
@@ -265,17 +271,19 @@ public class ProvisioningProjectEntitlementServiceTest {
 				"Id", _ENTITLEMENT_ID_1
 			));
 
-		Mockito.verify(
-			_commerceOrderItemService
-		).patchOrderItemCustomFields(
-			Mockito.eq(7001L), Mockito.anyMap()
-		);
+		ArgumentCaptor<Map<Long, Map<String, Object>>> argumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
 
 		Mockito.verify(
 			_commerceOrderItemService
 		).patchOrderItemCustomFields(
-			Mockito.eq(7002L), Mockito.anyMap()
+			Mockito.eq(order), argumentCaptor.capture()
 		);
+
+		Assertions.assertEquals(
+			Set.of(7001L, 7002L),
+			argumentCaptor.getValue(
+			).keySet());
 	}
 
 	@Test
