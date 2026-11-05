@@ -165,6 +165,54 @@ public class DigitalSalesRoomRestControllerTest {
 	}
 
 	@Test
+	public void testGetEnvironmentsDataSourceTokenWithoutNumericGroupId()
+		throws Exception {
+
+		_whenFetchEnvironment("DSR", "abc");
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND,
+			_digitalSalesRoomRestController.getEnvironmentsDataSourceToken(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _jwt
+			).getStatusCode());
+	}
+
+	@Test
+	public void testGetEnvironmentsDataSourceTokenWithoutProject()
+		throws Exception {
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _jwt)
+		).thenReturn(
+			new Environment(
+				new JSONObject(
+				).put(
+					"externalEnvironmentId", "42"
+				).put(
+					"externalReferenceCode",
+					_ENVIRONMENT_EXTERNAL_REFERENCE_CODE
+				).put(
+					"id", 7
+				).put(
+					"offering", "DSR"
+				))
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() ->
+				_digitalSalesRoomRestController.getEnvironmentsDataSourceToken(
+					_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _jwt));
+
+		Mockito.verify(
+			_analyticsCloudService, Mockito.never()
+		).getDataSourceAccessToken(
+			ArgumentMatchers.any(), ArgumentMatchers.anyString()
+		);
+	}
+
+	@Test
 	public void testGetEnvironmentsDataSourceTokenWithoutToken()
 		throws Exception {
 
