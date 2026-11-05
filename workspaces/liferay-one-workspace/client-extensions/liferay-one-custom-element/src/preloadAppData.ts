@@ -91,6 +91,7 @@ function getActivationKeyScope() {
 
 export default function preloadAppData(route: string) {
 	const accountId = Liferay.CommerceContext?.account?.accountId;
+	const userId = Liferay.ThemeDisplay.getUserId();
 
 	if (
 		!Liferay.ThemeDisplay.isSignedIn() ||
@@ -111,12 +112,7 @@ export default function preloadAppData(route: string) {
 
 	if (PROJECT_LIST_ROUTES.has(route)) {
 		preloadDataQuery(userProjectsQuery(accountId));
-		preloadDataQuery(
-			userProjectMembershipsQuery(
-				accountId,
-				Liferay.ThemeDisplay.getUserId()
-			)
-		);
+		preloadDataQuery(userProjectMembershipsQuery(accountId, userId));
 
 		if (hasProjectOrders(route)) {
 			preloadDataQuery(projectOrdersQuery(accountId));
@@ -130,9 +126,7 @@ export default function preloadAppData(route: string) {
 	}
 
 	preloadDataQuery(userProjectsQuery(accountId));
-	preloadDataQuery(
-		userProjectMembershipsQuery(accountId, Liferay.ThemeDisplay.getUserId())
-	);
+	preloadDataQuery(userProjectMembershipsQuery(accountId, userId));
 	preloadDataQuery(accountLevelContractsQuery(accountId));
 	preloadDataQuery(
 		projectContractsQuery(parseHash().projectExternalReferenceCode)
