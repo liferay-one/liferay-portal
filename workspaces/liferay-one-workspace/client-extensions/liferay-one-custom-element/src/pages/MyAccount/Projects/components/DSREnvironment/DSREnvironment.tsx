@@ -3,9 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {useEffect, useState} from 'react';
 import CopyTokenField from '~/components/CopyTokenField/CopyTokenField';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
+import Loading from '~/components/Loading/Loading';
 import i18n from '~/i18n';
+import DigitalSalesRoom from '~/services/spring-boot/DigitalSalesRoom';
 
 import DetailsCard, {DetailsRow} from '../DetailsCard/DetailsCard';
 import EnvironmentCards from '../EnvironmentCards/EnvironmentCards';
@@ -17,6 +20,34 @@ type DSREnvironmentProps = {
 };
 
 export default function DSREnvironment({environment}: DSREnvironmentProps) {
+	const [error, setError] = useState(false);
+	const [token, setToken] = useState<string>();
+
+	useEffect(() => {
+		let cancelled = false;
+
+		setError(false);
+		setToken(undefined);
+
+		DigitalSalesRoom.getEnvironmentsDataSourceToken(
+			environment.externalReferenceCode
+		)
+			.then(({dataSourceAccessToken}) => {
+				if (!cancelled) {
+					setToken(dataSourceAccessToken);
+				}
+			})
+			.catch(() => {
+				if (!cancelled) {
+					setError(true);
+				}
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [environment.externalReferenceCode]);
+
 	const rows: DetailsRow[] = [
 		{
 			label: i18n.translate('workspace-name'),
@@ -55,9 +86,15 @@ export default function DSREnvironment({environment}: DSREnvironmentProps) {
 						)}
 					</p>
 
-					<CopyTokenField
-						token={environment.currentEntitlementHash}
-					/>
+					{error ? (
+						<p className="text-danger">
+							{i18n.translate('unable-to-load-the-token')}
+						</p>
+					) : token === undefined ? (
+						<Loading.Inline />
+					) : (
+						<CopyTokenField token={token} />
+					)}
 				</div>
 			</DetailedCard>
 		</EnvironmentCards>
