@@ -5128,6 +5128,25 @@
 					"type": "String"
 				},
 				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"defaultValue": "false",
+					"externalReferenceCode": "C_PRODUCT_VERSION_FREE_TIER",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Free Tier"
+					},
+					"name": "freeTier",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Boolean"
+				},
+				{
 					"DBType": "String",
 					"businessType": "Text",
 					"externalReferenceCode": "C_PRODUCT_VERSION_PRODUCT_GROUP",
@@ -5300,6 +5319,13 @@
 							},
 							"objectFieldName": "bundleURL",
 							"priority": 6
+						},
+						{
+							"label": {
+								"en_US": "Free Tier"
+							},
+							"objectFieldName": "freeTier",
+							"priority": 7
 						}
 					]
 				}

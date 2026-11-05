@@ -55,6 +55,7 @@ import {
 	getProductPublisherName,
 	getProductSpecificationValue,
 	getProductSpecificationValues,
+	isDXPFreeTierProduct,
 } from '~/utils/productUtils';
 import {getSiteURL} from '~/utils/siteUtils';
 
@@ -204,6 +205,7 @@ export default function ProjectItemDetails({
 		},
 		'download': () => (
 			<DownloadTab
+				freeTier={isDXPFreeTierProduct(product)}
 				profile={downloadProfile}
 				virtualItems={virtualItems}
 			/>
