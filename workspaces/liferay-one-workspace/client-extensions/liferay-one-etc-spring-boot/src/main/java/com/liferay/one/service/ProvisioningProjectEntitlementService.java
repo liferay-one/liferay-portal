@@ -71,9 +71,7 @@ public class ProvisioningProjectEntitlementService {
 			return;
 		}
 
-		for (OrderItem orderItem : orderItems) {
-			_trimOrderItem(orderItem);
-		}
+		_trimOrderItems(order, orderItems);
 	}
 
 	public void deleteProjectEntitlementLineItem(JSONObject recordJSONObject)
@@ -82,10 +80,11 @@ public class ProvisioningProjectEntitlementService {
 		String projectEntitlementId = recordJSONObject.optString(
 			"ProjectEntitlement__c");
 
+		Order order = _commerceOrderService.fetchOrderByExternalReferenceCode(
+			projectEntitlementId);
+
 		OrderItem orderItem = CommerceOrderItemUtil.fetchOrderItem(
-			recordJSONObject.optString("Id"),
-			_commerceOrderService.fetchOrderByExternalReferenceCode(
-				projectEntitlementId));
+			recordJSONObject.optString("Id"), order);
 
 		if (orderItem == null) {
 			if (_log.isInfoEnabled()) {
@@ -98,7 +97,7 @@ public class ProvisioningProjectEntitlementService {
 			return;
 		}
 
-		_trimOrderItem(orderItem);
+		_trimOrderItems(order, new OrderItem[] {orderItem});
 	}
 
 	public boolean hasProjectEntitlementLineItems(JSONObject recordJSONObject) {
@@ -482,25 +481,34 @@ public class ProvisioningProjectEntitlementService {
 		);
 	}
 
-	private void _trimOrderItem(OrderItem orderItem) throws Exception {
+	private void _trimOrderItems(Order order, OrderItem[] orderItems)
+		throws Exception {
+
 		Instant effectiveEndDateInstant = Instant.now(
 		).truncatedTo(
 			ChronoUnit.SECONDS
 		);
 
-		Instant orderItemEffectiveEndDateInstant =
-			CommerceOrderItemUtil.getEffectiveEndDateInstant(orderItem);
+		Map<Long, Map<String, Object>> customFieldValuesMap = new HashMap<>();
 
-		if ((orderItemEffectiveEndDateInstant != null) &&
-			!orderItemEffectiveEndDateInstant.isAfter(
-				effectiveEndDateInstant)) {
+		for (OrderItem orderItem : orderItems) {
+			Instant orderItemEffectiveEndDateInstant =
+				CommerceOrderItemUtil.getEffectiveEndDateInstant(orderItem);
 
-			return;
+			if ((orderItemEffectiveEndDateInstant != null) &&
+				!orderItemEffectiveEndDateInstant.isAfter(
+					effectiveEndDateInstant)) {
+
+				continue;
+			}
+
+			customFieldValuesMap.put(
+				orderItem.getId(),
+				Map.of("effectiveEndDate", effectiveEndDateInstant.toString()));
 		}
 
 		_commerceOrderItemService.patchOrderItemCustomFields(
-			orderItem.getId(),
-			Map.of("effectiveEndDate", effectiveEndDateInstant.toString()));
+			order, customFieldValuesMap);
 	}
 
 	private void _validateSku(

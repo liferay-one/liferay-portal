@@ -2231,6 +2231,8 @@ public class CommerceOrderService extends OneBaseService {
 			return;
 		}
 
+		boolean stamped = false;
+
 		for (Map.Entry<String, OrderItem> entry : orderItemsBySku.entrySet()) {
 			OrderItem orderItem = entry.getValue();
 
@@ -2244,24 +2246,22 @@ public class CommerceOrderService extends OneBaseService {
 				continue;
 			}
 
-			OrderItem patchedOrderItem = new OrderItem();
+			orderItem.setExternalReferenceCode(() -> externalReferenceCode);
 
-			patchedOrderItem.setExternalReferenceCode(
-				() -> externalReferenceCode);
+			stamped = true;
+		}
 
-			try {
-				_commerceOrderItemService.patchOrderItem(
-					orderItem.getId(), patchedOrderItem);
-			}
-			catch (Exception exception) {
-				_log.error(
-					StringBundler.concat(
-						"Unable to stamp order item ", orderItem.getId(),
-						" of order ", order.getId(),
-						" with external reference code ",
-						externalReferenceCode),
-					exception);
-			}
+		if (!stamped) {
+			return;
+		}
+
+		try {
+			_commerceOrderItemService.patchOrderItems(order, orderItems);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unable to stamp the order items of order " + order.getId(),
+				exception);
 		}
 	}
 

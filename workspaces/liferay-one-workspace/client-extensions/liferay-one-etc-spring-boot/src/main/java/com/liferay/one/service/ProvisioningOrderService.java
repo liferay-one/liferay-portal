@@ -15,6 +15,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -39,6 +40,8 @@ public class ProvisioningOrderService {
 		throws Exception {
 
 		List<Order> orders = _commerceOrderService.getAccountOrders(accountId);
+
+		Map<Long, Map<String, Object>> customFieldValuesMap = new HashMap<>();
 
 		for (SalesforceOpportunityLineItem
 				realignmentSalesforceOpportunityLineItem :
@@ -113,7 +116,7 @@ public class ProvisioningOrderService {
 						continue;
 					}
 
-					_commerceOrderItemService.patchOrderItemCustomFields(
+					customFieldValuesMap.put(
 						parentOrderItem.getId(),
 						Map.of(
 							"effectiveEndDate",
@@ -151,6 +154,15 @@ public class ProvisioningOrderService {
 				warningMessages,
 				"Unable to find an order item for amended line " + productName);
 		}
+
+		for (Order order : orders) {
+			if (order.getOrderItems() == null) {
+				continue;
+			}
+
+			_commerceOrderItemService.patchOrderItemCustomFields(
+				order, customFieldValuesMap);
+		}
 	}
 
 	public void trimRenewedOrderItems(
@@ -171,6 +183,9 @@ public class ProvisioningOrderService {
 
 				continue;
 			}
+
+			Map<Long, Map<String, Object>> customFieldValuesMap =
+				new HashMap<>();
 
 			for (OrderItem orderItem : order.getOrderItems()) {
 				for (SalesforceOpportunityLineItem
@@ -223,13 +238,16 @@ public class ProvisioningOrderService {
 						continue;
 					}
 
-					_commerceOrderItemService.patchOrderItemCustomFields(
+					customFieldValuesMap.put(
 						orderItem.getId(),
 						Map.of(
 							"effectiveEndDate",
 							renewalStartDateInstant.toString()));
 				}
 			}
+
+			_commerceOrderItemService.patchOrderItemCustomFields(
+				order, customFieldValuesMap);
 		}
 	}
 
