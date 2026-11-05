@@ -19,6 +19,11 @@ liferay-one-custom-element:
         jira-fls-portal-url: https://liferay.atlassian.net/servicedesk/customer/portal/204
         jira-fls-project: LRFLS
         jira-hc-portal-url: https://liferay.atlassian.net/servicedesk/customer/portal/105
+        kpiConnectorQuartelyRelease: 40
+        kpiLowCodePublishedApps: 100
+        kpiPartnershipIntegration: 8
+        kpiProjectUsingMarketplaceApps: 30
+        kpiQuartelyReleaseApps: 20
         marketoFormIdDefault: 3738
         marketoFormIdLiferayProduct: 6253
         ssaAccountExternalReferenceCode: SSA-ACCOUNT
