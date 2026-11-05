@@ -97,24 +97,33 @@ public class CommerceOrderItemService extends OneBaseService {
 	}
 
 	public void patchOrderItemCustomFields(
-			long commerceOrderItemId, Map<String, Object> customFieldValues)
+			Order order, Map<Long, Map<String, Object>> customFieldValuesMap)
 		throws Exception {
 
-		OrderItemResource orderItemResource = _buildOrderItemResource();
+		OrderItem[] orderItems = order.getOrderItems();
 
-		OrderItem existingOrderItem = orderItemResource.getOrderItem(
-			commerceOrderItemId);
+		boolean patched = false;
 
-		OrderItem orderItem = new OrderItem();
+		for (OrderItem orderItem : orderItems) {
+			Map<String, Object> customFieldValues = customFieldValuesMap.get(
+				orderItem.getId());
 
-		CustomField[] customFields = _toCustomFields(customFieldValues);
+			if (customFieldValues == null) {
+				continue;
+			}
 
-		orderItem.setCustomFields(() -> customFields);
+			CustomField[] customFields = _toCustomFields(customFieldValues);
 
-		orderItem.setExternalReferenceCode(
-			existingOrderItem::getExternalReferenceCode);
+			orderItem.setCustomFields(() -> customFields);
 
-		patchOrderItem(commerceOrderItemId, orderItem);
+			patched = true;
+		}
+
+		if (!patched) {
+			return;
+		}
+
+		patchOrderItems(order, orderItems);
 	}
 
 	public void patchOrderItems(Order order, OrderItem[] orderItems)
