@@ -10,7 +10,8 @@ export default function sortLiferayVersions(items: IOption[]): IOption[] {
 		const parseVersion = (version: string) =>
 			version
 				.split(/[.\s]/)
-				.map((part) => parseInt(part.replace(/[^0-9]/g, ''), 10) || 0);
+				.filter((part) => /[0-9]/.test(part))
+				.map((part) => parseInt(part.replace(/[^0-9]/g, ''), 10));
 
 		const partsA = parseVersion(a);
 		const partsB = parseVersion(b);
