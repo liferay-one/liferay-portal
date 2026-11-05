@@ -66,7 +66,7 @@
 
 							<span class="custom-control-label font-size-paragraph-small term-name ${(entry.isSelected())?then('facet-term-selected', 'facet-term-unselected')}">
 								<span class="custom-control-label-text">
-									${htmlUtil.escape(languageUtil.get(locale, langKey(entry.getDisplayName()), entry.getDisplayName()))}
+									${htmlUtil.escape(htmlUtil.unescape(languageUtil.get(locale, langKey(entry.getDisplayName()), entry.getDisplayName())))}
 
 									<span class="facet-frequency">(${entry.getFrequency()})</span>
 								</span>
