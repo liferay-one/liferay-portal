@@ -16,6 +16,7 @@ import com.liferay.one.salesforce.model.SalesforceProjectContactRole;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.StringUtil;
 
 import java.nio.charset.StandardCharsets;
 
@@ -403,6 +404,34 @@ public class ProvisioningAnalyticsCloudServiceTest {
 	}
 
 	@Test
+	public void testProvisionAnalyticsCloudProjectRecordsFailureWithoutResponseBody()
+		throws Exception {
+
+		_whenFetchCommerceOrder(null, "LDP");
+
+		Mockito.when(
+			_analyticsCloudService.provisionAnalyticsCloudProject(
+				ArgumentMatchers.anyString(), ArgumentMatchers.any(),
+				ArgumentMatchers.anyString())
+		).thenThrow(
+			WebClientResponseException.create(
+				503, "Service Unavailable", HttpHeaders.EMPTY, new byte[0],
+				StandardCharsets.UTF_8)
+		);
+
+		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
+			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(),
+			_createSalesforceProject("acme-ldp"), Collections.emptyList(),
+			new ArrayList<>());
+
+		Map<String, ?> customFields = _capturePatchedCustomFields();
+
+		Assertions.assertEquals(
+			"503 Service Unavailable", customFields.get("ldpError"));
+	}
+
+	@Test
 	public void testProvisionAnalyticsCloudProjectReusesDSRWorkspace()
 		throws Exception {
 
@@ -453,6 +482,71 @@ public class ProvisioningAnalyticsCloudServiceTest {
 	}
 
 	@Test
+	public void testProvisionAnalyticsCloudProjectSkipsLinesWithoutKnownProduct()
+		throws Exception {
+
+		_whenFetchCommerceOrder(null, "DSR");
+
+		Mockito.when(
+			_analyticsCloudService.provisionAnalyticsCloudProject(
+				Mockito.eq(""), ArgumentMatchers.any(),
+				Mockito.eq(_ACCOUNT_EXTERNAL_REFERENCE_CODE))
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"groupId", 42
+			)
+		);
+
+		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
+			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			List.of(
+				new SalesforceOpportunityLineItem(
+					new JSONObject(
+					).put(
+						"Product2Id", ""
+					)),
+				new SalesforceOpportunityLineItem(
+					new JSONObject(
+					).put(
+						"Product2Id", "PRODUCT-UNKNOWN"
+					)),
+				new SalesforceOpportunityLineItem(
+					new JSONObject(
+					).put(
+						"Product2Id", "PRODUCT-DSR"
+					))),
+			_createSalesforceProject("acme-dsr"), Collections.emptyList(),
+			new ArrayList<>());
+
+		ArgumentCaptor<JSONObject> argumentCaptor = ArgumentCaptor.forClass(
+			JSONObject.class);
+
+		Mockito.verify(
+			_analyticsCloudService
+		).provisionAnalyticsCloudProject(
+			Mockito.eq(""), argumentCaptor.capture(),
+			Mockito.eq(_ACCOUNT_EXTERNAL_REFERENCE_CODE)
+		);
+
+		JSONObject analyticsCloudProjectJSONObject = argumentCaptor.getValue();
+
+		JSONArray offeringEntriesJSONArray =
+			analyticsCloudProjectJSONObject.getJSONArray("offeringEntries");
+
+		Assertions.assertEquals(1, offeringEntriesJSONArray.length());
+
+		JSONObject offeringEntryJSONObject =
+			offeringEntriesJSONArray.getJSONObject(0);
+
+		Assertions.assertEquals(
+			"PRODUCT-DSR", offeringEntryJSONObject.getString("productEntryId"));
+		Assertions.assertEquals(1, offeringEntryJSONObject.getInt("quantity"));
+		Assertions.assertFalse(offeringEntryJSONObject.has("startDate"));
+		Assertions.assertFalse(offeringEntryJSONObject.has("supportEndDate"));
+	}
+
+	@Test
 	public void testProvisionAnalyticsCloudProjectSkipsOrderAlreadyProvisioned()
 		throws Exception {
 
@@ -465,6 +559,37 @@ public class ProvisioningAnalyticsCloudServiceTest {
 			new ArrayList<>());
 
 		Mockito.verifyNoInteractions(_analyticsCloudService);
+		Mockito.verifyNoInteractions(_environmentService);
+	}
+
+	@Test
+	public void testProvisionAnalyticsCloudProjectSkipsOrderAlreadyProvisionedAndPutsDSREnvironment()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			"{\"groupId\": 42, \"name\": \"acme-dsr\"}", "DSR");
+
+		_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
+			_account, _ORDER_ID, _createSalesforceOpportunity(),
+			_createSalesforceOpportunityLineItems(),
+			_createSalesforceProject("acme-dsr"), Collections.emptyList(),
+			new ArrayList<>());
+
+		Mockito.verifyNoInteractions(_analyticsCloudService);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
+
+		JSONObject environmentJSONObject = _captureDSREnvironment(
+			"DSR-PRJCT-1");
+
+		Assertions.assertEquals(
+			"42", environmentJSONObject.getString("externalEnvironmentId"));
+		Assertions.assertEquals(
+			"acme-dsr", environmentJSONObject.getString("workspaceName"));
 	}
 
 	@Test
@@ -677,16 +802,17 @@ public class ProvisioningAnalyticsCloudServiceTest {
 	}
 
 	private void _whenFetchCommerceOrder(
-			String ldpAnalyticsCloudProject,
-			String orderTypeExternalReferenceCode)
+			String analyticsCloudProject, String orderTypeExternalReferenceCode)
 		throws Exception {
 
 		Order order = new Order();
 
-		if (ldpAnalyticsCloudProject != null) {
+		if (analyticsCloudProject != null) {
 			order.setCustomFields(
 				() -> HashMapBuilder.put(
-					"ldpAnalyticsCloudProject", ldpAnalyticsCloudProject
+					StringUtil.toLowerCase(orderTypeExternalReferenceCode) +
+						"AnalyticsCloudProject",
+					analyticsCloudProject
 				).build());
 		}
 
