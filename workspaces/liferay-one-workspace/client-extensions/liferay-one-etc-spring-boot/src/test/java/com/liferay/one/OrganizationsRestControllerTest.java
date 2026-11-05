@@ -284,6 +284,39 @@ public class OrganizationsRestControllerTest {
 	}
 
 	@Test
+	public void testPostSyncFromOktaRemovesDeactivatedOktaUsers()
+		throws Exception {
+
+		OrganizationsRestController organizationsRestController =
+			_createController();
+
+		_setUpOktaGroup(
+			Arrays.asList(
+				_createOktaUser("ana@example.com"),
+				_createDeactivatedOktaUser("carla@example.com"),
+				_createDeactivatedOktaUser("daniel@example.com")));
+		_setUpOrganizationUserAccounts(
+			_createUserAccount("ana@example.com", 1),
+			_createUserAccount("daniel@example.com", 3));
+
+		organizationsRestController.postSyncFromOkta(null, _ORGANIZATION_ID);
+
+		Mockito.verify(
+			_userAccountService, Mockito.never()
+		).fetchUserAccountByEmailAddress(
+			"carla@example.com"
+		);
+
+		Mockito.verify(
+			_userAssignmentService
+		).unassignOrganization(
+			_ORGANIZATION_ID, 3
+		);
+
+		Mockito.verifyNoMoreInteractions(_userAssignmentService);
+	}
+
+	@Test
 	public void testPostSyncFromOktaSkipsOktaUsersWithoutEmailAddress()
 		throws Exception {
 
@@ -419,6 +452,18 @@ public class OrganizationsRestControllerTest {
 		return organizationsRestController;
 	}
 
+	private OktaUser _createDeactivatedOktaUser(String emailAddress) {
+		OktaUser oktaUser = _createOktaUser(emailAddress);
+
+		Mockito.when(
+			oktaUser.isDeactivated()
+		).thenReturn(
+			true
+		);
+
+		return oktaUser;
+	}
+
 	private OktaUser _createOktaUser(String emailAddress) {
 		OktaUser oktaUser = Mockito.mock(OktaUser.class);
 
@@ -464,24 +509,27 @@ public class OrganizationsRestControllerTest {
 		_setUpOrganization();
 	}
 
-	private void _setUpOktaGroup(String... emailAddresses) throws Exception {
+	private void _setUpOktaGroup(List<OktaUser> oktaUsers) throws Exception {
 		Mockito.when(
 			_organizationService.getOktaGroupId(_ORGANIZATION_ID)
 		).thenReturn(
 			_OKTA_GROUP_ID
 		);
 
-		List<OktaUser> oktaUsers = Arrays.stream(
-			emailAddresses
-		).map(
-			this::_createOktaUser
-		).toList();
-
 		Mockito.when(
 			_oktaService.getGroupContacts(_OKTA_GROUP_ID)
 		).thenReturn(
 			oktaUsers
 		);
+	}
+
+	private void _setUpOktaGroup(String... emailAddresses) throws Exception {
+		_setUpOktaGroup(
+			Arrays.stream(
+				emailAddresses
+			).map(
+				this::_createOktaUser
+			).toList());
 	}
 
 	private Organization _setUpOrganization() throws Exception {
