@@ -15,7 +15,9 @@ export function resolveDefaultProject(
 	return (
 		projects.find(
 			(project) => project.externalReferenceCode === lastProjectId
-		) ?? projects[0]
+		) ??
+		projects.find((project) => project.member) ??
+		projects[0]
 	);
 }
 
