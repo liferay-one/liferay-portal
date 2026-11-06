@@ -460,18 +460,28 @@ public class AccountSynchronizer {
 				accountSyncModel.getExternalLinkProperties(),
 				Property::getExternalReferenceCode,
 				_externalLinkConverter::toAssetObject));
-		jiraAssetObject.setAttributeValue(
-			AccountConstants.ATTRIBUTE_NAME_LANGUAGE,
-			accountSyncModel.getSupportLanguage());
+
+		// LPD-114423 Do not sync the support language until the logic that
+		// determines it is fixed
+
+		// jiraAssetObject.setAttributeValue(
+		// 	AccountConstants.ATTRIBUTE_NAME_LANGUAGE,
+		// 	accountSyncModel.getSupportLanguage());
+
 		jiraAssetObject.setAttributeValue(
 			AccountConstants.ATTRIBUTE_NAME_POSTAL_ADDRESSES,
 			_jiraAssetService.getOrCreateReferenceObjectIds(
 				_postalAddressConverter, accountSyncModel.getPostalAddresses(),
 				postalAddress -> String.valueOf(postalAddress.getId()),
 				_postalAddressConverter::toAssetObject));
-		jiraAssetObject.setAttributeValue(
-			AccountConstants.ATTRIBUTE_NAME_REGION,
-			accountSyncModel.getSupportRegion());
+
+		// LPD-114423 Do not sync the support region until the logic that
+		// determines it is fixed
+
+		// jiraAssetObject.setAttributeValue(
+		// 	AccountConstants.ATTRIBUTE_NAME_REGION,
+		// 	accountSyncModel.getSupportRegion());
+
 	}
 
 	private void _syncAccountAsset(
