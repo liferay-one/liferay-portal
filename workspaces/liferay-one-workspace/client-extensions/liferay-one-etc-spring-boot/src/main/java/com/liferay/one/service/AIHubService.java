@@ -31,6 +31,42 @@ import reactor.util.retry.Retry;
 @Component
 public class AIHubService extends OneBaseService {
 
+	public JSONObject patchProvisioning(
+		String externalReferenceCode, JSONObject jsonObject) {
+
+		try {
+			String response = patch(
+				_liferayOAuth2AccessTokenManager.getAuthorization(
+					"external-ai-hub"),
+				jsonObject.toString(),
+				UriComponentsBuilder.fromUriString(
+					_externalAIHubHomePageURL
+				).path(
+					"/o/ai-hub/v1.0/provisioning/by-external-reference-code" +
+						"/{externalReferenceCode}"
+				).buildAndExpand(
+					externalReferenceCode
+				).toUri());
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Updated AI Hub account with external reference code " +
+						externalReferenceCode);
+			}
+
+			return new JSONObject(response);
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			_log.error(
+				StringBundler.concat(
+					"Unable to update AI Hub account with external reference ",
+					"code ", externalReferenceCode, " ",
+					webClientResponseException.getResponseBodyAsString()));
+
+			return null;
+		}
+	}
+
 	public JSONObject provision(JSONObject jsonObject) {
 		try {
 			String response = post(
