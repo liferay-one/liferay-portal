@@ -18,16 +18,19 @@ import PublishedProductsListView, {
 	renderProductName,
 	renderProductStatus,
 } from '../components/PublishedProductsListView/PublishedProductsListView';
+import usePublisherPermissions from '../hooks/usePublisherPermissions';
 
 import type {Product} from '~/types/product';
 
 export default function PublishedSolutions() {
+	const {canPublishSolutions} = usePublisherPermissions();
 	const confirmationModal = useConfirmationModal();
 	const navigate = useNavigate();
 
 	return (
 		<PublishedProductsListView
 			categoryVocabulary="solution"
+			ctaDisabled={!canPublishSolutions}
 			ctaLabel="new-solution-template"
 			description="manage-and-publish-solutions-on-the-marketplace"
 			emptyStateDescription="publish-your-first-solution-to-make-it-available"
@@ -39,8 +42,9 @@ export default function PublishedSolutions() {
 				actions: [
 					{
 						disabled: (product: Product) =>
+							!canPublishSolutions ||
 							product.productStatus ===
-							ProductWorkflowStatusCode.PENDING,
+								ProductWorkflowStatusCode.PENDING,
 						icon: 'pencil',
 						name: i18n.translate('edit'),
 						onClick: (product: Product) =>
@@ -64,8 +68,9 @@ export default function PublishedSolutions() {
 					},
 					{
 						disabled: (product: Product) =>
+							!canPublishSolutions ||
 							product.productStatus ===
-							ProductWorkflowStatusCode.PENDING,
+								ProductWorkflowStatusCode.PENDING,
 						icon: 'trash',
 						name: i18n.translate('delete'),
 						onClick: (product: Product, mutate) => {

@@ -1,0 +1,16 @@
+{
+	"description": "Liferay packages that publishers upload when they submit an app",
+	"name": "publisher_assets",
+	"permissions": [
+		{
+			"actionIds": [
+				"ACCESS",
+				"ADD_DOCUMENT",
+				"ADD_SUBFOLDER",
+				"VIEW"
+			],
+			"roleName": "Supplier"
+		}
+	],
+	"viewableBy": "Owner"
+}
