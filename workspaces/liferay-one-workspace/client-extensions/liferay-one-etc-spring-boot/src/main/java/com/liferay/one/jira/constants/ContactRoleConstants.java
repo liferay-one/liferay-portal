@@ -36,6 +36,13 @@ public interface ContactRoleConstants {
 
 	public static final String ATTRIBUTE_VALUE_TYPE_TEAM = "Team";
 
+	public static final String EXTERNAL_KEY_SUPPORT_ADMINISTRATOR =
+		"KOR-3970202";
+
+	public static final String EXTERNAL_KEY_SUPPORT_REQUESTER = "KOR-36607";
+
+	public static final String EXTERNAL_KEY_SUPPORT_USER = "KOR-36608";
+
 	public static final String OBJECT_TYPE_NAME = "Contact Role";
 
 }
