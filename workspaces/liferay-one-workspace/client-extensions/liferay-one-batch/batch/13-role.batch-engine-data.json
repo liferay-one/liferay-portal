@@ -11,6 +11,11 @@
 	},
 	"items": [
 		{
+			"externalReferenceCode": "C_ACCOUNT_APP_PUBLISHER",
+			"name": "Account App Publisher",
+			"roleType": "account"
+		},
+		{
 			"externalReferenceCode": "C_ACCOUNT_BUYER",
 			"name": "Account Buyer",
 			"roleType": "account"

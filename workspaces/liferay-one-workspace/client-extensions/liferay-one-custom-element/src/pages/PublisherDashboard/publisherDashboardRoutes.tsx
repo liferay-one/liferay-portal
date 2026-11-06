@@ -11,6 +11,7 @@ import usePublisherCatalog from '~/hooks/usePublisherCatalog';
 import i18n from '~/i18n';
 import {AppRoute} from '~/utils/routeUtils';
 
+import PublisherRoleGuard from './components/PublisherRoleGuard/PublisherRoleGuard';
 import {PublishMode} from './pages/NewAppFlow/constants';
 
 const AppSummary = lazy(() => import('./AppSummary/AppSummary'));
@@ -150,7 +151,11 @@ export const publisherDashboardRoutes: AppRoute[] = [
 						path: 'publisher',
 					},
 				],
-				element: <NewAppContextWrapper />,
+				element: (
+					<PublisherRoleGuard flow="app">
+						<NewAppContextWrapper />
+					</PublisherRoleGuard>
+				),
 				path: ':productId?',
 			},
 		],
@@ -169,7 +174,11 @@ export const publisherDashboardRoutes: AppRoute[] = [
 						path: 'publisher',
 					},
 				],
-				element: <SolutionContextWrapper />,
+				element: (
+					<PublisherRoleGuard flow="solution">
+						<SolutionContextWrapper />
+					</PublisherRoleGuard>
+				),
 				path: ':productId?',
 			},
 		],
@@ -193,7 +202,11 @@ export const publisherDashboardRoutes: AppRoute[] = [
 						path: 'publisher',
 					},
 				],
-				element: <NewAppContextWrapper />,
+				element: (
+					<PublisherRoleGuard flow="app">
+						<NewAppContextWrapper />
+					</PublisherRoleGuard>
+				),
 				path: ':productId',
 			},
 		],

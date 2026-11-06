@@ -108,7 +108,7 @@ Each row is one placement of the `liferay-one-custom-element` widget. The `route
 | `/license-agreement` | Standalone | License Agreement | `license-agreement` | yes | User | None. |
 | `/marketplace/become-a-publisher` | Marketplace | Become a Publisher | `become-a-publisher` | yes | Guest | None. |
 | `/my-account` | My Account | My Account | `my-account` | no | Site Member, User | `useRequireSignIn` redirects a guest to the login page. |
-| `/my-account/publisher-dashboard` | My Account | Publisher Dashboard | `publisher-dashboard` | no | Marketplace Publisher | None in the router. The page permission admits only Marketplace Publisher. |
+| `/my-account/publisher-dashboard` | My Account | Publisher Dashboard | `publisher-dashboard` | no | Supplier | None in the router. The page permission admits only Supplier, the regular role that Liferay gives with Account Supplier. |
 | `/next-steps` | Standalone | Next Steps | `next-steps` | yes | User | None. |
 | `/product-purchase` | Standalone | Product Purchase | `product-purchase` | yes | User | `useRequireSignIn`. Contact sales products render `ContactSales` and no routes. |
 | `/support/business-events` | Support | Business Events | `business-events` | no | not set (portal default) | None in the router. Each page checks project membership (`useHasAllEventsPermissions`). |

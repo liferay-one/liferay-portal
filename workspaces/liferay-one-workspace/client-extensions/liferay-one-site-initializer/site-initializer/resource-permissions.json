@@ -245,6 +245,17 @@
 	},
 	{
 		"actionIds": [
+			"DELETE",
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherAsset$]",
+		"roleName": "Account App Publisher",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
 			"VIEW"
 		],
 		"primKey": "0",
@@ -814,7 +825,7 @@
 		],
 		"primKey": "0",
 		"resourceName": "com.liferay.commerce.tax",
-		"roleName": "Marketplace Publisher",
+		"roleName": "Supplier",
 		"scope": "1"
 	},
 	{
@@ -1233,6 +1244,24 @@
 		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:OAuth2DxpAuthorization$]",
 		"roleName": "Project Requester",
 		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:PublisherAsset$]",
+		"roleName": "Account App Publisher",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:PublisherAssetAttachment$]",
+		"roleName": "Supplier",
+		"scope": "1"
 	},
 	{
 		"actionIds": [

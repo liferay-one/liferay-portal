@@ -22,8 +22,9 @@ Terms used in this file:
 | REQ-ACCESS-001 | The My Account, product purchase, ticket attachment, and DXP authorization pages need a signed in user. The system sends a signed out visitor to the sign in page. After sign in, the visitor returns to the same path, query, and fragment. | P0 | LPD-95398 | `HOOK-USEREQUIRESIGNIN`, `FLOW-SPA-RENDER-SMOKE` |
 | REQ-ACCESS-002 | For a signed out visitor, the pages do not request the user account and do not preload account, project, or order data. | P1 | — | `CTX-ONECONTEXTPROVIDER`, `MOD-PRELOADAPPDATA` |
 | REQ-ACCESS-003 | A guest cannot view the My Account, ticket attachments, large file uploader, product purchase, next steps, license agreement, authorize, and admin pages. Every signed in user can view the first seven of these pages. | P0 | LPD-95398 | — |
-| REQ-ACCESS-004 | Only a user with the Marketplace Publisher role can view the Publisher Dashboard page. | P1 | LPD-95398 | — |
+| REQ-ACCESS-004 | Only a user with the Account Supplier role in a supplier account can view the Publisher Dashboard page. | P1 | LPD-95398, LPD-113988 | `FLOW-PUBLISHER-ONBOARDING` |
 | REQ-ACCESS-005 | The navigation menus show a page only to the users who can view that page. | P1 | LPD-95398 | `FLOW-SPA-RENDER-SMOKE`, `FLOW-NAVIGATION` |
+| REQ-ACCESS-006 | On the Publisher Dashboard, only a user with the Account App Publisher role can start an app submission, and only a user with the Account Solution Publisher role can start a solution submission. An administrator can start both. Without the role, the create button is disabled, the solution edit and delete actions are disabled, and the submission form pages show that access is required. | P1 | LPD-113988 | `HOOK-PUBLISHERDASHBOARD-USEPUBLISHERPERMISSIONS`, `FLOW-PUBLISHER-ONBOARDING` |
 
 ## Service Authentication
 

@@ -152,6 +152,7 @@ export function renderProductStatus(
 
 type PublishedProductsListViewProps = {
 	categoryVocabulary: ProductTypeVocabulary;
+	ctaDisabled?: boolean;
 	ctaLabel: Word;
 	description: Word;
 	emptyStateDescription: Word;
@@ -204,6 +205,7 @@ function getAvailableFilterOptions(
 
 export default function PublishedProductsListView({
 	categoryVocabulary,
+	ctaDisabled = false,
 	ctaLabel,
 	description,
 	emptyStateDescription,
@@ -255,7 +257,7 @@ export default function PublishedProductsListView({
 			pageRendererProps={{className: 'publisher-dashboard-card py-2'}}
 			rightButton={
 				<Button
-					disabled={!catalogId}
+					disabled={!catalogId || ctaDisabled}
 					displayType="primary"
 					onClick={onCtaClick}
 				>

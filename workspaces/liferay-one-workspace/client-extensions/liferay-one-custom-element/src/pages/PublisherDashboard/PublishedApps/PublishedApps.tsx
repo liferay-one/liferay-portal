@@ -17,15 +17,18 @@ import PublishedProductsListView, {
 	renderProductStatus,
 	renderProductVersion,
 } from '../components/PublishedProductsListView/PublishedProductsListView';
+import usePublisherPermissions from '../hooks/usePublisherPermissions';
 
 import type {Product} from '~/types/product';
 
 export default function PublishedApps() {
 	const navigate = useNavigate();
+	const {canPublishApps} = usePublisherPermissions();
 
 	return (
 		<PublishedProductsListView
 			categoryVocabulary="app"
+			ctaDisabled={!canPublishApps}
 			ctaLabel="publish-new-app"
 			description="manage-and-publish-apps-on-the-marketplace"
 			emptyStateDescription="publish-your-first-app-to-make-it-available"

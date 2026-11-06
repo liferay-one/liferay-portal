@@ -27,6 +27,10 @@ export class MarketplaceUserAccount {
 		return this.hasRegularRole(AccountRoleType.ADMINISTRATOR);
 	}
 
+	get isAppPublisher() {
+		return this.hasAccountRole(AccountRoleType.APP_PUBLISHER);
+	}
+
 	get isSolutionPublisher() {
 		return this.hasAccountRole(AccountRoleType.SOLUTION_PUBLISHER);
 	}

@@ -72,6 +72,7 @@ export type AccountRole = {
 
 export type AccountRoleType =
 	| 'Account Administrator'
+	| 'Account App Publisher'
 	| 'Account Member'
 	| 'SSA Administrator'
 	| 'SSA User'
