@@ -659,7 +659,8 @@ public class CommerceOrderService extends OneBaseService {
 				return;
 			}
 
-			JSONObject aiHubJSONObject = _aiHubService.provision(
+			JSONObject aiHubJSONObject = _aiHubService.patchProvisioning(
+				orderMetadataJSONObject.getString("salesforceProjectId"),
 				provisionJSONObject);
 
 			if (aiHubJSONObject == null) {
