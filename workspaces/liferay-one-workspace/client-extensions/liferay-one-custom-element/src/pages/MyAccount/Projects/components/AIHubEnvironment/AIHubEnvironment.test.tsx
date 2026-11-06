@@ -40,7 +40,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] AIHubEnvironment', () => {
 		expect(screen.queryByText('owner@acme.com')).not.toBeInTheDocument();
 	});
 
-	it('omits the cells the environment leaves empty', () => {
+	it('keeps every label and leaves the values the environment lacks blank', () => {
 		render(
 			<AIHubEnvironment
 				environment={toEnvironment({name: 'Acme AI Hub'})}
@@ -48,6 +48,22 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] AIHubEnvironment', () => {
 		);
 
 		expect(screen.getByText('Acme AI Hub')).toBeInTheDocument();
+		expect(screen.getByText('AI Hub URL')).toBeInTheDocument();
+		expect(screen.getByText('Token Monthly Allowance')).toBeInTheDocument();
 		expect(screen.queryByRole('link')).not.toBeInTheDocument();
+	});
+
+	it('renders every label with blank values before the environment exists', () => {
+		const {container} = render(<AIHubEnvironment />);
+
+		expect(screen.getByText('AI Hub Account Name')).toBeInTheDocument();
+		expect(screen.getByText('Administration Email')).toBeInTheDocument();
+		expect(screen.getByText('AI Hub URL')).toBeInTheDocument();
+		expect(screen.getByText('Token Monthly Allowance')).toBeInTheDocument();
+		expect(
+			[
+				...container.querySelectorAll('.ai-hub-environment-cell-value'),
+			].map((cell) => cell.textContent)
+		).toEqual(['', '', '', '']);
 	});
 });
