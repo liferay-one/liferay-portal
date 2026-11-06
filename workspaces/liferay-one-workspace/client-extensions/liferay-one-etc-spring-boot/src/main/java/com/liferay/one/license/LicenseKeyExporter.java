@@ -88,8 +88,12 @@ public class LicenseKeyExporter {
 		sb.append("activation-key-");
 		sb.append(productName);
 		sb.append(StringPool.DASH);
-		sb.append(productVersion);
-		sb.append(StringPool.DASH);
+
+		if (Validator.isNotNull(productVersion)) {
+			sb.append(productVersion);
+			sb.append(StringPool.DASH);
+		}
+
 		sb.append(licenseKeyName);
 
 		return formatFileName(sb.toString());

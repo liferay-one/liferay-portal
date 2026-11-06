@@ -91,7 +91,7 @@ export type GenerateActivationKeyRequest = ActivationKeyScope & {
 	servers: ActivationKeyServer[];
 	startDate?: string;
 	subscriptionEntitlementId: number;
-	version: string;
+	version?: string;
 	virtualCluster?: boolean;
 };
 

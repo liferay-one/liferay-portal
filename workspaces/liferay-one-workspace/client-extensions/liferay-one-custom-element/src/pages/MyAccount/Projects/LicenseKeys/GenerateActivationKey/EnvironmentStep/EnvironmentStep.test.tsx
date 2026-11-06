@@ -25,10 +25,14 @@ vi.mock('../../../CloudAppInstall/WizardFooter/WizardFooter', () => ({
 }));
 
 function Harness({
+	appLicense = false,
 	keyType = 'production',
+	version = '2026.Q3',
 	virtualClusterAvailable = false,
 }: {
+	appLicense?: boolean;
 	keyType?: string;
+	version?: string;
 	virtualClusterAvailable?: boolean;
 }) {
 	const form = useForm<GenerateActivationKeyForm>({
@@ -41,13 +45,14 @@ function Harness({
 			notify: true,
 			serverField: 'hostName',
 			servers: [buildEmptyServer()],
-			version: '2026.Q3',
+			version,
 			virtualCluster: false,
 		},
 	});
 
 	return (
 		<EnvironmentStep
+			appLicense={appLicense}
 			availableClusterNodes={3}
 			form={form}
 			generated={false}
@@ -83,6 +88,26 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] Environment
 		expect(screen.getByLabelText(translate('domain'))).toBeTruthy();
 		expect(screen.queryByLabelText(translate('description'))).toBeNull();
 		expect(screen.queryByLabelText(translate('host-name'))).toBeNull();
+	});
+
+	it('generates an app license key without a version', () => {
+		render(<Harness appLicense version="" />);
+
+		fireEvent.change(screen.getByLabelText(translate('host-name')), {
+			target: {value: 'app-host'},
+		});
+
+		expect(getNextButton().disabled).toBe(false);
+	});
+
+	it('asks a DXP key for a version', () => {
+		render(<Harness version="" />);
+
+		fireEvent.change(screen.getByLabelText(translate('host-name')), {
+			target: {value: 'dxp-host'},
+		});
+
+		expect(getNextButton().disabled).toBe(true);
 	});
 
 	it('generates a free key once a domain is entered', () => {
