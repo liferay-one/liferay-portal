@@ -360,7 +360,7 @@ public class LicenseKeyGenerationService {
 			String sizing, Date startDate)
 		throws Exception {
 
-		LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
+		String licenseType = licensedProduct._getLicenseType();
 		String productId = licensedProduct._getProductId();
 		String productName = licensedProduct._getProductName();
 		String version = generateRequest.getVersion();
@@ -377,11 +377,11 @@ public class LicenseKeyGenerationService {
 				activationKeyScope, description, expirationDate,
 				generateRequest, licensedProduct, server, sizing, startDate),
 			LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
-			licenseEntry.getName(), licenseEntry.getType(),
+			licensedProduct._getLicenseEntryName(), licenseType,
 			_getLicenseVersion(productId, productName, version),
 			ServerInfoUtil.toCommaSeparated(server.getMacAddresses()),
 			LicenseKeyGenerationConstants.getMaxClusterNodes(
-				licenseEntry.getType(), generateRequest.getMaxClusterNodes()),
+				licenseType, generateRequest.getMaxClusterNodes()),
 			0, 0, 0, 0, generateRequest.getEnvironmentName(), null,
 			generateRequest.getEnvironmentName(), productId, productName,
 			_getProductVersion(productId, version),
@@ -884,8 +884,6 @@ public class LicenseKeyGenerationService {
 			LicensedProduct licensedProduct = licensedProducts.get(
 				subscriptionEntitlement.getEntitlementId());
 
-			LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
-
 			boolean allowPermanentLicenses = false;
 
 			if (activationKeyScope.isProject()) {
@@ -897,7 +895,7 @@ public class LicenseKeyGenerationService {
 			expirationDate = _toDate(
 				LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
 					allowPermanentLicenses, subscriptionEntitlement,
-					licenseEntry.getType()));
+					licensedProduct._getLicenseType()));
 		}
 
 		String description = generateRequest.getDescription();
@@ -974,6 +972,21 @@ public class LicenseKeyGenerationService {
 		).put(
 			"purpose", generateRequest.getPurpose()
 		).toString();
+	}
+
+	private String _getAppLicenseType(GenerateRequest generateRequest)
+		throws Exception {
+
+		String licenseType = LicenseKeyType.fetchLicenseType(
+			generateRequest.getKeyType());
+
+		if (Validator.isNull(licenseType)) {
+			throw new LicenseKeyEntitlementException(
+				"No license type exists for key type " +
+					generateRequest.getKeyType());
+		}
+
+		return licenseType;
 	}
 
 	private List<Entitlement> _getBundleEntitlements(
@@ -1151,16 +1164,6 @@ public class LicenseKeyGenerationService {
 		LicenseEntry leadingLicenseEntry = _fetchLicenseEntry(
 			generateRequest, subscriptionEntitlement);
 
-		if ((leadingLicenseEntry == null) &&
-			LicenseKeyGenerationConstants.standaloneLicenseKeyFamilies.contains(
-				LicenseKeyGenerateFormService.getLicenseKeyFamily(
-					subscriptionEntitlement))) {
-
-			leadingLicenseEntry = _fetchLicenseEntry(
-				generateRequest,
-				LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP);
-		}
-
 		for (Entitlement entitlement : bundleEntitlements) {
 			Product product = _licenseKeyGenerateFormService.fetchProduct(
 				entitlement);
@@ -1173,8 +1176,22 @@ public class LicenseKeyGenerationService {
 						" selected for this bundle"));
 			}
 
+			String productId = LicenseKeyGenerateFormService.getProductId(
+				entitlement, product);
 			String productName = LicenseKeyGenerateFormService.getProductName(
 				entitlement, product);
+
+			if (!Objects.equals(
+					productId, LicenseConstants.PRODUCT_ID_PORTAL)) {
+
+				licensedProducts.put(
+					entitlement.getEntitlementId(),
+					new LicensedProduct(
+						StringPool.BLANK, _getAppLicenseType(generateRequest),
+						productId, productName));
+
+				continue;
+			}
 
 			LicenseEntry licenseEntry = _fetchLicenseEntry(
 				generateRequest, entitlement);
@@ -1198,9 +1215,7 @@ public class LicenseKeyGenerationService {
 			licensedProducts.put(
 				entitlement.getEntitlementId(),
 				new LicensedProduct(
-					licenseEntry,
-					LicenseKeyGenerateFormService.getProductId(
-						entitlement, product),
+					licenseEntry.getName(), licenseEntry.getType(), productId,
 					productName));
 		}
 
@@ -1567,8 +1582,6 @@ public class LicenseKeyGenerationService {
 			String sizing, Date startDate)
 		throws Exception {
 
-		LicenseEntry licenseEntry = licensedProduct._getLicenseEntry();
-
 		String productId = licensedProduct._getProductId();
 		String productName = licensedProduct._getProductName();
 
@@ -1577,31 +1590,33 @@ public class LicenseKeyGenerationService {
 		String hostName = ServerInfoUtil.toCommaSeparated(server.getHostName());
 		String ipAddresses = ServerInfoUtil.toCommaSeparated(
 			server.getIpAddresses());
+		String licenseEntryName = licensedProduct._getLicenseEntryName();
+		String licenseType = licensedProduct._getLicenseType();
 		int licenseVersion = _getLicenseVersion(
 			productId, productName, generateRequest.getVersion());
 		String macAddresses = ServerInfoUtil.toCommaSeparated(
 			server.getMacAddresses());
 		int maxClusterNodes = LicenseKeyGenerationConstants.getMaxClusterNodes(
-			licenseEntry.getType(), generateRequest.getMaxClusterNodes());
+			licenseType, generateRequest.getMaxClusterNodes());
 		int maxServers = LicenseKeyGenerationConstants.getMaxServers(
-			licenseEntry.getType(), 0);
+			licenseType, 0);
 		String productVersion = _getProductVersion(
 			productId, generateRequest.getVersion());
 		String serverId = _getServerId(generateRequest);
 
 		String key = _licenseKeyGenerator.generateKey(
-			accountName, licenseEntry.getName(), licenseEntry.getType(),
-			licenseVersion, productName, productId, productVersion,
-			environmentName, maxClusterNodes, maxServers, 0, 0, 0, sizing,
-			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
-			serverId, startDate, expirationDate);
+			accountName, licenseEntryName, licenseType, licenseVersion,
+			productName, productId, productVersion, environmentName,
+			maxClusterNodes, maxServers, 0, 0, 0, sizing, description,
+			StringPool.BLANK, hostName, ipAddresses, macAddresses, serverId,
+			startDate, expirationDate);
 
 		return _licenseKeyExporter.toXML(
-			key, accountName, licenseEntry.getName(), licenseEntry.getType(),
-			licenseVersion, productName, productId, productVersion,
-			environmentName, maxClusterNodes, maxServers, 0, 0, 0, sizing,
-			description, StringPool.BLANK, hostName, ipAddresses, macAddresses,
-			serverId, startDate, expirationDate);
+			key, accountName, licenseEntryName, licenseType, licenseVersion,
+			productName, productId, productVersion, environmentName,
+			maxClusterNodes, maxServers, 0, 0, 0, sizing, description,
+			StringPool.BLANK, hostName, ipAddresses, macAddresses, serverId,
+			startDate, expirationDate);
 	}
 
 	private static final String _SIZING_COMPLIMENTARY = "Sizing 4";
@@ -1645,15 +1660,21 @@ public class LicenseKeyGenerationService {
 	private static class LicensedProduct {
 
 		private LicensedProduct(
-			LicenseEntry licenseEntry, String productId, String productName) {
+			String licenseEntryName, String licenseType, String productId,
+			String productName) {
 
-			_licenseEntry = licenseEntry;
+			_licenseEntryName = licenseEntryName;
+			_licenseType = licenseType;
 			_productId = productId;
 			_productName = productName;
 		}
 
-		private LicenseEntry _getLicenseEntry() {
-			return _licenseEntry;
+		private String _getLicenseEntryName() {
+			return _licenseEntryName;
+		}
+
+		private String _getLicenseType() {
+			return _licenseType;
 		}
 
 		private String _getProductId() {
@@ -1664,7 +1685,8 @@ public class LicenseKeyGenerationService {
 			return _productName;
 		}
 
-		private final LicenseEntry _licenseEntry;
+		private final String _licenseEntryName;
+		private final String _licenseType;
 		private final String _productId;
 		private final String _productName;
 

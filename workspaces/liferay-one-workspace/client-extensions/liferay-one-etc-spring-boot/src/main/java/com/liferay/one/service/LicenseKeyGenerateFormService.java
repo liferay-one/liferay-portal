@@ -496,8 +496,11 @@ public class LicenseKeyGenerateFormService {
 
 			entitledProducts.add(
 				new EntitledProduct(
-					CommerceProductUtil.isApp(product), entitlement,
-					externalReferenceCode,
+					CommerceProductUtil.isApp(product),
+					!Objects.equals(
+						getProductId(entitlement, product),
+						LicenseConstants.PRODUCT_ID_PORTAL),
+					entitlement, externalReferenceCode,
 					generatesActivationKeyExternalReferenceCodes.contains(
 						externalReferenceCode),
 					licenseKeyFamily, getProductName(entitlement, product)));
@@ -608,8 +611,9 @@ public class LicenseKeyGenerateFormService {
 
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
 				admin, allowComplimentary, allowPermanentLicenses,
-				hasComplimentaryActivationKey, hasLicenseEntries,
-				licenseKeyCounts, entitledProduct.getLicenseKeyFamily(),
+				entitledProduct.isAppLicense(), hasComplimentaryActivationKey,
+				hasLicenseEntries, licenseKeyCounts,
+				entitledProduct.getLicenseKeyFamily(),
 				licenseKeyTypeEntitlements, licenseKeyFamilyProductVersions,
 				provisionable, virtualClusterAllowed);
 
@@ -647,6 +651,8 @@ public class LicenseKeyGenerateFormService {
 
 			productsJSONArray.put(
 				new JSONObject(
+				).put(
+					"appLicense", entitledProduct.isAppLicense()
 				).put(
 					"developerVersions", productDeveloperVersionsJSONArray
 				).put(
@@ -701,9 +707,9 @@ public class LicenseKeyGenerateFormService {
 
 	private JSONArray _getKeyTypesJSONArray(
 		boolean admin, boolean allowComplimentary,
-		boolean allowPermanentLicenses, boolean hasComplimentaryActivationKey,
-		boolean hasLicenseEntries, Map<Long, Integer> licenseKeyCounts,
-		String licenseKeyFamily,
+		boolean allowPermanentLicenses, boolean appLicense,
+		boolean hasComplimentaryActivationKey, boolean hasLicenseEntries,
+		Map<Long, Integer> licenseKeyCounts, String licenseKeyFamily,
 		Map<String, Map<String, List<Entitlement>>> licenseKeyTypeEntitlements,
 		List<ProductVersion> productVersions, boolean provisionable,
 		boolean virtualClusterAllowed) {
@@ -747,22 +753,29 @@ public class LicenseKeyGenerateFormService {
 				continue;
 			}
 
-			LicenseEntry licenseEntry = _fetchLicenseEntry(
-				licenseKeyFamily, licenseKeyType, productVersions, false);
+			LicenseEntry licenseEntry = null;
+			String licenseEntryType = StringPool.BLANK;
 
-			if ((licenseEntry == null) &&
-				LicenseKeyGenerationConstants.standaloneLicenseKeyFamilies.
-					contains(licenseKeyFamily)) {
+			if (appLicense) {
+				licenseEntryType = LicenseKeyType.fetchLicenseType(
+					licenseKeyType.getKey());
 
-				licenseEntry = _fetchLicenseEntry(
-					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP,
-					licenseKeyType, productVersions, false);
+				if (Validator.isNull(licenseEntryType)) {
+					continue;
+				}
 			}
+			else {
+				licenseEntry = _fetchLicenseEntry(
+					licenseKeyFamily, licenseKeyType, productVersions, false);
 
-			if ((licenseEntry == null) && hasLicenseEntries &&
-				licenseKeyType.isLicenseEntryBacked()) {
+				if (licenseEntry != null) {
+					licenseEntryType = licenseEntry.getType();
+				}
+				else if (hasLicenseEntries &&
+						 licenseKeyType.isLicenseEntryBacked()) {
 
-				continue;
+					continue;
+				}
 			}
 
 			boolean virtualCluster = false;
@@ -778,12 +791,6 @@ public class LicenseKeyGenerateFormService {
 				}
 			}
 
-			String licenseEntryType = StringPool.BLANK;
-
-			if (licenseEntry != null) {
-				licenseEntryType = licenseEntry.getType();
-			}
-
 			JSONArray subscriptionsJSONArray = _getSubscriptionsJSONArray(
 				allowPermanentLicenses && !complimentary, keyTypeEntitlements,
 				licenseEntryType, licenseKeyCounts);
@@ -797,9 +804,7 @@ public class LicenseKeyGenerateFormService {
 				).put(
 					"key", licenseKeyType.getKey()
 				).put(
-					"licenseEntryType",
-					(licenseEntry == null) ? StringPool.BLANK :
-						licenseEntry.getType()
+					"licenseEntryType", licenseEntryType
 				).put(
 					"productKey",
 					(licenseEntry == null) ? StringPool.BLANK :
@@ -1379,11 +1384,12 @@ public class LicenseKeyGenerateFormService {
 	private static class EntitledProduct {
 
 		public EntitledProduct(
-			boolean app, Entitlement entitlement, String externalReferenceCode,
-			boolean generatesActivationKey, String licenseKeyFamily,
-			String name) {
+			boolean app, boolean appLicense, Entitlement entitlement,
+			String externalReferenceCode, boolean generatesActivationKey,
+			String licenseKeyFamily, String name) {
 
 			_app = app;
+			_appLicense = appLicense;
 			_entitlement = entitlement;
 			_externalReferenceCode = externalReferenceCode;
 			_generatesActivationKey = generatesActivationKey;
@@ -1411,11 +1417,16 @@ public class LicenseKeyGenerateFormService {
 			return _app;
 		}
 
+		public boolean isAppLicense() {
+			return _appLicense;
+		}
+
 		public boolean isGeneratesActivationKey() {
 			return _generatesActivationKey;
 		}
 
 		private final boolean _app;
+		private final boolean _appLicense;
 		private final Entitlement _entitlement;
 		private final String _externalReferenceCode;
 		private final boolean _generatesActivationKey;

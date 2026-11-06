@@ -40,6 +40,7 @@ export type GenerateFormSubscription = {
 
 export type GenerateFormProduct = {
 	app?: boolean;
+	appLicense?: boolean;
 	developerVersions: string[];
 	entitlementId: number;
 	externalReferenceCode: string;

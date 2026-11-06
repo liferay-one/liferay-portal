@@ -50,8 +50,32 @@ public enum LicenseKeyType {
 		return null;
 	}
 
+	/**
+	 * Returns the license type of a key of the given key type that no license
+	 * entry backs, such as the key of a product licensed as an app. A
+	 * complimentary key takes the license type of a production key, as it does
+	 * when a license entry backs it.
+	 */
+	public static String fetchLicenseType(String key) {
+		LicenseKeyType licenseKeyType = fetchLicenseKeyType(key);
+
+		if (licenseKeyType == COMPLIMENTARY) {
+			licenseKeyType = PRODUCTION;
+		}
+
+		if (licenseKeyType == null) {
+			return null;
+		}
+
+		return licenseKeyType.getType();
+	}
+
 	public String getKey() {
 		return _key;
+	}
+
+	public String getType() {
+		return _type;
 	}
 
 	public boolean isLicenseEntryBacked() {
