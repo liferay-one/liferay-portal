@@ -188,7 +188,7 @@ describe('[CLIENT-HEADLESS-HEADLESSCOMMERCEADMINCATALOG] HeadlessCommerceAdminCa
 
 		await HeadlessCommerceAdminCatalog.getCatalog(1, searchParams);
 		await HeadlessCommerceAdminCatalog.getCatalogs(searchParams);
-		await HeadlessCommerceAdminCatalog.getOptions();
+		await HeadlessCommerceAdminCatalog.getOptions(searchParams);
 		await HeadlessCommerceAdminCatalog.getProduct(2, searchParams);
 		await HeadlessCommerceAdminCatalog.getProductByExternalReferenceCode(
 			'PRDCT-3',
@@ -206,7 +206,7 @@ describe('[CLIENT-HEADLESS-HEADLESSCOMMERCEADMINCATALOG] HeadlessCommerceAdminCa
 		expect(vi.mocked(fetcher).mock.calls).toEqual([
 			[`${BASE_URL}/catalog/1?page=2`],
 			[`${BASE_URL}/catalogs?page=2`],
-			[`${BASE_URL}/options`],
+			[`${BASE_URL}/options?page=2`],
 			[`${BASE_URL}/products/2?page=2`],
 			[`${BASE_URL}/products/by-externalReferenceCode/PRDCT-3?page=2`],
 			[
