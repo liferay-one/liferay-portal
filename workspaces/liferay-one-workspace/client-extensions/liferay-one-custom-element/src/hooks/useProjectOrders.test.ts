@@ -259,7 +259,8 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			createDate: '2026-03-15T12:00:00Z',
 			customFields: {
 				cloudProjectName: 'cloud-1',
-				ldpAnalyticsCloudProject: '{"dataSourceAccessToken":"token-1"}',
+				ldpAnalyticsCloudProject:
+					'{"dataSourceAccessToken":"token-1","friendlyURL":"/acme","groupId":12345}',
 				projectName: 'Alpha',
 			},
 			id: 11,
@@ -278,6 +279,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			environment: {
 				cloudProjectName: 'cloud-1',
 				ldpDataSourceAccessToken: 'token-1',
+				ldpWorkspacePath: '/acme',
 				projectName: 'Alpha',
 			},
 			itemName: 'AI Hub - Business',
@@ -306,6 +308,21 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			itemName: 'Analytics Cloud - Business',
 			quantity: '5',
 		});
+	});
+
+	it('falls back to the workspace group ID when the LDP workspace has no friendly URL', () => {
+		const order = placedOrder({
+			customFields: {
+				ldpAnalyticsCloudProject: '{"friendlyURL":"","groupId":12345}',
+			},
+			id: 13,
+			placedOrderItems: [{productId: 7}],
+		});
+
+		expect(
+			getProductOrderInfo('product', [order], 7).environment
+				.ldpWorkspacePath
+		).toBe('/workspace/12345');
 	});
 
 	it('leaves the purchaser of a Salesforce order empty', () => {
@@ -477,6 +494,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			environment: {
 				cloudProjectName: '',
 				ldpDataSourceAccessToken: '',
+				ldpWorkspacePath: '',
 				projectName: '',
 			},
 			itemName: '',
