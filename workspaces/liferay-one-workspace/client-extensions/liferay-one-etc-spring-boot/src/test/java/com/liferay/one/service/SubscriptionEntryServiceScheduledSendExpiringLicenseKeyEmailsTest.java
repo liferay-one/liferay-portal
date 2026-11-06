@@ -12,6 +12,7 @@ import com.liferay.one.model.ActivationKey;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.SubscriptionEntry;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 
 import java.util.Collections;
 import java.util.Date;
@@ -81,13 +82,19 @@ public class SubscriptionEntryServiceScheduledSendExpiringLicenseKeyEmailsTest {
 			_subscriptionEntryService, "_notificationTemplateService",
 			_notificationTemplateService);
 		ReflectionTestUtils.setField(
+			_subscriptionEntryService, "_portalURL", "https://one.liferay.com");
+		ReflectionTestUtils.setField(
 			_subscriptionEntryService, "_userAccountService",
 			_userAccountService);
+
+		Account account = new Account();
+
+		account.setExternalReferenceCode("ACCOUNT-ERC-1");
 
 		Mockito.when(
 			_accountService.fetchAccount(_ACCOUNT_ID)
 		).thenReturn(
-			new Account()
+			account
 		);
 
 		Mockito.when(
@@ -153,6 +160,57 @@ public class SubscriptionEntryServiceScheduledSendExpiringLicenseKeyEmailsTest {
 	}
 
 	@Test
+	public void testScheduledSendExpiringLicenseKeyEmailsLinksLicenseKeyToProjectActivation()
+		throws Exception {
+
+		_mockUserAccount(_USER_ID, "user@liferay.com", "en_US");
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeys(ArgumentMatchers.anyString())
+		).thenReturn(
+			List.of(_createLicenseKey(0, _ACCOUNT_ID, "PROJECT-ERC-2")),
+			Collections.emptyList(), Collections.emptyList()
+		);
+
+		_mockSubscriptionEntries(ClassNameConstants.LICENSE_KEY, _USER_ID);
+
+		_subscriptionEntryService.scheduledSendExpiringLicenseKeyEmails();
+
+		Map<String, String> placeholders = _captureLicenseKeyPlaceholders();
+
+		Assertions.assertEquals(
+			"https://one.liferay.com/my-account#/ACCOUNT-ERC-1/project" +
+				"/PROJECT-ERC-2/activation",
+			placeholders.get("ACTIVATION_URL"));
+		Assertions.assertEquals(
+			"https://one.liferay.com", placeholders.get("PORTAL_URL"));
+	}
+
+	@Test
+	public void testScheduledSendExpiringLicenseKeyEmailsLinksLicenseKeyWithoutProjectToActivation()
+		throws Exception {
+
+		_mockUserAccount(_USER_ID, "user@liferay.com", "en_US");
+
+		Mockito.when(
+			_licenseKeyService.getLicenseKeys(ArgumentMatchers.anyString())
+		).thenReturn(
+			List.of(_createLicenseKey(0)), Collections.emptyList(),
+			Collections.emptyList()
+		);
+
+		_mockSubscriptionEntries(ClassNameConstants.LICENSE_KEY, _USER_ID);
+
+		_subscriptionEntryService.scheduledSendExpiringLicenseKeyEmails();
+
+		Map<String, String> placeholders = _captureLicenseKeyPlaceholders();
+
+		Assertions.assertEquals(
+			"https://one.liferay.com/my-account/activation",
+			placeholders.get("ACTIVATION_URL"));
+	}
+
+	@Test
 	public void testScheduledSendExpiringLicenseKeyEmailsSendsActivationKeyEmails()
 		throws Exception {
 
@@ -168,6 +226,12 @@ public class SubscriptionEntryServiceScheduledSendExpiringLicenseKeyEmailsTest {
 			activationKey.getActivationKeyId()
 		).thenReturn(
 			_ACTIVATION_KEY_ID
+		);
+
+		Mockito.when(
+			activationKey.getProjectExternalReferenceCode()
+		).thenReturn(
+			"PROJECT-ERC-1"
 		);
 
 		Mockito.when(
@@ -202,12 +266,12 @@ public class SubscriptionEntryServiceScheduledSendExpiringLicenseKeyEmailsTest {
 
 		_subscriptionEntryService.scheduledSendExpiringLicenseKeyEmails();
 
-		Mockito.verify(
-			_notificationTemplateService
-		).getAndProcessTemplateJSONObject(
-			ArgumentMatchers.eq("LICENSE-KEY-EXPIRATION-WARNING"),
-			ArgumentMatchers.eq("en_US"), ArgumentMatchers.anyMap()
-		);
+		Map<String, String> placeholders = _captureLicenseKeyPlaceholders();
+
+		Assertions.assertEquals(
+			"https://one.liferay.com/my-account#/ACCOUNT-ERC-1/project" +
+				"/PROJECT-ERC-1/activation",
+			placeholders.get("ACTIVATION_URL"));
 
 		_verifyNotificationQueueEntries(1);
 	}
@@ -316,11 +380,34 @@ public class SubscriptionEntryServiceScheduledSendExpiringLicenseKeyEmailsTest {
 			_notificationQueueEntryService, _notificationTemplateService);
 	}
 
+	private Map<String, String> _captureLicenseKeyPlaceholders()
+		throws Exception {
+
+		ArgumentCaptor<Map<String, String>> argumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			ArgumentMatchers.eq("LICENSE-KEY-EXPIRATION-WARNING"),
+			ArgumentMatchers.eq("en_US"), argumentCaptor.capture()
+		);
+
+		return argumentCaptor.getValue();
+	}
+
 	private LicenseKey _createLicenseKey(long activationKeyId) {
 		return _createLicenseKey(activationKeyId, _ACCOUNT_ID);
 	}
 
 	private LicenseKey _createLicenseKey(long activationKeyId, long accountId) {
+		return _createLicenseKey(activationKeyId, accountId, StringPool.BLANK);
+	}
+
+	private LicenseKey _createLicenseKey(
+		long activationKeyId, long accountId,
+		String projectExternalReferenceCode) {
+
 		return new LicenseKey(
 			new JSONObject(
 			).put(
@@ -337,6 +424,9 @@ public class SubscriptionEntryServiceScheduledSendExpiringLicenseKeyEmailsTest {
 				"r_accountEntryToLicenseKey_accountEntryId", accountId
 			).put(
 				"r_activationKeyToLicenseKey_c_activationKeyId", activationKeyId
+			).put(
+				"r_projectToLicenseKey_c_projectERC",
+				projectExternalReferenceCode
 			).put(
 				"sizing", "4 cores"
 			));
