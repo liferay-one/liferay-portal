@@ -29,8 +29,10 @@ function deferred<T>() {
 const ACCOUNT_1 = {accountExternalReferenceCode: 'ACCNT-1'};
 
 const PRODUCT_COMMERCE = {
+	appLicense: true,
 	externalReferenceCode: 'PRDCT-COMMERCE',
 	licenseKeyFamily: 'CMP',
+	name: 'Content Marketing Platform',
 };
 
 const PRODUCT_DXP = {
