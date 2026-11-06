@@ -264,6 +264,84 @@ describe('[HOOK-USEPROJECTITEMS] useProjectContractItems', () => {
 		expect(result.current.applications).toEqual([]);
 	});
 
+	it('keeps a pending order with no project contract under the resolved contract', () => {
+		mockOrders([
+			{
+				...toOrder(1, [2], 'Project A'),
+				orderStatusInfo: {code: 10},
+			},
+		]);
+		mockProject({
+			project: {name: 'Project A'},
+			projectId: 'PRJCT-A',
+			selectedContractERC: 'CONTRACT-10',
+		});
+		mockProjectCommerce({
+			projectContractIds: new Set([10]),
+			resolvedContractERC: 'CONTRACT-10',
+			resolvedContractId: 10,
+		});
+		mockEntitlements([]);
+
+		const {result} = renderHook(() => useProjectContractItems());
+
+		expect(getExternalReferenceCodes(result.current.products)).toEqual([
+			'PRDCT-A',
+		]);
+	});
+
+	it('keeps a pending order under the contract its metadata names', () => {
+		mockOrders([
+			{
+				...toOrder(1, [2], 'Project A'),
+				customFields: {
+					'order-metadata': JSON.stringify({contractEntityId: 20}),
+					'projectName': 'Project A',
+				},
+				orderStatusInfo: {code: 1},
+			},
+		]);
+		mockProject({
+			project: {name: 'Project A'},
+			projectId: 'PRJCT-A',
+			selectedContractERC: 'CONTRACT-10',
+		});
+		mockProjectCommerce({
+			projectContractIds: new Set([10, 20]),
+			resolvedContractERC: 'CONTRACT-10',
+			resolvedContractId: 10,
+		});
+		mockEntitlements([]);
+
+		const {result} = renderHook(() => useProjectContractItems());
+
+		expect(result.current.products).toEqual([]);
+	});
+
+	it('excludes a completed order with no entitlement under the resolved contract', () => {
+		mockOrders([
+			{
+				...toOrder(1, [2], 'Project A'),
+				orderStatusInfo: {code: 0},
+			},
+		]);
+		mockProject({
+			project: {name: 'Project A'},
+			projectId: 'PRJCT-A',
+			selectedContractERC: 'CONTRACT-10',
+		});
+		mockProjectCommerce({
+			projectContractIds: new Set([10]),
+			resolvedContractERC: 'CONTRACT-10',
+			resolvedContractId: 10,
+		});
+		mockEntitlements([]);
+
+		const {result} = renderHook(() => useProjectContractItems());
+
+		expect(result.current.products).toEqual([]);
+	});
+
 	it('returns the unscoped items when using the account fallback', () => {
 		mockProject({project: {name: 'Project A'}, projectId: 'PRJCT-A'});
 		mockProjectCommerce({

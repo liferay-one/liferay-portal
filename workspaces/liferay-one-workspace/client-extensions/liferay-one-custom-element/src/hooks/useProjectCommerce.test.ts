@@ -363,6 +363,98 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 		).toEqual(['C_ACCOUNT']);
 	});
 
+	it('adds a one time purchases contract when a project order sits outside project contracts', () => {
+		mockQueries({
+			entitlements: [
+				{
+					externalReferenceCode: 'E_AI_HUB',
+					r_contractToEntitlement_c_contractId: 20,
+					skuExternalReferenceCode: 'SKU-AI-HUB',
+				},
+			],
+			placedOrders: [
+				{
+					customFields: {contractId: '20'},
+					placedOrderItems: [{productId: 1}],
+				},
+				{
+					customFields: {contractId: '0'},
+					placedOrderItems: [{productId: 2}],
+				},
+			],
+			products: [
+				{
+					externalReferenceCode: 'PRDCT-AI-HUB',
+					productId: 1,
+					productSpecifications: [
+						{
+							specificationKey: 'project-item-type',
+							value: 'product',
+						},
+					],
+					skus: [{externalReferenceCode: 'SKU-AI-HUB'}],
+				},
+				{
+					externalReferenceCode: 'PRDCT-SEO-STUDIO',
+					productId: 2,
+					productSpecifications: [
+						{
+							specificationKey: 'project-item-type',
+							value: 'product',
+						},
+					],
+					skus: [{externalReferenceCode: 'SKU-SEO-STUDIO'}],
+				},
+			],
+			projectContracts: [{externalReferenceCode: 'C_PROJECT', id: 20}],
+		});
+
+		const result = renderProjectCommerce();
+
+		expect(
+			result.contracts.map((contract) => contract.externalReferenceCode)
+		).toEqual(['C_PROJECT', ONE_TIME_PURCHASES]);
+		expect(result.resolvedContractERC).toBe('C_PROJECT');
+	});
+
+	it('omits the one time purchases contract when every ordered product is entitled under a project contract', () => {
+		mockQueries({
+			entitlements: [
+				{
+					externalReferenceCode: 'E_AI_HUB',
+					r_contractToEntitlement_c_contractId: 20,
+					skuExternalReferenceCode: 'SKU-AI-HUB',
+				},
+			],
+			placedOrders: [
+				{
+					customFields: {contractId: '0'},
+					placedOrderItems: [{productId: 1}],
+				},
+			],
+			products: [
+				{
+					externalReferenceCode: 'PRDCT-AI-HUB',
+					productId: 1,
+					productSpecifications: [
+						{
+							specificationKey: 'project-item-type',
+							value: 'product',
+						},
+					],
+					skus: [{externalReferenceCode: 'SKU-AI-HUB'}],
+				},
+			],
+			projectContracts: [{externalReferenceCode: 'C_PROJECT', id: 20}],
+		});
+
+		expect(
+			renderProjectCommerce().contracts.map(
+				(contract) => contract.externalReferenceCode
+			)
+		).toEqual(['C_PROJECT']);
+	});
+
 	it('offers only the one time purchases contract when no contracts exist but entitlements do', () => {
 		mockQueries({
 			entitlements: [{externalReferenceCode: 'E_1', name: 'Entitlement'}],
