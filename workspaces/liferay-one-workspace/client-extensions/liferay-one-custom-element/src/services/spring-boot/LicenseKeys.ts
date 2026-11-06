@@ -53,14 +53,17 @@ class LicenseKeysOAuth2 extends OneSpringBootOAuth2 {
 		name: string;
 		productName: string;
 		projectExternalReferenceCode: string;
-		version: string;
+		version?: string;
 	}) {
 		const searchParams = new URLSearchParams({
 			keyType,
 			productName,
 			projectExternalReferenceCode,
-			version,
 		});
+
+		if (version) {
+			searchParams.append('version', version);
+		}
 
 		bundleEntitlementIds.forEach((bundleEntitlementId) =>
 			searchParams.append(

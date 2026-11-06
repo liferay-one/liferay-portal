@@ -534,14 +534,18 @@ export default function GenerateActivationKey() {
 
 		try {
 			await LicenseKeys.downloadDeveloperKey({
-				bundleEntitlementIds: values.bundleEntitlementIds,
+				bundleEntitlementIds: appLicense
+					? []
+					: values.bundleEntitlementIds,
 				keyType: values.keyType,
-				name: `activation-key-${values.keyType}-${values.version}.xml`,
+				name: appLicense
+					? `activation-key-${values.keyType}.xml`
+					: `activation-key-${values.keyType}-${values.version}.xml`,
 				productName: getProductName(
 					values.productExternalReferenceCode
 				),
 				projectExternalReferenceCode: projectId,
-				version: values.version,
+				version: appLicense ? undefined : values.version,
 			});
 
 			navigate('..');
@@ -571,7 +575,9 @@ export default function GenerateActivationKey() {
 
 		try {
 			({activationKeyId} = await ActivationKeys.generateActivationKey({
-				bundleEntitlementIds: values.bundleEntitlementIds,
+				bundleEntitlementIds: appLicense
+					? [values.subscriptionEntitlementId]
+					: values.bundleEntitlementIds,
 				description: values.description || undefined,
 				domains: free ? values.domain.trim() : undefined,
 				environmentName: values.environmentName,
@@ -598,7 +604,7 @@ export default function GenerateActivationKey() {
 						? toISODate(values.startDate)
 						: undefined,
 				subscriptionEntitlementId: values.subscriptionEntitlementId,
-				version: values.version,
+				version: appLicense ? undefined : values.version,
 				virtualCluster: virtualCluster || undefined,
 				...scope,
 			}));
@@ -803,6 +809,7 @@ export default function GenerateActivationKey() {
 
 					{step === 'environment' && (
 						<EnvironmentStep
+							appLicense={appLicense}
 							availableClusterNodes={availableClusterNodes}
 							form={form}
 							generated={generated}

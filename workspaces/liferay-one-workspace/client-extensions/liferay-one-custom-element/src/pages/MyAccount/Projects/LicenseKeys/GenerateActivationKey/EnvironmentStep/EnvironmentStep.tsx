@@ -33,6 +33,7 @@ const SERVER_FIELD_LABELS: Record<GenerateActivationKeyServerField, Word> = {
 };
 
 type EnvironmentStepProps = {
+	appLicense?: boolean;
 	availableClusterNodes: number;
 	form: UseFormReturn<GenerateActivationKeyForm>;
 	generated: boolean;
@@ -47,6 +48,7 @@ type EnvironmentStepProps = {
 };
 
 export default function EnvironmentStep({
+	appLicense,
 	availableClusterNodes,
 	form,
 	generated,
@@ -97,7 +99,9 @@ export default function EnvironmentStep({
 		hasTarget = maxClusterNodes > 0;
 	}
 
-	const canGenerate = Boolean(environmentName.trim() && version && hasTarget);
+	const canGenerate = Boolean(
+		environmentName.trim() && (appLicense || version) && hasTarget
+	);
 
 	async function onClickValidateAndGenerate() {
 		if (

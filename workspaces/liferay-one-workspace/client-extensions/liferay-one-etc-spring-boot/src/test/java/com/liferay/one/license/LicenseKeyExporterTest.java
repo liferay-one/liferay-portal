@@ -102,6 +102,13 @@ public class LicenseKeyExporterTest {
 	}
 
 	@Test
+	public void testGetFileNameLeavesOutABlankVersion() {
+		Assertions.assertEquals(
+			"activation-key-dsr-developer.xml",
+			_licenseKeyExporter.getFileName("DSR", null, "developer"));
+	}
+
+	@Test
 	public void testGetFileNameStripsQuotes() {
 		Assertions.assertEquals(
 			"activation-key-dxp-7.4-evil.xml",

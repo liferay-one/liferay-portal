@@ -99,7 +99,7 @@ public class LicenseKeysRestController extends OneBaseRestController {
 			@RequestParam("productName") String productName,
 			@RequestParam("projectExternalReferenceCode") String
 				projectExternalReferenceCode,
-			@RequestParam("version") String version)
+			@RequestParam(name = "version", required = false) String version)
 		throws Exception {
 
 		_projectPermission.check(

@@ -124,6 +124,11 @@ public class LicenseKeyGenerationService {
 				_getProductId(entitlement),
 				LicenseConstants.PRODUCT_ID_PORTAL)) {
 
+			if (Validator.isNull(version)) {
+				throw new LicenseKeyEntitlementException(
+					"No version was given for the developer key");
+			}
+
 			int comparison = _versionComparator.compare(
 				version,
 				LicenseKeyGenerationConstants.MINIMUM_DEVELOPER_VERSION);
@@ -493,10 +498,25 @@ public class LicenseKeyGenerationService {
 				continue;
 			}
 
+			String licenseKeyFamily =
+				LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement);
+
+			String productName = licenseKeyFamily;
+
+			Product product = _licenseKeyGenerateFormService.fetchProduct(
+				entitlement);
+
+			if (product != null) {
+				productName = LicenseKeyGenerateFormService.getProductName(
+					entitlement, product);
+			}
+
 			throw new LicenseKeyEntitlementException(
 				StringBundler.concat(
-					"Product ", entitlement.getName(),
-					" is not licensed for version ", version));
+					productName, " is licensed only for version ",
+					LicenseKeyGenerationConstants.
+						minimumLicenseKeyFamilyVersions.get(licenseKeyFamily),
+					" and later"));
 		}
 	}
 

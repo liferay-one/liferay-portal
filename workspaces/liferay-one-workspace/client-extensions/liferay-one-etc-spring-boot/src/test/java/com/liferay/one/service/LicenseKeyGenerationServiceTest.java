@@ -1860,6 +1860,29 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyLicensesAStandaloneAppWithoutAVersion()
+		throws Exception {
+
+		Entitlement appEntitlement = _toEntitlement(2L, 5.0, "PRDCT-DSR");
+
+		_stubEntitlements(appEntitlement);
+
+		_stubStandaloneApp(appEntitlement);
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			new LicenseKeyGenerationService.GenerateRequest(
+				Collections.singletonList(2L), "Description", null,
+				"Environment", "backup", 0, null, null, _toProject(), null,
+				null, _toServers(1), null, 2L, null, false));
+
+		_assertStandaloneAppLicenseKey("production");
+	}
+
+	@Test
 	public void testGenerateActivationKeyLicensesAStandaloneAppForDevelopment()
 		throws Exception {
 
@@ -2168,7 +2191,7 @@ public class LicenseKeyGenerationServiceTest {
 						false)));
 
 		Assertions.assertEquals(
-			"Product Entitlement 2 is not licensed for version DXP 2026.Q2",
+			"Digital Sales Room is licensed only for version 2026.Q3 and later",
 			licenseKeyEntitlementException.getMessage());
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerator);
@@ -2773,6 +2796,45 @@ public class LicenseKeyGenerationServiceTest {
 			Collections.singletonList(
 				LicenseKeyGenerationConstants.APP_PRODUCT_VERSION),
 			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 6));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLLicensesAStandaloneAppWithoutAVersion()
+		throws Exception {
+
+		Entitlement appEntitlement = _toDeveloperEntitlement(2L, "PRDCT-DSR");
+
+		_stubEntitlements(appEntitlement);
+
+		_stubStandaloneApp(appEntitlement);
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Collections.emptyList(), "developer", "Digital Sales Room",
+			_toProject(), null);
+
+		Assertions.assertEquals(
+			Collections.singletonList("dsr-app-entry-uuid"),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 5));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLRejectsADXPKeyWithoutAVersion()
+		throws Exception {
+
+		_stubEntitlements(_toDeveloperEntitlement(1L, "PRDCT-DXP"));
+
+		_stubLicensedProducts();
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateDeveloperLicenseXML(
+					Collections.emptyList(), "developer", "Liferay DXP",
+					_toProject(), null));
+
+		Assertions.assertEquals(
+			"No version was given for the developer key",
+			licenseKeyEntitlementException.getMessage());
 	}
 
 	@Test

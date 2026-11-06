@@ -83,6 +83,25 @@ describe('[CLIENT-SPRING-BOOT-LICENSEKEYS] LicenseKeys', () => {
 		expect(downloadFile).toHaveBeenCalledWith('developer.xml', response);
 	});
 
+	it('downloads the developer key of an app without a version', async () => {
+		const response = new Response('key', {status: 200});
+
+		oAuth2Fetch.mockResolvedValue(response);
+
+		await LicenseKeys.downloadDeveloperKey({
+			bundleEntitlementIds: [],
+			keyType: 'developer',
+			name: 'activation-key-developer.xml',
+			productName: 'Digital Sales Room',
+			projectExternalReferenceCode: 'PRJCT-1',
+		});
+
+		expect(oAuth2Fetch).toHaveBeenCalledWith(
+			'/license-keys/developer-download?keyType=developer&productName=Digital+Sales+Room&projectExternalReferenceCode=PRJCT-1',
+			{earlyReturn: true}
+		);
+	});
+
 	it('downloads the license key with earlyReturn', async () => {
 		const response = new Response('key', {status: 200});
 
