@@ -181,7 +181,9 @@ export default class AppPublish extends BaseAppPublish {
 		}
 
 		const {items: options} =
-			await HeadlessCommerceAdminCatalogImpl.getOptions();
+			await HeadlessCommerceAdminCatalogImpl.getOptions(
+				new URLSearchParams({search: LICENSE_USAGE_TYPE_SKU_OPTION_KEY})
+			);
 
 		const option = options.find(
 			(option) => option.key === LICENSE_USAGE_TYPE_SKU_OPTION_KEY
