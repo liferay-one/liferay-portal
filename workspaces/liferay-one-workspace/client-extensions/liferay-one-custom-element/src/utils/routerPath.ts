@@ -4,19 +4,11 @@
  */
 
 import {Liferay} from '~/services/liferay/liferay';
+import {getSiteURL} from '~/utils/siteUtils';
 
 export default function routerPath() {
-	const relativeSiteURL = Liferay.ThemeDisplay.getLayoutRelativeURL();
-	const lastIndexSlash = relativeSiteURL.lastIndexOf('/');
-
-	let siteURL = '';
-
-	if (lastIndexSlash > 0) {
-		siteURL = `/${relativeSiteURL.substring(1, lastIndexSlash)}`;
-	}
-
 	return {
-		project: (externalReferenceCode: string) =>
-			`${Liferay.ThemeDisplay.getPortalURL()}${siteURL}/project/#/${externalReferenceCode}`,
+		ticketAttachments: () =>
+			`${Liferay.ThemeDisplay.getPortalURL()}${getSiteURL()}/support/ticket-attachments`,
 	};
 }

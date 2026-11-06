@@ -54,7 +54,6 @@ License keys and activation keys on the Activation page belong to [Licensing and
 | REQ-PROJECTS-022 | The system remembers the last viewed project only when the user can see that project. The project cookie is separate for each user and account. | P1 | — | `CTX-PROJECTCONTEXT`, `MOD-MYACCOUNT-PROJECTS-PROJECTCOOKIEUTILS`, `MOD-MYACCOUNT-PROJECTS-RESOLVEPROJECTERC`, `HOOK-MYACCOUNT-PROJECTS-USESELECTEDPROJECT` |
 | REQ-PROJECTS-023 | A project opens on its Products page. When it has no products and has applications, it opens on Applications. When it has neither, and One Time Purchases has applications, it opens those applications. | P1 | LPD-90955 | `ROUTE-MY-ACCOUNT-PRODUCTS`, `ROUTE-MY-ACCOUNT-APPLICATIONS` |
 | REQ-PROJECTS-024 | A product or an application of a project has its own detail page. An unknown path under Products or Applications returns to the list. An item that the project does not hold shows no results. | P1 | LPD-88252 | `ROUTE-MY-ACCOUNT-PRODUCTERC`, `ROUTE-MY-ACCOUNT-APPLICATIONERC`, `FLOW-MY-ACCOUNT-OVERVIEW` |
-| REQ-PROJECTS-025 | A link to a project uses the site path and the external reference code of the project. | P2 | — | `MOD-ROUTERPATH` |
 | REQ-PROJECTS-026 | When a signed in user opens My Account, the system loads the project, contract, entitlement, product, and order data in advance. It does this once for each route. | P2 | LPD-99898 | `MOD-PRELOADAPPDATA` |
 
 ## Contracts and the Contract Filter
