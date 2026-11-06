@@ -356,6 +356,39 @@ public class AccountSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncAccountDoesNotSyncSupportLanguageOrRegion()
+		throws Exception {
+
+		Project project = _mockProjectMemberships();
+
+		Mockito.when(
+			_projectService.getProjects(Mockito.anyLong())
+		).thenReturn(
+			Collections.singletonList(project)
+		);
+
+		_accountSynchronizer.syncAccount(_createAccount());
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.times(2)
+		).upsert(
+			Mockito.any(), Mockito.eq(_jiraAssetObject)
+		);
+
+		Mockito.verify(
+			_jiraAssetObject, Mockito.never()
+		).setAttributeValue(
+			Mockito.eq("Language"), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetObject, Mockito.never()
+		).setAttributeValue(
+			Mockito.eq("Region"), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testSyncAccountResolvesEntitlementsWithoutCreatingThem()
 		throws Exception {
 
@@ -947,7 +980,7 @@ public class AccountSynchronizerTest {
 		Mockito.verify(
 			_jiraAssetObject
 		).setAttributeValue(
-			Mockito.eq(AccountConstants.ATTRIBUTE_NAME_LANGUAGE),
+			Mockito.eq(AccountConstants.ATTRIBUTE_NAME_BUSINESS_EVENTS),
 			Mockito.notNull()
 		);
 
