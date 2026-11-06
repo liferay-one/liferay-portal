@@ -466,7 +466,7 @@ public class ProductVersionServiceTest {
 
 		Map<String, JSONObject> jsonObjects = new HashMap<>();
 
-		for (String body : testProductVersionService.putBodies) {
+		for (String body : testProductVersionService.patchBodies) {
 			JSONObject jsonObject = new JSONObject(body);
 
 			jsonObjects.put(jsonObject.getString("productVersion"), jsonObject);
@@ -502,7 +502,7 @@ public class ProductVersionServiceTest {
 	private static class TestProductVersionService
 		extends ProductVersionService {
 
-		public final List<String> putBodies = new ArrayList<>();
+		public final List<String> patchBodies = new ArrayList<>();
 		public String releasesResponse;
 
 		@Override
@@ -525,21 +525,13 @@ public class ProductVersionServiceTest {
 		}
 
 		@Override
-		protected <T> List<T> getAllProjectedItems(
-			String path, String fields, String filterString,
-			Function<JSONObject, T> function) {
-
-			return Collections.emptyList();
-		}
-
-		@Override
 		protected String getAuthorization() {
 			return "Bearer test";
 		}
 
 		@Override
-		protected String put(String authorization, String body, URI uri) {
-			putBodies.add(body);
+		protected String patch(String authorization, String body, URI uri) {
+			patchBodies.add(body);
 
 			return "{\"id\": 1}";
 		}
