@@ -44,6 +44,9 @@ vi.mock('~/context/SolutionContextProvider', async () => {
 			),
 	};
 });
+vi.mock('./components/PublisherRoleGuard/PublisherRoleGuard', () => ({
+	default: ({children}: {children: ReactNode}) => children,
+}));
 vi.mock('~/hooks/usePublisherCatalog', () => ({
 	default: () => ({data: null}),
 }));

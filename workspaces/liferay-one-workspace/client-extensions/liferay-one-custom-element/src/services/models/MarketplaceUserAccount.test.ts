@@ -51,6 +51,24 @@ describe('[CLIENT-MODELS-MARKETPLACEUSERACCOUNT] MarketplaceUserAccount', () => 
 		expect(createModel(userAccount).isSSAUser).toBe(true);
 	});
 
+	it('reads isAppPublisher from the current commerce account only', () => {
+		setCommerceAccountId(1);
+
+		const userAccount = {
+			accountBriefs: [
+				{id: 1, roleBriefs: [{name: 'Account App Publisher'}]},
+				{id: 2, roleBriefs: [{name: 'Account Solution Publisher'}]},
+			],
+		};
+
+		expect(createModel(userAccount).isAppPublisher).toBe(true);
+		expect(createModel(userAccount).isSolutionPublisher).toBe(false);
+
+		setCommerceAccountId(2);
+
+		expect(createModel(userAccount).isAppPublisher).toBe(false);
+	});
+
 	it('returns false for the account roles when no commerce account is selected', () => {
 		const model = createModel({
 			accountBriefs: [{id: 1, roleBriefs: [{name: 'SSA User'}]}],

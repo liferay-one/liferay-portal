@@ -13,6 +13,7 @@ export type PersonaKey =
 	| 'ACCOUNT_BUYER'
 	| 'ACCOUNT_MEMBER'
 	| 'ADMINISTRATOR'
+	| 'APP_PUBLISHER'
 	| 'FINANCE_ADMIN'
 	| 'LIFERAY_STAFF'
 	| 'MULTI_ACCOUNT'
@@ -24,6 +25,7 @@ export type PersonaKey =
 	| 'PROJECT_USER'
 	| 'PROVISIONING_ADMIN'
 	| 'PUBLISHER'
+	| 'SOLUTION_PUBLISHER'
 	| 'SSA_USER';
 
 export type Persona = {
@@ -41,6 +43,10 @@ const PERSONAS: Record<PersonaKey, {email: string; label: string}> = {
 		label: 'Account Member',
 	},
 	ADMINISTRATOR: {email: DEFAULT_ADMIN_EMAIL, label: 'Administrator'},
+	APP_PUBLISHER: {
+		email: 'apppublisher@publisher.com',
+		label: 'App Publisher',
+	},
 	FINANCE_ADMIN: {
 		email: 'finance@liferay.com',
 		label: 'Finance Administrator',
@@ -69,7 +75,11 @@ const PERSONAS: Record<PersonaKey, {email: string; label: string}> = {
 		email: 'provisioning@liferay.com',
 		label: 'Provisioning Administrator',
 	},
-	PUBLISHER: {email: 'admin@publisher.com', label: 'Marketplace Publisher'},
+	PUBLISHER: {email: 'admin@publisher.com', label: 'Publisher'},
+	SOLUTION_PUBLISHER: {
+		email: 'solutionpublisher@publisher.com',
+		label: 'Solution Publisher',
+	},
 	SSA_USER: {email: 'ssa@liferay.com', label: 'SSA User'},
 };
 
