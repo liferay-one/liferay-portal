@@ -95,8 +95,7 @@
 																"key": "marketplace-category-nav",
 																"siteKey": "[$GROUP_KEY$]"
 															},
-															"fragmentConfig": {
-															},
+															"fragmentConfig": {},
 															"indexed": true
 														},
 														"type": "Fragment"
@@ -131,8 +130,7 @@
 								"paddingTop": "5"
 							},
 							"indexed": true,
-							"layout": {
-							},
+							"layout": {},
 							"name": "What Is New"
 						},
 						"pageElements": [
@@ -144,14 +142,78 @@
 									},
 									"fragmentConfig": {
 										"cardSize": "large",
+										"channelId": "",
 										"hideRatingInfo": true,
-										"pageSize": "4",
-										"sectionDescription": "The latest features and extensions are growing the Marketplace ecosystem.",
-										"sectionTitle": "What Is New",
-										"specificationFilterValue": "true"
+										"pageSize": 4,
+										"sectionDescription": "The latest releases and updates from our growing Marketplace ecosystem.",
+										"sectionTitle": "What's new",
+										"specificationFilterValue": "What Is new"
 									},
+									"fragmentFields": [],
 									"indexed": true
 								},
+								"id": "1bd18479-f7ea-475f-afce-b3f5ed5e5ab0",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"fragment": {
+										"key": "home-apps-display",
+										"siteKey": "[$GROUP_KEY$]"
+									},
+									"fragmentConfig": {
+										"cardSize": "large",
+										"channelId": "",
+										"hideRatingInfo": true,
+										"pageSize": 4,
+										"sectionDescription": "Featured apps and extensions curated to help you get the most out of Liferay",
+										"sectionTitle": "Highlights",
+										"specificationFilterValue": "Highlights"
+									},
+									"fragmentFields": [],
+									"indexed": true
+								},
+								"id": "7a923981-9b83-6a68-65a4-ccf8e5000c72",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"fragment": {
+										"key": "home-apps-display",
+										"siteKey": "[$GROUP_KEY$]"
+									},
+									"fragmentConfig": {
+										"cardSize": "large",
+										"channelId": "",
+										"hideRatingInfo": true,
+										"pageSize": 4,
+										"sectionDescription": "Explore the most popular apps chosen by businesses worldwide to power their Liferay solutions",
+										"sectionTitle": "Most Popular",
+										"specificationFilterValue": "Most Popular"
+									},
+									"fragmentFields": [],
+									"indexed": true
+								},
+								"id": "37465f07-cf96-411f-5626-a86af3504b55",
+								"type": "Fragment"
+							},
+							{
+								"definition": {
+									"fragment": {
+										"key": "home-publisher-display",
+										"siteKey": "[$GROUP_KEY$]"
+									},
+									"fragmentConfig": {
+										"channelId": "",
+										"hideRatingInfo": true,
+										"publisherDetailsObjectId": "38744115",
+										"sectionDescription": "Fragments and client extensions to foster your prouctivity",
+										"sectionTitle": "Publisher Spotlight"
+									},
+									"fragmentFields": [],
+									"indexed": true
+								},
+								"id": "89e605f8-8293-790c-20b7-84c6cbd66e7a",
 								"type": "Fragment"
 							}
 						],
@@ -164,8 +226,7 @@
 								"paddingTop": "4"
 							},
 							"indexed": true,
-							"layout": {
-							},
+							"layout": {},
 							"name": "Highlights"
 						},
 						"pageElements": [
@@ -197,8 +258,7 @@
 								"paddingTop": "4"
 							},
 							"indexed": true,
-							"layout": {
-							},
+							"layout": {},
 							"name": "Most Popular"
 						},
 						"pageElements": [
@@ -230,8 +290,7 @@
 								"paddingTop": "4"
 							},
 							"indexed": true,
-							"layout": {
-							},
+							"layout": {},
 							"name": "Publisher Spotlight"
 						},
 						"pageElements": [
@@ -247,8 +306,7 @@
 										{
 											"id": "element-text",
 											"value": {
-												"fragmentLink": {
-												},
+												"fragmentLink": {},
 												"text": {
 													"value_i18n": {
 														"en_US": "Publisher Spotlight",
@@ -272,14 +330,12 @@
 									"fragment": {
 										"key": "BASIC_COMPONENT-paragraph"
 									},
-									"fragmentConfig": {
-									},
+									"fragmentConfig": {},
 									"fragmentFields": [
 										{
 											"id": "element-text",
 											"value": {
-												"fragmentLink": {
-												},
+												"fragmentLink": {},
 												"text": {
 													"value_i18n": {
 														"en_US": "Engineers and bold extenders keep the Liferay ecosystem thriving.",
@@ -346,15 +402,12 @@
 								"pageElements": [
 									{
 										"definition": {
-											"collectionItemConfig": {
-											}
+											"collectionItemConfig": {}
 										},
 										"pageElements": [
 											{
 												"definition": {
-													"cssClasses": [
-														"one-card"
-													],
+													"cssClasses": ["one-card"],
 													"fragmentLink": {
 														"href": {
 															"mapping": {
@@ -430,8 +483,7 @@
 																{
 																	"id": "element-text",
 																	"value": {
-																		"fragmentLink": {
-																		},
+																		"fragmentLink": {},
 																		"text": {
 																			"mapping": {
 																				"fieldKey": "publisherName",
