@@ -35,7 +35,7 @@ MONTHS=(
 )
 
 #
-# Each COMPOSABLE_MONTHS row is a month of composable usage for any account:
+# Each COMPOSABLE_MONTHS row is a month of composable usage for any project:
 # the month, the client extension vCPU count, and then five byte counts for
 # client extension RAM, database storage, document library and backup storage,
 # log storage, and network traffic. A month left out returns an empty usage object, which the usage report
@@ -53,6 +53,20 @@ COMPOSABLE_MONTHS=(
 	"2026-08 4.5 1610612736 64424509440 536870912000 214748364800 429496729600"
 	"2026-09 7.25 2684354560 107374182401 1649267441664 322927853568 1099511627777"
 )
+
+#
+# The customer usage of a SaaS plan, the same for any project. SaaSUsageStrategy
+# reads RAM and storage in GiB. The seeded SaaS project PRJCT-002-3 is entitled
+# to 45 sites, 12 GiB of RAM, 24 vCPUs, and 300 GiB of storage, with no limit on
+# logged in users or anonymous page views, so every value stays under it.
+#
+
+CUSTOMER_USAGE_ANONYMOUS_PAGE_VIEWS_COUNT="420000"
+CUSTOMER_USAGE_CLIENT_EXTENSIONS_CAPACITY_CPU_COUNT="1.5"
+CUSTOMER_USAGE_CLIENT_EXTENSIONS_CAPACITY_RAM="3"
+CUSTOMER_USAGE_MONTHLY_ACTIVE_LOGGED_IN_USERS_COUNT="850"
+CUSTOMER_USAGE_SITES_COUNT="4"
+CUSTOMER_USAGE_STORAGE_CAPACITY_DOCUMENT_LIBRARY="60"
 
 ACTIVE_BATCH_SEGMENTS_COUNT="12"
 ACTIVE_REAL_TIME_SEGMENTS_COUNT="3"
@@ -102,7 +116,9 @@ function main {
 
 	_write_composable_usage_empty "${target_dir}"
 
-	echo "Generated ${#MONTHS[@]} event-summary files, ${#COMPOSABLE_MONTHS[@]} composable-usage files, event-history.json and usage.json"
+	_write_customer_usage "${target_dir}"
+
+	echo "Generated ${#MONTHS[@]} event-summary files, ${#COMPOSABLE_MONTHS[@]} composable-usage files, customer-usage.json, event-history.json and usage.json"
 }
 
 function _envelope {
@@ -152,6 +168,21 @@ function _write_composable_usage_empty {
 		printf '\t"usage": {}\n'
 		printf '}\n'
 	} > "${target_dir}/composable-usage-empty.json"
+}
+
+function _write_customer_usage {
+	local target_dir="${1}"
+
+	{
+		printf '{\n'
+		printf '\t"totalAnonymousPageViewsCount": %s,\n' "${CUSTOMER_USAGE_ANONYMOUS_PAGE_VIEWS_COUNT}"
+		printf '\t"totalClientExtensionsCapacityCPUCount": %s,\n' "${CUSTOMER_USAGE_CLIENT_EXTENSIONS_CAPACITY_CPU_COUNT}"
+		printf '\t"totalClientExtensionsCapacityRAM": %s,\n' "${CUSTOMER_USAGE_CLIENT_EXTENSIONS_CAPACITY_RAM}"
+		printf '\t"totalMonthlyActiveLoggedInUsersCount": %s,\n' "${CUSTOMER_USAGE_MONTHLY_ACTIVE_LOGGED_IN_USERS_COUNT}"
+		printf '\t"totalSitesCount": %s,\n' "${CUSTOMER_USAGE_SITES_COUNT}"
+		printf '\t"totalStorageCapacityDocumentLibrary": %s\n' "${CUSTOMER_USAGE_STORAGE_CAPACITY_DOCUMENT_LIBRARY}"
+		printf '}\n'
+	} > "${target_dir}/customer-usage.json"
 }
 
 function _write_event_history {
