@@ -119,6 +119,7 @@ export type ProductOrderItem = {
 export type ProductEnvironmentInfo = {
 	cloudProjectName: string;
 	ldpDataSourceAccessToken: string;
+	ldpWorkspacePath: string;
 	projectName: string;
 };
 
@@ -314,6 +315,20 @@ export function getProductEnvironmentOrderItems(
 	}));
 }
 
+function getLDPWorkspacePath(
+	analyticsProject: Partial<AnalyticsProject>
+): string {
+	if (analyticsProject.friendlyURL) {
+		return analyticsProject.friendlyURL.startsWith('/')
+			? analyticsProject.friendlyURL
+			: `/${analyticsProject.friendlyURL}`;
+	}
+
+	return analyticsProject.groupId
+		? `/workspace/${analyticsProject.groupId}`
+		: '';
+}
+
 export function getProductOrderInfo(
 	itemType: ProjectItemType,
 	placedOrders: PlacedOrder[],
@@ -326,6 +341,7 @@ export function getProductOrderInfo(
 			environment: {
 				cloudProjectName: '',
 				ldpDataSourceAccessToken: '',
+				ldpWorkspacePath: '',
 				projectName: '',
 			},
 			itemName: '',
@@ -362,6 +378,7 @@ export function getProductOrderInfo(
 				customFields[OrderCustomFields.CLOUD_PROJECT_NAME] ?? '',
 			ldpDataSourceAccessToken:
 				ldpAnalyticsCloudProject.dataSourceAccessToken ?? '',
+			ldpWorkspacePath: getLDPWorkspacePath(ldpAnalyticsCloudProject),
 			projectName: customFields[OrderCustomFields.PROJECT_NAME] ?? '',
 		},
 		itemName: [...new Set(placedOrderItems.map(getTierName))].join(', '),

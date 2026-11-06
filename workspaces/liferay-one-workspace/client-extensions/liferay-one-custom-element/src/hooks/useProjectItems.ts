@@ -19,6 +19,7 @@ import {
 	toProductsByProductId,
 	toProjectItemsByType,
 } from '~/pages/MyAccount/Projects/utils/projectItemsUtils';
+import {getOrderContractId, isInFlightOrder} from '~/utils/orderUtils';
 
 import type {ProjectProduct} from '~/hooks/useProjectCommerce';
 import type {PlacedOrder} from '~/types/orders';
@@ -91,6 +92,7 @@ export function useProjectItems(contractId?: number) {
 		error: productsError ?? ordersError,
 		loading: ordersLoading || productsLoading || projectLoading,
 		orderByProductExternalReferenceCode,
+		orders: scopedOrders,
 		products,
 	};
 }
@@ -163,9 +165,48 @@ export function useProjectContractItems() {
 		resolvedContractId,
 	]);
 
+	const inFlightProductExternalReferenceCodes = useMemo(() => {
+		const productsByProductId = toProductsByProductId(
+			projectProducts?.items ?? []
+		);
+
+		const externalReferenceCodes = new Set<string>();
+
+		for (const order of projectItems.orders) {
+			const contractId = getOrderContractId(order);
+
+			if (
+				!isInFlightOrder(order) ||
+				(contractId !== resolvedContractId &&
+					projectContractIds.has(contractId))
+			) {
+				continue;
+			}
+
+			for (const {productId} of order.placedOrderItems ?? []) {
+				const externalReferenceCode =
+					productsByProductId.get(productId)?.externalReferenceCode;
+
+				if (externalReferenceCode) {
+					externalReferenceCodes.add(externalReferenceCode);
+				}
+			}
+		}
+
+		return externalReferenceCodes;
+	}, [
+		projectContractIds,
+		projectItems.orders,
+		projectProducts,
+		resolvedContractId,
+	]);
+
 	const scoped = useMemo(() => {
 		const keep = (item: ProjectProduct) =>
 			contractProductExternalReferenceCodes.entitled.has(
+				item.externalReferenceCode
+			) ||
+			inFlightProductExternalReferenceCodes.has(
 				item.externalReferenceCode
 			) ||
 			(resolvedContractERC === ONE_TIME_PURCHASES &&
@@ -179,6 +220,7 @@ export function useProjectContractItems() {
 		};
 	}, [
 		contractProductExternalReferenceCodes,
+		inFlightProductExternalReferenceCodes,
 		projectItems.applications,
 		projectItems.products,
 		resolvedContractERC,

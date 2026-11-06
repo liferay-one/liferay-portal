@@ -1866,6 +1866,7 @@ export default {
 	'workspace-name': 'ワークスペース名',
 	'workspace-owner-email': 'ワークスペース所有者のメールアドレス',
 	'workspace-timezone': 'ワークスペースのタイムゾーン',
+	'workspace-url': 'ワークスペースの URL',
 	'x-apps-available': '{0}個のアプリが利用可能',
 	'x-apps-x-solutions': '{0} アプリ · {1} ソリューション',
 	'x-available-for-you': `<b>${Liferay.ThemeDisplay.getUserEmailAddress()}</b>（あなた）が利用可能な{0}`,

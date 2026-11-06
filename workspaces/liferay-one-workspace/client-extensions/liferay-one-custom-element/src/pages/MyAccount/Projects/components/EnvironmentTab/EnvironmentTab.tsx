@@ -5,7 +5,9 @@
 
 import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
+import {useProperties} from '~/context/PropertiesContext';
 import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
+import i18n from '~/i18n';
 import {buildEnvironmentSections} from '~/pages/MyAccount/Projects/utils/buildEnvironmentSections';
 import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filterEnvironmentsByProject';
 
@@ -19,6 +21,8 @@ import SectionedDetailsCard from '../SectionedDetailsCard/SectionedDetailsCard';
 
 import type {ProductEnvironmentInfo} from '~/hooks/useProjectOrders';
 import type {EnvironmentProfile} from '~/pages/MyAccount/Projects/utils/resolveEnvironmentProfile';
+
+import type {DetailsRow} from '../DetailsCard/DetailsCard';
 
 type ProductEnvironmentProfile = Exclude<EnvironmentProfile, 'dxp'>;
 
@@ -49,6 +53,7 @@ function ProductEnvironment({
 	profile?: ProductEnvironmentProfile;
 }) {
 	const {projectId} = useProject();
+	const {analyticsCloudURL} = useProperties();
 	const {environments, loading} = useProjectEnvironments();
 
 	const expectedOffering = profile
@@ -66,28 +71,60 @@ function ProductEnvironment({
 		return <Loading.Page />;
 	}
 
+	const workspaceURL =
+		profile === 'workspace' &&
+		analyticsCloudURL &&
+		environment.ldpWorkspacePath
+			? `${analyticsCloudURL}${environment.ldpWorkspacePath}`
+			: '';
+
+	const workspaceURLRows: DetailsRow[] = workspaceURL
+		? [
+				{
+					label: i18n.translate('workspace-url'),
+					value: (
+						<a
+							href={workspaceURL}
+							rel="noopener noreferrer"
+							target="_blank"
+						>
+							{workspaceURL}
+						</a>
+					),
+				},
+			]
+		: [];
+
 	const workspaceInfoCard =
 		!profile || !environmentEntry ? (
-			<EnvironmentCard environment={environment} />
+			<EnvironmentCard
+				environment={environment}
+				extraRows={workspaceURLRows}
+			/>
 		) : (
 			<SectionedDetailsCard
 				icon="cloud"
 				sections={buildEnvironmentSections(
 					matchingEnvironments,
 					profile
+				).map((section, index) =>
+					index
+						? section
+						: {
+								...section,
+								rows: [...section.rows, ...workspaceURLRows],
+							}
 				)}
 				title="workspace-info"
 			/>
 		);
 
-	if (profile && environmentEntry) {
-		if (profile === 'ai-hub') {
-			return <AIHubEnvironment environment={environmentEntry} />;
-		}
+	if (profile === 'ai-hub') {
+		return <AIHubEnvironment environment={environmentEntry} />;
+	}
 
-		if (profile === 'ac-token') {
-			return <DSREnvironment environment={environmentEntry} />;
-		}
+	if (profile === 'ac-token' && environmentEntry) {
+		return <DSREnvironment environment={environmentEntry} />;
 	}
 
 	if (profile !== 'workspace') {

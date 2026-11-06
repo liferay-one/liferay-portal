@@ -12,7 +12,7 @@ import './AIHubEnvironment.css';
 import type {ProjectEnvironment} from '~/hooks/useProjectEnvironments';
 
 type AIHubEnvironmentProps = {
-	environment: ProjectEnvironment;
+	environment?: ProjectEnvironment;
 };
 
 type Cell = {
@@ -21,19 +21,22 @@ type Cell = {
 };
 
 export default function AIHubEnvironment({environment}: AIHubEnvironmentProps) {
-	const aiHubURL = environment.aiHubURL;
+	const aiHubURL = environment?.aiHubURL ?? '';
 
 	const href = aiHubURL.startsWith('http') ? aiHubURL : `https://${aiHubURL}`;
 
 	const cells: Cell[] = [
-		{label: i18n.translate('ai-hub-account-name'), value: environment.name},
+		{
+			label: i18n.translate('ai-hub-account-name'),
+			value: environment?.name ?? '',
+		},
 		{
 			label: i18n.translate('administration-email'),
-			value: environment.adminEmailAddress,
+			value: environment?.adminEmailAddress ?? '',
 		},
 		{
 			label: i18n.translate('token-monthly-allowance'),
-			value: environment.tokenMonthlyAllowance
+			value: environment?.tokenMonthlyAllowance
 				? i18n.sub('x-tokens', environment.tokenMonthlyAllowance)
 				: '',
 		},
@@ -47,7 +50,7 @@ export default function AIHubEnvironment({environment}: AIHubEnvironmentProps) {
 				''
 			),
 		},
-	].filter((cell) => cell.value);
+	];
 
 	return (
 		<DetailedCard
