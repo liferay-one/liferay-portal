@@ -12,7 +12,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * @author Pedro Oliveira
@@ -41,10 +40,6 @@ public class LicenseKeyGenerationConstants {
 
 	public static final String LICENSE_KEY_FAMILY_CLOUD_NATIVE = "Cloud Native";
 
-	public static final String LICENSE_KEY_FAMILY_CMP = "CMP";
-
-	public static final String LICENSE_KEY_FAMILY_DSR = "DSR";
-
 	public static final String LICENSE_KEY_FAMILY_DXP = "DXP";
 
 	public static final String LICENSE_KEY_FAMILY_PORTAL = "Portal";
@@ -71,8 +66,6 @@ public class LicenseKeyGenerationConstants {
 			LICENSE_KEY_FAMILY_CLOUD_NATIVE, "Cloud Native",
 			LICENSE_KEY_FAMILY_DXP, "Liferay DXP", LICENSE_KEY_FAMILY_PORTAL,
 			"Liferay Portal");
-	public static final Set<String> standaloneLicenseKeyFamilies = Set.of(
-		LICENSE_KEY_FAMILY_CMP, LICENSE_KEY_FAMILY_DSR);
 
 	public static int getActivationCount(
 		String licenseType, int maxClusterNodes) {
