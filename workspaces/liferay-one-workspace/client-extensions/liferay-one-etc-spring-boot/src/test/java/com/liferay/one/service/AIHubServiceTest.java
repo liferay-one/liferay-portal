@@ -86,6 +86,42 @@ public class AIHubServiceTest {
 	}
 
 	@Test
+	public void testPatchProvisioningPatchesByExternalReferenceCode() {
+		_testAIHubService.response = "{\"status\": \"updated\"}";
+
+		JSONObject jsonObject = _testAIHubService.patchProvisioning(
+			"a1tTEST",
+			new JSONObject(
+			).put(
+				"accountId", 5
+			));
+
+		Assertions.assertEquals("updated", jsonObject.getString("status"));
+
+		Assertions.assertEquals(
+			List.of("Bearer external"), _testAIHubService.authorizations);
+		Assertions.assertEquals(
+			List.of("{\"accountId\":5}"), _testAIHubService.bodies);
+		Assertions.assertEquals(
+			URI.create(
+				_AI_HUB_URL +
+					"/o/ai-hub/v1.0/provisioning/by-external-reference-code" +
+						"/a1tTEST"),
+			_testAIHubService.uris.get(0));
+	}
+
+	@Test
+	public void testPatchProvisioningReturnsNullOnWebClientResponseException() {
+		_testAIHubService.runtimeException = WebClientResponseException.create(
+			404, "Not Found", HttpHeaders.EMPTY,
+			"not found".getBytes(StandardCharsets.UTF_8),
+			StandardCharsets.UTF_8);
+
+		Assertions.assertNull(
+			_testAIHubService.patchProvisioning("a1tTEST", new JSONObject()));
+	}
+
+	@Test
 	public void testProvisionPostsToAIHub() {
 		_testAIHubService.response = "{\"status\": \"provisioned\"}";
 
@@ -278,6 +314,11 @@ public class AIHubServiceTest {
 		@Override
 		protected String getAuthorization() {
 			return "Bearer test";
+		}
+
+		@Override
+		protected String patch(String authorization, String body, URI uri) {
+			return _respond(authorization, body, uri);
 		}
 
 		@Override

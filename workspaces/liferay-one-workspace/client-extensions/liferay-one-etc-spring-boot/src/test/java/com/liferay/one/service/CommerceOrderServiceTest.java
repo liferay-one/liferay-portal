@@ -1688,8 +1688,8 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_aiHubService, Mockito.never()
-		).provision(
-			ArgumentMatchers.any()
+		).patchProvisioning(
+			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 
 		_verifyCancelledSEOStudioOrder(
@@ -1735,8 +1735,8 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_aiHubService, Mockito.never()
-		).provision(
-			ArgumentMatchers.any()
+		).patchProvisioning(
+			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 
 		_verifyCancelledSEOStudioOrder("No AI Hub exists for project a1tTEST");
@@ -1756,8 +1756,8 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_aiHubService, Mockito.never()
-		).provision(
-			ArgumentMatchers.any()
+		).patchProvisioning(
+			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 
 		_verifyCancelledSEOStudioOrder("No AI Hub exists for project a1tTEST");
@@ -1935,8 +1935,8 @@ public class CommerceOrderServiceTest {
 			new IllegalStateException()
 		).when(
 			_aiHubService
-		).provision(
-			ArgumentMatchers.any()
+		).patchProvisioning(
+			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 
 		Assertions.assertThrows(
@@ -1999,8 +1999,8 @@ public class CommerceOrderServiceTest {
 			}
 		).when(
 			_aiHubService
-		).provision(
-			ArgumentMatchers.any()
+		).patchProvisioning(
+			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 
 		_commerceOrderService.dispatchOrderUpdate(_ORDER_ID);
@@ -2039,8 +2039,8 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_aiHubService
-		).provision(
-			provisionArgumentCaptor.capture()
+		).patchProvisioning(
+			ArgumentMatchers.eq("a1tTEST"), provisionArgumentCaptor.capture()
 		);
 
 		JSONObject provisionJSONObject = provisionArgumentCaptor.getValue();
@@ -2102,8 +2102,8 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_aiHubService
-		).provision(
-			provisionArgumentCaptor.capture()
+		).patchProvisioning(
+			ArgumentMatchers.eq("a1tTEST"), provisionArgumentCaptor.capture()
 		);
 
 		JSONObject provisionJSONObject = provisionArgumentCaptor.getValue();
@@ -2272,8 +2272,8 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_aiHubService, Mockito.never()
-		).provision(
-			ArgumentMatchers.any()
+		).patchProvisioning(
+			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 
 		Mockito.verify(
@@ -2371,8 +2371,8 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_aiHubService, Mockito.never()
-		).provision(
-			ArgumentMatchers.any()
+		).patchProvisioning(
+			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 
 		Mockito.verify(
@@ -2411,8 +2411,8 @@ public class CommerceOrderServiceTest {
 
 		Mockito.verify(
 			_aiHubService, Mockito.never()
-		).provision(
-			ArgumentMatchers.any()
+		).patchProvisioning(
+			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 
 		_verifyPendingSEOStudioOrder();
@@ -3802,8 +3802,8 @@ public class CommerceOrderServiceTest {
 	private void _verifyCompletedProvisionedSEOStudioOrder() throws Exception {
 		Mockito.verify(
 			_aiHubService, Mockito.never()
-		).provision(
-			ArgumentMatchers.any()
+		).patchProvisioning(
+			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 
 		Mockito.verify(
@@ -3881,13 +3881,19 @@ public class CommerceOrderServiceTest {
 			String administratorEmailAddress, String aiHubAccountName)
 		throws Exception {
 
+		Mockito.verify(
+			_aiHubService, Mockito.never()
+		).provision(
+			ArgumentMatchers.any()
+		);
+
 		ArgumentCaptor<JSONObject> provisionArgumentCaptor =
 			ArgumentCaptor.forClass(JSONObject.class);
 
 		Mockito.verify(
 			_aiHubService
-		).provision(
-			provisionArgumentCaptor.capture()
+		).patchProvisioning(
+			ArgumentMatchers.eq("a1tTEST"), provisionArgumentCaptor.capture()
 		);
 
 		JSONObject provisionJSONObject = provisionArgumentCaptor.getValue();
@@ -4124,8 +4130,8 @@ public class CommerceOrderServiceTest {
 			)
 		).when(
 			_aiHubService
-		).provision(
-			ArgumentMatchers.any()
+		).patchProvisioning(
+			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 	}
 
