@@ -1884,6 +1884,7 @@ export default {
 	'workspace-name': 'Nome do ambiente de trabalho',
 	'workspace-owner-email': 'E-mail do proprietário do espaço de trabalho',
 	'workspace-timezone': 'Fuso horário do espaço de trabalho',
+	'workspace-url': 'URL do espaço de trabalho',
 	'x-apps-available': '{0} aplicativos disponíveis',
 	'x-apps-x-solutions': '{0} Aplicativos · {1} Soluções',
 	'x-available-for-you': `{0} disponíveis para <b>${Liferay.ThemeDisplay.getUserEmailAddress()}</b> (você)`,

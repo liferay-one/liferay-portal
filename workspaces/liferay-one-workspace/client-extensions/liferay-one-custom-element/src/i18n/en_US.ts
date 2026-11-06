@@ -2267,6 +2267,7 @@ export default {
 	'workspace-name': 'Workspace Name',
 	'workspace-owner-email': 'Workspace Owner Email',
 	'workspace-timezone': 'Workspace Timezone',
+	'workspace-url': 'Workspace URL',
 	'x-and-x-more': '{0} and {1} more',
 	'x-apps-available': '{0} apps available',
 	'x-apps-x-solutions': '{0} Apps · {1} Solutions',
