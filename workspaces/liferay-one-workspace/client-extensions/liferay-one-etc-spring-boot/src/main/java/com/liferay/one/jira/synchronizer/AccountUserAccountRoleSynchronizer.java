@@ -8,7 +8,9 @@ package com.liferay.one.jira.synchronizer;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.jira.constants.AccountContactRoleAssignmentConstants;
+import com.liferay.one.jira.constants.ContactRoleConstants;
 import com.liferay.one.jira.converter.AccountContactRoleAssignmentConverter;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
@@ -21,8 +23,10 @@ import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.FindUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -82,8 +86,8 @@ public class AccountUserAccountRoleSynchronizer {
 		}
 
 		_syncAssignment(
-			roleExternalKey, userAccountExternalKey, accountExternalKey, false,
-			biPredicate);
+			_getContactRoleExternalKey(roleExternalKey), userAccountExternalKey,
+			accountExternalKey, false, biPredicate);
 	}
 
 	public void syncRoles(
@@ -130,8 +134,8 @@ public class AccountUserAccountRoleSynchronizer {
 		throws Exception {
 
 		_syncAssignment(
-			roleExternalKey, userAccountExternalKey, accountExternalKey, true,
-			null);
+			_getContactRoleExternalKey(roleExternalKey), userAccountExternalKey,
+			accountExternalKey, true, null);
 	}
 
 	public void syncUnassignStaleRoles(
@@ -147,7 +151,8 @@ public class AccountUserAccountRoleSynchronizer {
 			for (String roleExternalKey : entry.getValue()) {
 				names.add(
 					_accountContactRoleAssignmentConverter.getName(
-						accountExternalKey, entry.getKey(), roleExternalKey));
+						accountExternalKey, entry.getKey(),
+						_getContactRoleExternalKey(roleExternalKey)));
 			}
 		}
 
@@ -171,7 +176,7 @@ public class AccountUserAccountRoleSynchronizer {
 				continue;
 			}
 
-			String roleExternalKey = jiraAssetObject.getAttributeValue(
+			String contactRoleExternalKey = jiraAssetObject.getAttributeValue(
 				AccountContactRoleAssignmentConstants.
 					ATTRIBUTE_NAME_CONTACT_ROLE_EXTERNAL_KEY);
 			String userAccountExternalKey = jiraAssetObject.getAttributeValue(
@@ -180,13 +185,13 @@ public class AccountUserAccountRoleSynchronizer {
 
 			try {
 				if (_isRoleAssigned(
-						roleExternalKey, userAccountExternalKey,
-						accountExternalKey)) {
+						_getRoleExternalKey(contactRoleExternalKey),
+						userAccountExternalKey, accountExternalKey)) {
 
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							StringBundler.concat(
-								"Skipping stale role ", roleExternalKey,
+								"Skipping stale role ", contactRoleExternalKey,
 								" for user account ", userAccountExternalKey,
 								" on account ", accountExternalKey,
 								" because it is still assigned"));
@@ -196,8 +201,8 @@ public class AccountUserAccountRoleSynchronizer {
 				}
 
 				_syncAssignment(
-					roleExternalKey, userAccountExternalKey, accountExternalKey,
-					true,
+					contactRoleExternalKey, userAccountExternalKey,
+					accountExternalKey, true,
 					(existingJiraAssetObject, newJiraAssetObject) ->
 						_jiraAssetService.isUpdatedSince(
 							_accountContactRoleAssignmentConverter, startDate,
@@ -206,12 +211,39 @@ public class AccountUserAccountRoleSynchronizer {
 			catch (Exception exception) {
 				_log.error(
 					StringBundler.concat(
-						"Unable to unassign stale role ", roleExternalKey,
-						" for user account ", userAccountExternalKey,
-						" on account ", accountExternalKey),
+						"Unable to unassign stale role ",
+						contactRoleExternalKey, " for user account ",
+						userAccountExternalKey, " on account ",
+						accountExternalKey),
 					exception);
 			}
 		}
+	}
+
+	private String _getContactRoleExternalKey(String roleExternalKey) {
+		for (Map.Entry<String, String> entry :
+				_contactRoleExternalKeysByRoleExternalKey.entrySet()) {
+
+			if (StringUtil.equalsIgnoreCase(entry.getKey(), roleExternalKey)) {
+				return entry.getValue();
+			}
+		}
+
+		return roleExternalKey;
+	}
+
+	private String _getRoleExternalKey(String contactRoleExternalKey) {
+		for (Map.Entry<String, String> entry :
+				_contactRoleExternalKeysByRoleExternalKey.entrySet()) {
+
+			if (StringUtil.equalsIgnoreCase(
+					entry.getValue(), contactRoleExternalKey)) {
+
+				return entry.getKey();
+			}
+		}
+
+		return contactRoleExternalKey;
 	}
 
 	private boolean _isRoleAssigned(
@@ -255,7 +287,7 @@ public class AccountUserAccountRoleSynchronizer {
 	}
 
 	private void _syncAssignment(
-			String roleExternalKey, String userAccountExternalKey,
+			String contactRoleExternalKey, String userAccountExternalKey,
 			String accountExternalKey, boolean deleted,
 			BiPredicate<JiraAssetObject, JiraAssetObject>
 				shouldSkipUpdateBiPredicate)
@@ -264,12 +296,12 @@ public class AccountUserAccountRoleSynchronizer {
 		_keyedLock.withLock(
 			userAccountExternalKey,
 			() -> _syncAssignmentWithinLock(
-				roleExternalKey, userAccountExternalKey, accountExternalKey,
-				deleted, shouldSkipUpdateBiPredicate));
+				contactRoleExternalKey, userAccountExternalKey,
+				accountExternalKey, deleted, shouldSkipUpdateBiPredicate));
 	}
 
 	private void _syncAssignmentWithinLock(
-		String roleExternalKey, String userAccountExternalKey,
+		String contactRoleExternalKey, String userAccountExternalKey,
 		String accountExternalKey, boolean deleted,
 		BiPredicate<JiraAssetObject, JiraAssetObject>
 			shouldSkipUpdateBiPredicate) {
@@ -278,20 +310,20 @@ public class AccountUserAccountRoleSynchronizer {
 			_log.info(
 				StringBundler.concat(
 					deleted ? "Unassigning" : "Assigning", " role ",
-					roleExternalKey, " for user account ",
+					contactRoleExternalKey, " for user account ",
 					userAccountExternalKey, " on account ",
 					accountExternalKey));
 		}
 
 		JiraAssetObject jiraAssetObject =
 			_accountContactRoleAssignmentConverter.toAssetObject(
-				roleExternalKey, userAccountExternalKey, accountExternalKey,
-				deleted, new Date());
+				contactRoleExternalKey, userAccountExternalKey,
+				accountExternalKey, deleted, new Date());
 
 		jiraAssetObject.setAttributeValue(
 			AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_CONTACT_ROLE,
 			_jiraAssetService.getReferenceObjectId(
-				_contactRoleConverter, roleExternalKey));
+				_contactRoleConverter, contactRoleExternalKey));
 		jiraAssetObject.setAttributeValue(
 			AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_CONTACT,
 			_jiraAssetService.getReferenceObjectId(
@@ -306,6 +338,18 @@ public class AccountUserAccountRoleSynchronizer {
 			shouldSkipUpdateBiPredicate);
 	}
 
+	private static final Map<String, String>
+		_contactRoleExternalKeysByRoleExternalKey = Collections.unmodifiableMap(
+			LinkedHashMapBuilder.put(
+				RoleConstants.ERC_PROJECT_ADMIN,
+				ContactRoleConstants.EXTERNAL_KEY_SUPPORT_ADMINISTRATOR
+			).put(
+				RoleConstants.ERC_PROJECT_REQUESTER,
+				ContactRoleConstants.EXTERNAL_KEY_SUPPORT_REQUESTER
+			).put(
+				RoleConstants.ERC_PROJECT_USER,
+				ContactRoleConstants.EXTERNAL_KEY_SUPPORT_USER
+			).build());
 	private static final Log _log = LogFactory.getLog(
 		AccountUserAccountRoleSynchronizer.class);
 
