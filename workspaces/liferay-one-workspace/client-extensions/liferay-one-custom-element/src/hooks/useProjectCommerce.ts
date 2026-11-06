@@ -16,12 +16,13 @@ import {
 	ONE_TIME_PURCHASES,
 	isUnassignedProject,
 } from '~/pages/MyAccount/Projects/projects';
+import {resolveProjectItemType} from '~/pages/MyAccount/Projects/utils/resolveProjectItemType';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import fetcher from '~/services/fetcher/fetcher';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 import {Liferay} from '~/services/liferay/liferay';
 import Accounts from '~/services/spring-boot/Accounts';
-import {OrderCustomFields} from '~/utils/orderUtils';
+import {getOrderContractId} from '~/utils/orderUtils';
 import {getProductSpecificationValue} from '~/utils/productUtils';
 
 import type {APIResponse, DataQuery} from '~/types/api';
@@ -344,9 +345,7 @@ export function useProjectCommerce(
 		});
 
 		placedOrders.forEach((placedOrder) => {
-			const contractId = Number(
-				placedOrder.customFields?.[OrderCustomFields.CONTRACT_ID]
-			);
+			const contractId = getOrderContractId(placedOrder);
 
 			if (contractId) {
 				contractIds.add(contractId);
@@ -377,10 +376,76 @@ export function useProjectCommerce(
 				)
 		);
 
+	const productsByEntitledExternalReferenceCode = useMemo(
+		() =>
+			toProductsByEntitledExternalReferenceCode(
+				productsData?.items ?? []
+			),
+		[productsData]
+	);
+
+	const hasOneTimeOrders = useMemo(() => {
+		if (!project || !countsOneTimeEntitlements) {
+			return false;
+		}
+
+		const contractEntitledProductExternalReferenceCodes = new Set<string>();
+
+		for (const entitlement of entitlements) {
+			const product = productsByEntitledExternalReferenceCode.get(
+				entitlement.skuExternalReferenceCode ?? ''
+			);
+
+			if (
+				product &&
+				projectContractIds.has(
+					entitlement.r_contractToEntitlement_c_contractId ?? 0
+				)
+			) {
+				contractEntitledProductExternalReferenceCodes.add(
+					product.externalReferenceCode
+				);
+			}
+		}
+
+		const productsByProductId = new Map(
+			(productsData?.items ?? []).map((product) => [
+				product.productId,
+				product,
+			])
+		);
+
+		return placedOrders.some(
+			(placedOrder) =>
+				!projectContractIds.has(getOrderContractId(placedOrder)) &&
+				(placedOrder.placedOrderItems ?? []).some(({productId}) => {
+					const product = productsByProductId.get(productId);
+
+					return (
+						!!product &&
+						!!resolveProjectItemType(
+							product.productSpecifications ?? []
+						) &&
+						!contractEntitledProductExternalReferenceCodes.has(
+							product.externalReferenceCode
+						)
+					);
+				})
+		);
+	}, [
+		countsOneTimeEntitlements,
+		entitlements,
+		placedOrders,
+		productsByEntitledExternalReferenceCode,
+		productsData,
+		project,
+		projectContractIds,
+	]);
+
 	const contracts = useMemo<ProjectContract[]>(
 		() => [
 			...listedContractNodes.map(toProjectContract),
-			...(hasOneTimeEntitlements
+			...(hasOneTimeEntitlements || hasOneTimeOrders
 				? [
 						{
 							externalReferenceCode: ONE_TIME_PURCHASES,
@@ -389,15 +454,7 @@ export function useProjectCommerce(
 					]
 				: []),
 		],
-		[hasOneTimeEntitlements, listedContractNodes]
-	);
-
-	const productsByEntitledExternalReferenceCode = useMemo(
-		() =>
-			toProductsByEntitledExternalReferenceCode(
-				productsData?.items ?? []
-			),
-		[productsData]
+		[hasOneTimeEntitlements, hasOneTimeOrders, listedContractNodes]
 	);
 
 	const contractERCsByProductERC = useMemo(() => {

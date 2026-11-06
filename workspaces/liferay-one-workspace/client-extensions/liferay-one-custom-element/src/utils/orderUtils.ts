@@ -249,6 +249,34 @@ export function toStatusToken(label: string): string {
 	return STATUS_TOKEN_ALIASES[token] ?? token;
 }
 
+export function getOrderContractId(placedOrder: PlacedOrder): number {
+	const contractId = Number(
+		placedOrder.customFields?.[OrderCustomFields.CONTRACT_ID]
+	);
+
+	if (contractId) {
+		return contractId;
+	}
+
+	const orderMetadata = safeJSONParse<{contractEntityId?: number}>(
+		placedOrder.customFields?.[OrderCustomFields.ORDER_METADATA] ?? null,
+		{}
+	);
+
+	return Number(orderMetadata.contractEntityId) || 0;
+}
+
+const IN_FLIGHT_ORDER_STATUS_CODES: number[] = [
+	OrderWorkflowStatusCode.PENDING,
+	OrderWorkflowStatusCode.PROCESSING,
+];
+
+export function isInFlightOrder(placedOrder: PlacedOrder): boolean {
+	return IN_FLIGHT_ORDER_STATUS_CODES.includes(
+		placedOrder.orderStatusInfo?.code
+	);
+}
+
 export function getContractProductOrders(
 	placedOrders: PlacedOrder[],
 	productId: number,
@@ -265,10 +293,7 @@ export function getContractProductOrders(
 	}
 
 	const contractOrders = productOrders.filter(
-		(placedOrder) =>
-			Number(
-				placedOrder.customFields?.[OrderCustomFields.CONTRACT_ID]
-			) === contractId
+		(placedOrder) => getOrderContractId(placedOrder) === contractId
 	);
 
 	return contractOrders.length ? contractOrders : productOrders;

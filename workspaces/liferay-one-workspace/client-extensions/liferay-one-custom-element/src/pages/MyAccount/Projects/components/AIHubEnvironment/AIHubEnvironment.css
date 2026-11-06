@@ -22,5 +22,6 @@
 
 .ai-hub-environment-cell-value {
 	color: var(--color-neutral-8);
+	min-height: 1.5em;
 	overflow-wrap: anywhere;
 }

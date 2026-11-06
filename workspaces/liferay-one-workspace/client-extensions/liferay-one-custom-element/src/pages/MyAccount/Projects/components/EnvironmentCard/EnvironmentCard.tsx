@@ -7,10 +7,11 @@ import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import {ProductEnvironmentInfo} from '~/hooks/useProjectOrders';
 import i18n, {Word} from '~/i18n';
 
-import DetailsCard from '../DetailsCard/DetailsCard';
+import DetailsCard, {DetailsRow} from '../DetailsCard/DetailsCard';
 
 type EnvironmentCardProps = {
 	environment: ProductEnvironmentInfo;
+	extraRows?: DetailsRow[];
 };
 
 const ENVIRONMENT_ROWS: {key: keyof ProductEnvironmentInfo; label: Word}[] = [
@@ -18,13 +19,19 @@ const ENVIRONMENT_ROWS: {key: keyof ProductEnvironmentInfo; label: Word}[] = [
 	{key: 'cloudProjectName', label: 'cloud-project'},
 ];
 
-export default function EnvironmentCard({environment}: EnvironmentCardProps) {
-	const rows = ENVIRONMENT_ROWS.filter((row) => environment[row.key]).map(
-		(row) => ({
-			label: i18n.translate(row.label),
-			value: environment[row.key],
-		})
-	);
+export default function EnvironmentCard({
+	environment,
+	extraRows = [],
+}: EnvironmentCardProps) {
+	const rows: DetailsRow[] = [
+		...ENVIRONMENT_ROWS.filter((row) => environment[row.key]).map(
+			(row) => ({
+				label: i18n.translate(row.label),
+				value: environment[row.key],
+			})
+		),
+		...extraRows,
+	];
 
 	if (!rows.length) {
 		return (
