@@ -45,6 +45,11 @@ public class AccountContactRoleAssignmentConverter
 		return AccountContactRoleAssignmentConstants.OBJECT_TYPE_NAME;
 	}
 
+	@Override
+	public boolean isSyncEnabled() {
+		return _syncEnabled;
+	}
+
 	public JiraAssetObject toAssetObject(
 		String contactRoleExternalKey, String contactExternalKey,
 		String accountExternalKey, boolean deleted, Date externalUpdatedAt) {
@@ -86,5 +91,8 @@ public class AccountContactRoleAssignmentConverter
 
 	@Value("${liferay.one.jira.asset.schema.name}")
 	private String _schemaName;
+
+	@Value("${liferay.one.jira.sync.account.contact.role.assignment.enabled}")
+	private boolean _syncEnabled;
 
 }

@@ -35,6 +35,11 @@ public class ExternalLinkConverter extends BaseJiraAssetObjectConverter {
 		return false;
 	}
 
+	@Override
+	public boolean isSyncEnabled() {
+		return _syncEnabled;
+	}
+
 	public JiraAssetObject toAssetObject(Property property) {
 		ExternalLinkInfo externalLinkInfo = _toExternalLinkInfo(property);
 
@@ -80,6 +85,9 @@ public class ExternalLinkConverter extends BaseJiraAssetObjectConverter {
 
 	@Value("${liferay.one.jira.asset.schema.name}")
 	private String _schemaName;
+
+	@Value("${liferay.one.jira.sync.external.link.enabled}")
+	private boolean _syncEnabled;
 
 	private static class ExternalLinkInfo {
 

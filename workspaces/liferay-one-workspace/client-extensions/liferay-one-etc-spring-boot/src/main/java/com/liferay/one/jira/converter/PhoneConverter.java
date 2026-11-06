@@ -32,6 +32,11 @@ public class PhoneConverter extends BaseJiraAssetObjectConverter {
 		return PhoneConstants.OBJECT_TYPE_NAME;
 	}
 
+	@Override
+	public boolean isSyncEnabled() {
+		return _syncEnabled;
+	}
+
 	public JiraAssetObject toAssetObject(Phone phone) {
 		JiraAssetObject jiraAssetObject = createJiraAssetObject();
 
@@ -71,5 +76,8 @@ public class PhoneConverter extends BaseJiraAssetObjectConverter {
 
 	@Value("${liferay.one.jira.asset.schema.name}")
 	private String _schemaName;
+
+	@Value("${liferay.one.jira.sync.phone.enabled}")
+	private boolean _syncEnabled;
 
 }

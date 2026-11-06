@@ -89,6 +89,13 @@ Terms used in this file:
 | TECH-JIRA-062 | The cleanup of assignments depends on JSM. When JSM deletes an object, it must clear each reference to that object. The job looks for live assignments with an empty reference, and marks as deleted those whose Liferay record is gone. | P1 | LPD-100047 | `SYNC-ORPHANEDASSIGNMENTRECONCILER`, `CRON-RECONCILEORPHANEDASSIGNMENTS` |
 | TECH-JIRA-063 | The retention job runs at 00:00 and 12:00. It searches both support projects for issues in a closed status that changed to that status between 8 and 7 days before the run. It asks for the key field only. TECH-SUPPORT-040 states what it deletes. | P0 | LPD-90456 | `CRON-SCHEDULEDCLEANUP`, `FLOW-TICKET-ATTACHMENT-RETENTION` |
 
+## Sync Switches
+
+| ID | Requirement | Priority | Tickets | Verified By |
+| --- | --- | --- | --- | --- |
+| TECH-JIRA-070 | Each object type of the sync schema has a switch, `liferay.one.jira.sync.<type>.enabled`, set from `LIFERAY_ONE_JIRA_SYNC_<TYPE>_ENABLED`. The 12 types are Account, Account Contact Role Assignment, Account Team Role Assignment, Contact, Contact Role, Entitlement, External Link, Phone, Postal Address, Team, Team Contact Role Assignment, and Team Role. Each switch is on by default. | P1 | LPD-114423 | `CLS-BASEJIRAASSETOBJECTCONVERTER` |
+| TECH-JIRA-071 | When the switch of a type is off, the service does not create, update, delete, or soft delete an object of that type, and logs each write that it skips. A list of references to that type is null, so the service does not write the reference attribute and JSM keeps its value. Searches and single reference lookups still run. The service never writes an Entitlement object, so the Entitlement switch controls only the Entitlements attribute of an Account. | P1 | LPD-114423 | `SVC-JIRAASSETSERVICE` |
+
 ## Not Yet Built
 
 | ID | Requirement | Priority | Tickets | Verified By |
