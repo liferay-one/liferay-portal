@@ -1840,15 +1840,14 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
-	public void testGenerateActivationKeyLicensesAStandaloneAddOn()
+	public void testGenerateActivationKeyLicensesAStandaloneApp()
 		throws Exception {
 
-		Entitlement addOnEntitlement = _toEntitlement(2L, 5.0, "PRDCT-DSR");
+		Entitlement appEntitlement = _toEntitlement(2L, 5.0, "PRDCT-DSR");
 
-		_stubEntitlements(addOnEntitlement);
+		_stubEntitlements(appEntitlement);
 
-		_stubBundledProducts(
-			addOnEntitlement, _toEntitlement(1L, 5.0, "PRDCT-DXP"));
+		_stubStandaloneApp(appEntitlement);
 
 		_stubActivationKey();
 
@@ -1857,35 +1856,31 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService.generateActivationKey(
 			_toGenerateRequest(Collections.singletonList(2L), 2L));
 
-		ArgumentCaptor<String> licenseEntryNameArgumentCaptor =
-			ArgumentCaptor.forClass(String.class);
-		ArgumentCaptor<String> productNameArgumentCaptor =
-			ArgumentCaptor.forClass(String.class);
+		_assertStandaloneAppLicenseKey("production");
+	}
 
-		Mockito.verify(
-			_licenseKeyGenerator
-		).generateKey(
-			Mockito.any(), licenseEntryNameArgumentCaptor.capture(),
-			Mockito.any(), Mockito.anyInt(),
-			productNameArgumentCaptor.capture(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.anyInt(), Mockito.anyInt(), Mockito.anyInt(),
-			Mockito.anyLong(), Mockito.anyLong(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.any(), Mockito.any(), Mockito.any()
-		);
+	@Test
+	public void testGenerateActivationKeyLicensesAStandaloneAppForDevelopment()
+		throws Exception {
 
-		Assertions.assertEquals(
-			"DXP Backup", licenseEntryNameArgumentCaptor.getValue());
-		Assertions.assertEquals(
-			"Digital Sales Room", productNameArgumentCaptor.getValue());
+		Entitlement appEntitlement = _toEntitlement(
+			2L, 5.0, "PRDCT-DSR", 0, "2027-08-09T00:00:00Z", "developer");
 
-		Assertions.assertEquals(
-			Collections.singletonList("DSR"),
-			_getInvocationArguments(
-				_activationKeyService, "addActivationKey", 3));
-		Assertions.assertEquals(
-			Collections.singletonList("DSR"),
-			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 14));
+		_stubEntitlements(appEntitlement);
+
+		_stubStandaloneApp(appEntitlement);
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			new LicenseKeyGenerationService.GenerateRequest(
+				Collections.singletonList(2L), "Description", null,
+				"Environment", "developer", 0, null, null, _toProject(), null,
+				null, _toServers(1), null, 2L, "DXP 7.4", false));
+
+		_assertStandaloneAppLicenseKey("developer");
 	}
 
 	@Test
@@ -1929,6 +1924,13 @@ public class LicenseKeyGenerationServiceTest {
 		Assertions.assertEquals(
 			productIds,
 			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 27));
+
+		Assertions.assertEquals(
+			Arrays.asList("DXP Backup", StringPool.BLANK),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 1));
+		Assertions.assertEquals(
+			Arrays.asList("production", "production"),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 2));
 
 		List<Object> licenseVersions = _getInvocationArguments(
 			_licenseKeyGenerator, "generateKey", 3);
@@ -3094,6 +3096,28 @@ public class LicenseKeyGenerationServiceTest {
 			_getInvocationArguments(_licenseKeyExporter, "toXML", 20));
 	}
 
+	private void _assertStandaloneAppLicenseKey(String licenseType) {
+		Assertions.assertEquals(
+			Collections.singletonList(StringPool.BLANK),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 1));
+		Assertions.assertEquals(
+			Collections.singletonList(licenseType),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 2));
+		Assertions.assertEquals(
+			Collections.singletonList(LicenseVersion.getAppLicenseVersion()),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 3));
+		Assertions.assertEquals(
+			Collections.singletonList("Digital Sales Room"),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 4));
+		Assertions.assertEquals(
+			Collections.singletonList("dsr-app-entry-uuid"),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 5));
+		Assertions.assertEquals(
+			Collections.singletonList(
+				LicenseKeyGenerationConstants.APP_PRODUCT_VERSION),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 6));
+	}
+
 	private long _getComplimentaryTermMillis() {
 		Date expirationDate = (Date)_getInvocationArguments(
 			_activationKeyService, "addActivationKey", 2
@@ -3359,6 +3383,22 @@ public class LicenseKeyGenerationServiceTest {
 					).put(
 						"owner", "old@example.com"
 					)))
+		);
+	}
+
+	private void _stubStandaloneApp(Entitlement appEntitlement)
+		throws Exception {
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchProduct(appEntitlement)
+		).thenReturn(
+			_toProduct("Digital Sales Room", "PRDCT-DSR", "dsr-app-entry-uuid")
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.grantsLicense(Mockito.any())
+		).thenReturn(
+			true
 		);
 	}
 

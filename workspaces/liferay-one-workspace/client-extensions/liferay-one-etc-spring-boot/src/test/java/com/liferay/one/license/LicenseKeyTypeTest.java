@@ -144,6 +144,32 @@ public class LicenseKeyTypeTest {
 	}
 
 	@Test
+	public void testFetchLicenseType() {
+		Map<String, String> licenseTypes = new HashMap<>();
+
+		for (String key :
+				Arrays.asList(
+					"backup", "complimentary", "developer", "developer-cluster",
+					"non-production", "production", "uat", "unknown")) {
+
+			licenseTypes.put(key, LicenseKeyType.fetchLicenseType(key));
+		}
+
+		Map<String, String> expectedLicenseTypes = new HashMap<>();
+
+		expectedLicenseTypes.put("backup", "production");
+		expectedLicenseTypes.put("complimentary", "production");
+		expectedLicenseTypes.put("developer", "developer");
+		expectedLicenseTypes.put("developer-cluster", "developer-cluster");
+		expectedLicenseTypes.put("non-production", "production");
+		expectedLicenseTypes.put("production", "production");
+		expectedLicenseTypes.put("uat", null);
+		expectedLicenseTypes.put("unknown", null);
+
+		Assertions.assertEquals(expectedLicenseTypes, licenseTypes);
+	}
+
+	@Test
 	public void testInitIgnoresUnknownKey() {
 		_setTypes("production,bogus,,backup");
 

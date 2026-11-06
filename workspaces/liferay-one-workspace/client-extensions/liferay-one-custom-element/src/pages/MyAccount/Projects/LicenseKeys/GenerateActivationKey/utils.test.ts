@@ -61,6 +61,18 @@ function toKeyType(availableCounts: number[]) {
 	} as GenerateFormKeyType;
 }
 
+function toAppLicenseProduct(
+	externalReferenceCode: string,
+	licenseKeyFamily: string,
+	name: string
+) {
+	return {
+		...toProduct(externalReferenceCode, licenseKeyFamily),
+		appLicense: true,
+		name,
+	};
+}
+
 function toProduct(externalReferenceCode: string, licenseKeyFamily = '') {
 	return {externalReferenceCode, licenseKeyFamily} as GenerateFormProduct;
 }
@@ -360,10 +372,23 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			).toEqual([dxp]);
 		});
 
-		it('keeps CMP and DSR next to the leading product', () => {
-			const cmp = toProduct('PRDCT-CMP', 'CMP');
-			const dsr = toProduct('PRDCT-DSR', 'DSR');
+		it('keeps the app licenses next to the leading product by name', () => {
+			const cmp = toAppLicenseProduct(
+				'PRDCT-CMP',
+				'CMP',
+				'Content Marketing Platform'
+			);
+			const dsr = toAppLicenseProduct(
+				'PRDCT-DSR',
+				'DSR',
+				'Digital Sales Room'
+			);
 			const dxp = toProduct('PRDCT-DXP', 'DXP');
+			const newApp = toAppLicenseProduct(
+				'PRDCT-NEW-APP',
+				'NEW',
+				'Brand New App'
+			);
 
 			expect(
 				getProjectProducts([
@@ -371,8 +396,17 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 					toProduct('PRDCT-ADDON', 'Add-On'),
 					dxp,
 					cmp,
+					newApp,
 				])
-			).toEqual([dxp, cmp, dsr]);
+			).toEqual([dxp, newApp, cmp, dsr]);
+		});
+
+		it('drops a CMP that is not licensed as an app', () => {
+			const dxp = toProduct('PRDCT-DXP', 'DXP');
+
+			expect(
+				getProjectProducts([toProduct('PRDCT-CMP', 'CMP'), dxp])
+			).toEqual([dxp]);
 		});
 
 		it('keeps every product when none has a leading family', () => {
@@ -388,7 +422,11 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 	describe('getSelectableProducts', () => {
 		const addOn = toProduct('PRDCT-ADDON', 'Add-On');
 		const app = {...toProduct('PRDCT-APP'), app: true};
-		const cmp = toProduct('PRDCT-CMP', 'CMP');
+		const cmp = toAppLicenseProduct(
+			'PRDCT-CMP',
+			'CMP',
+			'Content Marketing Platform'
+		);
 		const dxp = toProduct('PRDCT-DXP', 'DXP');
 		const trial = toProduct('PRDCT-DXP-TRIAL', 'DXP');
 

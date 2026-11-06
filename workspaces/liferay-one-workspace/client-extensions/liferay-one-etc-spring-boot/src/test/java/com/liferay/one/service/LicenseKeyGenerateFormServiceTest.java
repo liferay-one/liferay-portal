@@ -38,6 +38,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -712,26 +713,9 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
-	public void testGetKeyTypesGivesAStandaloneAddOnTheDXPLicenseEntry() {
+	public void testGetKeyTypesGivesAnAppLicenseTheLicenseTypeOfItsKeyType() {
 		LicenseEntryService licenseEntryService = Mockito.mock(
 			LicenseEntryService.class);
-
-		Mockito.when(
-			licenseEntryService.getLicenseEntriesByNameVersion(
-				Mockito.anyString(), Mockito.anyString())
-		).thenReturn(
-			Collections.emptyList()
-		);
-
-		Mockito.when(
-			licenseEntryService.getLicenseEntriesByNameVersion(
-				"DXP%", "2026.Q1")
-		).thenReturn(
-			Collections.singletonList(
-				new LicenseEntry(
-					"portal", "DXP Production", "production", "2026.Q1",
-					"2026.Q1"))
-		);
 
 		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
 			LicenseKeyTypeService.class);
@@ -739,7 +723,9 @@ public class LicenseKeyGenerateFormServiceTest {
 		Mockito.when(
 			licenseKeyTypeService.getLicenseKeyTypes()
 		).thenReturn(
-			Collections.singletonList(LicenseKeyType.PRODUCTION)
+			Arrays.asList(
+				LicenseKeyType.DEVELOPER, LicenseKeyType.NON_PRODUCTION,
+				LicenseKeyType.PRODUCTION, LicenseKeyType.UAT)
 		);
 
 		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
@@ -753,37 +739,77 @@ public class LicenseKeyGenerateFormServiceTest {
 			licenseKeyTypeService);
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
-			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			true, false, false, Collections.emptyMap(), "DSR",
+			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", true, true,
+			true, true, false, false, Collections.emptyMap(), "DSR",
 			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DSR",
 				(Map<String, List<Entitlement>>)HashMapBuilder.put(
+					"developer",
+					Collections.singletonList(
+						_toEntitlement(1L, "digital-sales-room-developer"))
+				).put(
+					"non-production",
+					Collections.singletonList(
+						_toEntitlement(2L, "digital-sales-room-non-production"))
+				).put(
 					"production",
 					Collections.singletonList(
-						_toEntitlement(1L, "digital-sales-room-production"))
+						_toEntitlement(3L, "digital-sales-room-production"))
+				).put(
+					"uat",
+					Collections.singletonList(
+						_toEntitlement(4L, "digital-sales-room-uat"))
 				).build()
 			).build(),
 			Collections.singletonList(
 				_toProductVersion("2026.Q1", "DXP 2026.Q1")),
 			true, false);
 
-		JSONObject keyTypeJSONObject = jsonArray.getJSONObject(0);
+		Map<String, String> licenseEntryTypes = new HashMap<>();
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject keyTypeJSONObject = jsonArray.getJSONObject(i);
+
+			licenseEntryTypes.put(
+				keyTypeJSONObject.getString("key"),
+				keyTypeJSONObject.getString("licenseEntryType"));
+		}
 
 		Assertions.assertEquals(
-			"production", keyTypeJSONObject.getString("licenseEntryType"));
+			HashMapBuilder.put(
+				"developer", "developer"
+			).put(
+				"non-production", "production"
+			).put(
+				"production", "production"
+			).build(),
+			licenseEntryTypes);
 
-		JSONObject subscriptionJSONObject = keyTypeJSONObject.getJSONArray(
-			"subscriptions"
-		).getJSONObject(
-			0
-		);
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject keyTypeJSONObject = jsonArray.getJSONObject(i);
 
-		Instant licenseKeyExpirationInstant = Instant.parse(
-			subscriptionJSONObject.getString("licenseKeyExpirationDate"));
+			if (!Objects.equals(
+					keyTypeJSONObject.getString("licenseEntryType"),
+					"production")) {
 
-		Assertions.assertTrue(
-			licenseKeyExpirationInstant.isAfter(
-				Instant.parse("2100-01-01T00:00:00Z")));
+				continue;
+			}
+
+			JSONObject subscriptionJSONObject = keyTypeJSONObject.getJSONArray(
+				"subscriptions"
+			).getJSONObject(
+				0
+			);
+
+			Instant licenseKeyExpirationInstant = Instant.parse(
+				subscriptionJSONObject.getString("licenseKeyExpirationDate"));
+
+			Assertions.assertTrue(
+				licenseKeyExpirationInstant.isAfter(
+					Instant.parse("2100-01-01T00:00:00Z")));
+		}
+
+		Mockito.verifyNoInteractions(licenseEntryService);
 	}
 
 	@Test
@@ -816,7 +842,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			false, false, false,
+			false, false, false, false,
 			HashMapBuilder.put(
 				entitlement.getEntitlementId(), 5
 			).build(),
@@ -860,7 +886,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			false, false, false, Collections.emptyMap(), "DXP",
+			false, false, false, false, Collections.emptyMap(), "DXP",
 			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
 				(Map<String, List<Entitlement>>)HashMapBuilder.put(
@@ -982,7 +1008,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			false, false, false, Collections.emptyMap(), "DXP",
+			false, false, false, false, Collections.emptyMap(), "DXP",
 			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
 				(Map<String, List<Entitlement>>)HashMapBuilder.put(
@@ -1705,8 +1731,8 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		return ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false,
-			allowComplimentary, false, hasComplimentaryActivationKey, false,
-			Collections.emptyMap(), "DXP",
+			allowComplimentary, false, false, hasComplimentaryActivationKey,
+			false, Collections.emptyMap(), "DXP",
 			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
 				(Map<String, List<Entitlement>>)HashMapBuilder.put(
@@ -1778,7 +1804,8 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		return ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", admin,
-			false, false, false, true, new HashMap<Long, Integer>(), "DXP",
+			false, false, false, false, true, new HashMap<Long, Integer>(),
+			"DXP",
 			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
 				(Map<String, List<Entitlement>>)HashMapBuilder.put(
@@ -1852,14 +1879,14 @@ public class LicenseKeyGenerateFormServiceTest {
 			LicenseKeyGenerateFormService.class.getName() + "$EntitledProduct");
 
 		Constructor<?> constructor = clazz.getDeclaredConstructor(
-			boolean.class, Entitlement.class, String.class, boolean.class,
-			String.class, String.class);
+			boolean.class, boolean.class, Entitlement.class, String.class,
+			boolean.class, String.class, String.class);
 
 		constructor.setAccessible(true);
 
 		return constructor.newInstance(
-			false, null, "PRDCT-" + licenseKeyFamily, true, licenseKeyFamily,
-			licenseKeyFamily);
+			false, false, null, "PRDCT-" + licenseKeyFamily, true,
+			licenseKeyFamily, licenseKeyFamily);
 	}
 
 	private Entitlement _toEntitlement(Double maxQuantity) {
