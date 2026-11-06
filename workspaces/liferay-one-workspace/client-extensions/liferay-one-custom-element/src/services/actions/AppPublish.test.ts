@@ -263,6 +263,9 @@ describe('[CLIENT-ACTIONS-APPPUBLISH] AppPublish', () => {
 
 		await appPublish.syncLicensing(product);
 
+		expect(catalog.getOptions).toHaveBeenCalledWith(
+			new URLSearchParams({search: LICENSE_USAGE_TYPE_SKU_OPTION_KEY})
+		);
 		expect(catalog.createProductOption).toHaveBeenCalledWith(
 			[
 				{
