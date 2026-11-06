@@ -169,6 +169,11 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			products: [
 				toProduct('marketplace-product-2', 'DXP'),
 				toProduct('marketplace-product-3', 'Portal'),
+				toAppLicenseProduct(
+					'PRDCT-COMMERCE',
+					'CMP',
+					'Content Marketing Platform'
+				),
 			],
 		} as GenerateForm;
 
@@ -212,6 +217,17 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 					true
 				).map(({externalReferenceCode}) => externalReferenceCode)
 			).toEqual(['marketplace-product-2']);
+		});
+
+		it('returns only the chosen product for an app license', () => {
+			expect(
+				getBundleProducts(
+					false,
+					generateForm,
+					'PRDCT-COMMERCE',
+					false
+				).map(({externalReferenceCode}) => externalReferenceCode)
+			).toEqual(['PRDCT-COMMERCE']);
 		});
 
 		it('returns an empty list when the product is unknown', () => {
@@ -516,6 +532,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 
 	describe('steps', () => {
 		const route = {
+			appLicense: false,
 			cloudNative: false,
 			complimentary: false,
 			developer: false,
@@ -539,9 +556,24 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			);
 			expect(
 				getStepBeforeEnvironment({
+					appLicense: false,
 					complimentary: false,
 					free: false,
 					unassigned: true,
+				})
+			).toBe('subscription');
+		});
+
+		it('goes from the subscription straight to the environment of an app license key', () => {
+			expect(getStepAfterSubscription({...route, appLicense: true})).toBe(
+				'environment'
+			);
+			expect(
+				getStepBeforeEnvironment({
+					appLicense: true,
+					complimentary: false,
+					free: false,
+					unassigned: false,
 				})
 			).toBe('subscription');
 		});
@@ -552,6 +584,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			);
 			expect(
 				getStepBeforeEnvironment({
+					appLicense: false,
 					complimentary: false,
 					free: true,
 					unassigned: false,
@@ -562,6 +595,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 		it('goes back from the environment to the step before it', () => {
 			expect(
 				getStepBeforeEnvironment({
+					appLicense: false,
 					complimentary: false,
 					free: false,
 					unassigned: false,
@@ -569,6 +603,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			).toBe('add-ons');
 			expect(
 				getStepBeforeEnvironment({
+					appLicense: false,
 					complimentary: true,
 					free: false,
 					unassigned: false,
