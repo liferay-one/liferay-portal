@@ -486,6 +486,60 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetGenerateFormForAccountLicensesAnAppFromItsMinimumVersion()
+		throws Exception {
+
+		JSONArray bundleProductsJSONArray =
+			_getGenerateFormBundleProductsJSONArray(
+				_toProductVersion("2026.Q3", "DXP 2026.Q3"),
+				_toProductVersion("2026.Q2", "DXP 2026.Q2"),
+				_toProductVersion("7.4", "DXP 7.4"));
+
+		Assertions.assertEquals(
+			Arrays.asList("PRDCT-CONTENT-MARKETING-TRIAL", "PRDCT-DXP-TRIAL"),
+			_getExternalReferenceCodes(bundleProductsJSONArray));
+
+		JSONObject cmpBundleProductJSONObject =
+			bundleProductsJSONArray.getJSONObject(0);
+
+		Assertions.assertTrue(
+			cmpBundleProductJSONObject.getBoolean("licensable"));
+		Assertions.assertEquals(
+			Collections.singletonList("2026.Q3"),
+			cmpBundleProductJSONObject.getJSONArray(
+				"licensedVersions"
+			).toList());
+
+		JSONObject dxpBundleProductJSONObject =
+			bundleProductsJSONArray.getJSONObject(1);
+
+		Assertions.assertTrue(
+			dxpBundleProductJSONObject.getJSONArray(
+				"licensedVersions"
+			).isEmpty());
+	}
+
+	@Test
+	public void testGetGenerateFormForAccountLicensesNoAppBeforeItsMinimumVersion()
+		throws Exception {
+
+		JSONArray bundleProductsJSONArray =
+			_getGenerateFormBundleProductsJSONArray(
+				_toProductVersion("2026.Q2", "DXP 2026.Q2"),
+				_toProductVersion("7.4", "DXP 7.4"));
+
+		JSONObject cmpBundleProductJSONObject =
+			bundleProductsJSONArray.getJSONObject(0);
+
+		Assertions.assertFalse(
+			cmpBundleProductJSONObject.getBoolean("licensable"));
+		Assertions.assertTrue(
+			cmpBundleProductJSONObject.getJSONArray(
+				"licensedVersions"
+			).isEmpty());
+	}
+
+	@Test
 	public void testGetGenerateFormForAccountOffersTheEntitlementOfTheRenewedKey()
 		throws Exception {
 
@@ -1495,6 +1549,50 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testIsLicensedForVersionBeforeTheMinimumVersion()
+		throws Exception {
+
+		LicenseEntryService licenseEntryService = Mockito.mock(
+			LicenseEntryService.class);
+
+		Mockito.when(
+			licenseEntryService.getLicenseEntriesByNameVersion(
+				Mockito.anyString(), Mockito.anyString())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(
+				_toProductVersion("2026.Q3", "DXP 2026.Q3"),
+				_toProductVersion("2026.Q2", "DXP 2026.Q2"),
+				_toProductVersion("7.4", "DXP 7.4"));
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseEntryService",
+			licenseEntryService);
+
+		for (String licenseKeyFamily : Arrays.asList("CMP", "DSR")) {
+			Assertions.assertFalse(
+				licenseKeyGenerateFormService.isLicensedForVersion(
+					licenseKeyFamily, null));
+			Assertions.assertFalse(
+				licenseKeyGenerateFormService.isLicensedForVersion(
+					licenseKeyFamily, "7.4"));
+			Assertions.assertFalse(
+				licenseKeyGenerateFormService.isLicensedForVersion(
+					licenseKeyFamily, "2026.Q2"));
+			Assertions.assertTrue(
+				licenseKeyGenerateFormService.isLicensedForVersion(
+					licenseKeyFamily, "2026.Q3"));
+		}
+
+		Assertions.assertTrue(
+			licenseKeyGenerateFormService.isLicensedForVersion(
+				"Search", "2026.Q2"));
+	}
+
+	@Test
 	public void testIsLicensedForVersionWithAnUnsupportedVersion()
 		throws Exception {
 
@@ -1637,6 +1735,34 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testToMinimumVersionsKeepsTheVersionsFromTheMinimumVersion() {
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		JSONArray versionsJSONArray = new JSONArray(
+			Arrays.asList("2026.Q4", "2026.Q3", "2026.Q2", "7.4"));
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_toMinimumVersionsJSONArray", "CMP",
+			versionsJSONArray);
+
+		Assertions.assertEquals(
+			Arrays.asList("2026.Q4", "2026.Q3"), jsonArray.toList());
+
+		jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_toMinimumVersionsJSONArray", "DSR",
+			new JSONArray(Arrays.asList("2026.Q2", "7.4")));
+
+		Assertions.assertTrue(jsonArray.isEmpty());
+
+		jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_toMinimumVersionsJSONArray",
+			"Search", versionsJSONArray);
+
+		Assertions.assertEquals(versionsJSONArray.toList(), jsonArray.toList());
+	}
+
+	@Test
 	public void testToSelectableVersionsSkipsQuarterlyVersionsBefore2026Q1() {
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			new LicenseKeyGenerateFormService(),
@@ -1766,6 +1892,123 @@ public class LicenseKeyGenerateFormServiceTest {
 		}
 
 		return externalReferenceCodes;
+	}
+
+	private JSONArray _getGenerateFormBundleProductsJSONArray(
+			ProductVersion... productVersions)
+		throws Exception {
+
+		CommerceProductService commerceProductService = Mockito.mock(
+			CommerceProductService.class);
+		CommerceSkuService commerceSkuService = Mockito.mock(
+			CommerceSkuService.class);
+
+		Map<String, Product> products = HashMapBuilder.put(
+			"PRDCT-CONTENT-MARKETING-TRIAL",
+			_toProduct(2L, "PRDCT-CONTENT-MARKETING-TRIAL")
+		).put(
+			"PRDCT-DXP-TRIAL", _toProduct(1L, "PRDCT-DXP-TRIAL")
+		).build();
+
+		for (Map.Entry<String, Product> entry : products.entrySet()) {
+			Product product = entry.getValue();
+
+			Mockito.when(
+				commerceSkuService.fetchSku(entry.getKey())
+			).thenReturn(
+				_toSku(product.getProductId(), null)
+			);
+
+			Mockito.when(
+				commerceProductService.fetchProduct(product.getProductId())
+			).thenReturn(
+				product
+			);
+		}
+
+		Account account = new Account();
+
+		account.setId(1L);
+		account.setName("Account One");
+
+		EntitlementService entitlementService = Mockito.mock(
+			EntitlementService.class);
+
+		Mockito.when(
+			entitlementService.getActiveEntitlements(
+				Mockito.any(ActivationKeyScope.class))
+		).thenCallRealMethod();
+
+		Mockito.when(
+			entitlementService.getActiveSelfServiceTrialEntitlements(1L)
+		).thenReturn(
+			Arrays.asList(
+				_toActivationKeyEntitlement(
+					1L, true, "DXP", "non-production", "PRDCT-DXP-TRIAL"),
+				_toActivationKeyEntitlement(
+					2L, true, "CMP", null, "PRDCT-CONTENT-MARKETING-TRIAL"))
+		);
+
+		LicenseEntryService licenseEntryService = Mockito.mock(
+			LicenseEntryService.class);
+
+		Mockito.when(
+			licenseEntryService.getLicenseEntriesByNameVersion(
+				Mockito.anyString(), Mockito.anyString())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		LicenseKeyService licenseKeyService = Mockito.mock(
+			LicenseKeyService.class);
+
+		Mockito.when(
+			licenseKeyService.getActiveLicenseKeyCounts(
+				Mockito.any(ActivationKeyScope.class), Mockito.anyList(),
+				Mockito.anyCollection())
+		).thenCallRealMethod();
+
+		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
+			LicenseKeyTypeService.class);
+
+		Mockito.when(
+			licenseKeyTypeService.getLicenseKeyTypes()
+		).thenReturn(
+			Collections.singletonList(LicenseKeyType.NON_PRODUCTION)
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toLicenseKeyGenerateFormService(productVersions);
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_accountService",
+			Mockito.mock(AccountService.class));
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_activationKeyService",
+			Mockito.mock(ActivationKeyService.class));
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_commerceProductService",
+			commerceProductService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_commerceSkuService",
+			commerceSkuService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_entitlementService",
+			entitlementService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseEntryService",
+			licenseEntryService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyService",
+			licenseKeyService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyTypeService",
+			licenseKeyTypeService);
+
+		JSONObject jsonObject = licenseKeyGenerateFormService.getGenerateForm(
+			false, account, true);
+
+		return jsonObject.getJSONArray("bundleProducts");
 	}
 
 	private long _getKeyTypeEntitlementId(JSONObject jsonObject) {

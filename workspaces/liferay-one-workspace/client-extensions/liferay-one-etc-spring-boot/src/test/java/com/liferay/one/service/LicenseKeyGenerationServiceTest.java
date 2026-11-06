@@ -2143,6 +2143,38 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyRejectsAnAddOnBeforeItsMinimumVersion()
+		throws Exception {
+
+		Entitlement leadingEntitlement = _toEntitlement(1L, 5.0, "PRDCT-DXP");
+		Entitlement addOnEntitlement = _toEntitlement(2L, 5.0, "PRDCT-DSR");
+
+		_stubEntitlements(leadingEntitlement, addOnEntitlement);
+
+		_stubBundledProducts(addOnEntitlement, leadingEntitlement);
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					new LicenseKeyGenerationService.GenerateRequest(
+						Arrays.asList(1L, 2L), "Description", null,
+						"Environment", "backup", 0, null, null, _toProject(),
+						null, null, _toServers(1), null, 1L, "DXP 2026.Q2",
+						false)));
+
+		Assertions.assertEquals(
+			"Product Entitlement 2 is not licensed for version DXP 2026.Q2",
+			licenseKeyEntitlementException.getMessage());
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerator);
+	}
+
+	@Test
 	public void testGenerateActivationKeyRejectsAnotherAddOnWithoutALicenseEntry()
 		throws Exception {
 
@@ -3472,7 +3504,7 @@ public class LicenseKeyGenerationServiceTest {
 			bundleEntitlementIds, "Description", null, "Environment", keyType,
 			0, null, null, null, null,
 			renewedActivationKeyExternalReferenceCode, _toServers(1), null,
-			subscriptionEntitlementId, "DXP 7.4", false);
+			subscriptionEntitlementId, "DXP 2026.Q3", false);
 	}
 
 	private Entitlement _toComplimentaryEntitlement(
@@ -3658,7 +3690,7 @@ public class LicenseKeyGenerationServiceTest {
 		return new LicenseKeyGenerationService.GenerateRequest(
 			bundleEntitlementIds, "Description", null, "Environment", "backup",
 			0, null, null, _toProject(), null, null, _toServers(serverCount),
-			null, subscriptionEntitlementId, "DXP 7.4", false);
+			null, subscriptionEntitlementId, "DXP 2026.Q3", false);
 	}
 
 	private Entitlement _toNamedEntitlement(long entitlementId, String name) {
