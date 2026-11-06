@@ -4,6 +4,11 @@
  */
 
 import i18n from '~/i18n';
+import {
+	getCurrentUserId,
+	getSelectedAccountId,
+	setLastViewedProjectCookie,
+} from '~/pages/MyAccount/Projects/projects';
 import AttachmentMessage from '~/pages/TicketAttachments/components/AttachmentMessage/AttachmentMessage';
 import routerPath from '~/utils/routerPath';
 
@@ -23,7 +28,14 @@ const AttachmentNotFound = ({uploadProjectKey}: IProps) => {
 			{uploadProjectKey && (
 				<a
 					className="btn btn-primary"
-					href={`${pageRoutes.project(uploadProjectKey)}/attachments`}
+					href={pageRoutes.ticketAttachments()}
+					onClick={() =>
+						setLastViewedProjectCookie(
+							getSelectedAccountId(),
+							uploadProjectKey,
+							getCurrentUserId()
+						)
+					}
 				>
 					{i18n.translate('return-to-attachments')}
 				</a>

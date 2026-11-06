@@ -218,10 +218,16 @@ public class ProvisioningEmailService extends OneBaseService {
 
 	private String _getProjectLink(Project project) {
 		return StringBundler.concat(
-			"<a href=\"", _portalURL, "/project/#/",
-			project.getExternalReferenceCode(),
+			"<a href=\"", _getProjectURL(project),
 			"\" style=\"text-decoration: none\">",
 			HtmlUtil.escape(project.getName()), "</a>");
+	}
+
+	private String _getProjectURL(Project project) {
+		return StringBundler.concat(
+			_portalURL, "/my-account#/",
+			project.getAccountExternalReferenceCode(), "/project/",
+			project.getExternalReferenceCode());
 	}
 
 	private List<Project> _getProjects(long accountId, long userId)
@@ -463,14 +469,14 @@ public class ProvisioningEmailService extends OneBaseService {
 					userAccount, account.getId()));
 		}
 
-		String projectKey = StringPool.BLANK;
 		String projectNameSuffix = StringPool.BLANK;
+		String projectURL = _portalURL + "/my-account";
 
 		if (projects.size() == 1) {
 			Project project = projects.get(0);
 
-			projectKey = project.getExternalReferenceCode();
 			projectNameSuffix = " - " + project.getName();
+			projectURL = _getProjectURL(project);
 		}
 
 		JSONObject processedTemplateJSONObject =
@@ -480,12 +486,14 @@ public class ProvisioningEmailService extends OneBaseService {
 					"ACCOUNT_ROLE_ACTIONS_LIST",
 					_getRoleActionsList(accountRoleNames, locale)
 				).put(
+					"PORTAL_URL", _portalURL
+				).put(
 					"PROJECT_INVITATION_MESSAGE",
 					_getProjectInvitationMessage(projects, locale)
 				).put(
-					"PROJECT_KEY", projectKey
-				).put(
 					"PROJECT_NAME_SUFFIX", projectNameSuffix
+				).put(
+					"PROJECT_URL", projectURL
 				).put(
 					"YEAR",
 					Year.now(
