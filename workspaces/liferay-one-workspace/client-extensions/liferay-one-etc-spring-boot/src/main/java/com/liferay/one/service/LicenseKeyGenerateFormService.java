@@ -191,6 +191,33 @@ public class LicenseKeyGenerateFormService {
 			leadingLicenseKeyFamilyProductNames.containsKey(licenseKeyFamily);
 	}
 
+	public static boolean isMinimumVersion(
+		String licenseKeyFamily, String version) {
+
+		String minimumVersion =
+			LicenseKeyGenerationConstants.minimumLicenseKeyFamilyVersions.get(
+				licenseKeyFamily);
+
+		if (minimumVersion == null) {
+			return true;
+		}
+
+		if (Validator.isNull(version)) {
+			return false;
+		}
+
+		VersionComparator versionComparator = new VersionComparator();
+
+		int comparison = versionComparator.compare(
+			toComparableVersion(version), minimumVersion);
+
+		if (comparison < 0) {
+			return false;
+		}
+
+		return true;
+	}
+
 	public static String toComparableVersion(String productVersion) {
 		if (Validator.isNull(productVersion)) {
 			return StringPool.BLANK;
@@ -337,6 +364,10 @@ public class LicenseKeyGenerateFormService {
 
 	public boolean isLicensedForVersion(String licenseKeyFamily, String version)
 		throws Exception {
+
+		if (!isMinimumVersion(licenseKeyFamily, version)) {
+			return false;
+		}
 
 		JSONArray licensedVersionsJSONArray = _getLicensedVersionsJSONArray(
 			licenseKeyFamily, _getProductVersions());
@@ -609,6 +640,19 @@ public class LicenseKeyGenerateFormService {
 
 			boolean hasLicenseEntries = !licensedVersionsJSONArray.isEmpty();
 
+			boolean hasMinimumVersion =
+				LicenseKeyGenerationConstants.minimumLicenseKeyFamilyVersions.
+					containsKey(entitledProduct.getLicenseKeyFamily());
+
+			if (!hasLicenseEntries && hasMinimumVersion) {
+				licensedVersionsJSONArray = _toVersionsJSONArray(
+					licenseKeyFamilyProductVersions);
+			}
+
+			licensedVersionsJSONArray = _toMinimumVersionsJSONArray(
+				entitledProduct.getLicenseKeyFamily(),
+				licensedVersionsJSONArray);
+
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
 				admin, allowComplimentary, allowPermanentLicenses,
 				entitledProduct.isAppLicense(), hasComplimentaryActivationKey,
@@ -618,11 +662,20 @@ public class LicenseKeyGenerateFormService {
 				provisionable, virtualClusterAllowed);
 
 			if (entitledProduct.isGeneratesActivationKey()) {
+				boolean licensable = false;
+
+				if ((keyTypesJSONArray.length() > 0) || !hasLicenseEntries) {
+					licensable = true;
+				}
+
+				if (hasMinimumVersion && licensedVersionsJSONArray.isEmpty()) {
+					licensable = false;
+				}
+
 				bundleProductsJSONArray.put(
 					_toBundleProductJSONObject(
-						entitledProduct,
-						(keyTypesJSONArray.length() > 0) || !hasLicenseEntries,
-						licenseKeyCounts, licensedVersionsJSONArray));
+						entitledProduct, licensable, licenseKeyCounts,
+						licensedVersionsJSONArray));
 			}
 
 			if (keyTypesJSONArray.length() == 0) {
@@ -1282,6 +1335,30 @@ public class LicenseKeyGenerateFormService {
 					toComparableVersion(version),
 					LicenseKeyGenerationConstants.MINIMUM_DEVELOPER_VERSION)) {
 
+				continue;
+			}
+
+			jsonArray.put(version);
+		}
+
+		return jsonArray;
+	}
+
+	private JSONArray _toMinimumVersionsJSONArray(
+		String licenseKeyFamily, JSONArray versionsJSONArray) {
+
+		if (!LicenseKeyGenerationConstants.minimumLicenseKeyFamilyVersions.
+				containsKey(licenseKeyFamily)) {
+
+			return versionsJSONArray;
+		}
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (int i = 0; i < versionsJSONArray.length(); i++) {
+			String version = versionsJSONArray.getString(i);
+
+			if (!isMinimumVersion(licenseKeyFamily, version)) {
 				continue;
 			}
 
