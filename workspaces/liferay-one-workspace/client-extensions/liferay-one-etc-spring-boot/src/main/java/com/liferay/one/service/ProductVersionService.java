@@ -22,12 +22,10 @@ import java.time.Duration;
 
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,6 +41,7 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -225,6 +224,24 @@ public class ProductVersionService extends OneBaseService {
 		}
 	}
 
+	private String _addOrUpdateProductVersion(
+		String authorization, String body, URI uri) {
+
+		try {
+			return patch(authorization, body, uri);
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if (statusCode != HttpStatus.NOT_FOUND.value()) {
+				throw webClientResponseException;
+			}
+		}
+
+		return put(authorization, body, uri);
+	}
+
 	private JSONObject _createProductVersionJSONObject(
 		String bundleURL, String productGroup, String productGroupVersion,
 		boolean supported, String type, String version, String versionLevel) {
@@ -297,18 +314,6 @@ public class ProductVersionService extends OneBaseService {
 
 			return null;
 		}
-	}
-
-	private Set<String> _getFreeTierExternalReferenceCodes(String productGroup)
-		throws Exception {
-
-		return new HashSet<>(
-			getAllProjectedItems(
-				"/o/c/productversions", "externalReferenceCode",
-				StringBundler.concat(
-					"(productGroup eq '", escapeODataString(productGroup),
-					"') and (freeTier eq true)"),
-				jsonObject -> jsonObject.getString("externalReferenceCode")));
 	}
 
 	private String _getMajorVersionType(String productGroupVersion) {
@@ -479,9 +484,6 @@ public class ProductVersionService extends OneBaseService {
 			return;
 		}
 
-		Set<String> freeTierExternalReferenceCodes =
-			_getFreeTierExternalReferenceCodes(productGroup);
-
 		int count = 0;
 
 		for (JSONObject productVersionJSONObject :
@@ -491,10 +493,6 @@ public class ProductVersionService extends OneBaseService {
 				"externalReferenceCode");
 			String version = productVersionJSONObject.getString(
 				"productVersion");
-
-			productVersionJSONObject.put(
-				"freeTier",
-				freeTierExternalReferenceCodes.contains(externalReferenceCode));
 
 			URI uri = UriComponentsBuilder.fromPath(
 				"/o/c/productversions/by-external-reference-code/" +
@@ -511,7 +509,7 @@ public class ProductVersionService extends OneBaseService {
 			}
 
 			try {
-				String response = put(
+				String response = _addOrUpdateProductVersion(
 					authorization, productVersionJSONObject.toString(), uri);
 
 				if ((response != null) &&
