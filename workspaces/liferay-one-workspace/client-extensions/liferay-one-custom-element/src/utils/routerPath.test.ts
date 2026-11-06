@@ -25,25 +25,29 @@ describe('[MOD-ROUTERPATH] routerPath', () => {
 		getLayoutRelativeURL.mockReset();
 	});
 
-	it('derives the site prefix from the layout relative URL', () => {
-		getLayoutRelativeURL.mockReturnValue('/web/one/my-account');
+	it('derives the site prefix from a layout under the site', () => {
+		getLayoutRelativeURL.mockReturnValue(
+			'/web/one/support/ticket-attachments'
+		);
 
-		expect(routerPath().project('PRJCT-1')).toBe(
-			'https://portal.example.com/web/one/project/#/PRJCT-1'
+		expect(routerPath().ticketAttachments()).toBe(
+			'https://portal.example.com/web/one/support/ticket-attachments'
 		);
 	});
 
-	it('uses no site prefix when the last slash index is 0 or less', () => {
+	it('uses no site prefix when the layout is not under a site', () => {
+		getLayoutRelativeURL.mockReturnValue('/support/ticket-attachments');
+
+		expect(routerPath().ticketAttachments()).toBe(
+			'https://portal.example.com/support/ticket-attachments'
+		);
+	});
+
+	it('uses no site prefix for a root layout', () => {
 		getLayoutRelativeURL.mockReturnValue('/home');
 
-		expect(routerPath().project('PRJCT-1')).toBe(
-			'https://portal.example.com/project/#/PRJCT-1'
-		);
-
-		getLayoutRelativeURL.mockReturnValue('home');
-
-		expect(routerPath().project('PRJCT-2')).toBe(
-			'https://portal.example.com/project/#/PRJCT-2'
+		expect(routerPath().ticketAttachments()).toBe(
+			'https://portal.example.com/support/ticket-attachments'
 		);
 	});
 });

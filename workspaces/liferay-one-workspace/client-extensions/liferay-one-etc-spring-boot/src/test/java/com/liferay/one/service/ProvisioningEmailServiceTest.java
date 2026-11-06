@@ -210,7 +210,7 @@ public class ProvisioningEmailServiceTest {
 		Mockito.when(
 			_projectService.fetchProject("PROJECT-ERC-1")
 		).thenReturn(
-			_createProject("PROJECT-ERC-1", "My Project")
+			_createProject("ACCOUNT-ERC-1", "PROJECT-ERC-1", "My Project")
 		);
 
 		_provisioningEmailService.sendAssignedWelcomeEmail(account, _USER_ID);
@@ -229,13 +229,60 @@ public class ProvisioningEmailServiceTest {
 			placeholdersArgumentCaptor.getValue();
 
 		Assertions.assertEquals(
-			"PROJECT-ERC-1", placeholders.get("PROJECT_KEY"));
+			"https://one.liferay.com", placeholders.get("PORTAL_URL"));
 		Assertions.assertTrue(
 			placeholders.get(
 				"PROJECT_NAME_SUFFIX"
 			).contains(
 				"My Project"
 			));
+		Assertions.assertEquals(
+			"https://one.liferay.com/my-account#/ACCOUNT-ERC-1/project" +
+				"/PROJECT-ERC-1",
+			placeholders.get("PROJECT_URL"));
+	}
+
+	@Test
+	public void testSendAssignedWelcomeEmailLinksToMyAccountWithoutProjects()
+		throws Exception {
+
+		Account account = _createAccount(_ACCOUNT_ID);
+
+		UserAccount userAccount = _createVerifiedUserAccount(_USER_ID);
+
+		Mockito.when(
+			_userAccountService.getUserAccount(_USER_ID)
+		).thenReturn(
+			userAccount
+		);
+
+		Mockito.when(
+			_entitlementService.hasEntitlement(
+				_ACCOUNT_ID, EntitlementConstants.namesSLAs)
+		).thenReturn(
+			true
+		);
+
+		_provisioningEmailService.sendAssignedWelcomeEmail(account, _USER_ID);
+
+		ArgumentCaptor<Map<String, String>> placeholdersArgumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_notificationTemplateService
+		).getAndProcessTemplateJSONObject(
+			Mockito.eq("PROVISIONING-WELCOME"), Mockito.any(),
+			placeholdersArgumentCaptor.capture()
+		);
+
+		Map<String, String> placeholders =
+			placeholdersArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			"https://one.liferay.com", placeholders.get("PORTAL_URL"));
+		Assertions.assertEquals(
+			"https://one.liferay.com/my-account",
+			placeholders.get("PROJECT_URL"));
 	}
 
 	@Test
@@ -580,13 +627,13 @@ public class ProvisioningEmailServiceTest {
 		Mockito.when(
 			_projectService.fetchProject("PROJECT-ERC-1")
 		).thenReturn(
-			_createProject("PROJECT-ERC-1", "First Project")
+			_createProject("ACCOUNT-ERC-1", "PROJECT-ERC-1", "First Project")
 		);
 
 		Mockito.when(
 			_projectService.fetchProject("PROJECT-ERC-2")
 		).thenReturn(
-			_createProject("PROJECT-ERC-2", "Second Project")
+			_createProject("ACCOUNT-ERC-1", "PROJECT-ERC-2", "Second Project")
 		);
 
 		UserAccount userAccount = _createUserAccountWithAccountBriefs(
@@ -608,8 +655,12 @@ public class ProvisioningEmailServiceTest {
 		Map<String, String> placeholders =
 			placeholdersArgumentCaptor.getValue();
 
-		Assertions.assertEquals("", placeholders.get("PROJECT_KEY"));
 		Assertions.assertEquals("", placeholders.get("PROJECT_NAME_SUFFIX"));
+		Assertions.assertEquals(
+			"https://one.liferay.com", placeholders.get("PORTAL_URL"));
+		Assertions.assertEquals(
+			"https://one.liferay.com/my-account",
+			placeholders.get("PROJECT_URL"));
 		Assertions.assertTrue(
 			placeholders.get(
 				"PROJECT_INVITATION_MESSAGE"
@@ -621,6 +672,20 @@ public class ProvisioningEmailServiceTest {
 				"PROJECT_INVITATION_MESSAGE"
 			).contains(
 				"Second Project"
+			));
+		Assertions.assertTrue(
+			placeholders.get(
+				"PROJECT_INVITATION_MESSAGE"
+			).contains(
+				"href=\"https://one.liferay.com/my-account#/ACCOUNT-ERC-1" +
+					"/project/PROJECT-ERC-1\""
+			));
+		Assertions.assertTrue(
+			placeholders.get(
+				"PROJECT_INVITATION_MESSAGE"
+			).contains(
+				"href=\"https://one.liferay.com/my-account#/ACCOUNT-ERC-1" +
+					"/project/PROJECT-ERC-2\""
 			));
 	}
 
@@ -865,13 +930,19 @@ public class ProvisioningEmailServiceTest {
 		return userAccount;
 	}
 
-	private Project _createProject(String externalReferenceCode, String name) {
+	private Project _createProject(
+		String accountExternalReferenceCode, String externalReferenceCode,
+		String name) {
+
 		return new Project(
 			new JSONObject(
 			).put(
 				"externalReferenceCode", externalReferenceCode
 			).put(
 				"name", name
+			).put(
+				"r_accountEntryToProject_accountEntryERC",
+				accountExternalReferenceCode
 			));
 	}
 
