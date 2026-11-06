@@ -107,7 +107,9 @@ public class AccountUserAccountRoleSynchronizer {
 				catch (Exception exception) {
 					_log.error(
 						StringBundler.concat(
-							"Unable to assign role ", roleExternalKey,
+							"Unable to assign role ",
+							_getRoleDescription(
+								_getContactRoleExternalKey(roleExternalKey)),
 							" for user account ", entry.getKey(),
 							" on account ", accountExternalKey),
 						exception);
@@ -191,7 +193,8 @@ public class AccountUserAccountRoleSynchronizer {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							StringBundler.concat(
-								"Skipping stale role ", contactRoleExternalKey,
+								"Skipping stale role ",
+								_getRoleDescription(contactRoleExternalKey),
 								" for user account ", userAccountExternalKey,
 								" on account ", accountExternalKey,
 								" because it is still assigned"));
@@ -212,9 +215,9 @@ public class AccountUserAccountRoleSynchronizer {
 				_log.error(
 					StringBundler.concat(
 						"Unable to unassign stale role ",
-						contactRoleExternalKey, " for user account ",
-						userAccountExternalKey, " on account ",
-						accountExternalKey),
+						_getRoleDescription(contactRoleExternalKey),
+						" for user account ", userAccountExternalKey,
+						" on account ", accountExternalKey),
 					exception);
 			}
 		}
@@ -230,6 +233,19 @@ public class AccountUserAccountRoleSynchronizer {
 		}
 
 		return roleExternalKey;
+	}
+
+	private String _getRoleDescription(String contactRoleExternalKey) {
+		String roleExternalKey = _getRoleExternalKey(contactRoleExternalKey);
+
+		if (StringUtil.equalsIgnoreCase(
+				roleExternalKey, contactRoleExternalKey)) {
+
+			return contactRoleExternalKey;
+		}
+
+		return StringBundler.concat(
+			roleExternalKey, " as contact role ", contactRoleExternalKey);
 	}
 
 	private String _getRoleExternalKey(String contactRoleExternalKey) {
@@ -310,9 +326,9 @@ public class AccountUserAccountRoleSynchronizer {
 			_log.info(
 				StringBundler.concat(
 					deleted ? "Unassigning" : "Assigning", " role ",
-					contactRoleExternalKey, " for user account ",
-					userAccountExternalKey, " on account ",
-					accountExternalKey));
+					_getRoleDescription(contactRoleExternalKey),
+					" for user account ", userAccountExternalKey,
+					" on account ", accountExternalKey));
 		}
 
 		JiraAssetObject jiraAssetObject =
