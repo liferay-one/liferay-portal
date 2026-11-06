@@ -27,6 +27,11 @@ public class ContactRoleConverter extends BaseJiraAssetObjectConverter {
 		return ContactRoleConstants.OBJECT_TYPE_NAME;
 	}
 
+	@Override
+	public boolean isSyncEnabled() {
+		return _syncEnabled;
+	}
+
 	public JiraAssetObject toAssetObject(Role role) {
 		JiraAssetObject jiraAssetObject = createJiraAssetObject();
 
@@ -71,5 +76,8 @@ public class ContactRoleConverter extends BaseJiraAssetObjectConverter {
 
 	@Value("${liferay.one.jira.asset.schema.name}")
 	private String _schemaName;
+
+	@Value("${liferay.one.jira.sync.contact.role.enabled}")
+	private boolean _syncEnabled;
 
 }

@@ -28,6 +28,11 @@ public class EntitlementConverter extends BaseJiraAssetObjectConverter {
 		return EntitlementConstants.OBJECT_TYPE_NAME;
 	}
 
+	@Override
+	public boolean isSyncEnabled() {
+		return _syncEnabled;
+	}
+
 	public JiraAssetObject toAssetObject(
 		EntitlementDefinition entitlementDefinition) {
 
@@ -50,5 +55,8 @@ public class EntitlementConverter extends BaseJiraAssetObjectConverter {
 
 	@Value("${liferay.one.jira.asset.schema.name}")
 	private String _schemaName;
+
+	@Value("${liferay.one.jira.sync.entitlement.enabled}")
+	private boolean _syncEnabled;
 
 }

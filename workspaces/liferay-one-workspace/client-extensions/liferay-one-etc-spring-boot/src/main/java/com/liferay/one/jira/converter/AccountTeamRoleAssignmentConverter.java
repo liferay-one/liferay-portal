@@ -36,6 +36,11 @@ public class AccountTeamRoleAssignmentConverter
 		return AccountTeamRoleAssignmentConstants.OBJECT_TYPE_NAME;
 	}
 
+	@Override
+	public boolean isSyncEnabled() {
+		return _syncEnabled;
+	}
+
 	public JiraAssetObject toAssetObject(
 		String teamRoleExternalKey, String teamExternalKey,
 		String accountExternalKey, boolean deleted, Date externalUpdatedAt) {
@@ -81,5 +86,8 @@ public class AccountTeamRoleAssignmentConverter
 
 	@Value("${liferay.one.jira.asset.schema.name}")
 	private String _schemaName;
+
+	@Value("${liferay.one.jira.sync.account.team.role.assignment.enabled}")
+	private boolean _syncEnabled;
 
 }

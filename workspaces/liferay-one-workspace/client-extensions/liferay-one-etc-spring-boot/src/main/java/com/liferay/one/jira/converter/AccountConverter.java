@@ -30,6 +30,11 @@ public class AccountConverter extends BaseJiraAssetObjectConverter {
 		return AccountConstants.OBJECT_TYPE_NAME;
 	}
 
+	@Override
+	public boolean isSyncEnabled() {
+		return _syncEnabled;
+	}
+
 	public JiraAssetObject toAssetObject(Account account) {
 		return toAssetObject(
 			account, account.getExternalReferenceCode(), account.getName());
@@ -206,5 +211,8 @@ public class AccountConverter extends BaseJiraAssetObjectConverter {
 
 	@Value("${liferay.one.jira.asset.schema.name}")
 	private String _schemaName;
+
+	@Value("${liferay.one.jira.sync.account.enabled}")
+	private boolean _syncEnabled;
 
 }

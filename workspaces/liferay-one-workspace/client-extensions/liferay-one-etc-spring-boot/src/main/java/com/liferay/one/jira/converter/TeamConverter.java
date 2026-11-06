@@ -23,6 +23,11 @@ public class TeamConverter extends BaseJiraAssetObjectConverter {
 		return TeamConstants.OBJECT_TYPE_NAME;
 	}
 
+	@Override
+	public boolean isSyncEnabled() {
+		return _syncEnabled;
+	}
+
 	public JiraAssetObject toAssetObject(Organization organization) {
 		JiraAssetObject jiraAssetObject = createJiraAssetObject();
 
@@ -48,5 +53,8 @@ public class TeamConverter extends BaseJiraAssetObjectConverter {
 
 	@Value("${liferay.one.jira.asset.schema.name}")
 	private String _schemaName;
+
+	@Value("${liferay.one.jira.sync.team.enabled}")
+	private boolean _syncEnabled;
 
 }

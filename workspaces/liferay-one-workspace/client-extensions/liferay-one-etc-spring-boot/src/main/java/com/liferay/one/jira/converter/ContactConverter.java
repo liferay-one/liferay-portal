@@ -24,6 +24,11 @@ public class ContactConverter extends BaseJiraAssetObjectConverter {
 		return ContactConstants.OBJECT_TYPE_NAME;
 	}
 
+	@Override
+	public boolean isSyncEnabled() {
+		return _syncEnabled;
+	}
+
 	public JiraAssetObject toAssetObject(UserAccount userAccount) {
 		JiraAssetObject jiraAssetObject = createJiraAssetObject();
 
@@ -67,5 +72,8 @@ public class ContactConverter extends BaseJiraAssetObjectConverter {
 
 	@Value("${liferay.one.jira.asset.schema.name}")
 	private String _schemaName;
+
+	@Value("${liferay.one.jira.sync.contact.enabled}")
+	private boolean _syncEnabled;
 
 }

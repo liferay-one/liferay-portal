@@ -81,6 +81,18 @@ public abstract class BaseJiraAssetObjectConverter {
 
 	public abstract String getObjectTypeName();
 
+	/**
+	 * Returns <code>true</code> if the service may write asset objects of
+	 * this type and the lists of references to them. A type that the service
+	 * only reads keeps the default.
+	 *
+	 * @return <code>true</code> if the sync of this asset object type is
+	 *         enabled
+	 */
+	public boolean isSyncEnabled() {
+		return true;
+	}
+
 	public JiraAssetObject toJiraAssetObject(JSONObject jsonObject) {
 		return new JiraAssetObject(
 			jsonObject, _getAttributeIds(), _getAttributeOptions());

@@ -36,6 +36,11 @@ public class TeamContactRoleAssignmentConverter
 		return TeamContactRoleAssignmentConstants.OBJECT_TYPE_NAME;
 	}
 
+	@Override
+	public boolean isSyncEnabled() {
+		return _syncEnabled;
+	}
+
 	public JiraAssetObject toAssetObject(
 		String contactRoleExternalKey, String contactExternalKey,
 		String teamExternalKey, boolean deleted, Date externalUpdatedAt) {
@@ -83,5 +88,8 @@ public class TeamContactRoleAssignmentConverter
 
 	@Value("${liferay.one.jira.asset.schema.name}")
 	private String _schemaName;
+
+	@Value("${liferay.one.jira.sync.team.contact.role.assignment.enabled}")
+	private boolean _syncEnabled;
 
 }

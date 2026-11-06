@@ -48,7 +48,9 @@ public class JiraAssetService {
 	public void delete(
 		BaseJiraAssetObjectConverter converter, String externalKey) {
 
-		if (Validator.isNull(externalKey)) {
+		if (Validator.isNull(externalKey) ||
+			_isSyncDisabled(converter, externalKey, "delete")) {
+
 			return;
 		}
 
@@ -94,13 +96,14 @@ public class JiraAssetService {
 	 *         from an entity
 	 *
 	 * @return the IDs of the resolved asset objects, or <code>null</code> if
-	 *         <code>entities</code> is <code>null</code>
+	 *         <code>entities</code> is <code>null</code> or the sync of the
+	 *         asset object type is disabled
 	 */
 	public <T> List<String> fetchReferenceObjectIds(
 		BaseJiraAssetObjectConverter converter, Collection<T> entities,
 		Function<T, String> externalKeyFunction) {
 
-		if (entities == null) {
+		if ((entities == null) || !converter.isSyncEnabled()) {
 			return null;
 		}
 
@@ -212,6 +215,7 @@ public class JiraAssetService {
 	 *
 	 * @return the IDs of the resolved and newly created asset objects, or
 	 *         <code>null</code> if <code>entities</code> is <code>null</code>
+	 *         or the sync of the asset object type is disabled
 	 */
 	public <T> List<String> getOrCreateReferenceObjectIds(
 		BaseJiraAssetObjectConverter converter, Collection<T> entities,
@@ -220,7 +224,7 @@ public class JiraAssetService {
 
 		Objects.requireNonNull(createAssetObjectFunction);
 
-		if (entities == null) {
+		if ((entities == null) || !converter.isSyncEnabled()) {
 			return null;
 		}
 
@@ -356,6 +360,10 @@ public class JiraAssetService {
 		String externalKey = jiraAssetObject.getAttributeValue(
 			converter.getExternalKeyAttributeName());
 
+		if (_isSyncDisabled(converter, externalKey, "soft delete")) {
+			return;
+		}
+
 		_keyedLock.withLock(
 			_getLockKey(converter, externalKey),
 			() -> _softDelete(
@@ -374,6 +382,19 @@ public class JiraAssetService {
 		String attributeValue) {
 
 		if (Validator.isNull(attributeValue)) {
+			return;
+		}
+
+		if (!converter.isSyncEnabled()) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Skipping soft delete of ",
+						converter.getObjectTypeName(), " asset objects with \"",
+						attributeName, "\" value ", attributeValue,
+						" because their sync is disabled"));
+			}
+
 			return;
 		}
 
@@ -429,6 +450,10 @@ public class JiraAssetService {
 						"\" value"));
 			}
 
+			return;
+		}
+
+		if (_isSyncDisabled(converter, externalKey, "upsert")) {
 			return;
 		}
 
@@ -590,6 +615,26 @@ public class JiraAssetService {
 		BaseJiraAssetObjectConverter converter, String externalKey) {
 
 		return converter.getObjectTypeName() + "#" + externalKey;
+	}
+
+	private boolean _isSyncDisabled(
+		BaseJiraAssetObjectConverter converter, String externalKey,
+		String operation) {
+
+		if (converter.isSyncEnabled()) {
+			return false;
+		}
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Skipping ", operation, " of ",
+					converter.getObjectTypeName(),
+					" asset object for external key ", externalKey,
+					" because its sync is disabled"));
+		}
+
+		return true;
 	}
 
 	private List<String> _resolveToObjectIds(
