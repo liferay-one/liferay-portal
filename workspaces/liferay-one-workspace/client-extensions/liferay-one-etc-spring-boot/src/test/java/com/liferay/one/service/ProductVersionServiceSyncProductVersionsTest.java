@@ -10,8 +10,10 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import org.json.JSONArray;
@@ -65,7 +67,7 @@ public class ProductVersionServiceSyncProductVersionsTest {
 
 		Assertions.assertEquals(
 			1, _testProductVersionService.releasesFetchCount);
-		Assertions.assertTrue(_testProductVersionService.putBodies.isEmpty());
+		Assertions.assertTrue(_testProductVersionService.patchBodies.isEmpty());
 	}
 
 	@Test
@@ -74,7 +76,98 @@ public class ProductVersionServiceSyncProductVersionsTest {
 
 		Assertions.assertEquals(
 			1, _testProductVersionService.releasesFetchCount);
-		Assertions.assertFalse(_testProductVersionService.putBodies.isEmpty());
+		Assertions.assertFalse(
+			_testProductVersionService.patchBodies.isEmpty());
+	}
+
+	@Test
+	public void testSyncProductVersionsAddsMissingProductVersion()
+		throws Exception {
+
+		_testProductVersionService.missingExternalReferenceCodes.add(
+			"DXP 2026.Q3.7");
+		_testProductVersionService.releasesResponse = new JSONArray(
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.7", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.7")
+		).toString();
+
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.7/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.7/bundle.zip");
+
+		_productVersionService.syncProductVersions();
+
+		Map<String, JSONObject> jsonObjects = _getJSONObjects(
+			_testProductVersionService.putBodies);
+
+		Assertions.assertEquals(1, jsonObjects.size());
+		Assertions.assertEquals(
+			_RELEASES_CDN_URL + "/2026.q3.7/bundle.zip",
+			jsonObjects.get(
+				"DXP 2026.Q3.7"
+			).getString(
+				"bundleURL"
+			));
+
+		Assertions.assertEquals(
+			2, _testProductVersionService.patchBodies.size());
+	}
+
+	@Test
+	public void testSyncProductVersionsContinuesWhenPatchFails()
+		throws Exception {
+
+		_testProductVersionService.failingExternalReferenceCodes.add(
+			"DXP 2026.Q3.7");
+		_testProductVersionService.releasesResponse = new JSONArray(
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.7", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.7")
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.8", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.8")
+		).toString();
+
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.7/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.7/bundle.zip");
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.8/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.8/bundle.zip");
+
+		_productVersionService.syncProductVersions();
+
+		Assertions.assertEquals(
+			3, _testProductVersionService.patchBodies.size());
+		Assertions.assertTrue(_testProductVersionService.putBodies.isEmpty());
+	}
+
+	@Test
+	public void testSyncProductVersionsLeavesFreeTierUnchanged()
+		throws Exception {
+
+		_testProductVersionService.releasesResponse = new JSONArray(
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.7", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.7")
+		).toString();
+
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.7/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.7/bundle.zip");
+
+		_productVersionService.syncProductVersions();
+
+		Map<String, JSONObject> jsonObjects = _getPatchJSONObjects();
+
+		Assertions.assertEquals(2, jsonObjects.size());
+
+		for (JSONObject jsonObject : jsonObjects.values()) {
+			Assertions.assertFalse(jsonObject.has("freeTier"));
+		}
+
+		Assertions.assertTrue(_testProductVersionService.putBodies.isEmpty());
 	}
 
 	@Test
@@ -112,54 +205,6 @@ public class ProductVersionServiceSyncProductVersionsTest {
 	}
 
 	@Test
-	public void testSyncProductVersionsKeepsFreeTier() throws Exception {
-		_testProductVersionService.freeTierExternalReferenceCodes.add(
-			"DXP 2026.Q3.7");
-		_testProductVersionService.releasesResponse = new JSONArray(
-		).put(
-			_createReleaseJSONObject(
-				"2026.q3.7", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.7")
-		).put(
-			_createReleaseJSONObject(
-				"2026.q3.8", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.8")
-		).toString();
-
-		_testProductVersionService.releaseProperties.put(
-			_RELEASES_CDN_URL + "/2026.q3.7/release.properties",
-			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.7/bundle.zip");
-		_testProductVersionService.releaseProperties.put(
-			_RELEASES_CDN_URL + "/2026.q3.8/release.properties",
-			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.8/bundle.zip");
-
-		_productVersionService.syncProductVersions();
-
-		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
-
-		Assertions.assertFalse(
-			jsonObjects.get(
-				"DXP 2026.Q3"
-			).getBoolean(
-				"freeTier"
-			));
-		Assertions.assertTrue(
-			jsonObjects.get(
-				"DXP 2026.Q3.7"
-			).getBoolean(
-				"freeTier"
-			));
-		Assertions.assertFalse(
-			jsonObjects.get(
-				"DXP 2026.Q3.8"
-			).getBoolean(
-				"freeTier"
-			));
-
-		Assertions.assertEquals(
-			"(productGroup eq 'dxp') and (freeTier eq true)",
-			_testProductVersionService.projectedFilterString);
-	}
-
-	@Test
 	public void testSyncProductVersionsRefreshesCache() throws Exception {
 		_assertCachedProductVersions();
 
@@ -169,14 +214,14 @@ public class ProductVersionServiceSyncProductVersionsTest {
 
 		Assertions.assertEquals(2, _testProductVersionService.getAllItemsCount);
 
-		int putCount = _testProductVersionService.putBodies.size();
+		int patchCount = _testProductVersionService.patchBodies.size();
 
-		Assertions.assertTrue(putCount > 0);
+		Assertions.assertTrue(patchCount > 0);
 
 		_productVersionService.syncProductVersions();
 
 		Assertions.assertEquals(
-			putCount * 2, _testProductVersionService.putBodies.size());
+			patchCount * 2, _testProductVersionService.patchBodies.size());
 	}
 
 	@Test
@@ -200,7 +245,7 @@ public class ProductVersionServiceSyncProductVersionsTest {
 
 		_productVersionService.syncProductVersions();
 
-		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+		Map<String, JSONObject> jsonObjects = _getPatchJSONObjects();
 
 		Assertions.assertEquals(
 			_RELEASES_CDN_URL + "/2026.q3.7/bundle.zip",
@@ -246,7 +291,7 @@ public class ProductVersionServiceSyncProductVersionsTest {
 
 		_productVersionService.syncProductVersions();
 
-		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+		Map<String, JSONObject> jsonObjects = _getPatchJSONObjects();
 
 		Assertions.assertEquals(
 			_RELEASES_CDN_URL + "/7.4.13-u112/bundle.7z",
@@ -285,7 +330,7 @@ public class ProductVersionServiceSyncProductVersionsTest {
 
 		_productVersionService.syncProductVersions();
 
-		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+		Map<String, JSONObject> jsonObjects = _getPatchJSONObjects();
 
 		Assertions.assertEquals(2, jsonObjects.size());
 		Assertions.assertFalse(jsonObjects.containsKey("DXP 2026.Q3.6"));
@@ -318,7 +363,7 @@ public class ProductVersionServiceSyncProductVersionsTest {
 
 		_productVersionService.syncProductVersions();
 
-		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+		Map<String, JSONObject> jsonObjects = _getPatchJSONObjects();
 
 		Assertions.assertEquals(2, jsonObjects.size());
 		Assertions.assertFalse(jsonObjects.containsKey("DXP 2026.Q3.6"));
@@ -363,7 +408,7 @@ public class ProductVersionServiceSyncProductVersionsTest {
 
 		_productVersionService.syncProductVersions();
 
-		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+		Map<String, JSONObject> jsonObjects = _getPatchJSONObjects();
 
 		Assertions.assertEquals(2, jsonObjects.size());
 		Assertions.assertFalse(jsonObjects.containsKey("DXP 2026.Q3.6"));
@@ -388,33 +433,22 @@ public class ProductVersionServiceSyncProductVersionsTest {
 
 		_productVersionService.syncProductVersions();
 
-		Map<String, JSONObject> jsonObjects = _getPutJSONObjects();
+		Map<String, JSONObject> jsonObjects = _getPatchJSONObjects();
 
 		Assertions.assertEquals(1, jsonObjects.size());
 		Assertions.assertFalse(jsonObjects.containsKey("DXP 2026.Q1.0"));
 		Assertions.assertTrue(jsonObjects.containsKey("DXP 2026.Q1"));
 	}
 
-	@Test
-	public void testSyncProductVersionsWritesNothingWhenFreeTierReadFails() {
-		_testProductVersionService.freeTierFailure = new RuntimeException(
-			"Unable to read free tier product versions");
-
-		Assertions.assertThrows(
-			RuntimeException.class,
-			_productVersionService::syncProductVersions);
-
-		Assertions.assertTrue(_testProductVersionService.putBodies.isEmpty());
-	}
-
 	public static class TestProductVersionService
 		extends ProductVersionService {
 
-		public final List<String> freeTierExternalReferenceCodes =
-			new ArrayList<>();
-		public RuntimeException freeTierFailure;
+		public final Set<String> failingExternalReferenceCodes =
+			new HashSet<>();
 		public int getAllItemsCount;
-		public String projectedFilterString;
+		public final Set<String> missingExternalReferenceCodes =
+			new HashSet<>();
+		public final List<String> patchBodies = new ArrayList<>();
 		public final List<String> putBodies = new ArrayList<>();
 		public final Map<String, Object> releaseProperties = new HashMap<>();
 		public RuntimeException releasesFailure;
@@ -480,35 +514,31 @@ public class ProductVersionServiceSyncProductVersionsTest {
 		}
 
 		@Override
-		protected <T> List<T> getAllProjectedItems(
-			String path, String fields, String filterString,
-			Function<JSONObject, T> function) {
-
-			if (freeTierFailure != null) {
-				throw freeTierFailure;
-			}
-
-			projectedFilterString = filterString;
-
-			List<T> items = new ArrayList<>();
-
-			for (String externalReferenceCode :
-					freeTierExternalReferenceCodes) {
-
-				items.add(
-					function.apply(
-						new JSONObject(
-						).put(
-							"externalReferenceCode", externalReferenceCode
-						)));
-			}
-
-			return items;
+		protected String getAuthorization() {
+			return "Bearer test";
 		}
 
 		@Override
-		protected String getAuthorization() {
-			return "Bearer test";
+		protected String patch(String authorization, String body, URI uri) {
+			patchBodies.add(body);
+
+			JSONObject jsonObject = new JSONObject(body);
+
+			String externalReferenceCode = jsonObject.getString(
+				"externalReferenceCode");
+
+			if (failingExternalReferenceCodes.contains(externalReferenceCode)) {
+				throw WebClientResponseException.create(
+					500, "Internal Server Error", HttpHeaders.EMPTY,
+					new byte[0], null);
+			}
+
+			if (missingExternalReferenceCodes.contains(externalReferenceCode)) {
+				throw WebClientResponseException.create(
+					404, "Not Found", HttpHeaders.EMPTY, new byte[0], null);
+			}
+
+			return "{\"id\": 1}";
 		}
 
 		@Override
@@ -563,10 +593,10 @@ public class ProductVersionServiceSyncProductVersionsTest {
 		);
 	}
 
-	private Map<String, JSONObject> _getPutJSONObjects() {
+	private Map<String, JSONObject> _getJSONObjects(List<String> bodies) {
 		Map<String, JSONObject> jsonObjects = new HashMap<>();
 
-		for (String body : _testProductVersionService.putBodies) {
+		for (String body : bodies) {
 			JSONObject jsonObject = new JSONObject(body);
 
 			jsonObjects.put(
@@ -574,6 +604,10 @@ public class ProductVersionServiceSyncProductVersionsTest {
 		}
 
 		return jsonObjects;
+	}
+
+	private Map<String, JSONObject> _getPatchJSONObjects() {
+		return _getJSONObjects(_testProductVersionService.patchBodies);
 	}
 
 	private static final String _RELEASES_CDN_URL =
