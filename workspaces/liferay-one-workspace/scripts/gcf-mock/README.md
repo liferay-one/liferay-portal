@@ -38,16 +38,24 @@ decimal vCPU count, and `clientExtensionsRAM`, `databaseStorage`,
 `documentLibraryAndBackupStorage`, `logStorage`, and `networkTraffic` in bytes. The numbers are
 made up.
 
+The customer usage API serves the SaaS plan dashboard. Its body is a flat object with the six
+fields that `SaaSUsageStrategy` reads: `totalAnonymousPageViewsCount`,
+`totalClientExtensionsCapacityCPUCount`, `totalClientExtensionsCapacityRAM` and
+`totalStorageCapacityDocumentLibrary` in GiB, `totalMonthlyActiveLoggedInUsersCount`, and
+`totalSitesCount`. The numbers are made up.
+
 The mock serves these routes:
 
 | Route | Response |
 | --- | --- |
-| `/composable_usage_api/api/v1/accounts/<accountKey>/usage/month/<yyyy-MM>` | `composable-usage-<yyyy-MM>.json`, or `composable-usage-empty.json` for a month with no row |
+| `/composable_usage_api/api/v2/projects/<projectId>/usage/month/<yyyy-MM>` | `composable-usage-<yyyy-MM>.json`, or `composable-usage-empty.json` for a month with no row |
+| `/customer_usage_api/api/v2/customer/usage/projects/<projectId>` | `customer-usage.json` |
 | `/ldp_metrics_api/api/v1/projects/<projectId>/ldp/usage` | `usage.json` |
 | `/ldp_metrics_api/api/v1/projects/<projectId>/ldp/usage/event-history` | `event-history.json` |
 | `/ldp_metrics_api/api/v1/projects/<projectId>/ldp/usage/event-summary?startDate=<yyyy-MM-dd>` | `event-summary-<startDate>.json`, or `event-summary-empty.json` for a month with no row |
 
-The composable route ignores the account key, so every account reads the same numbers.
+The composable and customer usage routes ignore the project ID, so every project reads the same
+numbers.
 
 ## How It Is Wired
 
