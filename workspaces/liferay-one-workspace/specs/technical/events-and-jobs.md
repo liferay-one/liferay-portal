@@ -251,7 +251,7 @@ The site initializer creates 31 templates from `client-extensions/liferay-one-si
 | Template ERC | Directory | Recipient Type | Sent By an Object Action | Sent By Code |
 | --- | --- | --- | --- | --- |
 | `ACCOUNT-INVITATION` | `account-invitation` | email | None | `…/one/constants/AccountInvitationConstants.java:14` |
-| `LICENSE-KEY-EXPIRATION-WARNING` | `license-key-expiration-warning` | email | None | `…/one/service/SubscriptionEntryService.java:391` |
+| `LICENSE-KEY-EXPIRATION-WARNING` | `license-key-expiration-warning` | email | None | `…/one/service/SubscriptionEntryService.java:331` |
 | `MARKETPLACE-ACTION-CLOUD-EMAIL-TEMPLATE` | `cloud-next-steps-template` | email | `MKT-CLOUD-EMAIL` | None |
 | `MARKETPLACE-ACTION-DXP-FREE-EMAIL-TEMPLATE` | `dxp-free-next-steps-template` | email | `MKT-DXP-FREE-EMAIL` | None |
 | `MARKETPLACE-ACTION-DXP-PAID-OR-TRIAL-EMAIL-TEMPLATE` | `next-steps-template-paid-or-trial` | email | `MKT-DXP-PAID-OR-TRIAL-EMAIL` | None |
@@ -270,7 +270,7 @@ The site initializer creates 31 templates from `client-extensions/liferay-one-si
 | `MARKETPLACE-WELCOME-SOLUTIONS-TRIAL` | `welcome-solutions-trial` | email | None | None |
 | `PROJECT-INVITATION` | `project-invitation` | email | None | `…/one/constants/AccountInvitationConstants.java:18` |
 | `PROVISIONING-PARTNER-USER-UPDATE` | `provisioning-partner-user-update` | email | None | `…/one/service/ProvisioningEmailService.java:108` |
-| `PROVISIONING-WELCOME` | `provisioning-welcome` | email | None | `…/one/service/ProvisioningEmailService.java:482` |
+| `PROVISIONING-WELCOME` | `provisioning-welcome` | email | None | `…/one/service/ProvisioningEmailService.java:484` |
 | `SETUP-ANALYTICS-CLOUD-ENVIRONMENT` | `setup-analytics-cloud-environment` | email | None | `…/one/service/CloudActivationRequestService.java:433` |
 | `SETUP-PAAS-ENVIRONMENT` | `setup-paas-environment` | email | None | `…/one/service/CloudActivationRequestService.java:435` |
 | `SETUP-SAAS-ENVIRONMENT` | `setup-saas-environment` | email | None | `…/one/service/CloudActivationRequestService.java:437` |
