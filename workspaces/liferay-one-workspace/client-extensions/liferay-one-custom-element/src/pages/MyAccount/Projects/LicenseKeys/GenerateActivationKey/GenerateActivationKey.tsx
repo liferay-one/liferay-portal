@@ -307,6 +307,7 @@ export default function GenerateActivationKey() {
 		return subscription?.availableCount ?? 0;
 	}, [keyType, product, subscriptionEntitlementId]);
 
+	const appLicense = Boolean(product?.appLicense);
 	const cloudNative = isCloudNativeProduct(product);
 
 	const {productVersions} = useDXPProductVersions(cloudNative);
@@ -417,8 +418,15 @@ export default function GenerateActivationKey() {
 	}
 
 	function onClickContinueSubscription() {
+		if (appLicense && developer) {
+			onClickDownload();
+
+			return;
+		}
+
 		goTo(
 			getStepAfterSubscription({
+				appLicense,
 				cloudNative,
 				complimentary,
 				developer,
@@ -723,6 +731,7 @@ export default function GenerateActivationKey() {
 							onClickCancel={onClickCancel}
 							onClickContinue={onClickContinueSubscription}
 							renewing={renewing}
+							submitting={submitting}
 						/>
 					)}
 
@@ -800,6 +809,7 @@ export default function GenerateActivationKey() {
 							onClickBack={() =>
 								goTo(
 									getStepBeforeEnvironment({
+										appLicense,
 										complimentary,
 										free,
 										unassigned,

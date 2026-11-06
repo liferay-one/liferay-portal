@@ -106,17 +106,6 @@ public class LicenseKeyGenerationService {
 				"No key can be downloaded for key type " + keyType);
 		}
 
-		int comparison = _versionComparator.compare(
-			version, LicenseKeyGenerationConstants.MINIMUM_DEVELOPER_VERSION);
-
-		if (comparison < 0) {
-			throw new LicenseKeyEntitlementException(
-				StringBundler.concat(
-					"Developer keys are not available for version ", version,
-					". The minimum version is ",
-					LicenseKeyGenerationConstants.MINIMUM_DEVELOPER_VERSION));
-		}
-
 		List<Entitlement> entitlements =
 			_entitlementService.getActiveEntitlements(
 				project.getExternalReferenceCode());
@@ -129,6 +118,24 @@ public class LicenseKeyGenerationService {
 				StringBundler.concat(
 					"The project is not entitled to ", productName,
 					", so no developer key can be generated for it"));
+		}
+
+		if (Objects.equals(
+				_getProductId(entitlement),
+				LicenseConstants.PRODUCT_ID_PORTAL)) {
+
+			int comparison = _versionComparator.compare(
+				version,
+				LicenseKeyGenerationConstants.MINIMUM_DEVELOPER_VERSION);
+
+			if (comparison < 0) {
+				throw new LicenseKeyEntitlementException(
+					StringBundler.concat(
+						"Developer keys are not available for version ",
+						version, ". The minimum version is ",
+						LicenseKeyGenerationConstants.
+							MINIMUM_DEVELOPER_VERSION));
+			}
 		}
 
 		Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));

@@ -38,6 +38,7 @@ type SubscriptionStepProps = {
 	onClickCancel: () => void;
 	onClickContinue: () => void;
 	renewing?: boolean;
+	submitting?: boolean;
 };
 
 function formatUTCDate(value?: string) {
@@ -51,6 +52,7 @@ export default function SubscriptionStep({
 	onClickCancel,
 	onClickContinue,
 	renewing,
+	submitting,
 }: SubscriptionStepProps) {
 	const {register, setValue, watch} = form;
 
@@ -72,6 +74,7 @@ export default function SubscriptionStep({
 	const cloudNative = isCloudNativeProduct(product);
 	const complimentary = isComplimentaryKeyType(keyType);
 	const developer = isDeveloperKeyType(keyType);
+	const download = Boolean(product?.appLicense) && developer;
 	const free = keyType === FREE_KEY_TYPE;
 
 	const requiresContractTerm =
@@ -433,10 +436,13 @@ export default function SubscriptionStep({
 			)}
 
 			<WizardFooter
-				cancelButtonProps={{onClick: onClickCancel}}
+				cancelButtonProps={{
+					disabled: submitting,
+					onClick: onClickCancel,
+				}}
 				continueButtonProps={{
-					children: translate('next'),
-					disabled: !canContinue,
+					children: translate(download ? 'download' : 'next'),
+					disabled: !canContinue || submitting,
 					onClick: onClickContinue,
 				}}
 			/>
