@@ -141,6 +141,23 @@ public class BaseJiraAssetObjectConverterTest {
 	}
 
 	@Test
+	public void testIsSyncEnabledReturnsTrueUnlessOverridden() {
+		Assertions.assertTrue(_testConverter.isSyncEnabled());
+
+		TestConverter testConverter = _prepare(
+			new TestConverter() {
+
+				@Override
+				public boolean isSyncEnabled() {
+					return false;
+				}
+
+			});
+
+		Assertions.assertFalse(testConverter.isSyncEnabled());
+	}
+
+	@Test
 	public void testToJiraAssetObjectReadsAttributesBySchemaID() {
 		JiraAssetObject jiraAssetObject = _testConverter.toJiraAssetObject(
 			new JSONObject(

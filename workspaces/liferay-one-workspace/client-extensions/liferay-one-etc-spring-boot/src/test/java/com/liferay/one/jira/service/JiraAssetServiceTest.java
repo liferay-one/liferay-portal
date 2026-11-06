@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.json.JSONObject;
 
@@ -69,6 +70,12 @@ public class JiraAssetServiceTest {
 			"Test Object"
 		);
 
+		Mockito.when(
+			_converter.isSyncEnabled()
+		).thenReturn(
+			true
+		);
+
 		_existingJiraAssetObject = Mockito.mock(JiraAssetObject.class);
 
 		Mockito.when(
@@ -87,6 +94,15 @@ public class JiraAssetServiceTest {
 
 		ReflectionTestUtils.setField(
 			_jiraAssetService, "_jiraAssetPersistence", _jiraAssetPersistence);
+	}
+
+	@Test
+	public void testDeleteSkipsObjectWhenSyncIsDisabled() {
+		_whenSyncDisabled();
+
+		_jiraAssetService.delete(_converter, _EXTERNAL_KEY);
+
+		Mockito.verifyNoInteractions(_jiraAssetPersistence);
 	}
 
 	@Test
@@ -167,6 +183,18 @@ public class JiraAssetServiceTest {
 		Assertions.assertEquals(
 			Collections.singletonMap(_EXTERNAL_KEY, _OBJECT_ID),
 			externalKeyToObjectIdMap);
+	}
+
+	@Test
+	public void testFetchReferenceObjectIdsReturnsNullWhenSyncIsDisabled() {
+		_whenSyncDisabled();
+
+		Assertions.assertNull(
+			_jiraAssetService.fetchReferenceObjectIds(
+				_converter, Collections.singletonList(_EXTERNAL_KEY),
+				Function.identity()));
+
+		Mockito.verifyNoInteractions(_jiraAssetPersistence);
 	}
 
 	@Test
@@ -269,6 +297,19 @@ public class JiraAssetServiceTest {
 		).createObject(
 			"objectTypeId", createdJiraAssetObject
 		);
+	}
+
+	@Test
+	public void testGetOrCreateReferenceObjectIdsReturnsNullWhenSyncIsDisabled() {
+		_whenSyncDisabled();
+
+		Assertions.assertNull(
+			_jiraAssetService.getOrCreateReferenceObjectIds(
+				_converter, Collections.singletonList(_EXTERNAL_KEY),
+				Function.identity(),
+				externalKey -> Mockito.mock(JiraAssetObject.class)));
+
+		Mockito.verifyNoInteractions(_jiraAssetPersistence);
 	}
 
 	@Test
@@ -630,6 +671,16 @@ public class JiraAssetServiceTest {
 	}
 
 	@Test
+	public void testSoftDeleteByAttributeSkipsObjectsWhenSyncIsDisabled() {
+		_whenSyncDisabled();
+
+		_jiraAssetService.softDeleteByAttribute(
+			_converter, "Team External Key", _EXTERNAL_KEY);
+
+		Mockito.verifyNoInteractions(_jiraAssetPersistence);
+	}
+
+	@Test
 	public void testSoftDeleteRejectsUnsupportedConverter() {
 		Mockito.when(
 			_converter.getDeletedAttributeName()
@@ -669,6 +720,15 @@ public class JiraAssetServiceTest {
 		).updateObject(
 			Mockito.any(), Mockito.any()
 		);
+	}
+
+	@Test
+	public void testSoftDeleteSkipsObjectWhenSyncIsDisabled() {
+		_whenSyncDisabled();
+
+		_jiraAssetService.softDelete(_converter, _existingJiraAssetObject);
+
+		Mockito.verifyNoInteractions(_jiraAssetPersistence);
 	}
 
 	@Test
@@ -826,6 +886,15 @@ public class JiraAssetServiceTest {
 	}
 
 	@Test
+	public void testUpsertSkipsObjectWhenSyncIsDisabled() {
+		_whenSyncDisabled();
+
+		_jiraAssetService.upsert(_converter, _existingJiraAssetObject);
+
+		Mockito.verifyNoInteractions(_jiraAssetPersistence);
+	}
+
+	@Test
 	public void testUpsertSkipsUpdateForMatchingBiPredicate() throws Exception {
 		JiraAssetObject jiraAssetObject = _mockUpsertJiraAssetObject();
 
@@ -918,6 +987,14 @@ public class JiraAssetServiceTest {
 		);
 
 		return jiraAssetObject;
+	}
+
+	private void _whenSyncDisabled() {
+		Mockito.when(
+			_converter.isSyncEnabled()
+		).thenReturn(
+			false
+		);
 	}
 
 	private static final String _EXTERNAL_KEY = "test-external-key";
