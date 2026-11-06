@@ -591,6 +591,11 @@
 			"key": "liferay-one",
 			"name": "Liferay One"
 		},
-		"themeName": "Classic"
+		"themeName": "Classic",
+		"themeSettings": {
+			"mapped-openGraphImage": "ddmTemplate_[$TEMPLATE_ENTRY_ID:Marketplace Apps Icon$]",
+			"mapped-openGraphImageAlt": "${name}",
+			"mapped-openGraphTitle": "${name}"
+		}
 	}
 }
