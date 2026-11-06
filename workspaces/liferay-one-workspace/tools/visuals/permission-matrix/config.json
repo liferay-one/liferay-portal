@@ -25,6 +25,7 @@
 		"Site Content Reviewer": "site",
 		"Site Member": "site",
 		"Site Owner": "site",
+		"Supplier": "regular",
 		"User": "regular"
 	},
 	"referenceObjects": {

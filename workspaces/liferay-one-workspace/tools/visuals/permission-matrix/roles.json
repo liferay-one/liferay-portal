@@ -56,6 +56,10 @@
 			"group": "customer",
 			"purpose": "Manages the account: its members, their roles, and invitations. Salesforce provisioning makes the first contact of a new account an Account Administrator when no contact has this role."
 		},
+		"Account App Publisher": {
+			"group": "marketplace",
+			"purpose": "Publishes apps in the marketplace for the account. The role can add and change the Publisher Assets of the account."
+		},
 		"Account Buyer": {
 			"group": "customer",
 			"purpose": "Buys in the commerce store for the account."
@@ -69,8 +73,8 @@
 			"purpose": "Publishes solutions in the marketplace for the account."
 		},
 		"Account Supplier": {
-			"group": "unused",
-			"purpose": "A Liferay commerce role that the workspace does not use."
+			"group": "marketplace",
+			"purpose": "The base role of every marketplace publisher. Liferay shows the catalog of a supplier account only to this role, and gives the regular role Supplier with it, which opens the Publisher Dashboard."
 		},
 		"Analytics Cloud Owner": {
 			"group": "unused",
@@ -231,6 +235,10 @@
 		"Solution Architect": {
 			"group": "employee",
 			"purpose": "The Liferay solution architect of the account."
+		},
+		"Supplier": {
+			"group": "marketplace",
+			"purpose": "A Liferay role that Liferay gives to each user with Account Supplier. It opens the Publisher Dashboard, reads the tax categories, adds Publisher Asset Attachments, and adds the packages of an app to the publisher_assets folder."
 		},
 		"User": {
 			"group": "portal",

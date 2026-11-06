@@ -736,6 +736,40 @@
 		{
 			"accountBriefs": [
 				{
+					"externalReferenceCode": "ACCNT-021",
+					"roleBriefs": [
+					]
+				}
+			],
+			"alternateName": "apppublisher",
+			"emailAddress": "apppublisher@publisher.com",
+			"externalReferenceCode": "USER_PUBLISHER_APP",
+			"familyName": "Publisher",
+			"givenName": "App",
+			"name": "App Publisher",
+			"password": "test",
+			"status": "Active"
+		},
+		{
+			"accountBriefs": [
+				{
+					"externalReferenceCode": "ACCNT-021",
+					"roleBriefs": [
+					]
+				}
+			],
+			"alternateName": "solutionpublisher",
+			"emailAddress": "solutionpublisher@publisher.com",
+			"externalReferenceCode": "USER_PUBLISHER_SOLUTION",
+			"familyName": "Publisher",
+			"givenName": "Solution",
+			"name": "Solution Publisher",
+			"password": "test",
+			"status": "Active"
+		},
+		{
+			"accountBriefs": [
+				{
 					"externalReferenceCode": "SSA-ACCOUNT",
 					"roleBriefs": [
 					]

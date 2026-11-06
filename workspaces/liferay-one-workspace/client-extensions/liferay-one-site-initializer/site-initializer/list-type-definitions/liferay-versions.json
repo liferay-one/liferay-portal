@@ -16,12 +16,6 @@
 				"VIEW"
 			],
 			"roleName": "User"
-		},
-		{
-			"actionIds": [
-				"VIEW"
-			],
-			"roleName": "Marketplace Publisher"
 		}
 	]
 }
