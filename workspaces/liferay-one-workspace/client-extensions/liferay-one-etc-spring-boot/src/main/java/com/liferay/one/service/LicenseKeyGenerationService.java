@@ -477,6 +477,29 @@ public class LicenseKeyGenerationService {
 		}
 	}
 
+	private void _checkMinimumVersion(
+			List<Entitlement> bundleEntitlements,
+			Entitlement subscriptionEntitlement, String version)
+		throws Exception {
+
+		for (Entitlement entitlement : bundleEntitlements) {
+			if ((entitlement.getEntitlementId() ==
+					subscriptionEntitlement.getEntitlementId()) ||
+				LicenseKeyGenerateFormService.isMinimumVersion(
+					LicenseKeyGenerateFormService.getLicenseKeyFamily(
+						entitlement),
+					version)) {
+
+				continue;
+			}
+
+			throw new LicenseKeyEntitlementException(
+				StringBundler.concat(
+					"Product ", entitlement.getName(),
+					" is not licensed for version ", version));
+		}
+	}
+
 	private void _checkQuota(
 			ActivationKeyScope activationKeyScope,
 			List<Entitlement> bundleEntitlements,
@@ -879,6 +902,10 @@ public class LicenseKeyGenerationService {
 				}
 			}
 		}
+
+		_checkMinimumVersion(
+			bundleEntitlements, subscriptionEntitlement,
+			generateRequest.getVersion());
 
 		_checkQuota(
 			activationKeyScope, bundleEntitlements, entitlements,
