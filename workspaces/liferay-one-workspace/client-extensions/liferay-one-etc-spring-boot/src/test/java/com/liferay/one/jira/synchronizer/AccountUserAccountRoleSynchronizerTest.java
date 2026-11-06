@@ -8,7 +8,9 @@ package com.liferay.one.jira.synchronizer;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.jira.constants.AccountContactRoleAssignmentConstants;
+import com.liferay.one.jira.constants.ContactRoleConstants;
 import com.liferay.one.jira.converter.AccountContactRoleAssignmentConverter;
 import com.liferay.one.jira.converter.AccountConverter;
 import com.liferay.one.jira.converter.ContactConverter;
@@ -21,6 +23,7 @@ import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.util.Arrays;
@@ -91,9 +94,13 @@ public class AccountUserAccountRoleSynchronizerTest {
 		ReflectionTestUtils.setField(
 			_accountUserAccountRoleSynchronizer, "_contactConverter",
 			Mockito.mock(ContactConverter.class));
+
+		_contactRoleConverter = Mockito.mock(ContactRoleConverter.class);
+
 		ReflectionTestUtils.setField(
 			_accountUserAccountRoleSynchronizer, "_contactRoleConverter",
-			Mockito.mock(ContactRoleConverter.class));
+			_contactRoleConverter);
+
 		ReflectionTestUtils.setField(
 			_accountUserAccountRoleSynchronizer, "_jiraAssetService",
 			_jiraAssetService);
@@ -176,6 +183,34 @@ public class AccountUserAccountRoleSynchronizerTest {
 			_ACCOUNT_EXTERNAL_KEY, startDate);
 
 		_assertSkipsAssignmentsUpdatedSinceStartDate(startDate);
+	}
+
+	@Test
+	public void testSyncAssignRoleWritesProjectRolesAsSupportRoles()
+		throws Exception {
+
+		for (Map.Entry<String, String> entry :
+				_contactRoleExternalKeysByRoleExternalKey.entrySet()) {
+
+			_accountUserAccountRoleSynchronizer.syncAssignRole(
+				entry.getKey(), _USER_ACCOUNT_EXTERNAL_KEY,
+				_ACCOUNT_EXTERNAL_KEY);
+
+			Mockito.verify(
+				_accountContactRoleAssignmentConverter
+			).toAssetObject(
+				Mockito.eq(entry.getValue()),
+				Mockito.eq(_USER_ACCOUNT_EXTERNAL_KEY),
+				Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(false),
+				Mockito.any()
+			);
+
+			Mockito.verify(
+				_jiraAssetService
+			).getReferenceObjectId(
+				_contactRoleConverter, entry.getValue()
+			);
+		}
 	}
 
 	@Test
@@ -290,6 +325,26 @@ public class AccountUserAccountRoleSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncUnassignRoleUnassignsSupportRoles() throws Exception {
+		for (Map.Entry<String, String> entry :
+				_contactRoleExternalKeysByRoleExternalKey.entrySet()) {
+
+			_accountUserAccountRoleSynchronizer.syncUnassignRole(
+				entry.getKey(), _USER_ACCOUNT_EXTERNAL_KEY,
+				_ACCOUNT_EXTERNAL_KEY);
+
+			Mockito.verify(
+				_accountContactRoleAssignmentConverter
+			).toAssetObject(
+				Mockito.eq(entry.getValue()),
+				Mockito.eq(_USER_ACCOUNT_EXTERNAL_KEY),
+				Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(true),
+				Mockito.any()
+			);
+		}
+	}
+
+	@Test
 	public void testSyncUnassignStaleRolesBaseAQL() throws Exception {
 		AtomicReference<String> aqlAtomicReference = _captureAQL();
 
@@ -340,6 +395,39 @@ public class AccountUserAccountRoleSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncUnassignStaleRolesKeepsAssignedSupportRoles()
+		throws Exception {
+
+		UserAccount userAccount = _mockUserAccount();
+
+		Mockito.when(
+			_projectMembershipService.fetchProjectMembership(
+				_ACCOUNT_EXTERNAL_KEY, RoleConstants.ERC_PROJECT_ADMIN,
+				userAccount.getId())
+		).thenReturn(
+			Mockito.mock(ProjectMembership.class)
+		);
+
+		JiraAssetObject jiraAssetObject = _mockAssignment(
+			ContactRoleConstants.EXTERNAL_KEY_SUPPORT_ADMINISTRATOR);
+
+		Mockito.when(
+			_jiraAssetService.getJiraAssetObjects(Mockito.any(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(jiraAssetObject)
+		);
+
+		_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
+			_ACCOUNT_EXTERNAL_KEY, Collections.emptyMap(), new Date());
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.never()
+		).upsert(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testSyncUnassignStaleRolesKeepsUnverifiableRoles()
 		throws Exception {
 
@@ -365,6 +453,42 @@ public class AccountUserAccountRoleSynchronizerTest {
 		throws Exception {
 
 		_assertSkipped(_NAME);
+	}
+
+	@Test
+	public void testSyncUnassignStaleRolesSkipsCurrentSupportRoleAssignments()
+		throws Exception {
+
+		JiraAssetObject jiraAssetObject = _mockAssignment(
+			ContactRoleConstants.EXTERNAL_KEY_SUPPORT_REQUESTER);
+
+		Mockito.when(
+			jiraAssetObject.getAttributeValue(
+				AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_NAME)
+		).thenReturn(
+			StringBundler.concat(
+				ContactRoleConstants.EXTERNAL_KEY_SUPPORT_REQUESTER, ";",
+				_USER_ACCOUNT_EXTERNAL_KEY, ";", _ACCOUNT_EXTERNAL_KEY)
+		);
+
+		Mockito.when(
+			_jiraAssetService.getJiraAssetObjects(Mockito.any(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(jiraAssetObject)
+		);
+
+		_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
+			_ACCOUNT_EXTERNAL_KEY,
+			Collections.singletonMap(
+				_USER_ACCOUNT_EXTERNAL_KEY,
+				Collections.singleton(RoleConstants.ERC_PROJECT_REQUESTER)),
+			new Date());
+
+		Mockito.verify(
+			_jiraAssetService, Mockito.never()
+		).upsert(
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
 	}
 
 	@Test
@@ -435,6 +559,33 @@ public class AccountUserAccountRoleSynchronizerTest {
 		).upsert(
 			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
 			Mockito.any()
+		);
+	}
+
+	@Test
+	public void testSyncUnassignStaleRolesSoftDeletesUnassignedSupportRoles()
+		throws Exception {
+
+		_mockUserAccount();
+
+		JiraAssetObject jiraAssetObject = _mockAssignment(
+			ContactRoleConstants.EXTERNAL_KEY_SUPPORT_USER);
+
+		Mockito.when(
+			_jiraAssetService.getJiraAssetObjects(Mockito.any(), Mockito.any())
+		).thenReturn(
+			Collections.singletonList(jiraAssetObject)
+		);
+
+		_accountUserAccountRoleSynchronizer.syncUnassignStaleRoles(
+			_ACCOUNT_EXTERNAL_KEY, Collections.emptyMap(), new Date());
+
+		Mockito.verify(
+			_accountContactRoleAssignmentConverter
+		).toAssetObject(
+			Mockito.eq(ContactRoleConstants.EXTERNAL_KEY_SUPPORT_USER),
+			Mockito.eq(_USER_ACCOUNT_EXTERNAL_KEY),
+			Mockito.eq(_ACCOUNT_EXTERNAL_KEY), Mockito.eq(true), Mockito.any()
 		);
 	}
 
@@ -603,10 +754,20 @@ public class AccountUserAccountRoleSynchronizerTest {
 
 	private static final String _USER_ACCOUNT_EXTERNAL_KEY = "user-account-erc";
 
+	private static final Map<String, String>
+		_contactRoleExternalKeysByRoleExternalKey = LinkedHashMapBuilder.put(
+			RoleConstants.ERC_PROJECT_ADMIN, "KOR-3970202"
+		).put(
+			RoleConstants.ERC_PROJECT_REQUESTER, "KOR-36607"
+		).put(
+			RoleConstants.ERC_PROJECT_USER, "KOR-36608"
+		).build();
+
 	private AccountContactRoleAssignmentConverter
 		_accountContactRoleAssignmentConverter;
 	private AccountUserAccountRoleSynchronizer
 		_accountUserAccountRoleSynchronizer;
+	private ContactRoleConverter _contactRoleConverter;
 	private JiraAssetService _jiraAssetService;
 	private ProjectMembershipService _projectMembershipService;
 	private UserAccountService _userAccountService;
