@@ -146,9 +146,9 @@ export default class HeadlessCommerceAdminCatalog {
 		);
 	}
 
-	static async getOptions() {
+	static async getOptions(searchParams = new URLSearchParams()) {
 		return fetcher<APIResponse<CommerceOption>>(
-			'/o/headless-commerce-admin-catalog/v1.0/options'
+			`/o/headless-commerce-admin-catalog/v1.0/options?${searchParams.toString()}`
 		);
 	}
 
