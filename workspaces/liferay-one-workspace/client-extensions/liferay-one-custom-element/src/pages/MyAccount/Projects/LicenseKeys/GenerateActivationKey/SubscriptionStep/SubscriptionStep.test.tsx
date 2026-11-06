@@ -214,6 +214,43 @@ describe('SubscriptionStep', () => {
 		expect(screen.getByRole('button', {name: 'Next'})).toBeDisabled();
 	});
 
+	it('downloads an app license developer key from the subscription', () => {
+		render(
+			<SubscriptionStepWrapper
+				defaultValues={{
+					keyType: 'developer',
+					productExternalReferenceCode: 'PRDCT-DSR',
+				}}
+				generateForm={{
+					bundleProducts: [],
+					products: [
+						{
+							appLicense: true,
+							developerVersions: ['2026.Q3'],
+							entitlementId: 21,
+							externalReferenceCode: 'PRDCT-DSR',
+							keyTypes: [
+								{
+									entitlementId: 21,
+									key: 'developer',
+									licenseEntryType: 'developer',
+									productKey: '',
+									subscriptions: [toSubscription(21)],
+									virtualCluster: false,
+								},
+							],
+							licenseKeyFamily: 'DSR',
+							name: 'Digital Sales Room',
+							versions: ['2026.Q3'],
+						},
+					],
+				}}
+			/>
+		);
+
+		expect(screen.getByRole('button', {name: 'Download'})).toBeEnabled();
+	});
+
 	it('shows that a permanent activation key does not expire', () => {
 		render(
 			<SubscriptionStepWrapper

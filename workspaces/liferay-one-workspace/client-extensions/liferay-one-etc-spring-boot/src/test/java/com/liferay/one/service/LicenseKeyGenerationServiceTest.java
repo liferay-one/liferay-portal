@@ -2542,7 +2542,13 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
-	public void testGenerateDeveloperLicenseXMLBelowMinimumVersion() {
+	public void testGenerateDeveloperLicenseXMLBelowMinimumVersion()
+		throws Exception {
+
+		_stubEntitlements(_toDeveloperEntitlement(1L, "PRDCT-DXP"));
+
+		_stubLicensedProducts();
+
 		LicenseKeyEntitlementException licenseKeyEntitlementException =
 			Assertions.assertThrows(
 				LicenseKeyEntitlementException.class,
@@ -2711,6 +2717,29 @@ public class LicenseKeyGenerationServiceTest {
 		Assertions.assertEquals(
 			Arrays.asList(
 				"7.4", LicenseKeyGenerationConstants.APP_PRODUCT_VERSION),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 6));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLLicensesAStandaloneAppOnAnyVersion()
+		throws Exception {
+
+		Entitlement appEntitlement = _toDeveloperEntitlement(2L, "PRDCT-DSR");
+
+		_stubEntitlements(appEntitlement);
+
+		_stubStandaloneApp(appEntitlement);
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Collections.emptyList(), "developer", "Digital Sales Room",
+			_toProject(), "7.3");
+
+		Assertions.assertEquals(
+			Collections.singletonList("dsr-app-entry-uuid"),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 5));
+		Assertions.assertEquals(
+			Collections.singletonList(
+				LicenseKeyGenerationConstants.APP_PRODUCT_VERSION),
 			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 6));
 	}
 
