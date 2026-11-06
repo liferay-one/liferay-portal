@@ -44,14 +44,6 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 
 		await gotoPublisherDashboard(page, 'published-apps');
 
-		test.info().annotations.push({
-			description:
-				'admin@publisher.com holds Marketplace Publisher and Account Administrator on Test Supplier, but GET /o/headless-commerce-admin-catalog/v1.0/catalogs returns no catalog for it, so the dashboard renders the empty state and disables Publish New App. The Marketplace Publisher role in liferay-one-batch carries no catalog permissions.',
-			type: 'issue',
-		});
-
-		test.fail();
-
 		for (const name of SEEDED_APPS) {
 			await expect(appRow(page, name)).toBeVisible();
 		}
@@ -293,7 +285,101 @@ test.describe('[FLOW-PUBLISHER-ONBOARDING] publisher dashboard', () => {
 		});
 	});
 
-	test('[FLOW-PUBLISHER-ONBOARDING] [ROUTE-PUBLISHER-DASHBOARD-PUBLISHED-APPS] a user without the Marketplace Publisher role cannot open the dashboard', async ({
+	test.describe('by publisher role', () => {
+		test('[FLOW-PUBLISHER-ONBOARDING] [ROUTE-PUBLISHER-DASHBOARD-PUBLISHED-APPS] [ROUTE-PUBLISHER-DASHBOARD-NEWSOLUTION] an app publisher can start an app but not a solution', async ({
+			page,
+			signIn,
+		}) => {
+			await signIn('APP_PUBLISHER');
+
+			await selectCurrentAccount(page, PUBLISHER_ACCOUNT_ERC);
+
+			await gotoPublisherDashboard(page, 'published-apps');
+
+			await expect(
+				page.getByRole('button', {name: 'Publish New App'})
+			).toBeEnabled();
+
+			await gotoPublisherDashboard(page, 'published-solutions');
+
+			await expect(
+				page.getByRole('button', {name: 'New Solution Template'})
+			).toBeDisabled();
+
+			await appRow(page, 'TeamPulse')
+				.getByRole('button', {name: 'actions'})
+				.click();
+
+			await expect(
+				page.getByRole('menuitem', {name: 'Edit'})
+			).toBeDisabled();
+			await expect(
+				page.getByRole('menuitem', {name: 'Delete'})
+			).toBeDisabled();
+
+			await gotoPublisherDashboard(page, 'newsolution/publisher');
+
+			await expect(page.getByText('Access required.')).toBeVisible();
+			await expect(
+				page.getByText('You do not have access to this page.')
+			).toBeVisible();
+		});
+
+		test('[FLOW-PUBLISHER-ONBOARDING] [ROUTE-PUBLISHER-DASHBOARD-PUBLISHED-SOLUTIONS] [ROUTE-PUBLISHER-DASHBOARD-NEWAPP] a solution publisher can start a solution but not an app', async ({
+			page,
+			signIn,
+		}) => {
+			await signIn('SOLUTION_PUBLISHER');
+
+			await selectCurrentAccount(page, PUBLISHER_ACCOUNT_ERC);
+
+			await gotoPublisherDashboard(page, 'published-solutions');
+
+			await expect(
+				page.getByRole('button', {name: 'New Solution Template'})
+			).toBeEnabled();
+
+			await gotoPublisherDashboard(page, 'published-apps');
+
+			await expect(
+				page.getByRole('button', {name: 'Publish New App'})
+			).toBeDisabled();
+
+			for (const name of SEEDED_APPS) {
+				await expect(appRow(page, name)).toBeVisible();
+			}
+
+			await gotoPublisherDashboard(page, 'newapp/publisher');
+
+			await expect(page.getByText('Access required.')).toBeVisible();
+			await expect(
+				page.getByText('You do not have access to this page.')
+			).toBeVisible();
+		});
+
+		test('[FLOW-PUBLISHER-ONBOARDING] [ROUTE-PUBLISHER-DASHBOARD-PUBLISHED-APPS] [ROUTE-PUBLISHER-DASHBOARD-PUBLISHED-SOLUTIONS] a publisher with both roles can start an app and a solution', async ({
+			page,
+			signIn,
+		}) => {
+			await signIn('PUBLISHER');
+
+			await selectCurrentAccount(page, PUBLISHER_ACCOUNT_ERC);
+
+			await gotoPublisherDashboard(page, 'published-apps');
+
+			await expect(
+				page.getByRole('button', {name: 'Publish New App'})
+			).toBeEnabled();
+
+			await gotoPublisherDashboard(page, 'published-solutions');
+
+			await expect(
+				page.getByRole('button', {name: 'New Solution Template'})
+			).toBeEnabled();
+		});
+	});
+
+	test('[FLOW-PUBLISHER-ONBOARDING] [ROUTE-PUBLISHER-DASHBOARD-PUBLISHED-APPS] a user without the Supplier role cannot open the dashboard', async ({
 		page,
 		signIn,
 	}) => {
