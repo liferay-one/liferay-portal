@@ -33,6 +33,7 @@ import java.util.Set;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -170,6 +171,19 @@ public class SubscriptionEntryService extends OneBaseService {
 			).toUri());
 	}
 
+	private String _getActivationURL(
+		String accountExternalReferenceCode,
+		String projectExternalReferenceCode) {
+
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			return _portalURL + "/my-account/activation";
+		}
+
+		return StringBundler.concat(
+			_portalURL, "/my-account#/", accountExternalReferenceCode,
+			"/project/", projectExternalReferenceCode, "/activation");
+	}
+
 	private String _getExpirationMessage(
 		String languageId, int days, Instant expirationDateInstant,
 		String productGroup) {
@@ -254,21 +268,22 @@ public class SubscriptionEntryService extends OneBaseService {
 				continue;
 			}
 
-			// Every license key under an activation key shares its dates, so
-			// the first one stands in for the environment in the email.
-
 			LicenseKey licenseKey = licenseKeys.get(0);
 
 			for (SubscriptionEntry subscriptionEntry : subscriptionEntries) {
 				_sendExpiringLicenseKeyEmail(
-					licenseKey, subscriptionEntry.getCustomUserId(),
-					licenseKeyExpirationDateOffset);
+					account.getExternalReferenceCode(),
+					licenseKeyExpirationDateOffset, licenseKey,
+					activationKey.getProjectExternalReferenceCode(),
+					subscriptionEntry.getCustomUserId());
 			}
 		}
 	}
 
 	private void _sendExpiringLicenseKeyEmail(
-			LicenseKey licenseKey, long userId, int days)
+			String accountExternalReferenceCode, int days,
+			LicenseKey licenseKey, String projectExternalReferenceCode,
+			long userId)
 		throws Exception {
 
 		UserAccount userAccount = _userAccountService.getUserAccount(userId);
@@ -282,6 +297,10 @@ public class SubscriptionEntryService extends OneBaseService {
 		String languageId = _getLanguageId(userAccount);
 
 		Map<String, String> placeholders = HashMapBuilder.put(
+			"ACTIVATION_URL",
+			_getActivationURL(
+				accountExternalReferenceCode, projectExternalReferenceCode)
+		).put(
 			"EXPIRATION_STATUS", _getExpirationStatus(languageId, days)
 		).put(
 			"LICENSE_KEY_EXPIRATION_MESSAGE",
@@ -297,6 +316,8 @@ public class SubscriptionEntryService extends OneBaseService {
 			"LICENSE_KEY_PRODUCT_VERSION", licenseKey.getProductVersion()
 		).put(
 			"LICENSE_KEY_SIZING", licenseKey.getSizing()
+		).put(
+			"PORTAL_URL", _portalURL
 		).put(
 			"USER_FIRST_NAME", userAccount.getGivenName()
 		).put(
@@ -364,8 +385,10 @@ public class SubscriptionEntryService extends OneBaseService {
 
 			for (SubscriptionEntry subscriptionEntry : subscriptionEntries) {
 				_sendExpiringLicenseKeyEmail(
-					licenseKey, subscriptionEntry.getCustomUserId(),
-					licenseKeyExpirationDateOffset);
+					account.getExternalReferenceCode(),
+					licenseKeyExpirationDateOffset, licenseKey,
+					licenseKey.getProjectExternalReferenceCode(),
+					subscriptionEntry.getCustomUserId());
 			}
 		}
 	}
@@ -402,6 +425,9 @@ public class SubscriptionEntryService extends OneBaseService {
 
 	@Autowired
 	private NotificationTemplateService _notificationTemplateService;
+
+	@Value("${liferay.one.portal.url}")
+	private String _portalURL;
 
 	@Autowired
 	private UserAccountService _userAccountService;
