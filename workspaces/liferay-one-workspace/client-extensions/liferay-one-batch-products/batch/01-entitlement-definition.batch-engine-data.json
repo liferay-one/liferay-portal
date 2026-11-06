@@ -2073,96 +2073,120 @@
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Backup Sizing 1",
 			"externalReferenceCode": "liferay-commerce-backup-sizing-1",
+			"licenseKeyType": "backup",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-backup-sizing-1"
+			"name": "liferay-commerce-backup-sizing-1",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Backup Sizing 2",
 			"externalReferenceCode": "liferay-commerce-backup-sizing-2",
+			"licenseKeyType": "backup",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-backup-sizing-2"
+			"name": "liferay-commerce-backup-sizing-2",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Backup Sizing 3",
 			"externalReferenceCode": "liferay-commerce-backup-sizing-3",
+			"licenseKeyType": "backup",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-backup-sizing-3"
+			"name": "liferay-commerce-backup-sizing-3",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Backup Sizing 4",
 			"externalReferenceCode": "liferay-commerce-backup-sizing-4",
+			"licenseKeyType": "backup",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-backup-sizing-4"
+			"name": "liferay-commerce-backup-sizing-4",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Non-Prod Sizing 1",
 			"externalReferenceCode": "liferay-commerce-non-prod-sizing-1",
+			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-non-prod-sizing-1"
+			"name": "liferay-commerce-non-prod-sizing-1",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Non-Prod Sizing 2",
 			"externalReferenceCode": "liferay-commerce-non-prod-sizing-2",
+			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-non-prod-sizing-2"
+			"name": "liferay-commerce-non-prod-sizing-2",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Non-Prod Sizing 3",
 			"externalReferenceCode": "liferay-commerce-non-prod-sizing-3",
+			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-non-prod-sizing-3"
+			"name": "liferay-commerce-non-prod-sizing-3",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Non-Prod Sizing 4",
 			"externalReferenceCode": "liferay-commerce-non-prod-sizing-4",
+			"licenseKeyType": "non-production",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-non-prod-sizing-4"
+			"name": "liferay-commerce-non-prod-sizing-4",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Prod Sizing 1",
 			"externalReferenceCode": "liferay-commerce-prod-sizing-1",
+			"licenseKeyType": "production",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-prod-sizing-1"
+			"name": "liferay-commerce-prod-sizing-1",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Prod Sizing 2",
 			"externalReferenceCode": "liferay-commerce-prod-sizing-2",
+			"licenseKeyType": "production",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-prod-sizing-2"
+			"name": "liferay-commerce-prod-sizing-2",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Prod Sizing 3",
 			"externalReferenceCode": "liferay-commerce-prod-sizing-3",
+			"licenseKeyType": "production",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-prod-sizing-3"
+			"name": "liferay-commerce-prod-sizing-3",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
 			"defaultQuantity": 1,
 			"displayName": "Liferay Commerce Prod Sizing 4",
 			"externalReferenceCode": "liferay-commerce-prod-sizing-4",
+			"licenseKeyType": "production",
 			"maxQuantity": 1,
-			"name": "liferay-commerce-prod-sizing-4"
+			"name": "liferay-commerce-prod-sizing-4",
+			"unit": "boolean"
 		},
 		{
 			"active": true,
