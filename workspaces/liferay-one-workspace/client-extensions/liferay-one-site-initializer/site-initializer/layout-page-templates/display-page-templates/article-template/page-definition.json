@@ -14,7 +14,7 @@
 							"indexed": true,
 							"layout": {
 								"paddingBottom": 2,
-								"paddingTop": 3
+								"paddingTop": 2
 							},
 							"name": "Breadcrumb"
 						},
