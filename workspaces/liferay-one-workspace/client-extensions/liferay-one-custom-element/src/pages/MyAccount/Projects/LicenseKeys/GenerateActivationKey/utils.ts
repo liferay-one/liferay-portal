@@ -111,7 +111,8 @@ export function getBundleProducts(
 			(!developer || !bundleProduct.app) &&
 			(bundleProduct.externalReferenceCode ===
 				product.externalReferenceCode ||
-				(!serverless &&
+				(!product.appLicense &&
+					!serverless &&
 					!LEADING_LICENSE_KEY_FAMILIES.includes(
 						bundleProduct.licenseKeyFamily
 					)))
@@ -156,12 +157,14 @@ export function getComplimentaryPurpose(
 }
 
 export function getStepAfterSubscription({
+	appLicense,
 	cloudNative,
 	complimentary,
 	developer,
 	free,
 	unassigned,
 }: {
+	appLicense: boolean;
 	cloudNative: boolean;
 	complimentary: boolean;
 	developer: boolean;
@@ -172,7 +175,7 @@ export function getStepAfterSubscription({
 		return 'complimentary';
 	}
 
-	if (free || unassigned) {
+	if (appLicense || free || unassigned) {
 		return 'environment';
 	}
 
@@ -184,10 +187,12 @@ export function getStepAfterSubscription({
 }
 
 export function getStepBeforeEnvironment({
+	appLicense,
 	complimentary,
 	free,
 	unassigned,
 }: {
+	appLicense: boolean;
 	complimentary: boolean;
 	free: boolean;
 	unassigned: boolean;
@@ -196,7 +201,7 @@ export function getStepBeforeEnvironment({
 		return 'complimentary';
 	}
 
-	if (free || unassigned) {
+	if (appLicense || free || unassigned) {
 		return 'subscription';
 	}
 
