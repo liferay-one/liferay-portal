@@ -1466,6 +1466,8 @@ export default {
 	'share-your-feedback': 'Comparte tus comentarios',
 	'shared-investigator-platform': 'Plataforma compartida de investigadores',
 	'show-less': 'Mostrar menos',
+	'showing-the-first-x-of-x-members-type-to-narrow-the-results':
+		'Mostrando los primeros {0} de {1} miembros. Escribe para acotar los resultados.',
 	'showing-x-to-x-of-x': 'Mostrando de {0} a {1} resultados de {2}',
 	'sign-in': 'Acceder',
 	'sign-in-with-a-different-account':
