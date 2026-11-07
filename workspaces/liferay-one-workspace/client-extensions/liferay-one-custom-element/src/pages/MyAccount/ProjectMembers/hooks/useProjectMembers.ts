@@ -6,6 +6,7 @@
 import {useMemo} from 'react';
 import {useOneContext} from '~/context/OneContextProvider';
 import {useFetch} from '~/hooks/useFetch';
+import useObjectItems from '~/hooks/useObjectItems';
 import {useAccountProjectContactRoles} from '~/hooks/useProjectCommerce';
 import {useProjectOrders} from '~/hooks/useProjectOrders';
 import {canViewAllAccountProjects} from '~/pages/MyAccount/AccountMembers/accountRoles';
@@ -67,29 +68,26 @@ export function useProjectMembers() {
 	} = useProjectOrders();
 
 	const {
-		data: membershipData,
-		isLoading: membershipsLoading,
-		mutate: mutateMemberships,
-	} = useFetch<APIResponse<ProjectMembershipItem>>(
+		items: accountMemberships,
+		loading: membershipsLoading,
+		revalidate: revalidateMemberships,
+	} = useObjectItems<ProjectMembershipItem>(
 		accountId ? '/o/c/projectmemberships' : null,
 		{
-			params: {
-				fields: 'id,r_projectToProjectMembership_c_projectERC,r_userToProjectMembership_userId,roleExternalReferenceCode',
-				filter: `r_accountEntryToProjectMembership_accountEntryId eq '${accountId}'`,
-				pageSize: -1,
-			},
+			fields: 'id,r_projectToProjectMembership_c_projectERC,r_userToProjectMembership_userId,roleExternalReferenceCode',
+			filter: `r_accountEntryToProjectMembership_accountEntryId eq '${accountId}'`,
 		}
 	);
 
 	const {
-		data: userAccountData,
-		isLoading: userAccountsLoading,
-		mutate: mutateUserAccounts,
-	} = useFetch<APIResponse<UserAccount>>(
+		items: userAccounts,
+		loading: userAccountsLoading,
+		revalidate: revalidateUserAccounts,
+	} = useObjectItems<UserAccount>(
 		accountId
 			? `/o/headless-admin-user/v1.0/accounts/${accountId}/user-accounts`
 			: null,
-		{params: {pageSize: -1, sort: 'givenName:asc'}}
+		{sort: 'givenName:asc'}
 	);
 
 	const {
@@ -121,7 +119,7 @@ export function useProjectMembers() {
 	const userInfoById = useMemo(() => {
 		const map = new Map<number, UserInfo>();
 
-		(userAccountData?.items ?? []).forEach((userAccount) => {
+		(userAccounts ?? []).forEach((userAccount) => {
 			map.set(userAccount.id, {
 				email: userAccount.emailAddress,
 				name: userAccount.name,
@@ -129,22 +127,22 @@ export function useProjectMembers() {
 		});
 
 		return map;
-	}, [userAccountData]);
+	}, [userAccounts]);
 
 	const accountMemberOptions = useMemo<AccountMemberOption[]>(
 		() =>
-			(userAccountData?.items ?? []).map((userAccount) => ({
+			(userAccounts ?? []).map((userAccount) => ({
 				email: userAccount.emailAddress,
 				name: userAccount.name,
 				userId: userAccount.id,
 			})),
-		[userAccountData]
+		[userAccounts]
 	);
 
 	const rows = useMemo<ProjectMembersRow[]>(() => {
 		const membershipsByProject = new Map<string, ProjectMembershipItem[]>();
 
-		(membershipData?.items ?? []).forEach((membership) => {
+		(accountMemberships ?? []).forEach((membership) => {
 			const projectExternalReferenceCode =
 				membership.r_projectToProjectMembership_c_projectERC;
 
@@ -288,7 +286,7 @@ export function useProjectMembers() {
 	}, [
 		contactRoleExternalReferenceCodesByProjectId,
 		contactRoleNameByExternalReferenceCode,
-		membershipData,
+		accountMemberships,
 		ordersError,
 		placedOrders,
 		projectData,
@@ -298,7 +296,7 @@ export function useProjectMembers() {
 	]);
 
 	const mutate = async () => {
-		await Promise.all([mutateMemberships(), mutateUserAccounts()]);
+		await Promise.all([revalidateMemberships(), revalidateUserAccounts()]);
 	};
 
 	return {
