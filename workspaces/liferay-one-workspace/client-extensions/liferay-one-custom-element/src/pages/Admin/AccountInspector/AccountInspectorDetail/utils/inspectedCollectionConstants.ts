@@ -141,6 +141,11 @@ export const INSPECTED_COLLECTION_COLUMNS: Record<
 		field('order', 'orderId'),
 		field('sku', 'sku'),
 		field('quantity', 'quantity'),
+		{
+			label: 'contract',
+			value: (entry) =>
+				(entry as InspectedOrderItem).customFields?.contractId,
+		},
 		hiddenField('external-reference-code', 'externalReferenceCode'),
 	],
 	orders: [
@@ -154,11 +159,6 @@ export const INSPECTED_COLLECTION_COLUMNS: Record<
 			label: 'project',
 			value: (entry) =>
 				(entry as InspectedOrder).customFields?.projectName,
-		},
-		{
-			label: 'contract',
-			value: (entry) =>
-				(entry as InspectedOrder).customFields?.contractId,
 		},
 		hiddenField('order-type', 'orderTypeExternalReferenceCode'),
 		{

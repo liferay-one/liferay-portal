@@ -19,7 +19,10 @@ import {
 	toProductsByProductId,
 	toProjectItemsByType,
 } from '~/pages/MyAccount/Projects/utils/projectItemsUtils';
-import {getOrderContractId, isInFlightOrder} from '~/utils/orderUtils';
+import {
+	getPlacedOrderItemContractId,
+	isInFlightOrder,
+} from '~/utils/orderUtils';
 
 import type {ProjectProduct} from '~/hooks/useProjectCommerce';
 import type {PlacedOrder} from '~/types/orders';
@@ -173,19 +176,26 @@ export function useProjectContractItems() {
 		const externalReferenceCodes = new Set<string>();
 
 		for (const order of projectItems.orders) {
-			const contractId = getOrderContractId(order);
-
-			if (
-				!isInFlightOrder(order) ||
-				(contractId !== resolvedContractId &&
-					projectContractIds.has(contractId))
-			) {
+			if (!isInFlightOrder(order)) {
 				continue;
 			}
 
-			for (const {productId} of order.placedOrderItems ?? []) {
-				const externalReferenceCode =
-					productsByProductId.get(productId)?.externalReferenceCode;
+			for (const placedOrderItem of order.placedOrderItems ?? []) {
+				const contractId = getPlacedOrderItemContractId(
+					order,
+					placedOrderItem
+				);
+
+				if (
+					contractId !== resolvedContractId &&
+					projectContractIds.has(contractId)
+				) {
+					continue;
+				}
+
+				const externalReferenceCode = productsByProductId.get(
+					placedOrderItem.productId
+				)?.externalReferenceCode;
 
 				if (externalReferenceCode) {
 					externalReferenceCodes.add(externalReferenceCode);

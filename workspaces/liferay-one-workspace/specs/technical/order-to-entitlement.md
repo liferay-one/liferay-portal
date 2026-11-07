@@ -388,14 +388,14 @@ Since LPD-92222 there is no relationship from `L_COMMERCE_ORDER` to `C_PROJECT` 
 | Question | Sidecar answer | Custom element answer |
 | --- | --- | --- |
 | Which project owns this order? | `salesforceProjectId` only (`EntitlementService._getProjectExternalReferenceCode`, `ProvisioningOrderService._isProjectOrder`, `ContractService._getSalesforceProjectId`) | `salesforceProjectId`, else `order-metadata.salesforceProjectId`, else `projectName`, else `koroneiki-project` (`useProjectOrders.ts:110`, `:147`, `:153`) |
-| Which contract owns this order item? | `contractId` of the order item, else `order-metadata.contractEntityId` of the order (`CommerceOrderItemUtil.getContractId`) | Not read from the order |
+| Which contract owns this order item? | `contractId` of the order item, else `order-metadata.contractEntityId` of the order (`CommerceOrderItemUtil.getContractId`) | `contractId` of the order item, else `order-metadata.contractEntityId` of the order (`getPlacedOrderItemContractId`, `orderUtils.ts`). The order level `contractId` is not read. |
 | Which project owns this entitlement? | `r_projectToEntitlement_c_projectERC`, set at generation from the order, or later by contract reconcile | Same relationship |
 | Which contract owns this entitlement? | `r_contractToEntitlement_c_contractId`, set at generation or by contract reconcile | Same relationship |
 
 The consequences:
 
 - **Project orders** match by `salesforceProjectId` first. `projectName` is a fallback, so a renamed project still matches when the ID is present.
-- **One Time Purchases** are, on the order side, orders for which `hasProject` is false: no `salesforceProjectId`, no `order-metadata.salesforceProjectId`, no `projectName`, and no `koroneiki-project`. The Unassigned pseudo project lists them (`useProjectItems.ts:43`). On the entitlement side, the One Time Purchases pseudo contract holds the project's entitlements whose contract is not one of the project's contracts (`useProjectCommerce.ts:308`).
+- **One Time Purchases** are, on the order side, orders for which `hasProject` is false: no `salesforceProjectId`, no `order-metadata.salesforceProjectId`, no `projectName`, and no `koroneiki-project`. The Unassigned pseudo project lists them (`useProjectItems.ts:43`). On the order item side, the One Time Purchases pseudo contract of a project holds the order items of that project that meet two conditions. The contract of the order item is not one of the project's contracts. No project contract entitles the product of the order item (`hasOneTimeOrders`, `useProjectCommerce.ts`). On the entitlement side, the One Time Purchases pseudo contract holds the project's entitlements whose contract is not one of the project's contracts (`useProjectCommerce.ts:308`).
 - **Account level contracts** have no project. When a project has no contract of its own, `useProjectCommerce` falls back to the account level contracts (`usingAccountFallback`). Their entitlements reach a project only through `r_projectToEntitlement_c_projectERC`, which comes from the order's `salesforceProjectId`, or from the contract's project during reconcile.
 - **Self service orders** store the project in `order-metadata.salesforceProjectId` and have no order item `contractId`. The custom element counts the order for the project. The sidecar does not, so the entitlements of a self service order have no project and no contract. See Findings.
 
@@ -404,7 +404,7 @@ The consequences:
 | View | Reads | Join | Code |
 | --- | --- | --- | --- |
 | Project Applications list | Placed orders of the account, filtered to the project, then mapped to delivery catalog products | `placedOrderItem.productId` → delivery product | `Applications.tsx` → `useProjectItems` |
-| Project Products list | The same orders, then filtered by the selected contract through the project's entitlements | `entitlement.skuExternalReferenceCode` → product of that SKU in the delivery catalog | `Products.tsx` → `useProjectContractItems` (`useProjectItems.ts:122`) |
+| Project Products list | The same orders, then filtered by the selected contract through the project's entitlements and through the contract of each order item | `entitlement.skuExternalReferenceCode` → product of that SKU in the delivery catalog | `Products.tsx` → `useProjectContractItems` (`useProjectItems.ts:122`) |
 | Project item detail | The product from `useProjectItems`, the order from `getProductOrderInfo` | `productId` | `ProjectItemDetails.tsx` |
 | Detail Utilization tab | `/o/c/entitlements` by project, `/o/c/usagedefinitions`, `/o/c/usageevents` (one page of 500) | Entitlement ID | `useProjectUsage.ts` |
 | Account products | Account contracts with nested entitlements | `entitlement.skuExternalReferenceCode` → product | `useAccountProducts` (`useProjectCommerce.ts`) |

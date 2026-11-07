@@ -148,7 +148,8 @@ async function toInspectedOrder(order: InspectedOrder) {
 	}
 
 	const orderItems = await getCollection<InspectedOrderItem>(
-		`${ORDER_PATH}/${order.id}/orderItems`
+		`${ORDER_PATH}/${order.id}/orderItems`,
+		{nestedFields: 'customFields'}
 	);
 
 	if (orderItems.error) {
@@ -169,7 +170,7 @@ async function getOrders(
 		filter: SearchBuilder.unquote(
 			SearchBuilder.lambda('accountId', account.id)
 		),
-		nestedFields: 'orderItems',
+		nestedFields: 'orderItems,orderItems.customFields',
 		sort: 'createDate:desc',
 	});
 
