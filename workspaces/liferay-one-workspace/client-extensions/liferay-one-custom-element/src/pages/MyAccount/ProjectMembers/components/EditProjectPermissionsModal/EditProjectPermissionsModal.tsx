@@ -7,10 +7,12 @@ import ClayButton from '@clayui/button';
 import ClayIcon from '@clayui/icon';
 import {useRef, useState} from 'react';
 import Button from '~/components/Button/Button';
-import {translate} from '~/i18n';
+import i18n, {translate} from '~/i18n';
 import MemberDropDown from '~/pages/MyAccount/ProjectMembers/components/MemberDropDown/MemberDropDown';
+import MemberSearchInput from '~/pages/MyAccount/ProjectMembers/components/MemberSearchInput/MemberSearchInput';
 import PermissionsSelect from '~/pages/MyAccount/ProjectMembers/components/PermissionsSelect/PermissionsSelect';
 import {getContactRoleChanges} from '~/pages/MyAccount/ProjectMembers/projectRoles';
+import getVisibleMemberRows from '~/pages/MyAccount/ProjectMembers/utils/getVisibleMemberRows';
 import {Liferay} from '~/services/liferay/liferay';
 import Projects from '~/services/spring-boot/Projects';
 
@@ -20,6 +22,10 @@ import type {
 	AccountMemberOption,
 	ProjectMembersRow,
 } from '~/pages/MyAccount/ProjectMembers/types';
+
+const MEMBER_ROWS_PAGE_SIZE = 20;
+
+const MEMBER_SEARCH_THRESHOLD = 10;
 
 type WorkingMember = {
 	designations: string[];
@@ -67,9 +73,17 @@ const EditProjectPermissionsModal = ({
 	);
 	const [error, setError] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const [searchValue, setSearchValue] = useState('');
+	const [visibleCount, setVisibleCount] = useState(MEMBER_ROWS_PAGE_SIZE);
 
 	const newRowCountRef = useRef(0);
 	const submittingRef = useRef(false);
+
+	const {hiddenCount, rows, savedMemberCount} = getVisibleMemberRows(
+		members,
+		searchValue,
+		visibleCount
+	);
 
 	const updateMember = (index: number, patch: Partial<WorkingMember>) =>
 		setMembers((previous) =>
@@ -215,6 +229,16 @@ const EditProjectPermissionsModal = ({
 
 	return (
 		<form id="edit-project-permissions" onSubmit={onSubmit}>
+			{(savedMemberCount > MEMBER_SEARCH_THRESHOLD || searchValue) && (
+				<MemberSearchInput
+					onChange={(value) => {
+						setSearchValue(value);
+						setVisibleCount(MEMBER_ROWS_PAGE_SIZE);
+					}}
+					value={searchValue}
+				/>
+			)}
+
 			<div className="project-permissions-grid">
 				<div className="project-permissions-grid-header project-permissions-grid-row">
 					<span>{translate('team-member')}</span>
@@ -224,72 +248,94 @@ const EditProjectPermissionsModal = ({
 					<span />
 				</div>
 
-				{members.map((member, index) =>
-					member.removed ? null : (
-						<div
-							className="project-permissions-grid-row"
-							key={member.rowKey}
-						>
-							{member.isNew && !member.userId ? (
-								<MemberDropDown
-									onChange={(option) =>
-										updateMember(index, {
-											email: option.email,
-											name: option.name,
-											userId: option.userId,
-										})
-									}
-									options={accountMemberOptions.filter(
-										(option) =>
-											!members.some(
-												(m, i) =>
-													i !== index &&
-													!m.removed &&
-													m.userId === option.userId
-											)
-									)}
-									selectedName={member.name}
-								/>
-							) : (
-								<span className="form-control project-permissions-member-box">
-									{member.name}
-								</span>
-							)}
-
-							<PermissionsSelect
-								availableDesignations={availableDesignations}
-								designations={member.designations}
-								onRoleChange={(roleExternalReferenceCode) =>
+				{rows.map(({index, member}) => (
+					<div
+						className="project-permissions-grid-row"
+						key={member.rowKey}
+					>
+						{member.isNew && !member.userId ? (
+							<MemberDropDown
+								onChange={(option) =>
 									updateMember(index, {
-										roleExternalReferenceCode,
+										email: option.email,
+										name: option.name,
+										userId: option.userId,
 									})
 								}
-								onToggleDesignation={(
-									designationExternalReferenceCode
-								) =>
-									toggleDesignation(
-										index,
-										designationExternalReferenceCode
-									)
-								}
-								roleExternalReferenceCode={
-									member.roleExternalReferenceCode
-								}
+								options={accountMemberOptions.filter(
+									(option) =>
+										!members.some(
+											(m, i) =>
+												i !== index &&
+												!m.removed &&
+												m.userId === option.userId
+										)
+								)}
+								selectedName={member.name}
 							/>
+						) : (
+							<span className="form-control project-permissions-member-box">
+								{member.name}
+							</span>
+						)}
 
-							<ClayButton
-								className="project-permissions-remove-button"
-								onClick={() => removeMember(index)}
-								type="button"
-							>
-								<ClayIcon className="mr-2" symbol="hr" />
+						<PermissionsSelect
+							availableDesignations={availableDesignations}
+							designations={member.designations}
+							onRoleChange={(roleExternalReferenceCode) =>
+								updateMember(index, {
+									roleExternalReferenceCode,
+								})
+							}
+							onToggleDesignation={(
+								designationExternalReferenceCode
+							) =>
+								toggleDesignation(
+									index,
+									designationExternalReferenceCode
+								)
+							}
+							roleExternalReferenceCode={
+								member.roleExternalReferenceCode
+							}
+						/>
 
-								{translate('remove')}
-							</ClayButton>
-						</div>
-					)
+						<ClayButton
+							className="project-permissions-remove-button"
+							onClick={() => removeMember(index)}
+							type="button"
+						>
+							<ClayIcon className="mr-2" symbol="hr" />
+
+							{translate('remove')}
+						</ClayButton>
+					</div>
+				))}
+
+				{!rows.length && (
+					<div className="p-3 text-neutral-7">
+						{translate('no-results-found')}
+					</div>
 				)}
 			</div>
+
+			{hiddenCount > 0 && (
+				<ClayButton
+					className="d-block mt-3 mx-auto"
+					displayType="link"
+					onClick={() =>
+						setVisibleCount(
+							(previous) => previous + MEMBER_ROWS_PAGE_SIZE
+						)
+					}
+					type="button"
+				>
+					{i18n.sub(
+						'load-x-more',
+						String(Math.min(hiddenCount, MEMBER_ROWS_PAGE_SIZE))
+					)}
+				</ClayButton>
+			)}
 
 			<ClayButton
 				className="project-permissions-add-button"

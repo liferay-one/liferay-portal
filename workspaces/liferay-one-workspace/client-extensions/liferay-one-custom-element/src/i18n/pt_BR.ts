@@ -858,6 +858,7 @@ export default {
 	'limited': 'Limitado',
 	'list-with-latest-published-apps':
 		'Lista com os aplicativos publicados mais recentes',
+	'load-x-more': 'Carregar mais {0}',
 	'loading': 'Carregando',
 	'login-as-a-user-that-has-access-to-a-project-or-contact-your-project-administrator-to-add-you-to-a-project.':
 		'Entre como um usuário que tem acesso a um projeto ou contate o administrador do projeto para ser adicionado.',

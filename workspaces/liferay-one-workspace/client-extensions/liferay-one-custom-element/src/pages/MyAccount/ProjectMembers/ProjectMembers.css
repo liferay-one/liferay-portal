@@ -74,6 +74,15 @@
 	padding: 4px 8px;
 }
 
+.project-permissions-search {
+	margin-bottom: var(--spacer-3);
+
+	& .input-group-inset-item {
+		padding-left: var(--spacer-3);
+		padding-right: var(--spacer-3);
+	}
+}
+
 .project-permissions-grid {
 	align-items: center;
 	display: grid;

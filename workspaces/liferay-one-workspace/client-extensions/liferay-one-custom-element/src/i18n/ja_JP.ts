@@ -845,6 +845,7 @@ export default {
 	'limit-reached': '制限に達しました',
 	'limited': '制限付き',
 	'list-with-latest-published-apps': '最新の公開アプリ一覧',
+	'load-x-more': 'さらに {0} 件を読み込む',
 	'loading': '読み込み中',
 	'login-as-a-user-that-has-access-to-a-project-or-contact-your-project-administrator-to-add-you-to-a-project.':
 		'プロジェクトにアクセスできるユーザーとしてログインするか、プロジェクト管理者に追加を依頼してください。',
