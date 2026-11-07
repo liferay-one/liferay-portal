@@ -488,34 +488,29 @@ public class LicenseKeyGenerationService {
 		throws Exception {
 
 		for (Entitlement entitlement : bundleEntitlements) {
-			if ((entitlement.getEntitlementId() ==
-					subscriptionEntitlement.getEntitlementId()) ||
-				LicenseKeyGenerateFormService.isMinimumVersion(
-					LicenseKeyGenerateFormService.getLicenseKeyFamily(
-						entitlement),
-					version)) {
+			if (entitlement.getEntitlementId() ==
+					subscriptionEntitlement.getEntitlementId()) {
 
 				continue;
 			}
 
-			String licenseKeyFamily =
-				LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement);
-
-			String productName = licenseKeyFamily;
-
 			Product product = _licenseKeyGenerateFormService.fetchProduct(
 				entitlement);
 
-			if (product != null) {
-				productName = LicenseKeyGenerateFormService.getProductName(
-					entitlement, product);
+			String minimumVersion =
+				LicenseKeyGenerateFormService.getMinimumVersion(product);
+
+			if (LicenseKeyGenerateFormService.isMinimumVersion(
+					minimumVersion, version)) {
+
+				continue;
 			}
 
 			throw new LicenseKeyEntitlementException(
 				StringBundler.concat(
-					productName, " is licensed only for version ",
-					LicenseKeyGenerationConstants.
-						minimumLicenseKeyFamilyVersions.get(licenseKeyFamily),
+					LicenseKeyGenerateFormService.getProductName(
+						entitlement, product),
+					" is licensed only for version ", minimumVersion,
 					" and later"));
 		}
 	}
@@ -1144,6 +1139,7 @@ public class LicenseKeyGenerationService {
 			if (!_licenseKeyGenerateFormService.isLicensedForVersion(
 					LicenseKeyGenerateFormService.getLicenseKeyFamily(
 						entitlement),
+					LicenseKeyGenerateFormService.getMinimumVersion(product),
 					version)) {
 
 				throw new LicenseKeyEntitlementException(
