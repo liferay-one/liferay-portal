@@ -57,5 +57,7 @@ liferay-one-instance-settings-release-team-oahs:
     name: Liferay One Instance Settings Release Team OAuth Application Headless Server
     scopes:
         -   Liferay.Headless.Admin.User.everything.read
+        -   c_project.everything.read
+        -   c_property.everything.read
     type: oAuthApplicationHeadlessServer
     userAccountScreenName: default-service-account
