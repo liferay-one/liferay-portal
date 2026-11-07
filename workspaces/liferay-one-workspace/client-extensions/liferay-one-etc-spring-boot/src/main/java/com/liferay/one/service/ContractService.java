@@ -604,6 +604,16 @@ public class ContractService extends OneBaseService {
 		return orders;
 	}
 
+	private String _getParentOpportunityId(Order order) {
+		Map<String, ?> customFields = order.getCustomFields();
+
+		if (customFields == null) {
+			return null;
+		}
+
+		return GetterUtil.getString(customFields.get("parentOpportunityId"));
+	}
+
 	private String _getSalesforceProjectId(Order order) {
 		Map<String, ?> customFields = order.getCustomFields();
 
@@ -619,6 +629,10 @@ public class ContractService extends OneBaseService {
 
 		Map<String, ?> customFields = order.getCustomFields();
 
+		long contractId = contract.getId();
+		String contractProjectExternalReferenceCode =
+			contract.getProjectExternalReferenceCode();
+
 		long orderContractId = 0;
 
 		if (customFields != null) {
@@ -626,9 +640,15 @@ public class ContractService extends OneBaseService {
 				customFields.get("contractId"));
 		}
 
-		if (orderContractId != contract.getId()) {
+		if ((orderContractId > 0) &&
+			Validator.isNotNull(_getParentOpportunityId(order))) {
+
+			contractId = orderContractId;
+			contractProjectExternalReferenceCode = null;
+		}
+		else if (orderContractId != contractId) {
 			_commerceOrderService.patchOrderCustomFields(
-				order.getId(), Map.of("contractId", contract.getId()));
+				order.getId(), Map.of("contractId", contractId));
 		}
 
 		OrderItem[] orderItems = order.getOrderItems();
@@ -640,8 +660,7 @@ public class ContractService extends OneBaseService {
 		String projectExternalReferenceCode = _getSalesforceProjectId(order);
 
 		if (Validator.isNull(projectExternalReferenceCode)) {
-			projectExternalReferenceCode =
-				contract.getProjectExternalReferenceCode();
+			projectExternalReferenceCode = contractProjectExternalReferenceCode;
 		}
 
 		for (OrderItem orderItem : orderItems) {
@@ -654,7 +673,7 @@ public class ContractService extends OneBaseService {
 			for (Entitlement entitlement : entitlements) {
 				if (entitlement.getContractId() <= 0) {
 					_entitlementService.updateEntitlementContract(
-						entitlement.getEntitlementId(), contract.getId());
+						entitlement.getEntitlementId(), contractId);
 				}
 
 				if (Validator.isNull(projectExternalReferenceCode) ||
