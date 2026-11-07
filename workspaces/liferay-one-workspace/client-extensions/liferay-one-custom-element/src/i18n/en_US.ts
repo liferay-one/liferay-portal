@@ -996,6 +996,7 @@ export default {
 	'limit-reached': 'Limit Reached',
 	'limited': 'Limited',
 	'list-with-latest-published-apps': 'List with latest published apps',
+	'load-x-more': 'Load {0} More',
 	'loading': 'Loading…',
 	'login-as-a-user-that-has-access-to-a-project-or-contact-your-project-administrator-to-add-you-to-a-project.':
 		'Login as a user that has access to a project or contact your project administrator to add you to a project.',
