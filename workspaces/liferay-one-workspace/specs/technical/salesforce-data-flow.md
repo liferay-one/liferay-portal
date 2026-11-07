@@ -334,7 +334,7 @@ A record can carry a `projectEntitlements` array and a `projectEntitlementLineIt
 | Object Name | `delete` Action | Any Other Action | Source |
 | --- | --- | --- | --- |
 | `Account` | Upsert. The action is not read. | Upsert, when `Active_Subscription__c` is true | `:139` |
-| `Contract` | Create path. The action is only compared to `update`. | `update`: update path. Any other: create path. | `:170`, `service/ContractService.java:358` |
+| `Contract` | Hide the contract (see the Contract section) | `update`: update path. Any other: create path. | `:170`, `service/ContractService.java` |
 | `PricebookEntry` | Delete the price entry | Upsert the price list and the price entry | `:177` |
 | `Product2` | Unpublish the SKU, and deactivate the product when no published SKU is left | Publish the SKU, or add it, and activate the product | `:244` |
 | `ProjectEntitlementLineItem__c` | Trim the order item: `effectiveEndDate` becomes now | Upsert the order item and complete the order | `:281` |
@@ -370,6 +370,16 @@ The object path calls `upsertAccount` with no "sold by" value, so it never write
 | (chain) | ERC of the contract whose `renewalOpportunityId` is this `SBQQ__Opportunity__c` | `C_CONTRACT.r_originalContractToContract_c_contractERC` | No | Keeps | `service/ContractService.java:339` |
 
 After the write, the handler reconciles the opportunity (`:375`). That attaches the account and the project of each contract of the opportunity when they are empty, sets `contractId` on the order items without a contract of the opportunity order and of every order whose `salesforceOpportunityId` is that opportunity (each item gets the contract that matches its end date), and sets the contract of the order item and the project on their entitlements when those are empty (`:167`, `:602`). It then links a successor contract that arrived first (`:411`). The reconcile only fills empty links. It never removes a link. A scheduled job runs the same reconcile every 15 minutes for the contracts changed in the last day (`:211`, `liferay.one.contract.reconcile.cron`).
+
+A `delete` action hides the contract. It does not delete the contract. `hideContract` finds the contract by its external reference code. When the contract does not exist in Liferay One, the handler adds a warning, does not create the contract, and changes nothing. Otherwise the handler runs these steps:
+
+1. Read every order of the account of the contract. Set `CommerceOrderItem.contractId` to `0` on each item whose own stored `contractId` is this contract. The order metadata fallback does not count. This step does not use `opportunityId`, so it also finds the items of an amendment order of another opportunity. A contract without an account has no orders to read, and the handler skips this step.
+
+1. Set the contract of each entitlement that points to the contract to `0`.
+
+1. Set `C_CONTRACT.opportunityId` to an empty value. The handler does this last.
+
+When the update of one order or one entitlement fails, the handler adds an error to the log and continues with the next entry. After the last entry, the handler throws and does not clear `opportunityId`. The message is then processed again. Items and entitlements that are already unlinked do not match again, so the second run changes only the items and entitlements that are still linked. After these steps nothing references the contract, and the rule REQ-PROJECTS-071 hides it in My Account. `getOpportunityContracts` and the scheduled reconcile no longer see the contract, so they do not fill an item from it again. The contract record keeps its other fields. A later opportunity message that lists the contract in `contracts` sets `opportunityId` again, and the contract is visible again. Salesforce does not list a deleted contract.
 
 ### PricebookEntry
 
@@ -410,7 +420,7 @@ A `delete` of either object sets `effectiveEndDate` to the current time on the m
 | --- | --- | --- | --- | --- |
 | AccountEntry | `PATCH` by ERC | `PUT` by ERC after a 404 | `PATCH` | Never |
 | Account channel currency | Entry for the configured channel | `POST` | `PATCH` when the currency differs | Never |
-| C_CONTRACT | `PATCH` or `GET` by ERC | `PUT` by ERC after a 404 | `PATCH` | Never. A `delete` action takes the create path. |
+| C_CONTRACT | `PATCH` or `GET` by ERC | `PUT` by ERC after a 404 | `PATCH` | Never. A `delete` action hides the contract: it clears the links of its order items and entitlements and its `opportunityId`. |
 | C_PROJECT | `PATCH` by ERC | `PUT` by ERC after a 404 | `PATCH` | Never. A `delete` action upserts. |
 | CommerceOrder | `GET` by ERC, then `PATCH` by ID | `POST` | `PATCH` | Never |
 | CommerceOrderItem | ERC among the items of the order | `PATCH` of the order with the item list | `PATCH` by ID | Never. A delete or a realignment sets `effectiveEndDate`. |
@@ -547,7 +557,7 @@ The audit checked the Salesforce path against this change. Salesforce contact ro
 
 1. **Resolved. The Salesforce Security Incident Contact is a project membership.** `client-extensions/liferay-one-etc-spring-boot/src/main/java/com/liferay/one/service/ProvisioningContactService.java:114` and `:118` still assign every other `Contact_Role__c` as an account role, which is the intended model. Security Incident Contact is the one designation that Salesforce sends, and it was assigned as an account role on every project of the account. It is now a `C_SECURITY_INCIDENT_CONTACT` membership on the project of the record (`:166`), so the Project Members page shows it.
 
-1. **Delete actions for Account, Project__c, and Contract upsert the record.** `salesforce/pubsub/SalesforceObjectPubsubSubscriber.java:74`, `:77`, and `:88` do not pass the action to the account and project handlers, and `service/ContractService.java:358` sends every action that is not `update` to the create path. A deleted contract is written again as `initial` or `renewal`.
+1. **Delete actions for Account and Project__c upsert the record.** `salesforce/pubsub/SalesforceObjectPubsubSubscriber.java:74` and `:77` do not pass the action to the account and project handlers. A `delete` action for a contract hides the contract (see the Contract section).
 
 1. **An existing account member gets no access to a new project.** `service/ProvisioningContactService.java:95` returns when the user is already in the account. The user gets no `C_PROJECT_USER` membership on the project of the opportunity, no account role, and no welcome email. The one exception is a Security Incident Contact, who gets the designation and a project role.
 

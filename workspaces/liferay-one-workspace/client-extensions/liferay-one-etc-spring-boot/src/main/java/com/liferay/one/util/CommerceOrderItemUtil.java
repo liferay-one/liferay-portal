@@ -58,8 +58,7 @@ public class CommerceOrderItemUtil {
 	}
 
 	public static long getContractId(Order order, OrderItem orderItem) {
-		long contractId = GetterUtil.getLong(
-			_getCustomFieldValue(orderItem, "contractId"));
+		long contractId = getContractId(orderItem);
 
 		if (contractId > 0) {
 			return contractId;
@@ -69,6 +68,11 @@ public class CommerceOrderItemUtil {
 			CommerceOrderUtil.getOrderMetadataJSONObject(order);
 
 		return orderMetadataJSONObject.optLong("contractEntityId");
+	}
+
+	public static long getContractId(OrderItem orderItem) {
+		return GetterUtil.getLong(
+			_getCustomFieldValue(orderItem, "contractId"));
 	}
 
 	public static Instant getEffectiveEndDateInstant(OrderItem orderItem) {
