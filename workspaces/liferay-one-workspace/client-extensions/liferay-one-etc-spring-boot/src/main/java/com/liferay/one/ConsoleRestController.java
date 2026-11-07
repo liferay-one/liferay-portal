@@ -73,7 +73,7 @@ public class ConsoleRestController extends OneBaseRestController {
 
 		_commerceOrderPermission.check(orderId, userAccount);
 
-		Order order = _getCloudAppOrder(orderId);
+		Order order = _getCloudInstallableOrder(orderId);
 
 		Integer paymentStatus = order.getPaymentStatus();
 
@@ -117,7 +117,7 @@ public class ConsoleRestController extends OneBaseRestController {
 
 		_commerceOrderPermission.check(orderId, jwt);
 
-		_getCloudAppOrder(orderId);
+		_getCloudInstallableOrder(orderId);
 
 		JSONObject jsonObject = new JSONObject(json);
 
@@ -165,7 +165,7 @@ public class ConsoleRestController extends OneBaseRestController {
 		throw new PrincipalException();
 	}
 
-	private Order _getCloudAppOrder(long orderId) throws Exception {
+	private Order _getCloudInstallableOrder(long orderId) throws Exception {
 		Order order = _commerceOrderService.fetchCommerceOrder(orderId);
 
 		if (order == null) {
@@ -173,8 +173,9 @@ public class ConsoleRestController extends OneBaseRestController {
 				"No order exists with ID " + orderId);
 		}
 
-		if (!CommerceOrderConstants.cloudAppOrderTypeExternalReferenceCodes.
-				contains(order.getOrderTypeExternalReferenceCode())) {
+		if (!CommerceOrderConstants.
+				cloudInstallableOrderTypeExternalReferenceCodes.contains(
+					order.getOrderTypeExternalReferenceCode())) {
 
 			throw new IllegalArgumentException(
 				"Unsupported order type: " +

@@ -96,11 +96,11 @@ public class DXPRestController extends OneBaseRestController {
 			throw new PrincipalException();
 		}
 
-		Order order = _getCloudAppOrder(orderId);
+		Order order = _getCloudInstallableOrder(orderId);
 
 		_commerceOrderService.completeSettledOrder(order);
 
-		order = _getCloudAppOrder(orderId);
+		order = _getCloudInstallableOrder(orderId);
 
 		Integer paymentStatus = order.getPaymentStatus();
 
@@ -130,7 +130,7 @@ public class DXPRestController extends OneBaseRestController {
 		).build();
 	}
 
-	private Order _getCloudAppOrder(long orderId) throws Exception {
+	private Order _getCloudInstallableOrder(long orderId) throws Exception {
 		Order order = _commerceOrderService.fetchCommerceOrder(orderId);
 
 		if (order == null) {
@@ -138,8 +138,9 @@ public class DXPRestController extends OneBaseRestController {
 				"No order exists with ID " + orderId);
 		}
 
-		if (!CommerceOrderConstants.cloudAppOrderTypeExternalReferenceCodes.
-				contains(order.getOrderTypeExternalReferenceCode())) {
+		if (!CommerceOrderConstants.
+				cloudInstallableOrderTypeExternalReferenceCodes.contains(
+					order.getOrderTypeExternalReferenceCode())) {
 
 			throw new IllegalArgumentException(
 				"Unsupported order type " +

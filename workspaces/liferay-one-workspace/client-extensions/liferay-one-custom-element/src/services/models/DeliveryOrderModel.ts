@@ -53,8 +53,8 @@ export default class DeliveryOrderModel {
 		);
 	}
 
-	get isCloudApp() {
-		return ['CLOUD_APP', 'CLOUDAPP'].includes(
+	get isCloudInstallable() {
+		return ['CLIENT_EXTENSION', 'CLOUD_APP', 'CLOUDAPP'].includes(
 			this.order.orderTypeExternalReferenceCode as OrderTypes
 		);
 	}
