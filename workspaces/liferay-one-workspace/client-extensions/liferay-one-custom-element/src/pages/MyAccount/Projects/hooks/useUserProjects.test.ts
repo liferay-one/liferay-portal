@@ -110,7 +110,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 	});
 
 	it.each([
-		'canManageAllAccounts',
+		'canViewAllAccounts',
 		'isAccountAdministrator',
 		'isAccountMember',
 	])(
