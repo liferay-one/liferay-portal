@@ -22,7 +22,7 @@ import fetcher from '~/services/fetcher/fetcher';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 import {Liferay} from '~/services/liferay/liferay';
 import Accounts from '~/services/spring-boot/Accounts';
-import {getOrderContractId} from '~/utils/orderUtils';
+import {getOrderContractId, isClosedWonOrder} from '~/utils/orderUtils';
 import {getProductSpecificationValue} from '~/utils/productUtils';
 
 import type {APIResponse, DataQuery} from '~/types/api';
@@ -336,15 +336,7 @@ export function useProjectCommerce(
 
 		const contractIds = new Set<number>();
 
-		entitlements.forEach((entitlement) => {
-			if (entitlement.r_contractToEntitlement_c_contractId) {
-				contractIds.add(
-					entitlement.r_contractToEntitlement_c_contractId
-				);
-			}
-		});
-
-		placedOrders.forEach((placedOrder) => {
+		placedOrders.filter(isClosedWonOrder).forEach((placedOrder) => {
 			const contractId = getOrderContractId(placedOrder);
 
 			if (contractId) {
@@ -353,14 +345,7 @@ export function useProjectCommerce(
 		});
 
 		return contractNodes.filter((node) => contractIds.has(node.id));
-	}, [
-		contractNodes,
-		entitlements,
-		entitlementsError,
-		ordersError,
-		placedOrders,
-		project,
-	]);
+	}, [contractNodes, entitlementsError, ordersError, placedOrders, project]);
 
 	const projectContractIds = useMemo(
 		() => new Set(projectContractNodes.map((node) => node.id)),
