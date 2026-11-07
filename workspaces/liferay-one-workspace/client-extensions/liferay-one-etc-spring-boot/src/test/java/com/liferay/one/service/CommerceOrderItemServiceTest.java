@@ -13,6 +13,7 @@ import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderItemConstants;
+import com.liferay.one.model.Contract;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 
 import java.math.BigDecimal;
@@ -159,6 +160,75 @@ public class CommerceOrderItemServiceTest {
 	}
 
 	@Test
+	public void testUpsertOrderItemsLinksTheContractWithTheMatchingEndDate()
+		throws Exception {
+
+		Order order = _createOrder(_createOrderItem(11L, _ERC_A, null, null));
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			order
+		);
+
+		_upsertOrderItems(
+			List.of(
+				_createContract(5001L, "2027-10-30T00:00:00Z"),
+				_createContract(5002L, "2027-10-31T00:00:00Z")),
+			order, _createLineItemJSON(_ERC_A, 3, "2027-10-31"));
+
+		OrderItem[] patchedOrderItems = _getPatchedOrderItems();
+
+		Assertions.assertEquals(
+			"5002", _getCustomFieldData(patchedOrderItems[0], "contractId"));
+	}
+
+	@Test
+	public void testUpsertOrderItemsOmitsTheContractWhenNoEndDateMatches()
+		throws Exception {
+
+		Order order = _createOrder(_createOrderItem(11L, _ERC_A, null, null));
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			order
+		);
+
+		_upsertOrderItems(
+			List.of(_createContract(5001L, "2027-10-30T00:00:00Z")), order,
+			_createLineItemJSON(_ERC_A, 3, "2027-10-31"));
+
+		OrderItem[] patchedOrderItems = _getPatchedOrderItems();
+
+		Assertions.assertFalse(
+			_hasCustomField(patchedOrderItems[0], "contractId"));
+	}
+
+	@Test
+	public void testUpsertOrderItemsOmitsTheContractWithoutContracts()
+		throws Exception {
+
+		Order order = _createOrder(_createOrderItem(11L, _ERC_A, null, null));
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			order
+		);
+
+		_upsertOrderItems(order, _createLineItemJSON(_ERC_A, 3, "2027-10-31"));
+
+		OrderItem[] patchedOrderItems = _getPatchedOrderItems();
+
+		Assertions.assertFalse(
+			_hasCustomField(patchedOrderItems[0], "contractId"));
+	}
+
+	@Test
 	public void testUpsertOrderItemsPatchesOrderOnce() throws Exception {
 		OrderItem orderItemA = _createOrderItem(11L, _ERC_A, null, null);
 		OrderItem orderItemB = _createOrderItem(12L, _ERC_B, null, null);
@@ -280,6 +350,20 @@ public class CommerceOrderItemServiceTest {
 			Problem.ProblemException.class,
 			() -> _upsertOrderItems(
 				order, _createLineItemJSON(_ERC_A, 3, null)));
+	}
+
+	private Contract _createContract(long id, String endDate) {
+		return new Contract(
+			new JSONObject(
+			).put(
+				"endDate", endDate
+			).put(
+				"externalReferenceCode", "800" + id
+			).put(
+				"id", id
+			).put(
+				"startDate", "2026-11-01T00:00:00Z"
+			));
 	}
 
 	private JSONObject _createLineItemJSON(
@@ -415,7 +499,8 @@ public class CommerceOrderItemServiceTest {
 		}
 	}
 
-	private void _upsertOrderItems(Order order, JSONObject... jsonObjects)
+	private void _upsertOrderItems(
+			List<Contract> contracts, Order order, JSONObject... jsonObjects)
 		throws Exception {
 
 		OrderResource.Builder builder = _mockOrderResourceBuilder();
@@ -438,8 +523,14 @@ public class CommerceOrderItemServiceTest {
 			}
 
 			_commerceOrderItemService.upsertOrderItems(
-				order, salesforceOpportunityLineItems, "Closed Won");
+				contracts, order, salesforceOpportunityLineItems, "Closed Won");
 		}
+	}
+
+	private void _upsertOrderItems(Order order, JSONObject... jsonObjects)
+		throws Exception {
+
+		_upsertOrderItems(new ArrayList<>(), order, jsonObjects);
 	}
 
 	private static final String _ERC_A = "00kLPD113954TEST0A";

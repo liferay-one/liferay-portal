@@ -418,6 +418,61 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testGenerateEntitlementsFallsBackToTheAIHubOrderContract()
+		throws Exception {
+
+		_setUpOrderItem(_createOrderItem());
+
+		Mockito.when(
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				Mockito.anyMap(), Mockito.eq(_SKU_EXTERNAL_REFERENCE_CODE))
+		).thenReturn(
+			List.of(_createEntitlementDefinition(100.0, 1, "storage"))
+		);
+
+		Order order = new Order();
+
+		order.setAccountId(_ACCOUNT_ID);
+		order.setCustomFields(
+			Map.of(
+				"order-metadata",
+				"{\"contractEntityId\": " + _CONTRACT_ID + "}"));
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		Mockito.when(
+			_commerceOrderService.fetchCommerceOrder(_ORDER_ID)
+		).thenReturn(
+			order
+		);
+
+		Mockito.doReturn(
+			_createEntitlement(1, "storage")
+		).when(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
+		);
+
+		_entitlementService.generateEntitlements(_ORDER_ITEM_ID);
+
+		Mockito.verify(
+			_entitlementService
+		).addEntitlement(
+			Mockito.eq(_ACCOUNT_ID), Mockito.eq(_ORDER_ITEM_ID),
+			Mockito.eq(_CONTRACT_ID), Mockito.anyLong(), Mockito.any(),
+			Mockito.any(), Mockito.anyBoolean(), Mockito.any(),
+			Mockito.anyInt(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testGenerateEntitlementsGrantsTheDefinitionQuantityForTrial()
 		throws Exception {
 
@@ -511,7 +566,7 @@ public class EntitlementServiceTest {
 	public void testGenerateEntitlementsMatchesDefinitionsBySku()
 		throws Exception {
 
-		_setUpOrderItem(_createOrderItem());
+		_setUpOrderItem(_createOrderItem(_CONTRACT_ID));
 
 		Mockito.when(
 			_entitlementDefinitionService.getEntitlementDefinitions(
@@ -524,9 +579,7 @@ public class EntitlementServiceTest {
 
 		order.setAccountId(_ACCOUNT_ID);
 		order.setCustomFields(
-			Map.of(
-				"contractId", _CONTRACT_ID, "salesforceProjectId",
-				_PROJECT_EXTERNAL_REFERENCE_CODE));
+			Map.of("salesforceProjectId", _PROJECT_EXTERNAL_REFERENCE_CODE));
 		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
 
 		Mockito.when(
@@ -632,9 +685,7 @@ public class EntitlementServiceTest {
 
 		order.setAccountId(_ACCOUNT_ID);
 		order.setCustomFields(
-			Map.of(
-				"contractId", _CONTRACT_ID, "salesforceProjectId",
-				_PROJECT_EXTERNAL_REFERENCE_CODE));
+			Map.of("salesforceProjectId", _PROJECT_EXTERNAL_REFERENCE_CODE));
 		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
 
 		Mockito.when(
@@ -1198,6 +1249,61 @@ public class EntitlementServiceTest {
 			Mockito.eq("/o/c/entitlements"), Mockito.eq("name eq 'sites'"),
 			Mockito.any(), Mockito.eq("entitlementDefinitionToEntitlement")
 		);
+	}
+
+	@Test
+	public void testGetOrderItemEntitlementsBatchesTheOrderItems()
+		throws Exception {
+
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			_entitlementService
+		).getEntitlements(
+			Mockito.anyString()
+		);
+
+		List<Long> commerceOrderItemIds = new ArrayList<>();
+
+		for (long i = 1; i <= 150; i++) {
+			commerceOrderItemIds.add(i);
+		}
+
+		_entitlementService.getOrderItemEntitlements(commerceOrderItemIds);
+
+		ArgumentCaptor<String> filterArgumentCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.verify(
+			_entitlementService, Mockito.times(2)
+		).getEntitlements(
+			filterArgumentCaptor.capture()
+		);
+
+		List<String> filters = filterArgumentCaptor.getAllValues();
+
+		String filterPrefix =
+			"r_commerceOrderItemToEntitlement_commerceOrderItemId in (";
+
+		Assertions.assertTrue(
+			filters.get(
+				0
+			).startsWith(
+				filterPrefix + "'1','2',"
+			));
+
+		Assertions.assertTrue(
+			filters.get(
+				0
+			).endsWith(
+				"'99','100')"
+			));
+		Assertions.assertTrue(
+			filters.get(
+				1
+			).endsWith(
+				"'149','150')"
+			));
 	}
 
 	@Test
@@ -1806,6 +1912,23 @@ public class EntitlementServiceTest {
 		orderItem.setOrderId(_ORDER_ID);
 		orderItem.setQuantity(BigDecimal.valueOf(2));
 		orderItem.setSkuExternalReferenceCode(_SKU_EXTERNAL_REFERENCE_CODE);
+
+		return orderItem;
+	}
+
+	private OrderItem _createOrderItem(long contractId) {
+		OrderItem orderItem = _createOrderItem();
+
+		CustomValue customValue = new CustomValue();
+
+		customValue.setData(contractId);
+
+		CustomField customField = new CustomField();
+
+		customField.setCustomValue(customValue);
+		customField.setName("contractId");
+
+		orderItem.setCustomFields(new CustomField[] {customField});
 
 		return orderItem;
 	}

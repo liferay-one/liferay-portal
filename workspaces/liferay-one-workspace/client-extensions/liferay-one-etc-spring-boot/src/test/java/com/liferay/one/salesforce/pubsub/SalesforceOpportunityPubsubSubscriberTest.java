@@ -38,6 +38,7 @@ import com.liferay.one.service.UserAccountService;
 import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.petra.string.StringBundler;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -125,8 +126,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		Mockito.when(
 			_commerceOrderService.upsertOrder(
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.anyList(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+				Mockito.any())
 		).thenReturn(
 			newOrder
 		);
@@ -217,8 +218,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
 		);
 	}
 
@@ -309,14 +310,14 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
-				Mockito.anyString())
+			_contractService.getContracts(Mockito.anyList())
 		).thenReturn(
-			new Contract(
-				new JSONObject(
-				).put(
-					"id", 888L
-				))
+			List.of(
+				new Contract(
+					new JSONObject(
+					).put(
+						"id", 888L
+					)))
 		);
 
 		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
@@ -333,14 +334,14 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
-				Mockito.anyString())
+			_contractService.getContracts(Mockito.anyList())
 		).thenReturn(
-			new Contract(
-				new JSONObject(
-				).put(
-					"id", 888L
-				))
+			List.of(
+				new Contract(
+					new JSONObject(
+					).put(
+						"id", 888L
+					)))
 		);
 
 		JSONObject opportunityJSONObject =
@@ -393,14 +394,14 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		inOrder.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
 		);
 
 		inOrder.verify(
 			_commerceOrderItemService
 		).upsertOrderItems(
-			Mockito.any(), Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.anyList(), Mockito.any()
 		);
 
 		inOrder.verify(
@@ -526,8 +527,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), currencyCodeArgumentCaptor.capture(),
-			Mockito.any(), Mockito.anyList(), Mockito.any()
+			Mockito.any(), currencyCodeArgumentCaptor.capture(), Mockito.any(),
+			Mockito.anyList(), Mockito.any()
 		);
 
 		Assertions.assertEquals("USD", currencyCodeArgumentCaptor.getValue());
@@ -553,16 +554,16 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
-				Mockito.anyString())
+			_contractService.getContracts(Mockito.anyList())
 		).thenReturn(
-			new Contract(
-				new JSONObject(
-				).put(
-					"id", 888L
-				).put(
-					"r_accountEntryToContract_accountEntryId", _ACCOUNT_ID
-				))
+			List.of(
+				new Contract(
+					new JSONObject(
+					).put(
+						"id", 888L
+					).put(
+						"r_accountEntryToContract_accountEntryId", _ACCOUNT_ID
+					)))
 		);
 
 		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
@@ -579,16 +580,16 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
-				Mockito.anyString())
+			_contractService.getContracts(Mockito.anyList())
 		).thenReturn(
-			new Contract(
-				new JSONObject(
-				).put(
-					"id", 888L
-				).put(
-					"r_projectToContract_c_projectERC", "SF-PROJ-EXISTING"
-				))
+			List.of(
+				new Contract(
+					new JSONObject(
+					).put(
+						"id", 888L
+					).put(
+						"r_projectToContract_c_projectERC", "SF-PROJ-EXISTING"
+					)))
 		);
 
 		JSONObject opportunityJSONObject =
@@ -627,17 +628,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			Mockito.anyLong(), Mockito.anyString()
 		);
 
-		ArgumentCaptor<Long> contractIdArgumentCaptor = ArgumentCaptor.forClass(
-			Long.class);
-
-		Mockito.verify(
-			_commerceOrderService
-		).upsertOrder(
-			Mockito.any(), contractIdArgumentCaptor.capture(), Mockito.any(),
-			Mockito.any(), Mockito.anyList(), Mockito.any()
-		);
-
-		Assertions.assertEquals(888L, contractIdArgumentCaptor.getValue());
+		_verifyContractIds(888L);
 	}
 
 	@Test
@@ -714,16 +705,16 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
-				Mockito.anyString())
+			_contractService.getContracts(Mockito.anyList())
 		).thenReturn(
-			new Contract(
-				new JSONObject(
-				).put(
-					"endDate", "2025-06-01T00:00:00Z"
-				).put(
-					"id", 999L
-				))
+			List.of(
+				new Contract(
+					new JSONObject(
+					).put(
+						"endDate", "2025-06-01T00:00:00Z"
+					).put(
+						"id", 999L
+					)))
 		);
 
 		JSONObject opportunityJSONObject =
@@ -763,8 +754,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 				warningMessagesArgumentCaptor.getAllValues()) {
 
 			Assertions.assertFalse(
-				_containsSubstring(
-					"differs from the end date of contract", warningMessages));
+				_containsSubstring("matches no contract", warningMessages));
 		}
 	}
 
@@ -948,6 +938,38 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveProcessesAnEmptyContractsArray() throws Exception {
+		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
+
+		recordJSONObject.put("contracts", new JSONArray());
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		Mockito.verify(
+			_contractService
+		).getContracts(
+			List.of()
+		);
+
+		_verifyContractIds();
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertTrue(
+			_containsSubstring(
+				"Unable to find a contract for opportunity " + _OPPORTUNITY_ID,
+				warningMessagesArgumentCaptor.getValue()));
+	}
+
+	@Test
 	public void testReceiveProcessesEveryRecordWhenAllRecordsSucceed()
 		throws Exception {
 
@@ -964,8 +986,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService, Mockito.times(2)
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
 		);
 
 		Mockito.verify(
@@ -1026,9 +1048,78 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
 		);
+	}
+
+	@Test
+	public void testReceiveProcessesTheLinesOfSeveralContracts()
+		throws Exception {
+
+		Mockito.when(
+			_contractService.getContracts(List.of("C1", "C2"))
+		).thenReturn(
+			List.of(
+				_createContract("C1", 777L, "2026-12-31T00:00:00Z"),
+				_createContract("C2", 778L, "2027-12-31T00:00:00Z"))
+		);
+
+		JSONObject opportunityJSONObject =
+			SalesforceModelTestUtil.createOpportunityJSONObject(
+				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "", "",
+				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+
+		JSONObject recordJSONObject =
+			SalesforceModelTestUtil.createOpportunityRecordJSONObject(
+				SalesforceModelTestUtil.createAccountJSONObject(
+					_ACCOUNT_ID_SF, "Test Salesforce Account"),
+				opportunityJSONObject,
+				new JSONArray(
+				).put(
+					SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+						"USD", "2026-12-31", "LINE-1", "PROD-1", "Widget",
+						"Subscription", 5, "2026-01-01")
+				).put(
+					SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+						"USD", "2027-12-31", "LINE-2", "PROD-1", "Widget",
+						"Subscription", 5, "2027-01-01")
+				),
+				new JSONArray(), null);
+
+		recordJSONObject.put(
+			"contracts",
+			new JSONArray(
+			).put(
+				new JSONObject(
+				).put(
+					"Id", "C1"
+				)
+			).put(
+				new JSONObject(
+				).put(
+					"Id", "C2"
+				)
+			));
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		_verifyContractIds(777L, 778L);
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertFalse(
+			_containsSubstring(
+				"matches no contract",
+				warningMessagesArgumentCaptor.getValue()));
 	}
 
 	@Test
@@ -1106,8 +1197,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), currencyCodeArgumentCaptor.capture(),
-			Mockito.any(), Mockito.anyList(), Mockito.any()
+			Mockito.any(), currencyCodeArgumentCaptor.capture(), Mockito.any(),
+			Mockito.anyList(), Mockito.any()
 		);
 
 		Assertions.assertEquals("USD", currencyCodeArgumentCaptor.getValue());
@@ -1121,7 +1212,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).upsertOrderItems(
-			Mockito.any(), Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.anyList(), Mockito.any()
 		);
 
 		Mockito.verify(
@@ -1192,13 +1283,14 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
 		);
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.times(1)
 		).upsertOrderItems(
+			Mockito.any(),
 			Mockito.argThat(order -> order.getId() == _NEW_ORDER_ID),
 			Mockito.argThat(
 				salesforceOpportunityLineItems ->
@@ -1255,14 +1347,14 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
 		);
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
 		).upsertOrderItems(
-			Mockito.any(), Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.anyList(), Mockito.any()
 		);
 
 		Mockito.verify(
@@ -1322,8 +1414,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
 		);
 	}
 
@@ -1383,7 +1475,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(),
 			salesforceOpportunityArgumentCaptor.capture(), Mockito.anyList(),
 			Mockito.any()
 		);
@@ -1392,6 +1484,59 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_OPPORTUNITY_ID,
 			salesforceOpportunityArgumentCaptor.getValue(
 			).getId());
+	}
+
+	@Test
+	public void testReceiveReprocessesWithoutTheContractsOfTheFirstMessage()
+		throws Exception {
+
+		Mockito.when(
+			_contractService.getContracts(List.of("C1"))
+		).thenReturn(
+			List.of(_createContract("C1", 777L, "2026-12-31T00:00:00Z"))
+		);
+
+		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
+
+		JSONObject recordWithContractsJSONObject = new JSONObject(
+			recordJSONObject.toString());
+
+		recordWithContractsJSONObject.put(
+			"contracts",
+			new JSONArray(
+			).put(
+				new JSONObject(
+				).put(
+					"Id", "C1"
+				)
+			));
+
+		_receiveOpportunityMessage(recordWithContractsJSONObject);
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		ArgumentCaptor<List<Contract>> contractsArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.times(2)
+		).upsertOrderItems(
+			contractsArgumentCaptor.capture(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
+		);
+
+		List<List<Contract>> contractsList =
+			contractsArgumentCaptor.getAllValues();
+
+		Assertions.assertEquals(
+			1,
+			contractsList.get(
+				0
+			).size());
+		Assertions.assertTrue(
+			contractsList.get(
+				1
+			).isEmpty());
 	}
 
 	@Test
@@ -1425,8 +1570,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), currencyCodeArgumentCaptor.capture(),
-			Mockito.any(), Mockito.anyList(), Mockito.any()
+			Mockito.any(), currencyCodeArgumentCaptor.capture(), Mockito.any(),
+			Mockito.anyList(), Mockito.any()
 		);
 
 		Assertions.assertEquals("EUR", currencyCodeArgumentCaptor.getValue());
@@ -1577,7 +1722,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
 		).upsertOrderItems(
-			Mockito.any(), Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.anyList(), Mockito.any()
 		);
 
 		Mockito.verify(
@@ -1728,8 +1873,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
 		);
 
 		Mockito.verify(
@@ -1882,7 +2027,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(),
 			provisionableLinesArgumentCaptor.capture(), Mockito.any()
 		);
 
@@ -1994,8 +2139,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		Mockito.when(
 			_commerceOrderService.upsertOrder(
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.anyList(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+				Mockito.any())
 		).thenReturn(
 			existingOrder
 		);
@@ -2011,7 +2156,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).upsertOrderItems(
-			orderArgumentCaptor.capture(),
+			Mockito.any(), orderArgumentCaptor.capture(),
 			salesforceOpportunityLineItemsArgumentCaptor.capture(),
 			Mockito.any()
 		);
@@ -2075,6 +2220,40 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveUpsertsEveryContractOfTheContractsArrayBeforeTheLookup()
+		throws Exception {
+
+		_receiveOpportunityMessage(
+			_createContractsRecordJSONObject("C1", "C2"));
+
+		InOrder inOrder = Mockito.inOrder(_contractService);
+
+		inOrder.verify(
+			_contractService
+		).upsertContract(
+			Mockito.eq("update"),
+			Mockito.argThat(
+				salesforceContract -> Objects.equals(
+					salesforceContract.getId(), "C1"))
+		);
+
+		inOrder.verify(
+			_contractService
+		).upsertContract(
+			Mockito.eq("update"),
+			Mockito.argThat(
+				salesforceContract -> Objects.equals(
+					salesforceContract.getId(), "C2"))
+		);
+
+		inOrder.verify(
+			_contractService
+		).getContracts(
+			List.of("C1", "C2")
+		);
+	}
+
+	@Test
 	public void testReceiveUpsertsLineItemsInOneCall() throws Exception {
 		Mockito.when(
 			_commerceSkuService.fetchSku("PROD-2")
@@ -2101,7 +2280,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.times(1)
 		).upsertOrderItems(
-			Mockito.any(),
+			Mockito.any(), Mockito.any(),
 			salesforceOpportunityLineItemsArgumentCaptor.capture(),
 			Mockito.any()
 		);
@@ -2179,8 +2358,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyList(), salesforceProjectArgumentCaptor.capture()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			salesforceProjectArgumentCaptor.capture()
 		);
 
 		Assertions.assertNotNull(salesforceProjectArgumentCaptor.getValue());
@@ -2189,14 +2368,16 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	@Test
 	public void testReceiveUsesAmendedContractForAmendment() throws Exception {
 		Mockito.when(
-			_contractService.fetchContractByExternalReferenceCode(
-				"AMENDED-CONTRACT-1")
+			_contractService.getContracts(List.of("AMENDED-CONTRACT-1"))
 		).thenReturn(
-			new Contract(
-				new JSONObject(
-				).put(
-					"id", 555L
-				))
+			List.of(
+				new Contract(
+					new JSONObject(
+					).put(
+						"externalReferenceCode", "AMENDED-CONTRACT-1"
+					).put(
+						"id", 555L
+					)))
 		);
 
 		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
@@ -2209,51 +2390,51 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		_receiveOpportunityMessage(recordJSONObject);
 
-		ArgumentCaptor<Long> contractIdArgumentCaptor = ArgumentCaptor.forClass(
-			Long.class);
-
-		Mockito.verify(
-			_commerceOrderService
-		).upsertOrder(
-			Mockito.any(), contractIdArgumentCaptor.capture(), Mockito.any(),
-			Mockito.any(), Mockito.anyList(), Mockito.any()
-		);
-
-		Assertions.assertEquals(555L, contractIdArgumentCaptor.getValue());
-
-		Mockito.verify(
-			_contractService, Mockito.never()
-		).fetchLatestContractByOpportunityId(
-			Mockito.anyString()
-		);
+		_verifyContractIds(555L);
 	}
 
 	@Test
-	public void testReceiveUsesContractIdFromFoundContract() throws Exception {
+	public void testReceiveUsesTheContractsOfTheMessage() throws Exception {
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
-				Mockito.anyString())
+			_contractService.getContracts(List.of("C1", "C2"))
 		).thenReturn(
-			new Contract(
+			List.of(
+				_createContract("C1", 777L, "2026-12-31T00:00:00Z"),
+				_createContract("C2", 778L, "2027-12-31T00:00:00Z"))
+		);
+
+		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
+
+		recordJSONObject.put(
+			"contracts",
+			new JSONArray(
+			).put(
 				new JSONObject(
 				).put(
-					"id", 777L
-				))
-		);
+					"Id", "C1"
+				)
+			).put(
+				new JSONObject(
+				).put(
+					"Id", "C2"
+				)
+			));
 
-		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
+		_receiveOpportunityMessage(recordJSONObject);
 
-		ArgumentCaptor<Long> contractIdArgumentCaptor = ArgumentCaptor.forClass(
-			Long.class);
+		_verifyContractIds(777L, 778L);
 
 		Mockito.verify(
-			_commerceOrderService
-		).upsertOrder(
-			Mockito.any(), contractIdArgumentCaptor.capture(), Mockito.any(),
-			Mockito.any(), Mockito.anyList(), Mockito.any()
+			_contractService
+		).attachContractToAccount(
+			777L, _ACCOUNT_ID
 		);
 
-		Assertions.assertEquals(777L, contractIdArgumentCaptor.getValue());
+		Mockito.verify(
+			_contractService
+		).attachContractToAccount(
+			778L, _ACCOUNT_ID
+		);
 	}
 
 	@Test
@@ -2289,6 +2470,49 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveWarnsAndContinuesWhenContractUpsertThrows()
+		throws Exception {
+
+		Mockito.doThrow(
+			new RuntimeException("Unable to upsert contract")
+		).when(
+			_contractService
+		).upsertContract(
+			Mockito.anyString(),
+			Mockito.argThat(
+				salesforceContract -> Objects.equals(
+					salesforceContract.getId(), "C1"))
+		);
+
+		_receiveOpportunityMessage(
+			_createContractsRecordJSONObject("C1", "C2"));
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertTrue(
+			_containsSubstring(
+				"Unable to upsert contract C1 for opportunity OPP-1",
+				warningMessagesArgumentCaptor.getValue()));
+
+		Mockito.verify(
+			_contractService
+		).upsertContract(
+			Mockito.eq("update"),
+			Mockito.argThat(
+				salesforceContract -> Objects.equals(
+					salesforceContract.getId(), "C2"))
+		);
+	}
+
+	@Test
 	public void testReceiveWarnsAndContinuesWhenUpsertOrderItemsThrows()
 		throws Exception {
 
@@ -2297,7 +2521,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		).when(
 			_commerceOrderItemService
 		).upsertOrderItems(
-			Mockito.any(), Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.anyList(), Mockito.any()
 		);
 
 		Assertions.assertDoesNotThrow(
@@ -2333,7 +2557,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		).when(
 			_commerceOrderItemService
 		).upsertOrderItems(
-			Mockito.any(), Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.anyList(), Mockito.any()
 		);
 
 		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
@@ -2415,8 +2639,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), currencyCodeArgumentCaptor.capture(),
-			Mockito.any(), Mockito.anyList(), Mockito.any()
+			Mockito.any(), currencyCodeArgumentCaptor.capture(), Mockito.any(),
+			Mockito.anyList(), Mockito.any()
 		);
 
 		Assertions.assertEquals("USD", currencyCodeArgumentCaptor.getValue());
@@ -2431,6 +2655,45 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Assertions.assertTrue(
 			_containsSubstring(
 				"reconcile mixed currencies",
+				warningMessagesArgumentCaptor.getValue()));
+	}
+
+	@Test
+	public void testReceiveWarnsWhenAContractOfTheMessageIsNotFound()
+		throws Exception {
+
+		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
+
+		recordJSONObject.put(
+			"contracts",
+			new JSONArray(
+			).put(
+				new JSONObject(
+				).put(
+					"Id", "C-MISSING"
+				)
+			));
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertTrue(
+			_containsSubstring(
+				"Unable to find contract C-MISSING for opportunity " +
+					_OPPORTUNITY_ID,
+				warningMessagesArgumentCaptor.getValue()));
+		Assertions.assertTrue(
+			_containsSubstring(
+				"Unable to find a contract for opportunity " + _OPPORTUNITY_ID,
 				warningMessagesArgumentCaptor.getValue()));
 	}
 
@@ -2534,19 +2797,10 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	public void testReceiveWarnsWhenContractNotFound() throws Exception {
 		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
 
-		ArgumentCaptor<Long> contractIdArgumentCaptor = ArgumentCaptor.forClass(
-			Long.class);
 		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
 			ArgumentCaptor.forClass(List.class);
 
-		Mockito.verify(
-			_commerceOrderService
-		).upsertOrder(
-			Mockito.any(), contractIdArgumentCaptor.capture(), Mockito.any(),
-			Mockito.any(), Mockito.anyList(), Mockito.any()
-		);
-
-		Assertions.assertNull(contractIdArgumentCaptor.getValue());
+		_verifyContractIds();
 
 		Mockito.verify(
 			_provisioningIssueService
@@ -2596,26 +2850,26 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-			Mockito.anyList(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
 		);
 	}
 
 	@Test
-	public void testReceiveWarnsWhenLineEndDateDiffersFromContractEndDate()
+	public void testReceiveWarnsWhenLineEndDateMatchesNoContract()
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
-				Mockito.anyString())
+			_contractService.getContracts(Mockito.anyList())
 		).thenReturn(
-			new Contract(
-				new JSONObject(
-				).put(
-					"endDate", "2026-01-01T00:00:00Z"
-				).put(
-					"id", 999L
-				))
+			List.of(
+				new Contract(
+					new JSONObject(
+					).put(
+						"endDate", "2026-01-01T00:00:00Z"
+					).put(
+						"id", 999L
+					)))
 		);
 
 		JSONObject opportunityJSONObject =
@@ -2653,7 +2907,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		Assertions.assertTrue(
 			_containsSubstring(
-				"differs from the end date of contract",
+				"matches no contract of opportunity " + _OPPORTUNITY_ID,
 				warningMessagesArgumentCaptor.getValue()));
 	}
 
@@ -2832,6 +3086,42 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			));
 	}
 
+	private Contract _createContract(
+		String externalReferenceCode, long id, String endDate) {
+
+		return new Contract(
+			new JSONObject(
+			).put(
+				"endDate", endDate
+			).put(
+				"externalReferenceCode", externalReferenceCode
+			).put(
+				"id", id
+			));
+	}
+
+	private JSONObject _createContractsRecordJSONObject(
+		String... contractExternalReferenceCodes) {
+
+		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
+
+		JSONArray contractsJSONArray = new JSONArray();
+
+		for (String contractExternalReferenceCode :
+				contractExternalReferenceCodes) {
+
+			contractsJSONArray.put(
+				new JSONObject(
+				).put(
+					"Id", contractExternalReferenceCode
+				));
+		}
+
+		recordJSONObject.put("contracts", contractsJSONArray);
+
+		return recordJSONObject;
+	}
+
 	private JSONObject _createNewBusinessRecordJSONObject() {
 		return _createNewBusinessRecordJSONObject(_OPPORTUNITY_ID);
 	}
@@ -2909,10 +3199,43 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		Mockito.when(
 			_commerceOrderService.upsertOrder(
-				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
-				Mockito.anyList(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+				Mockito.any())
 		).thenReturn(
 			newOrder
+		);
+	}
+
+	private void _verifyContractIds(long... contractIds) throws Exception {
+		ArgumentCaptor<List<Contract>> contractsArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).upsertOrderItems(
+			contractsArgumentCaptor.capture(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
+		);
+
+		List<Long> actualContractIds = new ArrayList<>();
+
+		for (Contract contract : contractsArgumentCaptor.getValue()) {
+			actualContractIds.add(contract.getId());
+		}
+
+		List<Long> expectedContractIds = new ArrayList<>();
+
+		for (long contractId : contractIds) {
+			expectedContractIds.add(contractId);
+		}
+
+		Assertions.assertEquals(expectedContractIds, actualContractIds);
+
+		Mockito.verify(
+			_provisioningEnvironmentService
+		).provisionCloudNativeEnvironments(
+			Mockito.any(), Mockito.same(contractsArgumentCaptor.getValue()),
+			Mockito.anyList()
 		);
 	}
 

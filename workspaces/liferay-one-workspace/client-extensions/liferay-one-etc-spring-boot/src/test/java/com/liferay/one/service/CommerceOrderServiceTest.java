@@ -1120,7 +1120,7 @@ public class CommerceOrderServiceTest {
 
 		Map<String, Object> customFields = mapArgumentCaptor.getValue();
 
-		Assertions.assertEquals(123L, customFields.get("contractId"));
+		Assertions.assertFalse(customFields.containsKey("contractId"));
 		Assertions.assertEquals(
 			"a1tTEST", customFields.get("salesforceProjectId"));
 
@@ -3214,7 +3214,7 @@ public class CommerceOrderServiceTest {
 
 		OrderResource orderResource = _mockOrderResource(
 			() -> _commerceOrderService.upsertOrder(
-				account, null, "USD", "a0P-1", "a1tTEST",
+				account, "USD", "a0P-1", "a1tTEST",
 				new SalesforceOpportunity(
 					new JSONObject(
 					).put(
