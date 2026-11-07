@@ -288,7 +288,7 @@ Replaces `SubscriptionItem`. Each row corresponds to a Salesforce OpportunityLin
 | `renewalState` | string | |
 | `spendLimit` | double | Account-level spend cap from Salesforce |
 
-The contract has no status field. Its children are Entitlements (`contractToEntitlement`) and Environments (`contractToEnvironment`), both `disassociate`: deleting a contract keeps them. A Salesforce `delete` message does not delete the contract. It sets the `contractId` to `0` on each order item of the contract's account whose own `contractId` is this contract. It sets the contract of each entitlement of the contract to `0` and clears `opportunityId`. Then nothing references the contract, and My Account hides it. A Commerce Order Item links to its contract only through the `contractId` custom field of the item.
+The contract has no status field. Its children are Entitlements (`contractToEntitlement`) and Environments (`contractToEnvironment`), both `disassociate`: deleting a contract keeps them. A Salesforce `delete` message does not delete the contract. It sets the `contractId` to `0` on each order item of the contract's account whose own `contractId` is this contract. It sets the contract of each entitlement of the contract to `0` and clears `opportunityId`. Then nothing references the contract, and My Account hides it. A Commerce Order Item links to its contract only through the `contractId` custom field of the item. An AI Hub order keeps its contract in `order-metadata.contractEntityId` and not on its items, so the `delete` message skips its items, and the metadata still names the hidden contract.
 
 ---
 

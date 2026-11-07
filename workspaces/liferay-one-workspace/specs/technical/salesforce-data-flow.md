@@ -230,7 +230,7 @@ The order item is written by `service/CommerceOrderItemService.java:91`. A new i
 | `Cloud_Region__c` | As is | `CommerceOrderItem.cloudRegion` (expando) | No | Keeps | `service/CommerceOrderItemService.java:206` |
 | `CurrencyIsoCode` | Input to the order currency | none on the item | No | See the order table | `salesforce/model/SalesforceOpportunityLineItem.java:21` |
 | `End_Date__c` | `yyyy-MM-dd` to midnight UTC | `CommerceOrderItem.endDate` (expando) | No | Keeps | `service/CommerceOrderItemService.java:215` |
-| `End_Date__c` | Plus 30 days of grace. On an existing item, only when the end date changed, or when a trimmed date moves earlier. | `CommerceOrderItem.effectiveEndDate` (expando) | No | Keeps | `service/CommerceOrderItemService.java:219`, `:156`, `util/CommerceOrderItemUtil.java:139` |
+| `End_Date__c` | Plus 30 days of grace. On an existing item, only when the end date changed, or when a trimmed date moves earlier. | `CommerceOrderItem.effectiveEndDate` (expando) | No | Keeps | `service/CommerceOrderItemService.java:230`, `:365`, `util/CommerceOrderItemUtil.java:169` |
 | `Id` | As is | `CommerceOrderItem.externalReferenceCode` | Yes | Item cannot be matched on a later run | `service/CommerceOrderItemService.java:99` |
 | `Machine_Type__c` | Lowercase, as the option `machinetype` | `CommerceOrderItem.options` | No | Keeps | `service/CommerceOrderItemService.java:134` |
 | `Number_of_Pods__c` | Number | `CommerceOrderItem.sizing` (expando, integer) | No | Keeps | `service/CommerceOrderItemService.java:235` |
@@ -335,11 +335,11 @@ A record can carry a `projectEntitlements` array and a `projectEntitlementLineIt
 | --- | --- | --- | --- |
 | `Account` | Upsert. The action is not read. | Upsert, when `Active_Subscription__c` is true | `:139` |
 | `Contract` | Hide the contract (see the Contract section) | `update`: update path. Any other: create path. | `:170`, `service/ContractService.java` |
-| `PricebookEntry` | Delete the price entry | Upsert the price list and the price entry | `:177` |
-| `Product2` | Unpublish the SKU, and deactivate the product when no published SKU is left | Publish the SKU, or add it, and activate the product | `:244` |
-| `ProjectEntitlementLineItem__c` | Trim the order item: `effectiveEndDate` becomes now | Upsert the order item and complete the order | `:281` |
-| `ProjectEntitlement__c` | Trim every item of the order | Update `projectName` on the order, or add the order | `:267` |
-| `Project__c` | Upsert. The action is not read. | Upsert | `:263` |
+| `PricebookEntry` | Delete the price entry | Upsert the price list and the price entry | `:184` |
+| `Product2` | Unpublish the SKU, and deactivate the product when no published SKU is left | Publish the SKU, or add it, and activate the product | `:251` |
+| `ProjectEntitlementLineItem__c` | Trim the order item: `effectiveEndDate` becomes now | Upsert the order item and complete the order | `:288` |
+| `ProjectEntitlement__c` | Trim every item of the order | Update `projectName` on the order, or add the order | `:274` |
+| `Project__c` | Upsert. The action is not read. | Upsert | `:270` |
 
 ### Account
 
@@ -359,27 +359,27 @@ The object path calls `upsertAccount` with no "sold by" value, so it never write
 
 | Salesforce Field | Transform | Liferay Target | Required | Missing Value | Source |
 | --- | --- | --- | --- | --- | --- |
-| `AccountId` | Set only when the account exists | `C_CONTRACT.r_accountEntryToContract_accountEntryERC` | Yes | Record skipped. A missing account is attached later. | `service/ContractService.java:280` |
-| `ContractTerm` | Integer | `C_CONTRACT.contractTerm` | No | Keeps | `service/ContractService.java:296` |
-| `EndDate` | `yyyy-MM-dd` gets `T00:00:00Z`. Any other form is sent as is. | `C_CONTRACT.endDate` | No | Keeps | `service/ContractService.java:301`, `:657` |
-| `Id` | As is | `C_CONTRACT.externalReferenceCode` | Yes | Record skipped | `service/ContractService.java:277` |
-| `SBQQ__Opportunity__c` | As is. Also finds the order, its `salesforceProjectId`, and the predecessor contract. | `C_CONTRACT.opportunityId`, `r_projectToContract_c_projectERC` | No | Keeps | `service/ContractService.java:307`, `:326`, `:523` |
-| `SBQQ__RenewalOpportunity__c` | As is. Also finds the successor contract. | `C_CONTRACT.renewalOpportunityId` | No | Keeps | `service/ContractService.java:312`, `:541` |
-| `StartDate` | Same as `EndDate` | `C_CONTRACT.startDate` | No | Keeps | `service/ContractService.java:318` |
-| (chain) | `renewal` when a predecessor exists, else `initial`. The update path writes `renewal` only. | `C_CONTRACT.contractType` | No | Create path **overwrites** | `service/ContractService.java:448`, `:692` |
-| (chain) | ERC of the contract whose `renewalOpportunityId` is this `SBQQ__Opportunity__c` | `C_CONTRACT.r_originalContractToContract_c_contractERC` | No | Keeps | `service/ContractService.java:339` |
+| `AccountId` | Set only when the account exists | `C_CONTRACT.r_accountEntryToContract_accountEntryERC` | Yes | Record skipped. A missing account is attached later. | `service/ContractService.java:433`, `:437` |
+| `ContractTerm` | Integer | `C_CONTRACT.contractTerm` | No | Keeps | `service/ContractService.java:450` |
+| `EndDate` | `yyyy-MM-dd` gets `T00:00:00Z`. Any other form is sent as is. | `C_CONTRACT.endDate` | No | Keeps | `service/ContractService.java:456`, `:840` |
+| `Id` | As is | `C_CONTRACT.externalReferenceCode` | Yes | Record skipped | `service/ContractService.java:429` |
+| `SBQQ__Opportunity__c` | As is. Also finds the order, its `salesforceProjectId`, and the predecessor contract. | `C_CONTRACT.opportunityId`, `r_projectToContract_c_projectERC` | No | Keeps | `service/ContractService.java:461`, `:484`, `:488` |
+| `SBQQ__RenewalOpportunity__c` | As is. Also finds the successor contract. | `C_CONTRACT.renewalOpportunityId` | No | Keeps | `service/ContractService.java:466`, `:565` |
+| `StartDate` | Same as `EndDate` | `C_CONTRACT.startDate` | No | Keeps | `service/ContractService.java:473` |
+| (chain) | `renewal` when a predecessor exists, else `initial`. The update path writes `renewal` only. | `C_CONTRACT.contractType` | No | Create path **overwrites** | `service/ContractService.java:602`, `:904` |
+| (chain) | ERC of the contract whose `renewalOpportunityId` is this `SBQQ__Opportunity__c` | `C_CONTRACT.r_originalContractToContract_c_contractERC` | No | Keeps | `service/ContractService.java:493` |
 
-After the write, the handler reconciles the opportunity (`:375`). That attaches the account and the project of each contract of the opportunity when they are empty, sets `contractId` on the order items without a contract of the opportunity order and of every order whose `salesforceOpportunityId` is that opportunity (each item gets the contract that matches its end date), and sets the contract of the order item and the project on their entitlements when those are empty (`:167`, `:602`). It then links a successor contract that arrived first (`:411`). The reconcile only fills empty links. It never removes a link. A scheduled job runs the same reconcile every 15 minutes for the contracts changed in the last day (`:211`, `liferay.one.contract.reconcile.cron`).
+After the write, the handler reconciles the opportunity (`:527`). That attaches the account and the project of each contract of the opportunity when they are empty, sets `contractId` on the order items without a contract of the opportunity order and of every order whose `salesforceOpportunityId` is that opportunity (each item gets the contract that matches its end date), and sets the contract of the order item and the project on their entitlements when those are empty (`:263`, `:758`). It then links a successor contract that arrived first (`:529`). The reconcile only fills empty links. It never removes a link. A scheduled job runs the same reconcile every 15 minutes for the contracts changed in the last day (`:313`, `liferay.one.contract.reconcile.cron`).
 
 A `delete` action hides the contract. It does not delete the contract. `hideContract` finds the contract by its external reference code. When the contract does not exist in Liferay One, the handler adds a warning, does not create the contract, and changes nothing. Otherwise the handler runs these steps:
 
-1. Read every order of the account of the contract. Set `CommerceOrderItem.contractId` to `0` on each item whose own stored `contractId` is this contract. The order metadata fallback does not count. This step does not use `opportunityId`, so it also finds the items of an amendment order of another opportunity. A contract without an account has no orders to read, and the handler skips this step.
+1. Read every order of the account of the contract. Set `CommerceOrderItem.contractId` to `0` on each item whose own stored `contractId` is this contract. The order metadata fallback does not count, so the handler skips an item of an AI Hub order, which keeps its contract in `order-metadata.contractEntityId`. This step does not use `opportunityId`, so it also finds the items of an amendment order of another opportunity. A contract without an account has no orders to read, and the handler skips this step.
 
 1. Set the contract of each entitlement that points to the contract to `0`.
 
 1. Set `C_CONTRACT.opportunityId` to an empty value. The handler does this last.
 
-When the update of one order or one entitlement fails, the handler adds an error to the log and continues with the next entry. After the last entry, the handler throws and does not clear `opportunityId`. The message is then processed again. Items and entitlements that are already unlinked do not match again, so the second run changes only the items and entitlements that are still linked. After these steps nothing references the contract, and the rule REQ-PROJECTS-071 hides it in My Account. `getOpportunityContracts` and the scheduled reconcile no longer see the contract, so they do not fill an item from it again. The contract record keeps its other fields. A later opportunity message that lists the contract in `contracts` sets `opportunityId` again, and the contract is visible again. Salesforce does not list a deleted contract.
+When the update of one order or one entitlement fails, the handler adds an error to the log and continues with the next entry. After the last entry, the handler throws and does not clear `opportunityId`. The message is then processed again. Items and entitlements that are already unlinked do not match again, so the second run changes only the items and entitlements that are still linked. After these steps nothing references the contract, and the rule REQ-PROJECTS-071 hides it in My Account. `getOpportunityContracts` and the scheduled reconcile no longer see the contract, so they do not fill an item from it again. The fallback in `CommerceOrderItemUtil.getContractId(order, item)` (`util/CommerceOrderItemUtil.java:60`) still resolves a skipped AI Hub item to the hidden contract. A later relink or the reconcile then links the entitlements of that item to the hidden contract again, and My Account keeps showing the contract. The handler clears `opportunityId` last, so a scheduled reconcile that runs before that step can link an unlinked item to the contract again. An opportunity message whose `SBQQ__AmendedContract__c` names the hidden contract finds it by external reference code and links items to it, and the `opportunityId` of the contract stays empty. The contract record keeps its other fields. A later opportunity message that lists the contract in `contracts` sets `opportunityId` again, and the contract is visible again. Salesforce does not list a deleted contract.
 
 ### PricebookEntry
 
@@ -406,11 +406,11 @@ The price list is added in the catalog `LIFERAY_INC_CATALOG` when it does not ex
 
 ### ProjectEntitlement__c and ProjectEntitlementLineItem__c
 
-`upsertProjectEntitlement` finds the project by `Project__c` and ignores the record with a warning when it does not exist (`service/ProvisioningProjectEntitlementService.java:173`). When an order with the project entitlement ID exists, it updates only `projectName` and `salesforceProjectId` (`:189`). Otherwise it copies the order of `Purchasing_Opportunity__c` into a new order, and throws when that order does not exist (`:206`, `service/CommerceOrderService.java:741`). The copy keeps every custom field of the source order and replaces `projectName`, `salesforceOpportunityId`, and `salesforceProjectId`.
+`upsertProjectEntitlement` finds the project by `Project__c` and ignores the record with a warning when it does not exist (`service/ProvisioningProjectEntitlementService.java:173`). When an order with the project entitlement ID exists, it updates only `projectName` and `salesforceProjectId` (`:189`). Otherwise it copies the order of `Purchasing_Opportunity__c` into a new order, and throws when that order does not exist (`:206`, `service/CommerceOrderService.java:896`). The copy keeps every custom field of the source order and replaces `projectName`, `salesforceOpportunityId`, and `salesforceProjectId`.
 
-`upsertProjectEntitlementLineItem` throws when the order of `ProjectEntitlement__c` does not exist (`:228`). It trims the renewed items of the project when the order has `renewal` set, upserts the item with the stage `Closed Won`, and completes the order when it is not completed (`:243`). It links the item to the contract of the opportunity that matches its end date. It keeps the contract of an item that no contract matches. It then sets the contract of each entitlement of the order items that the message carries to the contract of its order item. The message carries one line, so the other items of the order keep their entitlements. This message does not unlink an entitlement. It skips an entitlement whose item has no contract.
+`upsertProjectEntitlementLineItem` throws when the order of `ProjectEntitlement__c` does not exist (`:228`). It trims the renewed items of the project when the order has `renewal` set, upserts the item with the stage `Closed Won`, and completes the order when it is not completed (`:243`, `:265`). It links the item to the contract of the opportunity that matches its end date. It keeps the contract of an item that no contract matches. The message reads only the contracts that carry its opportunity ID, not the amended contract, so a new item gets no contract from the amended contract. Only the next opportunity message links that item. The reconcile reads the same contracts as this message. It then sets the contract of each entitlement of the order items that the message carries to the contract of its order item. The message carries one line, so the other items of the order keep their entitlements. This message does not unlink an entitlement. It skips an entitlement whose item has no contract.
 
-A `delete` of either object sets `effectiveEndDate` to the current time on the matched items, unless the item already ends earlier (`:452`).
+A `delete` of either object sets `effectiveEndDate` to the current time on the matched items, unless the item already ends earlier (`:498`).
 
 ## Matching, Ordering, and Redelivery
 
@@ -436,8 +436,8 @@ The handlers do not compare record ages (TECH-SALESFORCE-043). Each message type
 
 | Child | Parent It Needs | Behavior When the Parent Is Missing | Recovery |
 | --- | --- | --- | --- |
-| `Contract` object | Account | Writes the contract with no account | The opportunity path (`salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java:457`) or the reconcile job attaches it |
-| `Contract` object | Predecessor contract | Writes the contract as `initial` | The predecessor message links the successor and sets `renewal` (`service/ContractService.java:411`) |
+| `Contract` object | Account | Writes the contract with no account | The opportunity path (`salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java:539`) or the reconcile job attaches it |
+| `Contract` object | Predecessor contract | Writes the contract as `initial` | The predecessor message links the successor and sets `renewal` (`service/ContractService.java:565`) |
 | `PricebookEntry` object | SKU | Ignores the record with a warning, and acks | None. Salesforce must send the entry again. |
 | `ProjectEntitlementLineItem__c` object | Project entitlement order | Throws, so the message is nacked | Pub/Sub redelivers until the order exists or the message goes to the dead letter topic |
 | `ProjectEntitlement__c` object | Project | Ignores the record with a warning, and acks | None |
@@ -565,9 +565,9 @@ The audit checked the Salesforce path against this change. Salesforce contact ro
 
 1. **Every account upsert sets the status to approved and the type to business.** `service/AccountService.java:733` and `:734`. An account that an administrator deactivated in Liferay becomes active again on the next Salesforce message.
 
-1. **The cloud native environments get a stale project.** `salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java:465` attaches the project to the contract, but `:615` passes the contract object read before that change. `service/ProvisioningEnvironmentService.java:73` then adds the environments with no project. The same method returns when any cloud native environment exists (`:64`), so an environment type that failed once is never added.
+1. **The cloud native environments get a stale project.** `salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java:550` attaches the project to the contract, but `:736` passes the contract object read before that change. `service/ProvisioningEnvironmentService.java:83` then adds the environments with no project. The same method returns when any cloud native environment exists (`:74`), so an environment type that failed once is never added.
 
-1. **The contract create path is not idempotent.** `service/ContractService.java:454` and `:461` write `contractType` and `r_projectToContract_c_projectERC` on every create message, while the update path writes the project only when it is empty (`:701`). A redelivered create message replaces a project that the reconcile or a person set with the project of the order or of the predecessor contract.
+1. **The contract create path is not idempotent.** `service/ContractService.java:609` and `:615` write `contractType` and `r_projectToContract_c_projectERC` on every create message, while the update path writes the project only when it is empty (`:908`). A redelivered create message replaces a project that the reconcile or a person set with the project of the order or of the predecessor contract.
 
 1. **A failed SKU stamp after the outbound opportunity can duplicate order items.** `service/CommerceOrderService.java:1633` only logs when it cannot set the item ERCs to the Salesforce line item IDs. When Salesforce then publishes that opportunity, `service/CommerceOrderItemService.java:148` finds no item with the line item ERC and adds a second item, which generates a second set of entitlements.
 
