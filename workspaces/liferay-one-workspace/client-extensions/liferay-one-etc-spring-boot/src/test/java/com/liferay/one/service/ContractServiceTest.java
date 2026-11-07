@@ -15,6 +15,7 @@ import com.liferay.one.exception.AmbiguousContractChainException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.salesforce.model.SalesforceContract;
+import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.petra.function.transform.TransformUtil;
 
 import java.net.URI;
@@ -509,6 +510,259 @@ public class ContractServiceTest {
 	}
 
 	@Test
+	public void testUpdateEntitlementContractsKeepsTheAIHubOrderContract()
+		throws Exception {
+
+		Order order = _createOrder(
+			Map.of("order-metadata", "{\"contractEntityId\": 9}"),
+			_createOrderItem(11, "2027-11-01T00:00:00Z", 0L));
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(11L))
+		).thenReturn(
+			List.of(
+				_createEntitlement(1, 11, 9, null),
+				_createEntitlement(2, 11, 0, null))
+		);
+
+		_testContractService.updateEntitlementContracts(
+			order, _createLineItems("L11"), true);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			2, 9
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).updateEntitlementContract(
+			ArgumentMatchers.eq(1L), ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
+	public void testUpdateEntitlementContractsKeepsTheEntitlementsOfAnItemAtZeroWhenNotUnlinking()
+		throws Exception {
+
+		Order order = _createOrder(
+			Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 0L),
+			_createOrderItem(12, "2027-11-01T00:00:00Z", 0L),
+			_createOrderItem(13, "2028-11-01T00:00:00Z", 6L));
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(11L, 13L))
+		).thenReturn(
+			List.of(
+				_createEntitlement(1, 11, 5, null),
+				_createEntitlement(2, 13, 0, null))
+		);
+
+		_testContractService.updateEntitlementContracts(
+			order, _createLineItems("L11", "L13"), false);
+
+		Mockito.verify(
+			_entitlementService, Mockito.times(1)
+		).updateEntitlementContract(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong()
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			2, 6
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.times(1)
+		).getOrderItemEntitlements(
+			List.of(11L, 13L)
+		);
+	}
+
+	@Test
+	public void testUpdateEntitlementContractsKeepsTheEntitlementsOfAnItemThatTheLinesDoNotCarry()
+		throws Exception {
+
+		Order order = _createOrder(
+			Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 0L),
+			_createOrderItem(12, "2028-11-01T00:00:00Z", 6L));
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(12L))
+		).thenReturn(
+			List.of(_createEntitlement(2, 12, 0, null))
+		);
+
+		_testContractService.updateEntitlementContracts(
+			order, _createLineItems("L12"), true);
+
+		Mockito.verify(
+			_entitlementService, Mockito.times(1)
+		).getOrderItemEntitlements(
+			List.of(12L)
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.times(1)
+		).updateEntitlementContract(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong()
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			2, 6
+		);
+	}
+
+	@Test
+	public void testUpdateEntitlementContractsLinksTheEntitlementsOfTheItem()
+		throws Exception {
+
+		Order order = _createOrder(
+			Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 5L),
+			_createOrderItem(12, "2028-11-01T00:00:00Z", 6L));
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(11L, 12L))
+		).thenReturn(
+			List.of(
+				_createEntitlement(1, 11, 0, null),
+				_createEntitlement(2, 11, 5, null),
+				_createEntitlement(3, 12, 0, null))
+		);
+
+		_testContractService.updateEntitlementContracts(
+			order, _createLineItems("L11", "L12"), true);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 5
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			3, 6
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).updateEntitlementContract(
+			ArgumentMatchers.eq(2L), ArgumentMatchers.anyLong()
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.times(1)
+		).getOrderItemEntitlements(
+			ArgumentMatchers.anyList()
+		);
+	}
+
+	@Test
+	public void testUpdateEntitlementContractsMovesTheEntitlementsToTheNewContract()
+		throws Exception {
+
+		Order order = _createOrder(
+			Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 6L));
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(11L))
+		).thenReturn(
+			List.of(
+				_createEntitlement(1, 11, 5, null),
+				_createEntitlement(2, 11, 5, null))
+		);
+
+		_testContractService.updateEntitlementContracts(
+			order, _createLineItems("L11"), true);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 6
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			2, 6
+		);
+	}
+
+	@Test
+	public void testUpdateEntitlementContractsSkipsAnOrderWithoutItems()
+		throws Exception {
+
+		Order order = _createOrder(Map.of());
+
+		order.setOrderItems((OrderItem[])null);
+
+		_testContractService.updateEntitlementContracts(order, List.of(), true);
+
+		Mockito.verifyNoInteractions(_entitlementService);
+	}
+
+	@Test
+	public void testUpdateEntitlementContractsUnlinksTheEntitlementsOfAnUnlinkedItem()
+		throws Exception {
+
+		Order order = _createOrder(
+			Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 0L));
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(11L))
+		).thenReturn(
+			List.of(
+				_createEntitlement(1, 11, 5, null),
+				_createEntitlement(2, 11, 0, null))
+		);
+
+		_testContractService.updateEntitlementContracts(
+			order, _createLineItems("L11"), true);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 0
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).updateEntitlementContract(
+			ArgumentMatchers.eq(2L), ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
+	public void testUpdateEntitlementContractsWritesNothingOnASecondRun()
+		throws Exception {
+
+		Order order = _createOrder(
+			Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 5L));
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(11L))
+		).thenReturn(
+			List.of(_createEntitlement(1, 11, 0, null)),
+			List.of(_createEntitlement(1, 11, 5, null))
+		);
+
+		_testContractService.updateEntitlementContracts(
+			order, _createLineItems("L11"), true);
+		_testContractService.updateEntitlementContracts(
+			order, _createLineItems("L11"), true);
+
+		Mockito.verify(
+			_entitlementService, Mockito.times(1)
+		).updateEntitlementContract(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
 	public void testUpsertContractAttachesSuccessorContract() throws Exception {
 		_testContractService.getFunction = uri -> {
 			if (_isChainQuery(uri, "opportunityId eq 'OPP-2'")) {
@@ -953,6 +1207,24 @@ public class ContractServiceTest {
 		).toString();
 	}
 
+	private List<SalesforceOpportunityLineItem> _createLineItems(
+		String... ids) {
+
+		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems =
+			new ArrayList<>();
+
+		for (String id : ids) {
+			salesforceOpportunityLineItems.add(
+				new SalesforceOpportunityLineItem(
+					new JSONObject(
+					).put(
+						"Id", id
+					)));
+		}
+
+		return salesforceOpportunityLineItems;
+	}
+
 	private Order _createOrder(
 		long orderId, Map<String, String> customFields,
 		OrderItem... orderItems) {
@@ -982,6 +1254,7 @@ public class ContractServiceTest {
 
 		OrderItem orderItem = new OrderItem();
 
+		orderItem.setExternalReferenceCode("L" + orderItemId);
 		orderItem.setId(orderItemId);
 
 		_setCustomField(orderItem, "contractId", contractId);
