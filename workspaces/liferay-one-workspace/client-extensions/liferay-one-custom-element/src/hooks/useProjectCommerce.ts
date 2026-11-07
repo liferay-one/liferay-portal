@@ -22,7 +22,10 @@ import fetcher from '~/services/fetcher/fetcher';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
 import {Liferay} from '~/services/liferay/liferay';
 import Accounts from '~/services/spring-boot/Accounts';
-import {getOrderContractId} from '~/utils/orderUtils';
+import {
+	getOrderContractIds,
+	getPlacedOrderItemContractId,
+} from '~/utils/orderUtils';
 import {getProductSpecificationValue} from '~/utils/productUtils';
 
 import type {APIResponse, DataQuery} from '~/types/api';
@@ -345,11 +348,9 @@ export function useProjectCommerce(
 		});
 
 		placedOrders.forEach((placedOrder) => {
-			const contractId = getOrderContractId(placedOrder);
-
-			if (contractId) {
-				contractIds.add(contractId);
-			}
+			getOrderContractIds(placedOrder).forEach((contractId) =>
+				contractIds.add(contractId)
+			);
 		});
 
 		return contractNodes.filter((node) => contractIds.has(node.id));
@@ -415,22 +416,28 @@ export function useProjectCommerce(
 			])
 		);
 
-		return placedOrders.some(
-			(placedOrder) =>
-				!projectContractIds.has(getOrderContractId(placedOrder)) &&
-				(placedOrder.placedOrderItems ?? []).some(({productId}) => {
-					const product = productsByProductId.get(productId);
+		return placedOrders.some((placedOrder) =>
+			(placedOrder.placedOrderItems ?? []).some((placedOrderItem) => {
+				const product = productsByProductId.get(
+					placedOrderItem.productId
+				);
 
-					return (
-						!!product &&
-						!!resolveProjectItemType(
-							product.productSpecifications ?? []
-						) &&
-						!contractEntitledProductExternalReferenceCodes.has(
-							product.externalReferenceCode
+				return (
+					!projectContractIds.has(
+						getPlacedOrderItemContractId(
+							placedOrder,
+							placedOrderItem
 						)
-					);
-				})
+					) &&
+					!!product &&
+					!!resolveProjectItemType(
+						product.productSpecifications ?? []
+					) &&
+					!contractEntitledProductExternalReferenceCodes.has(
+						product.externalReferenceCode
+					)
+				);
+			})
 		);
 	}, [
 		countsOneTimeEntitlements,

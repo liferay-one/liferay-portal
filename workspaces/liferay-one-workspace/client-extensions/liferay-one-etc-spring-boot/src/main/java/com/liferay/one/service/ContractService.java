@@ -13,6 +13,8 @@ import com.liferay.one.exception.AmbiguousContractChainException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.salesforce.model.SalesforceContract;
+import com.liferay.one.util.CommerceOrderItemUtil;
+import com.liferay.one.util.ContractUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -23,6 +25,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -164,6 +167,19 @@ public class ContractService extends OneBaseService {
 			jsonObject -> jsonObject.getLong("id"));
 	}
 
+	public List<Contract> getOpportunityContracts(String opportunityId)
+		throws Exception {
+
+		if (Validator.isNull(opportunityId)) {
+			return new ArrayList<>();
+		}
+
+		return getAllItems(
+			"/o/c/contracts",
+			"opportunityId eq '" + escapeODataString(opportunityId) + "'",
+			Contract::new);
+	}
+
 	public List<Contract> getProjectContracts(
 			String projectExternalReferenceCode)
 		throws Exception {
@@ -182,9 +198,9 @@ public class ContractService extends OneBaseService {
 			return;
 		}
 
-		Contract contract = fetchLatestContractByOpportunityId(opportunityId);
+		List<Contract> contracts = getOpportunityContracts(opportunityId);
 
-		if (contract == null) {
+		if (contracts.isEmpty()) {
 			return;
 		}
 
@@ -198,24 +214,29 @@ public class ContractService extends OneBaseService {
 
 		Long accountId = opportunityOrder.getAccountId();
 
-		if ((contract.getAccountEntryId() <= 0) && (accountId != null) &&
-			(accountId > 0)) {
-
-			attachContractToAccount(contract.getId(), accountId);
-		}
-
 		String projectExternalReferenceCode = _getSalesforceProjectId(
 			opportunityOrder);
 
-		if (Validator.isNull(contract.getProjectExternalReferenceCode()) &&
-			Validator.isNotNull(projectExternalReferenceCode)) {
+		for (Contract contract : contracts) {
+			if ((contract.getAccountEntryId() <= 0) && (accountId != null) &&
+				(accountId > 0)) {
+
+				attachContractToAccount(contract.getId(), accountId);
+			}
+
+			if (Validator.isNotNull(
+					contract.getProjectExternalReferenceCode()) ||
+				Validator.isNull(projectExternalReferenceCode)) {
+
+				continue;
+			}
 
 			attachContractToProject(
 				contract.getId(), projectExternalReferenceCode);
 		}
 
 		for (Order order : _getOpportunityOrders(opportunityOrder)) {
-			_syncOrderContract(contract, order);
+			_syncOrderContracts(contracts, order);
 		}
 	}
 
@@ -268,7 +289,8 @@ public class ContractService extends OneBaseService {
 	}
 
 	public boolean upsertContract(
-			String action, SalesforceContract salesforceContract)
+			String action, boolean reconcile,
+			SalesforceContract salesforceContract)
 		throws Exception {
 
 		if (Validator.isNull(salesforceContract.getId()) ||
@@ -383,11 +405,20 @@ public class ContractService extends OneBaseService {
 			contract = new Contract(new JSONObject(response));
 		}
 
-		reconcileOpportunityContract(salesforceContract.getOpportunityId());
+		if (reconcile) {
+			reconcileOpportunityContract(salesforceContract.getOpportunityId());
+		}
 
 		_attachSuccessorContract(contract, salesforceContract);
 
 		return true;
+	}
+
+	public boolean upsertContract(
+			String action, SalesforceContract salesforceContract)
+		throws Exception {
+
+		return upsertContract(action, true, salesforceContract);
 	}
 
 	private void _attachOriginalContract(
@@ -614,22 +645,8 @@ public class ContractService extends OneBaseService {
 		return GetterUtil.getString(customFields.get("salesforceProjectId"));
 	}
 
-	private void _syncOrderContract(Contract contract, Order order)
+	private void _syncOrderContracts(List<Contract> contracts, Order order)
 		throws Exception {
-
-		Map<String, ?> customFields = order.getCustomFields();
-
-		long orderContractId = 0;
-
-		if (customFields != null) {
-			orderContractId = GetterUtil.getLong(
-				customFields.get("contractId"));
-		}
-
-		if (orderContractId != contract.getId()) {
-			_commerceOrderService.patchOrderCustomFields(
-				order.getId(), Map.of("contractId", contract.getId()));
-		}
 
 		OrderItem[] orderItems = order.getOrderItems();
 
@@ -637,14 +654,51 @@ public class ContractService extends OneBaseService {
 			return;
 		}
 
-		String projectExternalReferenceCode = _getSalesforceProjectId(order);
+		Map<Long, Contract> contractsMap = new HashMap<>();
 
-		if (Validator.isNull(projectExternalReferenceCode)) {
-			projectExternalReferenceCode =
-				contract.getProjectExternalReferenceCode();
+		for (Contract contract : contracts) {
+			contractsMap.put(contract.getId(), contract);
 		}
 
+		Map<Long, Map<String, Object>> customFieldValuesMap = new HashMap<>();
+
+		String orderProjectExternalReferenceCode = _getSalesforceProjectId(
+			order);
+
 		for (OrderItem orderItem : orderItems) {
+			long contractId = CommerceOrderItemUtil.getContractId(orderItem);
+
+			Instant endDateInstant = CommerceOrderItemUtil.getEndDateInstant(
+				orderItem);
+
+			Contract contract = ContractUtil.fetchEndDateContract(
+				contracts, endDateInstant);
+
+			if ((contract == null) && (contractId <= 0)) {
+				contract = ContractUtil.matchContract(
+					contracts, endDateInstant);
+			}
+
+			if ((contract != null) && (contract.getId() != contractId)) {
+				contractId = contract.getId();
+
+				customFieldValuesMap.put(
+					orderItem.getId(), Map.of("contractId", contractId));
+			}
+			else {
+				contract = contractsMap.get(contractId);
+			}
+
+			String projectExternalReferenceCode =
+				orderProjectExternalReferenceCode;
+
+			if (Validator.isNull(projectExternalReferenceCode) &&
+				(contract != null)) {
+
+				projectExternalReferenceCode =
+					contract.getProjectExternalReferenceCode();
+			}
+
 			List<Entitlement> entitlements =
 				_entitlementService.getEntitlements(
 					StringBundler.concat(
@@ -652,9 +706,14 @@ public class ContractService extends OneBaseService {
 						"eq '", orderItem.getId(), "'"));
 
 			for (Entitlement entitlement : entitlements) {
-				if (entitlement.getContractId() <= 0) {
+				long entitlementContractId = entitlement.getContractId();
+
+				if ((contractId > 0) && (entitlementContractId != contractId) &&
+					((entitlementContractId <= 0) ||
+					 contractsMap.containsKey(entitlementContractId))) {
+
 					_entitlementService.updateEntitlementContract(
-						entitlement.getEntitlementId(), contract.getId());
+						entitlement.getEntitlementId(), contractId);
 				}
 
 				if (Validator.isNull(projectExternalReferenceCode) ||
@@ -668,6 +727,11 @@ public class ContractService extends OneBaseService {
 					entitlement.getEntitlementId(),
 					projectExternalReferenceCode);
 			}
+		}
+
+		if (!customFieldValuesMap.isEmpty()) {
+			_commerceOrderItemService.patchOrderItemCustomFields(
+				customFieldValuesMap, order);
 		}
 	}
 
@@ -736,6 +800,9 @@ public class ContractService extends OneBaseService {
 
 	@Autowired
 	private AccountService _accountService;
+
+	@Autowired
+	private CommerceOrderItemService _commerceOrderItemService;
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;

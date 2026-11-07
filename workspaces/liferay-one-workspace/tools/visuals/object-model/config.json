@@ -88,16 +88,16 @@
 	],
 	"softLinks": [
 		{
+			"field": "contractId",
+			"from": "L_COMMERCE_ORDER_ITEM",
+			"note": "Contract ID. The order item to contract link since LPD-113729. An older order holds it on the order.",
+			"to": "C_CONTRACT"
+		},
+		{
 			"field": "projectName",
 			"from": "L_COMMERCE_ORDER",
 			"note": "Project name, not a key. The order to project link since LPD-92222.",
 			"to": "C_PROJECT"
-		},
-		{
-			"field": "contractId",
-			"from": "L_COMMERCE_ORDER",
-			"note": "Contract ID. The order to contract link since LPD-92222.",
-			"to": "C_CONTRACT"
 		},
 		{
 			"field": "accountEntryId",

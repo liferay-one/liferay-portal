@@ -142,7 +142,7 @@ public class CommerceOrderItemService extends OneBaseService {
 	}
 
 	public void upsertOrderItems(
-			Order order,
+			Map<String, Long> contractIds, Order order,
 			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			String stageName)
 		throws Exception {
@@ -158,7 +158,9 @@ public class CommerceOrderItemService extends OneBaseService {
 
 			orderItemsMap.put(
 				salesforceOpportunityLineItem.getId(),
-				_toOrderItem(order, salesforceOpportunityLineItem, stageName));
+				_toOrderItem(
+					contractIds.get(salesforceOpportunityLineItem.getId()),
+					order, salesforceOpportunityLineItem, stageName));
 		}
 
 		patchOrderItems(
@@ -193,6 +195,7 @@ public class CommerceOrderItemService extends OneBaseService {
 	}
 
 	private Map<String, Object> _getCustomFieldValues(
+		Long contractId,
 		SalesforceOpportunityLineItem salesforceOpportunityLineItem,
 		String stageName) {
 
@@ -203,6 +206,10 @@ public class CommerceOrderItemService extends OneBaseService {
 
 			customFieldValues.put(
 				"cloudRegion", salesforceOpportunityLineItem.getCloudRegion());
+		}
+
+		if (contractId != null) {
+			customFieldValues.put("contractId", contractId);
 		}
 
 		customFieldValues.put("customStatus", _getCustomStatus(stageName));
@@ -281,7 +288,7 @@ public class CommerceOrderItemService extends OneBaseService {
 	}
 
 	private OrderItem _toOrderItem(
-		Order order,
+		Long contractId, Order order,
 		SalesforceOpportunityLineItem salesforceOpportunityLineItem,
 		String stageName) {
 
@@ -335,7 +342,7 @@ public class CommerceOrderItemService extends OneBaseService {
 		}
 
 		Map<String, Object> customFieldValues = _getCustomFieldValues(
-			salesforceOpportunityLineItem, stageName);
+			contractId, salesforceOpportunityLineItem, stageName);
 
 		OrderItem existingOrderItem = CommerceOrderItemUtil.fetchOrderItem(
 			salesforceOpportunityLineItem.getId(), order);

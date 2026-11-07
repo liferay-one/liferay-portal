@@ -949,7 +949,7 @@ public class EntitlementService extends OneBaseService {
 		}
 
 		long accountEntryId = _getAccountEntryId(order);
-		long contractId = _getContractId(order);
+		long contractId = _getContractId(order, orderItem);
 		String projectExternalReferenceCode = _getProjectExternalReferenceCode(
 			order);
 
@@ -1060,9 +1060,11 @@ public class EntitlementService extends OneBaseService {
 			") and (startDate eq null or startDate le ", instant, ")");
 	}
 
-	private long _getContractId(Order order) {
-		if (order == null) {
-			return 0;
+	private long _getContractId(Order order, OrderItem orderItem) {
+		long contractId = CommerceOrderItemUtil.getContractId(orderItem);
+
+		if ((contractId > 0) || (order == null)) {
+			return contractId;
 		}
 
 		Map<String, Object> customFields =

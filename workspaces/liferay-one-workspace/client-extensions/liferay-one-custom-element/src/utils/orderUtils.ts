@@ -266,6 +266,40 @@ export function getOrderContractId(placedOrder: PlacedOrder): number {
 	return Number(orderMetadata.contractEntityId) || 0;
 }
 
+export function getPlacedOrderItemContractId(
+	placedOrder: PlacedOrder,
+	placedOrderItem: PlacedOrderItems
+): number {
+	const contractId = Number(
+		placedOrderItem.customFields?.[OrderCustomFields.CONTRACT_ID]
+	);
+
+	return contractId || getOrderContractId(placedOrder);
+}
+
+export function getOrderContractIds(placedOrder: PlacedOrder): number[] {
+	const contractIds = new Set<number>();
+
+	for (const placedOrderItem of placedOrder.placedOrderItems ?? []) {
+		const contractId = getPlacedOrderItemContractId(
+			placedOrder,
+			placedOrderItem
+		);
+
+		if (contractId) {
+			contractIds.add(contractId);
+		}
+	}
+
+	const orderContractId = getOrderContractId(placedOrder);
+
+	if (!contractIds.size && orderContractId) {
+		contractIds.add(orderContractId);
+	}
+
+	return [...contractIds];
+}
+
 const IN_FLIGHT_ORDER_STATUS_CODES: number[] = [
 	OrderWorkflowStatusCode.PENDING,
 	OrderWorkflowStatusCode.PROCESSING,
@@ -292,8 +326,13 @@ export function getContractProductOrders(
 		return productOrders;
 	}
 
-	const contractOrders = productOrders.filter(
-		(placedOrder) => getOrderContractId(placedOrder) === contractId
+	const contractOrders = productOrders.filter((placedOrder) =>
+		(placedOrder.placedOrderItems ?? []).some(
+			(placedOrderItem) =>
+				placedOrderItem.productId === productId &&
+				getPlacedOrderItemContractId(placedOrder, placedOrderItem) ===
+					contractId
+		)
 	);
 
 	return contractOrders.length ? contractOrders : productOrders;

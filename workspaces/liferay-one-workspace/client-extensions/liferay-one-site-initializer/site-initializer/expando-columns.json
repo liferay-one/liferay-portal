@@ -720,6 +720,19 @@
 		}
 	},
 	{
+		"dataType": 11,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "contractId",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
 		"dataType": 15,
 		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
 		"name": "customStatus",

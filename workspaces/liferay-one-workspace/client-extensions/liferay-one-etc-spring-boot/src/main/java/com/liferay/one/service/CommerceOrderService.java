@@ -348,14 +348,26 @@ public class CommerceOrderService extends OneBaseService {
 				return;
 			}
 
-			Map<String, Object> customFields = new HashMap<>();
-
 			long contractEntityId = orderMetadataJSONObject.optLong(
 				"contractEntityId");
 
-			if (contractEntityId > 0) {
-				customFields.put("contractId", contractEntityId);
+			if ((contractEntityId > 0) &&
+				ArrayUtil.isNotEmpty(order.getOrderItems())) {
+
+				Map<Long, Map<String, Object>> customFieldValuesMap =
+					new HashMap<>();
+
+				for (OrderItem orderItem : order.getOrderItems()) {
+					customFieldValuesMap.put(
+						orderItem.getId(),
+						Map.of("contractId", contractEntityId));
+				}
+
+				_commerceOrderItemService.patchOrderItemCustomFields(
+					customFieldValuesMap, order);
 			}
+
+			Map<String, Object> customFields = new HashMap<>();
 
 			customFields.put(
 				"order-metadata", orderMetadataJSONObject.toString());
@@ -821,21 +833,20 @@ public class CommerceOrderService extends OneBaseService {
 
 	public Order upsertOrder(
 			com.liferay.headless.admin.user.client.dto.v1_0.Account account,
-			Long contractId, String currencyCode,
-			SalesforceOpportunity salesforceOpportunity,
+			String currencyCode, SalesforceOpportunity salesforceOpportunity,
 			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			SalesforceProject salesforceProject)
 		throws Exception {
 
 		return upsertOrder(
-			account, contractId, currencyCode, salesforceOpportunity.getId(),
+			account, currencyCode, salesforceOpportunity.getId(),
 			salesforceOpportunity.getProjectId(), salesforceOpportunity,
 			salesforceOpportunityLineItems, salesforceProject);
 	}
 
 	public Order upsertOrder(
 			com.liferay.headless.admin.user.client.dto.v1_0.Account account,
-			Long contractId, String currencyCode, String externalReferenceCode,
+			String currencyCode, String externalReferenceCode,
 			String projectExternalReferenceCode,
 			SalesforceOpportunity salesforceOpportunity,
 			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
@@ -884,7 +895,7 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		Map<String, Object> customFields = _getCustomFields(
-			contractId, projectExternalReferenceCode, salesforceOpportunity,
+			projectExternalReferenceCode, salesforceOpportunity,
 			salesforceProject);
 
 		order.setCustomFields(() -> customFields);
@@ -1411,8 +1422,34 @@ public class CommerceOrderService extends OneBaseService {
 		return GetterUtil.getString(catalog.getName());
 	}
 
+	private Map<String, String> _getCustomFields(Order order) throws Exception {
+		Map<String, String> customFields =
+			(Map<String, String>)order.getCustomFields();
+
+		JSONObject orderMetadataJSONObject = new JSONObject(
+			customFields.getOrDefault("order-metadata", "{}"));
+
+		if (orderMetadataJSONObject.has("exchangeRate")) {
+			return customFields;
+		}
+
+		Currency currency = _commerceCurrencyService.fetchCurrency("EUR");
+
+		if (currency == null) {
+			return customFields;
+		}
+
+		customFields.put(
+			"order-metadata",
+			orderMetadataJSONObject.put(
+				"exchangeRate", currency.getRate()
+			).toString());
+
+		return customFields;
+	}
+
 	private Map<String, Object> _getCustomFields(
-		Long contractId, String projectExternalReferenceCode,
+		String projectExternalReferenceCode,
 		SalesforceOpportunity salesforceOpportunity,
 		SalesforceProject salesforceProject) {
 
@@ -1434,10 +1471,6 @@ public class CommerceOrderService extends OneBaseService {
 			customFields.put(
 				"accountOwnerLastName",
 				salesforceOpportunity.getOwnerLastName());
-		}
-
-		if (contractId != null) {
-			customFields.put("contractId", contractId);
 		}
 
 		if ((salesforceProject != null) &&
@@ -1505,32 +1538,6 @@ public class CommerceOrderService extends OneBaseService {
 			customFields.put(
 				"salesforceProjectId", projectExternalReferenceCode);
 		}
-
-		return customFields;
-	}
-
-	private Map<String, String> _getCustomFields(Order order) throws Exception {
-		Map<String, String> customFields =
-			(Map<String, String>)order.getCustomFields();
-
-		JSONObject orderMetadataJSONObject = new JSONObject(
-			customFields.getOrDefault("order-metadata", "{}"));
-
-		if (orderMetadataJSONObject.has("exchangeRate")) {
-			return customFields;
-		}
-
-		Currency currency = _commerceCurrencyService.fetchCurrency("EUR");
-
-		if (currency == null) {
-			return customFields;
-		}
-
-		customFields.put(
-			"order-metadata",
-			orderMetadataJSONObject.put(
-				"exchangeRate", currency.getRate()
-			).toString());
 
 		return customFields;
 	}

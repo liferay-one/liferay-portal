@@ -221,6 +221,20 @@ function getSalesforceOpportunityPayload(stageName: string, type: string) {
 					...getSalesforceAccount(ids),
 					'Owner.Email': 'sample.owner@example.com',
 				},
+				contracts: [
+					{
+						AccountId: ids.accountId,
+						ContractTerm: 12,
+						EndDate: endDate,
+						Id: ids.contractId,
+						Name: `Sample Contract ${ids.contractId.slice(-6)}`,
+						Project__c: ids.projectId,
+						SBQQ__Opportunity__c: ids.opportunityId,
+						SBQQ__OpportunityPricebookId__c: ids.pricebook2Id,
+						SBQQ__RenewalOpportunity__c: '',
+						StartDate: toDateString(new Date()),
+					},
+				],
 				opportunity: {
 					'AccountId': ids.accountId,
 					'First_Line_Support__c': false,

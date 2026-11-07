@@ -11,6 +11,7 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.OpportunityConstants;
+import com.liferay.one.model.Contract;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
@@ -18,6 +19,7 @@ import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.salesforce.model.SalesforceProject;
 import com.liferay.one.salesforce.model.SalesforceProjectEntitlement;
 import com.liferay.one.util.CommerceOrderItemUtil;
+import com.liferay.one.util.ContractUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -120,7 +122,7 @@ public class ProvisioningProjectEntitlementService {
 	}
 
 	public void processProjectEntitlements(
-			Account account, Long contractId, String currencyCode,
+			Account account, List<Contract> contracts, String currencyCode,
 			JSONObject recordJSONObject, boolean renewal,
 			SalesforceOpportunity salesforceOpportunity,
 			SalesforceProject salesforceProject, List<String> warningMessages)
@@ -142,7 +144,7 @@ public class ProvisioningProjectEntitlementService {
 
 			try {
 				_processProjectEntitlement(
-					account, contractId, currencyCode, renewal,
+					account, contracts, currencyCode, renewal,
 					salesforceOpportunity,
 					salesforceOpportunityLineItemsMap.get(
 						salesforceProjectEntitlement.getId()),
@@ -250,7 +252,12 @@ public class ProvisioningProjectEntitlementService {
 			projectEntitlementId, salesforceOpportunityLineItem,
 			new ArrayList<>());
 
+		List<Contract> contracts = _contractService.getOpportunityContracts(
+			GetterUtil.getString(customFields.get("salesforceOpportunityId")));
+
 		_commerceOrderItemService.upsertOrderItems(
+			ContractUtil.getContractIds(
+				contracts, List.of(salesforceOpportunityLineItem)),
 			order, List.of(salesforceOpportunityLineItem),
 			OpportunityConstants.STAGE_NAME_CLOSED_WON);
 
@@ -345,7 +352,7 @@ public class ProvisioningProjectEntitlementService {
 	}
 
 	private void _processProjectEntitlement(
-			Account account, Long contractId, String currencyCode,
+			Account account, List<Contract> contracts, String currencyCode,
 			boolean renewal, SalesforceOpportunity salesforceOpportunity,
 			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			SalesforceProject salesforceProject,
@@ -387,7 +394,7 @@ public class ProvisioningProjectEntitlementService {
 		}
 
 		Order order = _commerceOrderService.upsertOrder(
-			account, contractId, currencyCode, projectEntitlementId, projectId,
+			account, currencyCode, projectEntitlementId, projectId,
 			salesforceOpportunity, salesforceOpportunityLineItems,
 			salesforceProject);
 
@@ -424,6 +431,8 @@ public class ProvisioningProjectEntitlementService {
 		if (!skuSalesforceOpportunityLineItems.isEmpty()) {
 			try {
 				_commerceOrderItemService.upsertOrderItems(
+					ContractUtil.getContractIds(
+						contracts, skuSalesforceOpportunityLineItems),
 					order, skuSalesforceOpportunityLineItems,
 					salesforceOpportunity.getStageName());
 
@@ -556,6 +565,9 @@ public class ProvisioningProjectEntitlementService {
 
 	@Autowired
 	private CommerceSkuService _commerceSkuService;
+
+	@Autowired
+	private ContractService _contractService;
 
 	@Autowired
 	private EntitlementDefinitionService _entitlementDefinitionService;

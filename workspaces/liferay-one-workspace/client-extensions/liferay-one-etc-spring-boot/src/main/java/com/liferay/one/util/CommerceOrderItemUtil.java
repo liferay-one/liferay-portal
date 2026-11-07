@@ -57,6 +57,11 @@ public class CommerceOrderItemUtil {
 		return null;
 	}
 
+	public static long getContractId(OrderItem orderItem) {
+		return GetterUtil.getLong(
+			_getCustomFieldValue(orderItem, "contractId"));
+	}
+
 	public static Instant getEffectiveEndDateInstant(OrderItem orderItem) {
 		return _getCustomFieldInstant(orderItem, "effectiveEndDate");
 	}
