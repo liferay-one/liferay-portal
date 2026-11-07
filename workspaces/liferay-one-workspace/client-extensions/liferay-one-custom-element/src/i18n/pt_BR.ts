@@ -1455,6 +1455,8 @@ export default {
 	'shared-investigator-platform':
 		'Plataforma compartilhada de investigadores',
 	'show-less': 'Exibir menos',
+	'showing-the-first-x-of-x-members-type-to-narrow-the-results':
+		'Exibindo os primeiros {0} de {1} membros. Digite para refinar os resultados.',
 	'showing-x-to-x-of-x': 'Exibindo {0} a {1} de {2}',
 	'sign-in': 'Entrar',
 	'sign-in-with-a-different-account': 'Entrar com uma conta diferente',

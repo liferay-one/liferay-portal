@@ -4,11 +4,11 @@
  */
 
 import ClayButton from '@clayui/button';
-import ClayDropDown from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
 import {useRef, useState} from 'react';
 import Button from '~/components/Button/Button';
 import {translate} from '~/i18n';
+import MemberDropDown from '~/pages/MyAccount/ProjectMembers/components/MemberDropDown/MemberDropDown';
 import PermissionsSelect from '~/pages/MyAccount/ProjectMembers/components/PermissionsSelect/PermissionsSelect';
 import {getContactRoleChanges} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {Liferay} from '~/services/liferay/liferay';
@@ -21,50 +21,6 @@ import type {
 	ProjectMembersRow,
 } from '~/pages/MyAccount/ProjectMembers/types';
 
-type MemberDropDownProps = {
-	filteredOptions: AccountMemberOption[];
-	onChange: (option: AccountMemberOption) => void;
-	selectedName: string;
-};
-
-const MemberDropDown = ({
-	filteredOptions,
-	onChange,
-	selectedName,
-}: MemberDropDownProps) => {
-	const [active, setActive] = useState(false);
-
-	return (
-		<ClayDropDown
-			active={active}
-			className="project-permissions-role-dropdown"
-			menuElementAttrs={{className: 'project-permissions-role-menu'}}
-			onActiveChange={setActive}
-			trigger={
-				<button
-					className="align-items-center d-flex form-control justify-content-between project-permissions-role-trigger"
-					type="button"
-				>
-					<span>{selectedName || translate('select-a-member')}</span>
-
-					<ClayIcon symbol="caret-bottom" />
-				</button>
-			}
-		>
-			<ClayDropDown.ItemList>
-				{filteredOptions.map((option) => (
-					<ClayDropDown.Item
-						key={option.userId}
-						onClick={() => onChange(option)}
-					>
-						{option.name}
-					</ClayDropDown.Item>
-				))}
-			</ClayDropDown.ItemList>
-		</ClayDropDown>
-	);
-};
-
 type WorkingMember = {
 	designations: string[];
 	email: string;
@@ -75,6 +31,7 @@ type WorkingMember = {
 	originalRoleExternalReferenceCode: string;
 	removed: boolean;
 	roleExternalReferenceCode: string;
+	rowKey: string;
 	userId: number;
 };
 
@@ -104,12 +61,14 @@ const EditProjectPermissionsModal = ({
 			originalRoleExternalReferenceCode: member.roleExternalReferenceCode,
 			removed: false,
 			roleExternalReferenceCode: member.roleExternalReferenceCode,
+			rowKey: `membership-${member.membershipId}`,
 			userId: member.userId,
 		}))
 	);
 	const [error, setError] = useState('');
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
+	const newRowCountRef = useRef(0);
 	const submittingRef = useRef(false);
 
 	const updateMember = (index: number, patch: Partial<WorkingMember>) =>
@@ -269,11 +228,18 @@ const EditProjectPermissionsModal = ({
 					member.removed ? null : (
 						<div
 							className="project-permissions-grid-row"
-							key={index}
+							key={member.rowKey}
 						>
 							{member.isNew && !member.userId ? (
 								<MemberDropDown
-									filteredOptions={accountMemberOptions.filter(
+									onChange={(option) =>
+										updateMember(index, {
+											email: option.email,
+											name: option.name,
+											userId: option.userId,
+										})
+									}
+									options={accountMemberOptions.filter(
 										(option) =>
 											!members.some(
 												(m, i) =>
@@ -282,13 +248,6 @@ const EditProjectPermissionsModal = ({
 													m.userId === option.userId
 											)
 									)}
-									onChange={(option) =>
-										updateMember(index, {
-											email: option.email,
-											name: option.name,
-											userId: option.userId,
-										})
-									}
 									selectedName={member.name}
 								/>
 							) : (
@@ -335,7 +294,9 @@ const EditProjectPermissionsModal = ({
 			<ClayButton
 				className="project-permissions-add-button"
 				displayType="secondary"
-				onClick={() =>
+				onClick={() => {
+					newRowCountRef.current += 1;
+
 					setMembers((previous) => [
 						...previous,
 						{
@@ -348,10 +309,11 @@ const EditProjectPermissionsModal = ({
 							originalRoleExternalReferenceCode: '',
 							removed: false,
 							roleExternalReferenceCode: '',
+							rowKey: `new-${newRowCountRef.current}`,
 							userId: 0,
 						},
-					])
-				}
+					]);
+				}}
 				type="button"
 			>
 				<ClayIcon className="mr-2" symbol="plus" />

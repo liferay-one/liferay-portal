@@ -103,6 +103,11 @@
 	white-space: nowrap;
 }
 
+.project-permissions-member-menu {
+	max-width: none;
+	min-width: 18rem;
+}
+
 .project-permissions-role-dropdown {
 	display: block;
 }
