@@ -30,21 +30,18 @@ describe('[CLIENT-MODELS-DELIVERYORDERMODEL] DeliveryOrderModel', () => {
 	});
 
 	it.each([
+		['CLIENT_EXTENSION', true],
 		['CLOUD_APP', true],
 		['CLOUDAPP', true],
-		['CLIENT_EXTENSION', false],
 		['COMPOSITE_APP', false],
 		['DXP_APP', false],
 		['AI_HUB', false],
-	])(
-		'identifies cloud apps for the %s order type: %s',
-		(orderType, expected) => {
-			expect(
-				createModel({orderTypeExternalReferenceCode: orderType})
-					.isCloudApp
-			).toBe(expected);
-		}
-	);
+	])('installs the %s order type in the cloud: %s', (orderType, expected) => {
+		expect(
+			createModel({orderTypeExternalReferenceCode: orderType})
+				.isCloudInstallable
+		).toBe(expected);
+	});
 
 	it.each([
 		['CLIENT_EXTENSION', 10, true],
