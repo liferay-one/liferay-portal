@@ -6,6 +6,8 @@
 package com.liferay.one.service;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
+import com.liferay.headless.commerce.admin.order.client.custom.field.CustomField;
+import com.liferay.headless.commerce.admin.order.client.custom.field.CustomValue;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.ContractConstants;
@@ -53,6 +55,9 @@ public class ContractServiceTest {
 		ReflectionTestUtils.setField(
 			_testContractService, "_accountService", _accountService);
 		ReflectionTestUtils.setField(
+			_testContractService, "_commerceOrderItemService",
+			_commerceOrderItemService);
+		ReflectionTestUtils.setField(
 			_testContractService, "_commerceOrderService",
 			_commerceOrderService);
 		ReflectionTestUtils.setField(
@@ -98,7 +103,7 @@ public class ContractServiceTest {
 		throws Exception {
 
 		_testContractService.getFunction = uri -> {
-			if (_isLatestContractQuery(uri)) {
+			if (_isOpportunityContractsQuery(uri)) {
 				return _createItemsResponse(
 					new JSONObject(
 					).put(
@@ -124,6 +129,9 @@ public class ContractServiceTest {
 				"salesforceOpportunityId", "OPP-1", "salesforceProjectId",
 				"PRJ-2"),
 			12L);
+
+		_setOrderItemsEndDate(projectEntitlementOrder, "2027-11-01T00:00:00Z");
+
 		Order unrelatedOrder = _createOrder(
 			_UNRELATED_ORDER_ID, Map.of("salesforceOpportunityId", "OPP-9"),
 			13L);
@@ -162,21 +170,21 @@ public class ContractServiceTest {
 			));
 
 		Mockito.verify(
-			_commerceOrderService
-		).patchOrderCustomFields(
-			_ORDER_ID, Map.of("contractId", 77L)
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(12L, Map.of("contractId", 77L)), projectEntitlementOrder
 		);
 
 		Mockito.verify(
-			_commerceOrderService
-		).patchOrderCustomFields(
-			_PROJECT_ENTITLEMENT_ORDER_ID, Map.of("contractId", 77L)
+			_commerceOrderItemService, Mockito.never()
+		).patchOrderItemCustomFields(
+			ArgumentMatchers.any(), ArgumentMatchers.eq(unrelatedOrder)
 		);
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
 		).patchOrderCustomFields(
-			ArgumentMatchers.eq(_UNRELATED_ORDER_ID), ArgumentMatchers.any()
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
 		);
 
 		Mockito.verify(
@@ -189,6 +197,94 @@ public class ContractServiceTest {
 			_entitlementService
 		).updateEntitlementProject(
 			3, "PRJ-2"
+		);
+	}
+
+	@Test
+	public void testReconcileOpportunityContractMovesEachOrderItemToTheContractOfItsEndDate()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			if (_isOpportunityContractsQuery(uri)) {
+				return _createItemsResponse(
+					new JSONObject(
+					).put(
+						"endDate", "2027-10-31T00:00:00Z"
+					).put(
+						"id", 77
+					).put(
+						"opportunityId", "OPP-1"
+					).put(
+						"r_accountEntryToContract_accountEntryId", _ACCOUNT_ID
+					).put(
+						"r_projectToContract_c_projectERC", "PRJ-1"
+					),
+					new JSONObject(
+					).put(
+						"endDate", "2028-10-31T00:00:00Z"
+					).put(
+						"id", 78
+					).put(
+						"opportunityId", "OPP-1"
+					).put(
+						"r_accountEntryToContract_accountEntryId", _ACCOUNT_ID
+					).put(
+						"r_projectToContract_c_projectERC", "PRJ-1"
+					));
+			}
+
+			return null;
+		};
+
+		Order opportunityOrder = _createOrder(
+			Map.of("salesforceProjectId", "PRJ-1"));
+
+		opportunityOrder.setOrderItems(
+			new OrderItem[] {
+				_createOrderItem(11L, 77L, "2028-11-01T00:00:00Z"),
+				_createOrderItem(12L, 77L, "2029-11-01T00:00:00Z")
+			});
+
+		_whenFetchOrder(opportunityOrder);
+
+		Mockito.when(
+			_entitlementService.getEntitlements(
+				"r_commerceOrderItemToEntitlement_commerceOrderItemId eq '11'")
+		).thenReturn(
+			List.of(_createEntitlement(4, 77, "PRJ-1"))
+		);
+
+		Mockito.when(
+			_entitlementService.getEntitlements(
+				"r_commerceOrderItemToEntitlement_commerceOrderItemId eq '12'")
+		).thenReturn(
+			List.of(_createEntitlement(5, 77, null))
+		);
+
+		_testContractService.reconcileOpportunityContract("OPP-1");
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(11L, Map.of("contractId", 78L)), opportunityOrder
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			4, 78
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).updateEntitlementContract(
+			ArgumentMatchers.eq(5L), ArgumentMatchers.anyLong()
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementProject(
+			5, "PRJ-1"
 		);
 	}
 
@@ -239,7 +335,7 @@ public class ContractServiceTest {
 					new JSONObject());
 			}
 
-			if (_isLatestContractQuery(uri)) {
+			if (_isOpportunityContractsQuery(uri)) {
 				return _createItemsResponse(
 					new JSONObject(
 					).put(
@@ -271,6 +367,8 @@ public class ContractServiceTest {
 		).patchOrderCustomFields(
 			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
 		);
+
+		Mockito.verifyNoInteractions(_commerceOrderItemService);
 	}
 
 	@Test
@@ -460,7 +558,7 @@ public class ContractServiceTest {
 		throws Exception {
 
 		_testContractService.getFunction = uri -> {
-			if (_isLatestContractQuery(uri)) {
+			if (_isOpportunityContractsQuery(uri)) {
 				return _createItemsResponse(
 					new JSONObject(
 					).put(
@@ -474,10 +572,12 @@ public class ContractServiceTest {
 		};
 		_testContractService.patchResponse = "{\"id\": 77}";
 
-		_whenFetchOrder(
-			_createOrder(
-				Map.of("contractId", "5", "salesforceProjectId", "PRJ-1"),
-				11L));
+		Order order = _createOrder(
+			Map.of("contractId", "5", "salesforceProjectId", "PRJ-1"), 11L);
+
+		_setOrderItemsEndDate(order, "2027-11-01T00:00:00Z");
+
+		_whenFetchOrder(order);
 
 		Mockito.when(
 			_entitlementService.getEntitlements(
@@ -499,9 +599,15 @@ public class ContractServiceTest {
 			"PRJ-1", jsonObject.getString("r_projectToContract_c_projectERC"));
 
 		Mockito.verify(
-			_commerceOrderService
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(11L, Map.of("contractId", 77L)), order
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
 		).patchOrderCustomFields(
-			_ORDER_ID, Map.of("contractId", 77L)
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
 		);
 
 		Mockito.verify(
@@ -670,6 +776,20 @@ public class ContractServiceTest {
 			"PRJ-1", jsonObject.getString("r_projectToContract_c_projectERC"));
 	}
 
+	private CustomField _createCustomField(String name, Object data) {
+		CustomField customField = new CustomField();
+
+		CustomValue customValue = new CustomValue();
+
+		customValue.setData(data);
+
+		customField.setCustomValue(customValue);
+
+		customField.setName(name);
+
+		return customField;
+	}
+
 	private Entitlement _createEntitlement(
 		long entitlementId, long contractId,
 		String projectExternalReferenceCode) {
@@ -739,6 +859,21 @@ public class ContractServiceTest {
 		return order;
 	}
 
+	private OrderItem _createOrderItem(
+		long orderItemId, long contractId, String endDate) {
+
+		OrderItem orderItem = new OrderItem();
+
+		orderItem.setCustomFields(
+			new CustomField[] {
+				_createCustomField("contractId", contractId),
+				_createCustomField("endDate", endDate)
+			});
+		orderItem.setId(orderItemId);
+
+		return orderItem;
+	}
+
 	private JSONObject _createSalesforceContract() {
 		return new JSONObject(
 		).put(
@@ -769,6 +904,25 @@ public class ContractServiceTest {
 		return _isChainQuery(uri, "sort=dateCreated:desc");
 	}
 
+	private boolean _isOpportunityContractsQuery(URI uri) {
+		return _isChainQuery(uri, "filter=opportunityId eq 'OPP-1'");
+	}
+
+	private void _setOrderItemsEndDate(Order order, String endDate) {
+		for (OrderItem orderItem : order.getOrderItems()) {
+			CustomValue customValue = new CustomValue();
+
+			customValue.setData(endDate);
+
+			CustomField customField = new CustomField();
+
+			customField.setCustomValue(customValue);
+			customField.setName("endDate");
+
+			orderItem.setCustomFields(new CustomField[] {customField});
+		}
+	}
+
 	private void _whenFetchOrder(Order order) throws Exception {
 		Mockito.when(
 			_commerceOrderService.fetchOrderByExternalReferenceCode("OPP-1")
@@ -787,6 +941,8 @@ public class ContractServiceTest {
 
 	private final AccountService _accountService = Mockito.mock(
 		AccountService.class);
+	private final CommerceOrderItemService _commerceOrderItemService =
+		Mockito.mock(CommerceOrderItemService.class);
 	private final CommerceOrderService _commerceOrderService = Mockito.mock(
 		CommerceOrderService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(

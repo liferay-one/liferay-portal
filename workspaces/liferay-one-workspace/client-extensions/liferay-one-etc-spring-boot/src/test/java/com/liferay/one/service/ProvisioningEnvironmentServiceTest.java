@@ -13,6 +13,7 @@ import com.liferay.one.model.Environment;
 import com.liferay.one.salesforce.model.SalesforceModelTestUtil;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -74,7 +75,8 @@ public class ProvisioningEnvironmentServiceTest {
 		);
 
 		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
-			_account, _contract, List.of(_createCloudNativeLineItem()));
+			_account, List.of(_contract),
+			List.of(_createCloudNativeLineItem()));
 
 		ArgumentCaptor<String> activationCodeArgumentCaptor =
 			ArgumentCaptor.forClass(String.class);
@@ -130,7 +132,8 @@ public class ProvisioningEnvironmentServiceTest {
 		);
 
 		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
-			_account, _contract, List.of(_createCloudNativeLineItem()));
+			_account, List.of(_contract),
+			List.of(_createCloudNativeLineItem()));
 
 		Mockito.verify(
 			_environmentService
@@ -146,7 +149,7 @@ public class ProvisioningEnvironmentServiceTest {
 		throws Exception {
 
 		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
-			_account, _contract,
+			_account, List.of(_contract),
 			List.of(
 				new SalesforceOpportunityLineItem(
 					SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
@@ -161,7 +164,7 @@ public class ProvisioningEnvironmentServiceTest {
 		throws Exception {
 
 		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
-			_account, null, List.of(_createCloudNativeLineItem()));
+			_account, new ArrayList<>(), List.of(_createCloudNativeLineItem()));
 
 		Mockito.verifyNoInteractions(_environmentService);
 	}

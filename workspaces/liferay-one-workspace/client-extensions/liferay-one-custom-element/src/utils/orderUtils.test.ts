@@ -7,8 +7,10 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {
 	getContractProductOrders,
+	getOrderContractIds,
 	getOrderStatusLabel,
 	getOrderStatusToken,
+	getPlacedOrderItemContractId,
 	getPlacedOrderItemDate,
 	getProductStatusToken,
 	getProjectItemStatusToken,
@@ -486,6 +488,89 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 				legacyOrder,
 				currentOrder,
 			]);
+		});
+
+		it('matches the contract of the order item for the product', () => {
+			const multiyearOrder = toContractPlacedOrder({
+				customFields: {},
+				id: 4,
+				placedOrderItems: [
+					{customFields: {contractId: 1001}, productId: 7},
+					{customFields: {contractId: 1002}, productId: 8},
+				],
+			});
+
+			expect(getContractProductOrders([multiyearOrder], 7, 1001)).toEqual(
+				[multiyearOrder]
+			);
+			expect(
+				getContractProductOrders(
+					[currentOrder, multiyearOrder],
+					7,
+					1002
+				)
+			).toEqual([currentOrder, multiyearOrder]);
+		});
+	});
+
+	describe('getOrderContractIds', () => {
+		it('returns the contract of every order item', () => {
+			expect(
+				getOrderContractIds(
+					toContractPlacedOrder({
+						customFields: {contractId: 5},
+						placedOrderItems: [
+							{customFields: {contractId: 1001}},
+							{customFields: {contractId: 1002}},
+							{customFields: {contractId: 1001}},
+						],
+					})
+				)
+			).toEqual([1001, 1002]);
+		});
+
+		it('returns the contract of the order when no order item has one', () => {
+			expect(
+				getOrderContractIds(
+					toContractPlacedOrder({
+						customFields: {contractId: 5},
+						placedOrderItems: [{customFields: {}}],
+					})
+				)
+			).toEqual([5]);
+		});
+
+		it('returns nothing when the order has no contract', () => {
+			expect(
+				getOrderContractIds(
+					toContractPlacedOrder({
+						customFields: {},
+						placedOrderItems: [],
+					})
+				)
+			).toEqual([]);
+		});
+	});
+
+	describe('getPlacedOrderItemContractId', () => {
+		const placedOrder = toContractPlacedOrder({
+			customFields: {contractId: 5},
+		});
+
+		it('prefers the contract of the order item', () => {
+			expect(
+				getPlacedOrderItemContractId(placedOrder, {
+					customFields: {contractId: 1001},
+				} as unknown as PlacedOrderItems)
+			).toBe(1001);
+		});
+
+		it('uses the contract of the order for an older order item', () => {
+			expect(
+				getPlacedOrderItemContractId(placedOrder, {
+					customFields: {},
+				} as unknown as PlacedOrderItems)
+			).toBe(5);
 		});
 	});
 });

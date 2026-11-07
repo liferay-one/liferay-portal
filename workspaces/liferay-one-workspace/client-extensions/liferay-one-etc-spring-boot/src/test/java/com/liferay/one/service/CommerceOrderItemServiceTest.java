@@ -18,6 +18,7 @@ import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import java.math.BigDecimal;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -106,6 +107,40 @@ public class CommerceOrderItemServiceTest {
 		_patchOrderItemCustomFields(Map.of(), order);
 
 		Mockito.verifyNoInteractions(_orderResource);
+	}
+
+	@Test
+	public void testUpsertOrderItemsAddsContractIdOnlyToMatchedOrderItems()
+		throws Exception {
+
+		Order order = _createOrder();
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			order
+		);
+
+		_upsertOrderItems(
+			Map.of(_ERC_A, 42L), order,
+			_createLineItemJSON(_ERC_A, 3, "2027-10-31"),
+			_createLineItemJSON(_ERC_B, 1, null));
+
+		OrderItem[] patchedOrderItems = _getPatchedOrderItems();
+
+		Assertions.assertEquals(2, patchedOrderItems.length);
+
+		for (OrderItem patchedOrderItem : patchedOrderItems) {
+			if (_ERC_A.equals(patchedOrderItem.getExternalReferenceCode())) {
+				Assertions.assertEquals(
+					"42", _getCustomFieldData(patchedOrderItem, "contractId"));
+			}
+			else {
+				Assertions.assertFalse(
+					_hasCustomField(patchedOrderItem, "contractId"));
+			}
+		}
 	}
 
 	@Test
@@ -415,7 +450,9 @@ public class CommerceOrderItemServiceTest {
 		}
 	}
 
-	private void _upsertOrderItems(Order order, JSONObject... jsonObjects)
+	private void _upsertOrderItems(
+			Map<String, Long> contractIds, Order order,
+			JSONObject... jsonObjects)
 		throws Exception {
 
 		OrderResource.Builder builder = _mockOrderResourceBuilder();
@@ -438,8 +475,15 @@ public class CommerceOrderItemServiceTest {
 			}
 
 			_commerceOrderItemService.upsertOrderItems(
-				order, salesforceOpportunityLineItems, "Closed Won");
+				contractIds, order, salesforceOpportunityLineItems,
+				"Closed Won");
 		}
+	}
+
+	private void _upsertOrderItems(Order order, JSONObject... jsonObjects)
+		throws Exception {
+
+		_upsertOrderItems(new HashMap<>(), order, jsonObjects);
 	}
 
 	private static final String _ERC_A = "00kLPD113954TEST0A";

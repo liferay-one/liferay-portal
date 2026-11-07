@@ -10,6 +10,7 @@ import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Sku;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.one.model.Contract;
 import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.Project;
 import com.liferay.one.salesforce.model.SalesforceModelTestUtil;
@@ -54,6 +55,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 			CommerceOrderItemService.class);
 		_commerceOrderService = Mockito.mock(CommerceOrderService.class);
 		_commerceSkuService = Mockito.mock(CommerceSkuService.class);
+		_contractService = Mockito.mock(ContractService.class);
 		_entitlementDefinitionService = Mockito.mock(
 			EntitlementDefinitionService.class);
 		_projectService = Mockito.mock(ProjectService.class);
@@ -69,6 +71,9 @@ public class ProvisioningProjectEntitlementServiceTest {
 		ReflectionTestUtils.setField(
 			_provisioningProjectEntitlementService, "_commerceSkuService",
 			_commerceSkuService);
+		ReflectionTestUtils.setField(
+			_provisioningProjectEntitlementService, "_contractService",
+			_contractService);
 		ReflectionTestUtils.setField(
 			_provisioningProjectEntitlementService,
 			"_entitlementDefinitionService", _entitlementDefinitionService);
@@ -111,7 +116,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 		Mockito.when(
 			_commerceOrderService.upsertOrder(
-				Mockito.any(Account.class), Mockito.any(), Mockito.anyString(),
+				Mockito.any(Account.class), Mockito.anyString(),
 				Mockito.anyString(), Mockito.anyString(), Mockito.any(),
 				Mockito.anyList(), Mockito.any())
 		).thenReturn(
@@ -318,8 +323,9 @@ public class ProvisioningProjectEntitlementServiceTest {
 		throws Exception {
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			false, _createSalesforceOpportunity(), null, new ArrayList<>());
+			_createAccount(), new ArrayList<>(), "USD",
+			_createRecordJSONObject(), false, _createSalesforceOpportunity(),
+			null, new ArrayList<>());
 
 		Mockito.verifyNoInteractions(_provisioningOrderService);
 	}
@@ -334,7 +340,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 		Mockito.when(
 			_commerceOrderService.upsertOrder(
-				Mockito.any(Account.class), Mockito.any(), Mockito.anyString(),
+				Mockito.any(Account.class), Mockito.anyString(),
 				Mockito.eq(_ENTITLEMENT_ID_1), Mockito.anyString(),
 				Mockito.any(), Mockito.anyList(), Mockito.any())
 		).thenThrow(
@@ -343,7 +349,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 		Mockito.when(
 			_commerceOrderService.upsertOrder(
-				Mockito.any(Account.class), Mockito.any(), Mockito.anyString(),
+				Mockito.any(Account.class), Mockito.anyString(),
 				Mockito.eq(_ENTITLEMENT_ID_2), Mockito.anyString(),
 				Mockito.any(), Mockito.anyList(), Mockito.any())
 		).thenReturn(
@@ -353,13 +359,14 @@ public class ProvisioningProjectEntitlementServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			false, _createSalesforceOpportunity(), null, warningMessages);
+			_createAccount(), new ArrayList<>(), "USD",
+			_createRecordJSONObject(), false, _createSalesforceOpportunity(),
+			null, warningMessages);
 
 		Mockito.verify(
 			_commerceOrderService
 		).upsertOrder(
-			Mockito.any(Account.class), Mockito.any(), Mockito.anyString(),
+			Mockito.any(Account.class), Mockito.anyString(),
 			Mockito.eq(_ENTITLEMENT_ID_2), Mockito.anyString(), Mockito.any(),
 			Mockito.anyList(), Mockito.any()
 		);
@@ -372,8 +379,9 @@ public class ProvisioningProjectEntitlementServiceTest {
 		throws Exception {
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			false, _createSalesforceOpportunity(), null, new ArrayList<>());
+			_createAccount(), new ArrayList<>(), "USD",
+			_createRecordJSONObject(), false, _createSalesforceOpportunity(),
+			null, new ArrayList<>());
 
 		ArgumentCaptor<List<SalesforceOpportunityLineItem>> argumentCaptor =
 			ArgumentCaptor.forClass(List.class);
@@ -381,8 +389,8 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.atLeastOnce()
 		).upsertOrderItems(
-			Mockito.any(Order.class), argumentCaptor.capture(),
-			Mockito.anyString()
+			Mockito.anyMap(), Mockito.any(Order.class),
+			argumentCaptor.capture(), Mockito.anyString()
 		);
 
 		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems =
@@ -419,8 +427,9 @@ public class ProvisioningProjectEntitlementServiceTest {
 		);
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			false, _createSalesforceOpportunity(), null, new ArrayList<>());
+			_createAccount(), new ArrayList<>(), "USD",
+			_createRecordJSONObject(), false, _createSalesforceOpportunity(),
+			null, new ArrayList<>());
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.times(2)
@@ -441,7 +450,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 		for (int i = 0; i < 2; i++) {
 			_provisioningProjectEntitlementService.processProjectEntitlements(
-				_createAccount(), _CONTRACT_ID, "USD",
+				_createAccount(), new ArrayList<>(), "USD",
 				_createRecordJSONObject(), false,
 				_createSalesforceOpportunity(), null, new ArrayList<>());
 		}
@@ -449,7 +458,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderService, Mockito.times(2)
 		).upsertOrder(
-			Mockito.any(Account.class), Mockito.any(), Mockito.anyString(),
+			Mockito.any(Account.class), Mockito.anyString(),
 			Mockito.eq(_ENTITLEMENT_ID_1), Mockito.anyString(), Mockito.any(),
 			Mockito.anyList(), Mockito.any()
 		);
@@ -457,7 +466,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderService, Mockito.times(2)
 		).upsertOrder(
-			Mockito.any(Account.class), Mockito.any(), Mockito.anyString(),
+			Mockito.any(Account.class), Mockito.anyString(),
 			Mockito.eq(_ENTITLEMENT_ID_2), Mockito.anyString(), Mockito.any(),
 			Mockito.anyList(), Mockito.any()
 		);
@@ -465,7 +474,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.times(2)
 		).upsertOrderItems(
-			Mockito.any(Order.class),
+			Mockito.anyMap(), Mockito.any(Order.class),
 			Mockito.argThat(
 				salesforceOpportunityLineItems -> _hasLineItemIds(
 					salesforceOpportunityLineItems, _LINE_ITEM_ID_1,
@@ -476,7 +485,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.times(2)
 		).upsertOrderItems(
-			Mockito.any(Order.class),
+			Mockito.anyMap(), Mockito.any(Order.class),
 			Mockito.argThat(
 				salesforceOpportunityLineItems -> _hasLineItemIds(
 					salesforceOpportunityLineItems, _LINE_ITEM_ID_3)),
@@ -486,7 +495,8 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.times(4)
 		).upsertOrderItems(
-			Mockito.any(Order.class), Mockito.anyList(), Mockito.anyString()
+			Mockito.anyMap(), Mockito.any(Order.class), Mockito.anyList(),
+			Mockito.anyString()
 		);
 	}
 
@@ -505,7 +515,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		);
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", recordJSONObject, false,
+			_createAccount(), new ArrayList<>(), "USD", recordJSONObject, false,
 			_createSalesforceOpportunity(), null, new ArrayList<>());
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
@@ -518,8 +528,9 @@ public class ProvisioningProjectEntitlementServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			true, _createSalesforceOpportunity(), null, warningMessages);
+			_createAccount(), new ArrayList<>(), "USD",
+			_createRecordJSONObject(), true, _createSalesforceOpportunity(),
+			null, warningMessages);
 
 		Mockito.verify(
 			_provisioningOrderService
@@ -549,13 +560,14 @@ public class ProvisioningProjectEntitlementServiceTest {
 		throws Exception {
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			false, _createSalesforceOpportunity(), null, new ArrayList<>());
+			_createAccount(), new ArrayList<>(), "USD",
+			_createRecordJSONObject(), false, _createSalesforceOpportunity(),
+			null, new ArrayList<>());
 
 		Mockito.verify(
 			_commerceOrderItemService
 		).upsertOrderItems(
-			Mockito.any(Order.class),
+			Mockito.anyMap(), Mockito.any(Order.class),
 			Mockito.argThat(
 				salesforceOpportunityLineItems -> _hasLineItemIds(
 					salesforceOpportunityLineItems, _LINE_ITEM_ID_1,
@@ -566,7 +578,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).upsertOrderItems(
-			Mockito.any(Order.class),
+			Mockito.anyMap(), Mockito.any(Order.class),
 			Mockito.argThat(
 				salesforceOpportunityLineItems -> _hasLineItemIds(
 					salesforceOpportunityLineItems, _LINE_ITEM_ID_3)),
@@ -576,7 +588,8 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.times(2)
 		).upsertOrderItems(
-			Mockito.any(Order.class), Mockito.anyList(), Mockito.anyString()
+			Mockito.anyMap(), Mockito.any(Order.class), Mockito.anyList(),
+			Mockito.anyString()
 		);
 	}
 
@@ -586,7 +599,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 		Mockito.when(
 			_commerceOrderService.upsertOrder(
-				Mockito.any(Account.class), Mockito.any(), Mockito.anyString(),
+				Mockito.any(Account.class), Mockito.anyString(),
 				Mockito.anyString(), Mockito.anyString(), Mockito.any(),
 				Mockito.anyList(), Mockito.any())
 		).thenThrow(
@@ -596,8 +609,9 @@ public class ProvisioningProjectEntitlementServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			false, _createSalesforceOpportunity(), null, warningMessages);
+			_createAccount(), new ArrayList<>(), "USD",
+			_createRecordJSONObject(), false, _createSalesforceOpportunity(),
+			null, warningMessages);
 
 		Assertions.assertEquals(2, warningMessages.size());
 	}
@@ -611,14 +625,16 @@ public class ProvisioningProjectEntitlementServiceTest {
 		).when(
 			_commerceOrderItemService
 		).upsertOrderItems(
-			Mockito.any(Order.class), Mockito.anyList(), Mockito.anyString()
+			Mockito.anyMap(), Mockito.any(Order.class), Mockito.anyList(),
+			Mockito.anyString()
 		);
 
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			false, _createSalesforceOpportunity(), null, warningMessages);
+			_createAccount(), new ArrayList<>(), "USD",
+			_createRecordJSONObject(), false, _createSalesforceOpportunity(),
+			null, warningMessages);
 
 		Assertions.assertEquals(
 			List.of(
@@ -661,8 +677,9 @@ public class ProvisioningProjectEntitlementServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			false, _createSalesforceOpportunity(), null, warningMessages);
+			_createAccount(), new ArrayList<>(), "USD",
+			_createRecordJSONObject(), false, _createSalesforceOpportunity(),
+			null, warningMessages);
 
 		Assertions.assertEquals(
 			List.of(
@@ -675,7 +692,8 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.times(2)
 		).upsertOrderItems(
-			Mockito.any(Order.class), Mockito.anyList(), Mockito.anyString()
+			Mockito.anyMap(), Mockito.any(Order.class), Mockito.anyList(),
+			Mockito.anyString()
 		);
 	}
 
@@ -692,15 +710,16 @@ public class ProvisioningProjectEntitlementServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			_createAccount(), _CONTRACT_ID, "USD", _createRecordJSONObject(),
-			false, _createSalesforceOpportunity(), null, warningMessages);
+			_createAccount(), new ArrayList<>(), "USD",
+			_createRecordJSONObject(), false, _createSalesforceOpportunity(),
+			null, warningMessages);
 
 		Assertions.assertEquals(1, warningMessages.size());
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.times(1)
 		).upsertOrder(
-			Mockito.any(Account.class), Mockito.any(), Mockito.anyString(),
+			Mockito.any(Account.class), Mockito.anyString(),
 			Mockito.eq(_ENTITLEMENT_ID_2), Mockito.anyString(), Mockito.any(),
 			Mockito.anyList(), Mockito.any()
 		);
@@ -802,7 +821,50 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService
 		).upsertOrderItems(
-			Mockito.any(Order.class), Mockito.anyList(), Mockito.anyString()
+			Mockito.anyMap(), Mockito.any(Order.class), Mockito.anyList(),
+			Mockito.anyString()
+		);
+	}
+
+	@Test
+	public void testUpsertProjectEntitlementLineItemLinksTheContractWithItsEndDate()
+		throws Exception {
+
+		Order order = new Order();
+
+		order.setCustomFields(
+			Map.of(
+				"renewal", false, "salesforceOpportunityId", _OPPORTUNITY_ID,
+				"salesforceProjectId", _PROJECT_ID_1));
+		order.setExternalReferenceCode(_ENTITLEMENT_ID_1);
+		order.setId(_NEW_ORDER_ID);
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_ENTITLEMENT_ID_1)
+		).thenReturn(
+			order
+		);
+
+		Mockito.when(
+			_contractService.getOpportunityContracts(_OPPORTUNITY_ID)
+		).thenReturn(
+			List.of(
+				_createContract(1L, "2027-01-01"),
+				_createContract(2L, "2028-01-01"))
+		);
+
+		_provisioningProjectEntitlementService.upsertProjectEntitlementLineItem(
+			SalesforceModelTestUtil.createProjectEntitlementLineItemJSONObject(
+				"2028-01-01", _LINE_ITEM_ID_1, _PRODUCT_2_ID_1,
+				_ENTITLEMENT_ID_1, 1, "2027-01-01"));
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).upsertOrderItems(
+			Mockito.eq(Map.of(_LINE_ITEM_ID_1, 2L)), Mockito.same(order),
+			Mockito.anyList(), Mockito.anyString()
 		);
 	}
 
@@ -837,7 +899,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.times(2)
 		).upsertOrderItems(
-			Mockito.same(order),
+			Mockito.anyMap(), Mockito.same(order),
 			Mockito.argThat(
 				salesforceOpportunityLineItems -> _hasLineItemIds(
 					salesforceOpportunityLineItems, _LINE_ITEM_ID_1)),
@@ -925,7 +987,8 @@ public class ProvisioningProjectEntitlementServiceTest {
 		inOrder.verify(
 			_commerceOrderItemService
 		).upsertOrderItems(
-			Mockito.same(order), Mockito.anyList(), Mockito.anyString()
+			Mockito.anyMap(), Mockito.same(order), Mockito.anyList(),
+			Mockito.anyString()
 		);
 	}
 
@@ -1009,6 +1072,16 @@ public class ProvisioningProjectEntitlementServiceTest {
 		return account;
 	}
 
+	private Contract _createContract(long id, String endDate) {
+		return new Contract(
+			new JSONObject(
+			).put(
+				"endDate", endDate + "T00:00:00Z"
+			).put(
+				"id", id
+			));
+	}
+
 	private JSONObject _createRecordJSONObject() {
 		return new JSONObject(
 		).put(
@@ -1072,8 +1145,6 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 	private static final String _ACCOUNT_ID_SF = "SF-ACCOUNT-1";
 
-	private static final Long _CONTRACT_ID = 9000L;
-
 	private static final String _ENTITLEMENT_ID_1 = "a0P-ENT-1";
 
 	private static final String _ENTITLEMENT_ID_2 = "a0P-ENT-2";
@@ -1099,6 +1170,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 	private CommerceOrderItemService _commerceOrderItemService;
 	private CommerceOrderService _commerceOrderService;
 	private CommerceSkuService _commerceSkuService;
+	private ContractService _contractService;
 	private EntitlementDefinitionService _entitlementDefinitionService;
 	private ProjectService _projectService;
 	private ProvisioningOrderService _provisioningOrderService;

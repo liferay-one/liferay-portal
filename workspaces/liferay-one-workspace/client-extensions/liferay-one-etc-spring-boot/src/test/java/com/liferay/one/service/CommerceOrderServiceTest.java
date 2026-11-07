@@ -1094,17 +1094,30 @@ public class CommerceOrderServiceTest {
 	public void testCreateAIHubOpportunityCreatesOpportunity()
 		throws Exception {
 
-		_whenFetchCommerceOrder(
-			_createAIHubOrder(
-				"{\"contractEntityId\": 123, \"salesforceContractId\": " +
-					"\"800TEST\", \"salesforceProjectId\": \"a1tTEST\"}",
-				CommerceOrderConstants.ORDER_STATUS_PENDING));
+		Order order = _createAIHubOrder(
+			"{\"contractEntityId\": 123, \"salesforceContractId\": " +
+				"\"800TEST\", \"salesforceProjectId\": \"a1tTEST\"}",
+			CommerceOrderConstants.ORDER_STATUS_PENDING);
+
+		OrderItem orderItem = new OrderItem();
+
+		orderItem.setId(31L);
+
+		order.setOrderItems(new OrderItem[] {orderItem});
+
+		_whenFetchCommerceOrder(order);
 
 		_whenFetchProject(_ACCOUNT_ID);
 
 		_whenPostSalesforceOpportunity("006TEST");
 
 		_commerceOrderService.createAIHubOpportunity(_ORDER_ID);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(31L, Map.of("contractId", 123L)), order
+		);
 
 		_verifyPatchedProjectName("Test Project");
 
@@ -1120,7 +1133,7 @@ public class CommerceOrderServiceTest {
 
 		Map<String, Object> customFields = mapArgumentCaptor.getValue();
 
-		Assertions.assertEquals(123L, customFields.get("contractId"));
+		Assertions.assertFalse(customFields.containsKey("contractId"));
 		Assertions.assertEquals(
 			"a1tTEST", customFields.get("salesforceProjectId"));
 
@@ -3214,7 +3227,7 @@ public class CommerceOrderServiceTest {
 
 		OrderResource orderResource = _mockOrderResource(
 			() -> _commerceOrderService.upsertOrder(
-				account, null, "USD", "a0P-1", "a1tTEST",
+				account, "USD", "a0P-1", "a1tTEST",
 				new SalesforceOpportunity(
 					new JSONObject(
 					).put(
