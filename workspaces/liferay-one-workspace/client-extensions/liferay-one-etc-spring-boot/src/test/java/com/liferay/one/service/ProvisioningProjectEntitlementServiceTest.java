@@ -387,7 +387,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 			_commerceOrderItemService, Mockito.atLeastOnce()
 		).upsertOrderItems(
 			Mockito.anyList(), Mockito.any(Order.class),
-			argumentCaptor.capture(), Mockito.anyString()
+			argumentCaptor.capture(), Mockito.anyString(), Mockito.anyBoolean()
 		);
 
 		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems =
@@ -474,7 +474,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 				salesforceOpportunityLineItems -> _hasLineItemIds(
 					salesforceOpportunityLineItems, _LINE_ITEM_ID_1,
 					_LINE_ITEM_ID_2)),
-			Mockito.anyString()
+			Mockito.anyString(), Mockito.anyBoolean()
 		);
 
 		Mockito.verify(
@@ -484,14 +484,14 @@ public class ProvisioningProjectEntitlementServiceTest {
 			Mockito.argThat(
 				salesforceOpportunityLineItems -> _hasLineItemIds(
 					salesforceOpportunityLineItems, _LINE_ITEM_ID_3)),
-			Mockito.anyString()
+			Mockito.anyString(), Mockito.anyBoolean()
 		);
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.times(4)
 		).upsertOrderItems(
 			Mockito.anyList(), Mockito.any(Order.class), Mockito.anyList(),
-			Mockito.anyString()
+			Mockito.anyString(), Mockito.anyBoolean()
 		);
 	}
 
@@ -550,6 +550,83 @@ public class ProvisioningProjectEntitlementServiceTest {
 	}
 
 	@Test
+	public void testProcessProjectEntitlementsUnlinksAnUnmatchedItem()
+		throws Exception {
+
+		_provisioningProjectEntitlementService.processProjectEntitlements(
+			_createAccount(), List.of(), "USD", _createRecordJSONObject(),
+			false, _createSalesforceOpportunity(), null, new ArrayList<>());
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.atLeastOnce()
+		).upsertOrderItems(
+			Mockito.anyList(), Mockito.any(Order.class), Mockito.anyList(),
+			Mockito.anyString(), Mockito.eq(true)
+		);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.never()
+		).upsertOrderItems(
+			Mockito.anyList(), Mockito.any(Order.class), Mockito.anyList(),
+			Mockito.anyString(), Mockito.eq(false)
+		);
+	}
+
+	@Test
+	public void testProcessProjectEntitlementsUpdatesTheEntitlementContractsAfterTheOrderItems()
+		throws Exception {
+
+		_provisioningProjectEntitlementService.processProjectEntitlements(
+			_createAccount(), List.of(), "USD", _createRecordJSONObject(),
+			false, _createSalesforceOpportunity(), null, new ArrayList<>());
+
+		InOrder inOrder = Mockito.inOrder(
+			_commerceOrderItemService, _contractService);
+
+		inOrder.verify(
+			_commerceOrderItemService
+		).upsertOrderItems(
+			Mockito.anyList(), Mockito.any(Order.class),
+			Mockito.argThat(
+				salesforceOpportunityLineItems -> _hasLineItemIds(
+					salesforceOpportunityLineItems, _LINE_ITEM_ID_1,
+					_LINE_ITEM_ID_2)),
+			Mockito.anyString(), Mockito.anyBoolean()
+		);
+
+		inOrder.verify(
+			_contractService
+		).updateEntitlementContracts(
+			Mockito.any(Order.class),
+			Mockito.argThat(
+				salesforceOpportunityLineItems -> _hasLineItemIds(
+					salesforceOpportunityLineItems, _LINE_ITEM_ID_1,
+					_LINE_ITEM_ID_2)),
+			Mockito.eq(true)
+		);
+
+		inOrder.verify(
+			_commerceOrderItemService
+		).upsertOrderItems(
+			Mockito.anyList(), Mockito.any(Order.class),
+			Mockito.argThat(
+				salesforceOpportunityLineItems -> _hasLineItemIds(
+					salesforceOpportunityLineItems, _LINE_ITEM_ID_3)),
+			Mockito.anyString(), Mockito.anyBoolean()
+		);
+
+		inOrder.verify(
+			_contractService
+		).updateEntitlementContracts(
+			Mockito.any(Order.class),
+			Mockito.argThat(
+				salesforceOpportunityLineItems -> _hasLineItemIds(
+					salesforceOpportunityLineItems, _LINE_ITEM_ID_3)),
+			Mockito.eq(true)
+		);
+	}
+
+	@Test
 	public void testProcessProjectEntitlementsUpsertsLineItemsInOneCall()
 		throws Exception {
 
@@ -565,7 +642,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 				salesforceOpportunityLineItems -> _hasLineItemIds(
 					salesforceOpportunityLineItems, _LINE_ITEM_ID_1,
 					_LINE_ITEM_ID_2)),
-			Mockito.eq("Closed Won")
+			Mockito.eq("Closed Won"), Mockito.anyBoolean()
 		);
 
 		Mockito.verify(
@@ -575,14 +652,14 @@ public class ProvisioningProjectEntitlementServiceTest {
 			Mockito.argThat(
 				salesforceOpportunityLineItems -> _hasLineItemIds(
 					salesforceOpportunityLineItems, _LINE_ITEM_ID_3)),
-			Mockito.eq("Closed Won")
+			Mockito.eq("Closed Won"), Mockito.anyBoolean()
 		);
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.times(2)
 		).upsertOrderItems(
 			Mockito.anyList(), Mockito.any(Order.class), Mockito.anyList(),
-			Mockito.anyString()
+			Mockito.anyString(), Mockito.anyBoolean()
 		);
 	}
 
@@ -618,7 +695,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 			_commerceOrderItemService
 		).upsertOrderItems(
 			Mockito.anyList(), Mockito.any(Order.class), Mockito.anyList(),
-			Mockito.anyString()
+			Mockito.anyString(), Mockito.anyBoolean()
 		);
 
 		List<String> warningMessages = new ArrayList<>();
@@ -683,7 +760,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 			_commerceOrderItemService, Mockito.times(2)
 		).upsertOrderItems(
 			Mockito.anyList(), Mockito.any(Order.class), Mockito.anyList(),
-			Mockito.anyString()
+			Mockito.anyString(), Mockito.anyBoolean()
 		);
 	}
 
@@ -711,6 +788,41 @@ public class ProvisioningProjectEntitlementServiceTest {
 			Mockito.any(Account.class), Mockito.anyString(),
 			Mockito.eq(_ENTITLEMENT_ID_2), Mockito.anyString(), Mockito.any(),
 			Mockito.anyList(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testProcessProjectEntitlementsWarnsWhenTheEntitlementContractUpdateFails()
+		throws Exception {
+
+		Mockito.doThrow(
+			new Exception("commerce is down")
+		).when(
+			_contractService
+		).updateEntitlementContracts(
+			Mockito.any(Order.class), Mockito.anyList(), Mockito.anyBoolean()
+		);
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningProjectEntitlementService.processProjectEntitlements(
+			_createAccount(), List.of(), "USD", _createRecordJSONObject(),
+			false, _createSalesforceOpportunity(), null, warningMessages);
+
+		Assertions.assertEquals(
+			List.of(
+				StringBundler.concat(
+					"Unable to update the entitlement contracts of project ",
+					"entitlement ", _ENTITLEMENT_ID_1),
+				StringBundler.concat(
+					"Unable to update the entitlement contracts of project ",
+					"entitlement ", _ENTITLEMENT_ID_2)),
+			warningMessages);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.times(2)
+		).completeOrder(
+			Mockito.anyLong(), Mockito.anyInt()
 		);
 	}
 
@@ -780,6 +892,38 @@ public class ProvisioningProjectEntitlementServiceTest {
 	}
 
 	@Test
+	public void testUpsertProjectEntitlementLineItemKeepsTheContractOfAnUnmatchedItem()
+		throws Exception {
+
+		Order order = new Order();
+
+		order.setCustomFields(
+			Map.of("renewal", false, "salesforceProjectId", _PROJECT_ID_1));
+		order.setExternalReferenceCode(_ENTITLEMENT_ID_1);
+		order.setId(_NEW_ORDER_ID);
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_ENTITLEMENT_ID_1)
+		).thenReturn(
+			order
+		);
+
+		_provisioningProjectEntitlementService.upsertProjectEntitlementLineItem(
+			SalesforceModelTestUtil.createProjectEntitlementLineItemJSONObject(
+				"2027-01-01", _LINE_ITEM_ID_1, _PRODUCT_2_ID_1,
+				_ENTITLEMENT_ID_1, 1, "2026-01-01"));
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).upsertOrderItems(
+			Mockito.anyList(), Mockito.same(order), Mockito.anyList(),
+			Mockito.anyString(), Mockito.eq(false)
+		);
+	}
+
+	@Test
 	public void testUpsertProjectEntitlementLineItemLeavesEntitlementsToTheObjectAction()
 		throws Exception {
 
@@ -811,7 +955,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 			_commerceOrderItemService
 		).upsertOrderItems(
 			Mockito.anyList(), Mockito.any(Order.class), Mockito.anyList(),
-			Mockito.anyString()
+			Mockito.anyString(), Mockito.anyBoolean()
 		);
 	}
 
@@ -858,7 +1002,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 			_commerceOrderItemService
 		).upsertOrderItems(
 			Mockito.same(contracts), Mockito.same(order), Mockito.anyList(),
-			Mockito.anyString()
+			Mockito.anyString(), Mockito.anyBoolean()
 		);
 	}
 
@@ -897,7 +1041,7 @@ public class ProvisioningProjectEntitlementServiceTest {
 			Mockito.argThat(
 				salesforceOpportunityLineItems -> _hasLineItemIds(
 					salesforceOpportunityLineItems, _LINE_ITEM_ID_1)),
-			Mockito.anyString()
+			Mockito.anyString(), Mockito.anyBoolean()
 		);
 
 		Mockito.verify(
@@ -926,6 +1070,43 @@ public class ProvisioningProjectEntitlementServiceTest {
 
 		Assertions.assertThrows(
 			Exception.class,
+			() ->
+				_provisioningProjectEntitlementService.
+					upsertProjectEntitlementLineItem(
+						SalesforceModelTestUtil.
+							createProjectEntitlementLineItemJSONObject(
+								"2027-01-01", _LINE_ITEM_ID_1, _PRODUCT_2_ID_1,
+								_ENTITLEMENT_ID_1, 1, "2026-01-01")));
+	}
+
+	@Test
+	public void testUpsertProjectEntitlementLineItemSkipsAFailingEntitlementContractUpdate()
+		throws Exception {
+
+		Order order = new Order();
+
+		order.setCustomFields(
+			Map.of("renewal", false, "salesforceProjectId", _PROJECT_ID_1));
+		order.setExternalReferenceCode(_ENTITLEMENT_ID_1);
+		order.setId(_NEW_ORDER_ID);
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_ENTITLEMENT_ID_1)
+		).thenReturn(
+			order
+		);
+
+		Mockito.doThrow(
+			new Exception("commerce is down")
+		).when(
+			_contractService
+		).updateEntitlementContracts(
+			Mockito.same(order), Mockito.anyList(), Mockito.anyBoolean()
+		);
+
+		Assertions.assertDoesNotThrow(
 			() ->
 				_provisioningProjectEntitlementService.
 					upsertProjectEntitlementLineItem(
@@ -982,7 +1163,52 @@ public class ProvisioningProjectEntitlementServiceTest {
 			_commerceOrderItemService
 		).upsertOrderItems(
 			Mockito.anyList(), Mockito.same(order), Mockito.anyList(),
-			Mockito.anyString()
+			Mockito.anyString(), Mockito.anyBoolean()
+		);
+	}
+
+	@Test
+	public void testUpsertProjectEntitlementLineItemUpdatesTheEntitlementContractsAfterTheOrderItems()
+		throws Exception {
+
+		Order order = new Order();
+
+		order.setCustomFields(
+			Map.of("renewal", false, "salesforceProjectId", _PROJECT_ID_1));
+		order.setExternalReferenceCode(_ENTITLEMENT_ID_1);
+		order.setId(_NEW_ORDER_ID);
+		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_ENTITLEMENT_ID_1)
+		).thenReturn(
+			order
+		);
+
+		_provisioningProjectEntitlementService.upsertProjectEntitlementLineItem(
+			SalesforceModelTestUtil.createProjectEntitlementLineItemJSONObject(
+				"2027-01-01", _LINE_ITEM_ID_1, _PRODUCT_2_ID_1,
+				_ENTITLEMENT_ID_1, 1, "2026-01-01"));
+
+		InOrder inOrder = Mockito.inOrder(
+			_commerceOrderItemService, _contractService);
+
+		inOrder.verify(
+			_commerceOrderItemService
+		).upsertOrderItems(
+			Mockito.anyList(), Mockito.same(order), Mockito.anyList(),
+			Mockito.anyString(), Mockito.anyBoolean()
+		);
+
+		inOrder.verify(
+			_contractService
+		).updateEntitlementContracts(
+			Mockito.same(order),
+			Mockito.argThat(
+				salesforceOpportunityLineItems -> _hasLineItemIds(
+					salesforceOpportunityLineItems, _LINE_ITEM_ID_1)),
+			Mockito.eq(false)
 		);
 	}
 
