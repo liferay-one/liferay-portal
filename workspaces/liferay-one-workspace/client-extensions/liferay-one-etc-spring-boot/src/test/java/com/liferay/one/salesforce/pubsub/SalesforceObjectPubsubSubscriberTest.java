@@ -411,6 +411,28 @@ public class SalesforceObjectPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveUnlinksContractOnDelete() throws Exception {
+		_receiveMessage(
+			"delete", "Contract",
+			new JSONObject(
+			).put(
+				"Id", "SF-CONTRACT-1"
+			));
+
+		Mockito.verify(
+			_contractService
+		).unlinkContract(
+			"SF-CONTRACT-1"
+		);
+
+		Mockito.verify(
+			_contractService, Mockito.never()
+		).upsertContract(
+			Mockito.anyString(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testReceiveUpsertsAccountWhenSettingAccountCurrencyFails()
 		throws Exception {
 

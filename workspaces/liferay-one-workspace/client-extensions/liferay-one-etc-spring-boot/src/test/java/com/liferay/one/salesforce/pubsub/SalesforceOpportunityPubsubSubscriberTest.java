@@ -309,7 +309,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
+			_contractService.fetchContractByExternalReferenceCode(
 				Mockito.anyString())
 		).thenReturn(
 			new Contract(
@@ -333,7 +333,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
+			_contractService.fetchContractByExternalReferenceCode(
 				Mockito.anyString())
 		).thenReturn(
 			new Contract(
@@ -347,6 +347,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			SalesforceModelTestUtil.createOpportunityJSONObject(
 				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "", "",
 				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+
+		opportunityJSONObject.put("ContractId", _CONTRACT_ID_SF);
 
 		JSONObject lineItemJSONObject =
 			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
@@ -553,7 +555,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
+			_contractService.fetchContractByExternalReferenceCode(
 				Mockito.anyString())
 		).thenReturn(
 			new Contract(
@@ -579,7 +581,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
+			_contractService.fetchContractByExternalReferenceCode(
 				Mockito.anyString())
 		).thenReturn(
 			new Contract(
@@ -595,6 +597,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			SalesforceModelTestUtil.createOpportunityJSONObject(
 				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "", "",
 				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+
+		opportunityJSONObject.put("ContractId", _CONTRACT_ID_SF);
 
 		JSONObject lineItemJSONObject =
 			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
@@ -714,7 +718,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
+			_contractService.fetchContractByExternalReferenceCode(
 				Mockito.anyString())
 		).thenReturn(
 			new Contract(
@@ -730,6 +734,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			SalesforceModelTestUtil.createOpportunityJSONObject(
 				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "", "",
 				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+
+		opportunityJSONObject.put("ContractId", _CONTRACT_ID_SF);
 
 		JSONObject lineItemJSONObject =
 			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
@@ -944,6 +950,49 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_provisioningEmailService, Mockito.never()
 		).sendAssignedWelcomeEmails(
 			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testReceiveKeepsLinksWhenContractIdHasNotSynced()
+		throws Exception {
+
+		_receiveOpportunityMessage(
+			_createContractIdRecordJSONObject("SF-CONTRACT-2"));
+
+		Assertions.assertNull(_captureUpsertOrderContractId());
+
+		Mockito.verify(
+			_contractService, Mockito.never()
+		).syncOpportunityContract(
+			Mockito.any(), Mockito.anyString()
+		);
+	}
+
+	@Test
+	public void testReceiveLinksOpportunityToItsContractId() throws Exception {
+		Contract contract = new Contract(
+			new JSONObject(
+			).put(
+				"id", 888L
+			));
+
+		Mockito.when(
+			_contractService.fetchContractByExternalReferenceCode(
+				"SF-CONTRACT-2")
+		).thenReturn(
+			contract
+		);
+
+		_receiveOpportunityMessage(
+			_createContractIdRecordJSONObject("SF-CONTRACT-2"));
+
+		Assertions.assertEquals(888L, _captureUpsertOrderContractId());
+
+		Mockito.verify(
+			_contractService
+		).syncOpportunityContract(
+			contract, _OPPORTUNITY_ID
 		);
 	}
 
@@ -1935,6 +1984,27 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveUnlinksOpportunityWithoutContractId()
+		throws Exception {
+
+		_receiveOpportunityMessage(_createContractIdRecordJSONObject(""));
+
+		Assertions.assertEquals(0L, _captureUpsertOrderContractId());
+
+		Mockito.verify(
+			_contractService
+		).syncOpportunityContract(
+			null, _OPPORTUNITY_ID
+		);
+
+		Mockito.verify(
+			_contractService, Mockito.never()
+		).fetchContractByExternalReferenceCode(
+			Mockito.anyString()
+		);
+	}
+
+	@Test
 	public void testReceiveUpdatesAIHubOrderMetadataBeforeCompletingOrder()
 		throws Exception {
 
@@ -2220,18 +2290,46 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		);
 
 		Assertions.assertEquals(555L, contractIdArgumentCaptor.getValue());
+	}
+
+	@Test
+	public void testReceiveUsesAmendedContractInsteadOfContractId()
+		throws Exception {
+
+		Mockito.when(
+			_contractService.fetchContractByExternalReferenceCode(
+				"AMENDED-CONTRACT-1")
+		).thenReturn(
+			new Contract(
+				new JSONObject(
+				).put(
+					"id", 555L
+				))
+		);
+
+		JSONObject recordJSONObject = _createContractIdRecordJSONObject("");
+
+		JSONObject opportunityJSONObject = recordJSONObject.getJSONObject(
+			"opportunity");
+
+		opportunityJSONObject.put(
+			"SBQQ__AmendedContract__c", "AMENDED-CONTRACT-1");
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		Assertions.assertEquals(555L, _captureUpsertOrderContractId());
 
 		Mockito.verify(
 			_contractService, Mockito.never()
-		).fetchLatestContractByOpportunityId(
-			Mockito.anyString()
+		).syncOpportunityContract(
+			Mockito.any(), Mockito.anyString()
 		);
 	}
 
 	@Test
 	public void testReceiveUsesContractIdFromFoundContract() throws Exception {
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
+			_contractService.fetchContractByExternalReferenceCode(
 				Mockito.anyString())
 		).thenReturn(
 			new Contract(
@@ -2606,7 +2704,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		Mockito.when(
-			_contractService.fetchLatestContractByOpportunityId(
+			_contractService.fetchContractByExternalReferenceCode(
 				Mockito.anyString())
 		).thenReturn(
 			new Contract(
@@ -2622,6 +2720,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			SalesforceModelTestUtil.createOpportunityJSONObject(
 				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "", "",
 				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+
+		opportunityJSONObject.put("ContractId", _CONTRACT_ID_SF);
 
 		JSONObject lineItemJSONObject =
 			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
@@ -2793,6 +2893,20 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 				warningMessagesArgumentCaptor.getValue()));
 	}
 
+	private Long _captureUpsertOrderContractId() throws Exception {
+		ArgumentCaptor<Long> contractIdArgumentCaptor = ArgumentCaptor.forClass(
+			Long.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).upsertOrder(
+			Mockito.any(), contractIdArgumentCaptor.capture(), Mockito.any(),
+			Mockito.any(), Mockito.anyList(), Mockito.any()
+		);
+
+		return contractIdArgumentCaptor.getValue();
+	}
+
 	private boolean _containsSubstring(
 		String substring, List<String> warningMessages) {
 
@@ -2832,6 +2946,17 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			));
 	}
 
+	private JSONObject _createContractIdRecordJSONObject(String contractId) {
+		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
+
+		JSONObject opportunityJSONObject = recordJSONObject.getJSONObject(
+			"opportunity");
+
+		opportunityJSONObject.put("ContractId", contractId);
+
+		return recordJSONObject;
+	}
+
 	private JSONObject _createNewBusinessRecordJSONObject() {
 		return _createNewBusinessRecordJSONObject(_OPPORTUNITY_ID);
 	}
@@ -2852,6 +2977,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			SalesforceModelTestUtil.createOpportunityJSONObject(
 				_ACCOUNT_ID_SF, "", false, opportunityId, "", productFamily,
 				projectId, "", stageName, type);
+
+		opportunityJSONObject.put("ContractId", _CONTRACT_ID_SF);
 
 		JSONObject lineItemJSONObject =
 			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
@@ -2930,6 +3057,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	private static final long _ACCOUNT_ID = 1000L;
 
 	private static final String _ACCOUNT_ID_SF = "SF-ACCOUNT-1";
+
+	private static final String _CONTRACT_ID_SF = "SF-CONTRACT-1";
 
 	private static final long _EXISTING_ORDER_ITEM_ID = 555L;
 

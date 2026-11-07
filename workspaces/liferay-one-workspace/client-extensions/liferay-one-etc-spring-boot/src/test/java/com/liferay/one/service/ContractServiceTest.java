@@ -274,6 +274,188 @@ public class ContractServiceTest {
 	}
 
 	@Test
+	public void testSyncOpportunityContractRelinksEntitlementsToTheContract()
+		throws Exception {
+
+		_whenFetchOrder(_createOrder(Map.of("contractId", "5"), 11L));
+
+		Mockito.when(
+			_entitlementService.getEntitlements(
+				"r_commerceOrderItemToEntitlement_commerceOrderItemId eq '11'")
+		).thenReturn(
+			List.of(
+				_createEntitlement(1, 0, "PRJ-1"),
+				_createEntitlement(2, 5, "PRJ-1"),
+				_createEntitlement(3, 77, "PRJ-1"))
+		);
+
+		_testContractService.syncOpportunityContract(
+			new Contract(
+				new JSONObject(
+				).put(
+					"id", 77
+				)),
+			"OPP-1");
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			_ORDER_ID, Map.of("contractId", 77L)
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 77
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			2, 77
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).updateEntitlementContract(
+			ArgumentMatchers.eq(3L), ArgumentMatchers.anyLong()
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).updateEntitlementProject(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyString()
+		);
+	}
+
+	@Test
+	public void testSyncOpportunityContractSkipsUnprovisionedOpportunity()
+		throws Exception {
+
+		_whenFetchOrder(null);
+
+		_testContractService.syncOpportunityContract(null, "OPP-1");
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
+
+		Mockito.verifyNoInteractions(_entitlementService);
+	}
+
+	@Test
+	public void testSyncOpportunityContractUnlinksWithoutAContract()
+		throws Exception {
+
+		_whenFetchOrder(
+			_createOrder(
+				Map.of("contractId", "5", "salesforceProjectId", "PRJ-1"),
+				11L));
+
+		Mockito.when(
+			_entitlementService.getEntitlements(
+				"r_commerceOrderItemToEntitlement_commerceOrderItemId eq '11'")
+		).thenReturn(
+			List.of(_createEntitlement(1, 5, "PRJ-1"))
+		);
+
+		_testContractService.syncOpportunityContract(null, "OPP-1");
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			_ORDER_ID, Map.of("contractId", 0L)
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 0
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).updateEntitlementProject(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyString()
+		);
+	}
+
+	@Test
+	public void testUnlinkContractIgnoresUnknownContract() throws Exception {
+		_testContractService.unlinkContract("C1");
+
+		Assertions.assertTrue(_testContractService.requests.isEmpty());
+
+		Mockito.verifyNoInteractions(_commerceOrderService);
+		Mockito.verifyNoInteractions(_entitlementService);
+	}
+
+	@Test
+	public void testUnlinkContractUnlinksOrdersAndEntitlements()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			if (_isExistingContractQuery(uri)) {
+				return new JSONObject(
+				).put(
+					"id", 77
+				).put(
+					"opportunityId", "OPP-1"
+				).put(
+					"r_accountEntryToContract_accountEntryId", _ACCOUNT_ID
+				).toString();
+			}
+
+			return null;
+		};
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(
+				_createOrder(_ORDER_ID, Map.of("contractId", "77")),
+				_createOrder(_UNRELATED_ORDER_ID, Map.of("contractId", "5")))
+		);
+
+		Mockito.when(
+			_entitlementService.getEntitlements(
+				"r_contractToEntitlement_c_contractId eq '77'")
+		).thenReturn(
+			List.of(_createEntitlement(1, 77, "PRJ-1"))
+		);
+
+		_testContractService.unlinkContract("C1");
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			_ORDER_ID, Map.of("contractId", 0L)
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			ArgumentMatchers.eq(_UNRELATED_ORDER_ID), ArgumentMatchers.any()
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 0
+		);
+
+		Assertions.assertEquals(
+			List.of("PATCH /o/c/contracts/77"), _testContractService.requests);
+
+		JSONObject jsonObject = new JSONObject(
+			_testContractService.bodies.get(0));
+
+		Assertions.assertEquals("", jsonObject.getString("opportunityId"));
+	}
+
+	@Test
 	public void testUpsertContractAttachesSuccessorContract() throws Exception {
 		_testContractService.getFunction = uri -> {
 			if (_isChainQuery(uri, "opportunityId eq 'OPP-2'")) {
