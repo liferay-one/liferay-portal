@@ -43,9 +43,7 @@ export function useObjectItems<Item>(
 		}
 	);
 
-	const revalidate = useCallback(() => {
-		mutate();
-	}, [mutate]);
+	const revalidate = useCallback(() => mutate(), [mutate]);
 
 	return {
 		error,

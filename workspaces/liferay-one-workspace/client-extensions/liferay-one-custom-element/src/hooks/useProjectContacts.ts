@@ -5,6 +5,7 @@
 
 import {useMemo} from 'react';
 import {useFetch} from '~/hooks/useFetch';
+import useObjectItems from '~/hooks/useObjectItems';
 import {PROJECT_ROLE_ERCS} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
@@ -83,27 +84,20 @@ export function useProjectContacts(
 		);
 	}, [membershipData, roleExternalReferenceCode]);
 
-	const {data: userAccountData, isLoading: userAccountsLoading} = useFetch<
-		APIResponse<UserAccount>
-	>(
-		enabled && contactUserIds.size
-			? `/o/headless-admin-user/v1.0/accounts/${accountId}/user-accounts`
-			: null,
-		{
-			params: {
-				fields: 'emailAddress,id,name',
-				pageSize: -1,
-				sort: 'givenName:asc',
-			},
-		}
-	);
+	const {items: userAccounts, loading: userAccountsLoading} =
+		useObjectItems<UserAccount>(
+			enabled && contactUserIds.size
+				? `/o/headless-admin-user/v1.0/accounts/${accountId}/user-accounts`
+				: null,
+			{fields: 'emailAddress,id,name', sort: 'givenName:asc'}
+		);
 
 	const contacts = useMemo<ProjectContact[]>(
 		() =>
-			(userAccountData?.items ?? [])
+			(userAccounts ?? [])
 				.filter((userAccount) => contactUserIds.has(userAccount.id))
 				.map(({emailAddress, name}) => ({emailAddress, name})),
-		[contactUserIds, userAccountData]
+		[contactUserIds, userAccounts]
 	);
 
 	return {contacts, loading: membershipsLoading || userAccountsLoading};
