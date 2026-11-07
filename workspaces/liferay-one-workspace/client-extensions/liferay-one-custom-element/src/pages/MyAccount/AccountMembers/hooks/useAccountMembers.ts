@@ -6,6 +6,7 @@
 import {useMemo} from 'react';
 import useSWR from 'swr';
 import {useFetch} from '~/hooks/useFetch';
+import useObjectItems from '~/hooks/useObjectItems';
 import {
 	getMembershipRoleNames,
 	hasAdministratorRole,
@@ -58,15 +59,15 @@ export function useAccountMembers() {
 	const accountExternalReferenceCode = account?.externalReferenceCode;
 
 	const {
-		data: userAccountData,
 		error: userAccountsError,
-		isLoading: userAccountsLoading,
-		mutate: mutateUserAccounts,
-	} = useFetch<APIResponse<UserAccount>>(
+		items: userAccounts,
+		loading: userAccountsLoading,
+		revalidate: revalidateUserAccounts,
+	} = useObjectItems<UserAccount>(
 		accountId
 			? `/o/headless-admin-user/v1.0/accounts/${accountId}/user-accounts`
 			: null,
-		{params: {pageSize: -1, sort: 'givenName:asc'}}
+		{sort: 'givenName:asc'}
 	);
 
 	const {
@@ -104,7 +105,7 @@ export function useAccountMembers() {
 	}, [projectData]);
 
 	const rows = useMemo<AccountMemberRow[]>(() => {
-		const memberRows = (userAccountData?.items ?? []).map<AccountMemberRow>(
+		const memberRows = (userAccounts ?? []).map<AccountMemberRow>(
 			(userAccount) => {
 				const accountRoleBriefs =
 					userAccount.accountBriefs?.find(
@@ -179,11 +180,11 @@ export function useAccountMembers() {
 		currentUserId,
 		invitations,
 		projectNamesByExternalReferenceCode,
-		userAccountData,
+		userAccounts,
 	]);
 
 	const mutate = async () => {
-		await Promise.all([mutateInvitations(), mutateUserAccounts()]);
+		await Promise.all([mutateInvitations(), revalidateUserAccounts()]);
 	};
 
 	return {
