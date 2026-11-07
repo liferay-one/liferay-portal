@@ -9,6 +9,7 @@ import {
 	getContractProductOrders,
 	getOrderStatusLabel,
 	getOrderStatusToken,
+	getPlacedOrderItemContractId,
 	getPlacedOrderItemDate,
 	getProductStatusToken,
 	getProjectItemStatusToken,
@@ -511,21 +512,77 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 		});
 	});
 
-	describe('getContractProductOrders', () => {
-		const toContractOrder = (id: number, contractId: number) =>
-			toContractPlacedOrder({
+	describe('getPlacedOrderItemContractId', () => {
+		const toMetadata = (contractEntityId: number) => ({
+			customFields: {
+				'order-metadata': JSON.stringify({contractEntityId}),
+			},
+		});
+
+		const toItem = (contractId?: number | string) =>
+			({
 				customFields: {contractId},
+			}) as unknown as PlacedOrderItems;
+
+		it('reads the contract of the order item', () => {
+			expect(
+				getPlacedOrderItemContractId(
+					toContractPlacedOrder({customFields: {contractId: 5}}),
+					toItem('38227564')
+				)
+			).toBe(38227564);
+		});
+
+		it('falls back to the contract in the order metadata of an AI Hub order', () => {
+			const order = toContractPlacedOrder(toMetadata(77));
+
+			expect(getPlacedOrderItemContractId(order, toItem(0))).toBe(77);
+			expect(getPlacedOrderItemContractId(order, toItem('0'))).toBe(77);
+			expect(getPlacedOrderItemContractId(order, toItem())).toBe(77);
+		});
+
+		it('prefers the contract of the order item over the order metadata', () => {
+			expect(
+				getPlacedOrderItemContractId(
+					toContractPlacedOrder(toMetadata(77)),
+					toItem(12)
+				)
+			).toBe(12);
+		});
+
+		it('ignores the order level contract field', () => {
+			expect(
+				getPlacedOrderItemContractId(
+					toContractPlacedOrder({customFields: {contractId: 5}}),
+					toItem(0)
+				)
+			).toBe(0);
+		});
+
+		it('returns 0 without an item contract and without metadata', () => {
+			expect(
+				getPlacedOrderItemContractId(
+					toContractPlacedOrder({}),
+					{} as PlacedOrderItems
+				)
+			).toBe(0);
+		});
+	});
+
+	describe('getContractProductOrders', () => {
+		const toContractOrder = (
+			id: number,
+			contractId: number,
+			productId = 7
+		) =>
+			toContractPlacedOrder({
 				id,
-				placedOrderItems: [{productId: 7}],
+				placedOrderItems: [{customFields: {contractId}, productId}],
 			});
 
 		const currentOrder = toContractOrder(1, 38227564);
 		const legacyOrder = toContractOrder(2, 0);
-		const otherProductOrder = toContractPlacedOrder({
-			customFields: {contractId: 38227564},
-			id: 3,
-			placedOrderItems: [{productId: 8}],
-		});
+		const otherProductOrder = toContractOrder(3, 38227564, 8);
 
 		const placedOrders = [legacyOrder, currentOrder, otherProductOrder];
 
@@ -535,7 +592,7 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			);
 		});
 
-		it('keeps every product order when no order names the contract', () => {
+		it('keeps every product order when no item names the contract', () => {
 			expect(getContractProductOrders(placedOrders, 7, 34353392)).toEqual(
 				[legacyOrder, currentOrder]
 			);
@@ -546,6 +603,47 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 				legacyOrder,
 				currentOrder,
 			]);
+		});
+
+		it('keeps only the items of the selected contract in a multi year order', () => {
+			const yearOne = {
+				customFields: {contractId: 1},
+				id: 11,
+				productId: 7,
+			};
+			const yearTwo = {
+				customFields: {contractId: 2},
+				id: 12,
+				productId: 7,
+			};
+			const yearThree = {
+				customFields: {contractId: 3},
+				id: 13,
+				productId: 7,
+			};
+
+			const order = toContractPlacedOrder({
+				id: 9,
+				placedOrderItems: [yearOne, yearTwo, yearThree],
+			});
+
+			expect(getContractProductOrders([order], 7, 2)).toEqual([
+				{id: 9, placedOrderItems: [yearTwo]},
+			]);
+		});
+
+		it('matches an AI Hub item through the contract in the order metadata', () => {
+			const aiHubOrder = toContractPlacedOrder({
+				customFields: {
+					'order-metadata': JSON.stringify({contractEntityId: 88}),
+				},
+				id: 4,
+				placedOrderItems: [{customFields: {}, productId: 7}],
+			});
+
+			expect(
+				getContractProductOrders([legacyOrder, aiHubOrder], 7, 88)
+			).toEqual([aiHubOrder]);
 		});
 	});
 });

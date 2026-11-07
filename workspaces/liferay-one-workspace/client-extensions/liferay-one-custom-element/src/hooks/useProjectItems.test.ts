@@ -318,6 +318,68 @@ describe('[HOOK-USEPROJECTITEMS] useProjectContractItems', () => {
 		expect(result.current.products).toEqual([]);
 	});
 
+	it('keeps only the pending items whose own contract is the resolved contract', () => {
+		mockOrders([
+			{
+				customFields: {projectName: 'Project A'},
+				id: 1,
+				orderStatusInfo: {code: 1},
+				placedOrderItems: [
+					{customFields: {contractId: 10}, productId: 2},
+					{customFields: {contractId: 20}, productId: 3},
+				],
+			},
+		]);
+		mockProject({
+			project: {name: 'Project A'},
+			projectId: 'PRJCT-A',
+			selectedContractERC: 'CONTRACT-10',
+		});
+		mockProjectCommerce({
+			projectContractIds: new Set([10, 20]),
+			resolvedContractERC: 'CONTRACT-10',
+			resolvedContractId: 10,
+		});
+		mockEntitlements([]);
+
+		const {result} = renderHook(() => useProjectContractItems());
+
+		expect(getExternalReferenceCodes(result.current.products)).toEqual([
+			'PRDCT-A',
+		]);
+	});
+
+	it('keeps a pending item under the contract of its order metadata when the item has no contract', () => {
+		mockOrders([
+			{
+				customFields: {
+					'order-metadata': JSON.stringify({contractEntityId: 10}),
+					'projectName': 'Project A',
+				},
+				id: 1,
+				orderStatusInfo: {code: 1},
+				placedOrderItems: [{customFields: {}, productId: 2}],
+			},
+		]);
+		mockProject({
+			project: {name: 'Project A'},
+			projectId: 'PRJCT-A',
+			selectedContractERC: 'CONTRACT-10',
+		});
+		mockProjectCommerce({
+			projectContractIds: new Set([10, 20]),
+			resolvedContractERC: 'CONTRACT-10',
+			resolvedContractId: 10,
+		});
+		mockEntitlements([]);
+
+		const {result} = renderHook(() => useProjectContractItems());
+
+		expect(getExternalReferenceCodes(result.current.products)).toEqual([
+			'PRDCT-A',
+		]);
+	});
+
 	it('excludes a completed order with no entitlement under the resolved contract', () => {
 		mockOrders([
 			{
