@@ -38,7 +38,7 @@ const ACTIVATION_PROFILES: ActivationProfile[] = [
 ];
 
 const ACTIVATION_PROFILE_BY_APP_TYPE: Record<AppType, ActivationProfile> = {
-	'client-extension': 'app-licenses',
+	'client-extension': 'app-provisioning',
 	'cloud': 'app-provisioning',
 	'composite-app': 'app-licenses',
 	'dxp': 'app-licenses',
