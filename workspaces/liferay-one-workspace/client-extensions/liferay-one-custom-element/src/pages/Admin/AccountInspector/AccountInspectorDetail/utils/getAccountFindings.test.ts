@@ -213,21 +213,24 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-GETACCOUNTFINDINGS]
 			{
 				orders: toCollection([
 					{
-						customFields: {contractId: 30, projectName: 'Main'},
+						customFields: {projectName: 'Main'},
 						id: 50,
-						orderItems: [{id: 501}],
+						orderItems: [{customFields: {contractId: 30}, id: 501}],
 						orderStatus: 0,
 					},
 					{
-						customFields: {contractId: 31, projectName: 'Mian'},
+						customFields: {projectName: 'Mian'},
 						id: 51,
-						orderItems: [{id: 511}],
+						orderItems: [
+							{customFields: {contractId: 30}, id: 511},
+							{customFields: {contractId: 31}, id: 512},
+						],
 						orderStatus: 0,
 					},
 					{
-						customFields: {contractId: 0, projectName: ''},
+						customFields: {projectName: ''},
 						id: 52,
-						orderItems: [{id: 521}],
+						orderItems: [{customFields: {contractId: 0}, id: 521}],
 						orderStatus: 1,
 					},
 				]),

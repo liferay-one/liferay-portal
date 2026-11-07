@@ -95,6 +95,46 @@ describe('[MOD-ADMIN-PUBSUB-GETPUBSUBSAMPLES] getPubSubSamples', () => {
 		);
 	});
 
+	it('sends the contract that matches the end date of the line item in an opportunity sample', () => {
+		const message = generate(
+			'SalesforceOpportunityPubsubSubscriber',
+			'New Business, Closed Won',
+			'Opportunity'
+		);
+
+		const [record] = message.payload.records;
+
+		expect(record.contracts).toHaveLength(1);
+
+		const [contract] = record.contracts;
+
+		expect(contract.EndDate).toBe(
+			record.opportunityLineItems[0].End_Date__c
+		);
+		expect(contract.Id).toMatch(/^800/);
+		expect(contract.Name).toMatch(/^Sample Contract /);
+		expect(contract.Project__c).toBe(record.project.Id);
+		expect(contract.SBQQ__Opportunity__c).toBe(record.opportunity.Id);
+		expect(contract.SBQQ__OpportunityPricebookId__c).toBe(
+			record.opportunity.Pricebook2Id
+		);
+		expect(contract.SBQQ__RenewalOpportunity__c).toBe('');
+	});
+
+	it('generates a Contract object record with the same fields', () => {
+		const {payload} = generate(
+			'SalesforceObjectPubsubSubscriber',
+			'insert',
+			'Contract'
+		);
+
+		expect(payload.records[0]).toMatchObject({
+			Name: expect.stringMatching(/^Sample Contract /),
+			Project__c: expect.stringMatching(/^a0X/),
+			SBQQ__OpportunityPricebookId__c: expect.stringMatching(/^01s/),
+		});
+	});
+
 	it('generates new IDs on every call', () => {
 		const first = generate(
 			'OktaAppCreatedPubsubSubscriber',

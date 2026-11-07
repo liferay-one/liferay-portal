@@ -72,7 +72,9 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 		expect(orders?.searchParams.get('filter')).toBe(
 			'(accountId/any(x:(x eq 100)))'
 		);
-		expect(orders?.searchParams.get('nestedFields')).toBe('orderItems');
+		expect(orders?.searchParams.get('nestedFields')).toBe(
+			'orderItems,orderItems.customFields'
+		);
 
 		expect(findRequest('/o/c/projects')?.searchParams.get('filter')).toBe(
 			"r_accountEntryToProject_accountEntryId eq '100'"
@@ -119,6 +121,11 @@ describe('[CLIENT-QUERIES-ACCOUNTINSPECTIONQUERY] accountInspectionQuery', () =>
 
 		expect(orders.items[0].orderItems).toHaveLength(25);
 		expect(orders.items[0].incompleteOrderItems).toBe(false);
+		expect(
+			findRequest(
+				'/o/headless-commerce-admin-order/v1.0/orders/50/orderItems'
+			)?.searchParams.get('nestedFields')
+		).toBe('customFields');
 		expect(orders.items[1].orderItems).toEqual([{id: 100}]);
 		expect(
 			findRequest(

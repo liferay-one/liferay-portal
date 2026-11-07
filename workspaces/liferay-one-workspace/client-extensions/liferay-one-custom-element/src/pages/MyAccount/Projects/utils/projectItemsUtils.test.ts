@@ -303,11 +303,13 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 			startDate: string
 		) =>
 			({
-				customFields: {contractId},
 				orderStatusInfo: {code: 0, label: 'Completed', label_i18n: ''},
 				orderTypeExternalReferenceCode: 'SALESFORCE',
 				placedOrderItems: [
-					{customFields: {endDate, startDate}, productId: 2},
+					{
+						customFields: {contractId, endDate, startDate},
+						productId: 2,
+					},
 				],
 			}) as unknown as PlacedOrder;
 

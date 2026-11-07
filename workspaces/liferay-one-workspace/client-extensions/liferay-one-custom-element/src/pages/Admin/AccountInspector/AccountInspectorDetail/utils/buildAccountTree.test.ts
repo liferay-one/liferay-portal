@@ -117,11 +117,16 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 			{
 				orders: toCollection([
 					{
-						customFields: {contractId: 30, projectName: 'Main'},
+						customFields: {projectName: 'Main'},
 						externalReferenceCode: 'ORDER-1',
 						id: 50,
 						orderItems: [
-							{id: 501, name: {en_US: 'DXP'}, sku: 'DXP-1'},
+							{
+								customFields: {contractId: 30},
+								id: 501,
+								name: {en_US: 'DXP'},
+								sku: 'DXP-1',
+							},
 						],
 					},
 				]),
@@ -183,6 +188,75 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 				label: 'Environments',
 			},
 			{children: [{label: 'a@b.com'}], count: 1, label: 'Users'},
+		]);
+	});
+
+	it('places an order under each contract of its items with only the items of that contract', () => {
+		const inspection = buildInspection(
+			{
+				contracts: [
+					{externalReferenceCode: 'C-1', id: 30},
+					{externalReferenceCode: 'C-2', id: 31},
+				],
+				projects: [PROJECT],
+			},
+			{
+				orders: toCollection([
+					{
+						customFields: {projectName: 'Main'},
+						externalReferenceCode: 'ORDER-1',
+						id: 50,
+						orderItems: [
+							{
+								customFields: {contractId: 30},
+								id: 501,
+								name: {en_US: 'Year 1'},
+							},
+							{
+								customFields: {contractId: 31},
+								id: 502,
+								name: {en_US: 'Year 2'},
+							},
+							{
+								customFields: {contractId: 0},
+								id: 503,
+								name: {en_US: 'One time'},
+							},
+						],
+					},
+				]),
+			}
+		);
+
+		const toOrders = (itemLabel: string) => ({
+			children: [
+				{
+					children: [
+						{
+							children: [{label: itemLabel}],
+							count: 1,
+							label: 'Order Items',
+						},
+					],
+					label: 'ORDER-1',
+				},
+			],
+			count: 1,
+			label: 'Orders',
+		});
+
+		const [projectsNode] = buildAccountTree(inspection, []);
+
+		expect(summarize(projectsNode.children[0].children)).toEqual([
+			{
+				children: [
+					{children: [toOrders('Year 1')], label: 'C-1'},
+					{children: [toOrders('Year 2')], label: 'C-2'},
+				],
+				count: 2,
+				label: 'Contracts',
+			},
+			toOrders('One time'),
 		]);
 	});
 

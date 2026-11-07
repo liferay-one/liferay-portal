@@ -74,9 +74,13 @@ function mockQueries({
 		placedOrders:
 			placedOrders ??
 			[...accountContracts, ...projectContracts].map((contract) => ({
-				customFields: {
-					contractId: String((contract as {id: number}).id),
-				},
+				placedOrderItems: [
+					{
+						customFields: {
+							contractId: String((contract as {id: number}).id),
+						},
+					},
+				],
 			})),
 	} as unknown as ReturnType<typeof useProjectOrders>);
 
@@ -374,12 +378,10 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 			],
 			placedOrders: [
 				{
-					customFields: {contractId: '20'},
-					placedOrderItems: [{productId: 1}],
-				},
-				{
-					customFields: {contractId: '0'},
-					placedOrderItems: [{productId: 2}],
+					placedOrderItems: [
+						{customFields: {contractId: '20'}, productId: 1},
+						{customFields: {contractId: '0'}, productId: 2},
+					],
 				},
 			],
 			products: [
@@ -428,12 +430,14 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 			],
 			placedOrders: [
 				{
-					customFields: {contractId: '20'},
-					placedOrderItems: [{productId: 1}],
+					placedOrderItems: [
+						{customFields: {contractId: '20'}, productId: 1},
+					],
 				},
 				{
-					customFields: {contractId: '0'},
-					placedOrderItems: [{productId: 1}],
+					placedOrderItems: [
+						{customFields: {contractId: '0'}, productId: 1},
+					],
 				},
 			],
 			products: [
@@ -457,6 +461,93 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 				(contract) => contract.externalReferenceCode
 			)
 		).toEqual(['C_PROJECT']);
+	});
+
+	it('lists every contract named by the items of one order', () => {
+		mockQueries({
+			placedOrders: [
+				{
+					placedOrderItems: [
+						{customFields: {contractId: '20'}, productId: 1},
+						{customFields: {contractId: '30'}, productId: 1},
+					],
+				},
+			],
+			projectContracts: [
+				{externalReferenceCode: 'C_YEAR_1', id: 20},
+				{externalReferenceCode: 'C_YEAR_2', id: 30},
+				{externalReferenceCode: 'C_OTHER', id: 40},
+			],
+		});
+
+		expect(
+			renderProjectCommerce().contracts.map(
+				(contract) => contract.externalReferenceCode
+			)
+		).toEqual(['C_YEAR_1', 'C_YEAR_2']);
+	});
+
+	it('lists the contract of an AI Hub item through the order metadata and adds no one time purchases contract', () => {
+		mockQueries({
+			placedOrders: [
+				{
+					customFields: {
+						'order-metadata': JSON.stringify({
+							contractEntityId: 20,
+						}),
+					},
+					placedOrderItems: [{customFields: {}, productId: 1}],
+				},
+			],
+			products: [
+				{
+					externalReferenceCode: 'PRDCT-AI-HUB',
+					productId: 1,
+					productSpecifications: [
+						{
+							specificationKey: 'project-item-type',
+							value: 'product',
+						},
+					],
+					skus: [{externalReferenceCode: 'SKU-AI-HUB'}],
+				},
+			],
+			projectContracts: [{externalReferenceCode: 'C_PROJECT', id: 20}],
+		});
+
+		expect(
+			renderProjectCommerce().contracts.map(
+				(contract) => contract.externalReferenceCode
+			)
+		).toEqual(['C_PROJECT']);
+	});
+
+	it('adds a one time purchases contract when one item of an order has no contract', () => {
+		mockQueries({
+			placedOrders: [
+				{
+					placedOrderItems: [
+						{customFields: {contractId: '20'}, productId: 1},
+						{customFields: {contractId: '0'}, productId: 2},
+					],
+				},
+			],
+			products: [1, 2].map((productId) => ({
+				externalReferenceCode: `PRDCT-${productId}`,
+				productId,
+				productSpecifications: [
+					{specificationKey: 'project-item-type', value: 'product'},
+				],
+				skus: [{externalReferenceCode: `SKU-${productId}`}],
+			})),
+			projectContracts: [{externalReferenceCode: 'C_PROJECT', id: 20}],
+		});
+
+		expect(
+			renderProjectCommerce().contracts.map(
+				(contract) => contract.externalReferenceCode
+			)
+		).toEqual(['C_PROJECT', ONE_TIME_PURCHASES]);
 	});
 
 	it('offers only the one time purchases contract when no contracts exist but entitlements do', () => {
@@ -579,9 +670,8 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce contract list', () => {
 
 	function contractOrder(contractId: number, customStatuses: string[]) {
 		return {
-			customFields: {contractId: String(contractId)},
 			placedOrderItems: customStatuses.map((customStatus) => ({
-				customFields: {customStatus},
+				customFields: {contractId: String(contractId), customStatus},
 			})),
 		};
 	}
@@ -594,7 +684,9 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce contract list', () => {
 
 	it('hides a contract that has no orders', () => {
 		mockQueries({
-			placedOrders: [{customFields: {contractId: '2'}}],
+			placedOrders: [
+				{placedOrderItems: [{customFields: {contractId: '2'}}]},
+			],
 			projectContracts: [contractA, contractB, contractC],
 		});
 
@@ -652,8 +744,7 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce contract list', () => {
 		mockQueries({
 			placedOrders: [
 				{
-					customFields: {contractId: '1'},
-					placedOrderItems: [{customFields: {}}],
+					placedOrderItems: [{customFields: {contractId: '1'}}],
 				},
 			],
 			projectContracts: [contractA, contractB],
