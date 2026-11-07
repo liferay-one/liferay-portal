@@ -215,7 +215,7 @@ public class ContractService extends OneBaseService {
 		}
 
 		for (Order order : _getOpportunityOrders(opportunityOrder)) {
-			_syncOrderContract(contract, order);
+			_syncOrderContract(contract, order, false);
 		}
 	}
 
@@ -264,6 +264,71 @@ public class ContractService extends OneBaseService {
 		}
 		finally {
 			_reconciling.set(false);
+		}
+	}
+
+	public void syncOpportunityContract(Contract contract, String opportunityId)
+		throws Exception {
+
+		Order opportunityOrder =
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				opportunityId);
+
+		if (opportunityOrder == null) {
+			return;
+		}
+
+		for (Order order : _getOpportunityOrders(opportunityOrder)) {
+			_syncOrderContract(contract, order, true);
+		}
+	}
+
+	public void unlinkContract(String externalReferenceCode) throws Exception {
+		Contract contract = fetchContractByExternalReferenceCode(
+			externalReferenceCode);
+
+		if (contract == null) {
+			return;
+		}
+
+		if (contract.getAccountEntryId() > 0) {
+			for (Order order :
+					_commerceOrderService.getAccountOrders(
+						contract.getAccountEntryId())) {
+
+				if (_getContractId(order) != contract.getId()) {
+					continue;
+				}
+
+				_commerceOrderService.patchOrderCustomFields(
+					order.getId(), Map.of("contractId", 0L));
+			}
+		}
+
+		for (Entitlement entitlement :
+				_entitlementService.getEntitlements(
+					StringBundler.concat(
+						"r_contractToEntitlement_c_contractId eq '",
+						contract.getId(), "'"))) {
+
+			_entitlementService.updateEntitlementContract(
+				entitlement.getEntitlementId(), 0);
+		}
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"opportunityId", ""
+		);
+
+		patch(
+			getAuthorization(), jsonObject.toString(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/contracts/" + contract.getId()
+			).build(
+			).toUri());
+
+		if (_log.isInfoEnabled()) {
+			_log.info("Unlinked deleted contract " + externalReferenceCode);
 		}
 	}
 
@@ -570,6 +635,16 @@ public class ContractService extends OneBaseService {
 			salesforceContract.getId());
 	}
 
+	private long _getContractId(Order order) {
+		Map<String, ?> customFields = order.getCustomFields();
+
+		if (customFields == null) {
+			return 0;
+		}
+
+		return GetterUtil.getLong(customFields.get("contractId"));
+	}
+
 	private List<Order> _getOpportunityOrders(Order opportunityOrder)
 		throws Exception {
 
@@ -614,21 +689,22 @@ public class ContractService extends OneBaseService {
 		return GetterUtil.getString(customFields.get("salesforceProjectId"));
 	}
 
-	private void _syncOrderContract(Contract contract, Order order)
+	private void _syncOrderContract(
+			Contract contract, Order order, boolean relink)
 		throws Exception {
 
-		Map<String, ?> customFields = order.getCustomFields();
+		long contractId = 0;
+		String contractProjectExternalReferenceCode = null;
 
-		long orderContractId = 0;
-
-		if (customFields != null) {
-			orderContractId = GetterUtil.getLong(
-				customFields.get("contractId"));
+		if (contract != null) {
+			contractId = contract.getId();
+			contractProjectExternalReferenceCode =
+				contract.getProjectExternalReferenceCode();
 		}
 
-		if (orderContractId != contract.getId()) {
+		if (_getContractId(order) != contractId) {
 			_commerceOrderService.patchOrderCustomFields(
-				order.getId(), Map.of("contractId", contract.getId()));
+				order.getId(), Map.of("contractId", contractId));
 		}
 
 		OrderItem[] orderItems = order.getOrderItems();
@@ -640,8 +716,7 @@ public class ContractService extends OneBaseService {
 		String projectExternalReferenceCode = _getSalesforceProjectId(order);
 
 		if (Validator.isNull(projectExternalReferenceCode)) {
-			projectExternalReferenceCode =
-				contract.getProjectExternalReferenceCode();
+			projectExternalReferenceCode = contractProjectExternalReferenceCode;
 		}
 
 		for (OrderItem orderItem : orderItems) {
@@ -652,9 +727,11 @@ public class ContractService extends OneBaseService {
 						"eq '", orderItem.getId(), "'"));
 
 			for (Entitlement entitlement : entitlements) {
-				if (entitlement.getContractId() <= 0) {
+				if ((entitlement.getContractId() != contractId) &&
+					(relink || (entitlement.getContractId() <= 0))) {
+
 					_entitlementService.updateEntitlementContract(
-						entitlement.getEntitlementId(), contract.getId());
+						entitlement.getEntitlementId(), contractId);
 				}
 
 				if (Validator.isNull(projectExternalReferenceCode) ||

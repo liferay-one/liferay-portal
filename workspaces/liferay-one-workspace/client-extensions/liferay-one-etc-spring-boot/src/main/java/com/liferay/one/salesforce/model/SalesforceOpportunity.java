@@ -17,6 +17,7 @@ public class SalesforceOpportunity {
 		_amendedContractId = jsonObject.optString("SBQQ__AmendedContract__c");
 		_amendedContractOpportunityId = jsonObject.optString(
 			"SBQQ__AmendedContract__r.SBQQ__Opportunity__c");
+		_contractId = jsonObject.optString("ContractId");
 		_firstLineSupport = jsonObject.optBoolean("First_Line_Support__c");
 		_id = jsonObject.optString("Id");
 		_name = jsonObject.optString("Name");
@@ -43,6 +44,10 @@ public class SalesforceOpportunity {
 
 	public String getAmendedContractOpportunityId() {
 		return _amendedContractOpportunityId;
+	}
+
+	public String getContractId() {
+		return _contractId;
 	}
 
 	public String getId() {
@@ -104,6 +109,7 @@ public class SalesforceOpportunity {
 	private final String _accountId;
 	private final String _amendedContractId;
 	private final String _amendedContractOpportunityId;
+	private final String _contractId;
 	private final boolean _firstLineSupport;
 	private final String _id;
 	private final String _name;

@@ -170,8 +170,16 @@ public class SalesforceObjectPubsubSubscriber extends BasePubsubSubscriber {
 	private void _processContract(String action, JSONObject recordJSONObject)
 		throws Exception {
 
-		_contractService.upsertContract(
-			action, new SalesforceContract(recordJSONObject));
+		SalesforceContract salesforceContract = new SalesforceContract(
+			recordJSONObject);
+
+		if (Objects.equals(action, "delete")) {
+			_contractService.unlinkContract(salesforceContract.getId());
+
+			return;
+		}
+
+		_contractService.upsertContract(action, salesforceContract);
 	}
 
 	private void _processPricebookEntry(

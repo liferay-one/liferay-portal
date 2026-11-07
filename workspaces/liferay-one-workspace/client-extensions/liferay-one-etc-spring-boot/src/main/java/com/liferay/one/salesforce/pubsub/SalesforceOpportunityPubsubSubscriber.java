@@ -137,8 +137,12 @@ public class SalesforceOpportunityPubsubSubscriber
 				salesforceOpportunity.getAmendedContractId());
 		}
 
-		return _contractService.fetchLatestContractByOpportunityId(
-			salesforceOpportunity.getId());
+		if (Validator.isNull(salesforceOpportunity.getContractId())) {
+			return null;
+		}
+
+		return _contractService.fetchContractByExternalReferenceCode(
+			salesforceOpportunity.getContractId());
 	}
 
 	private String _getCurrencyCode(
@@ -469,6 +473,18 @@ public class SalesforceOpportunityPubsubSubscriber
 					contract.getId(), salesforceProject.getId());
 			}
 		}
+		else if (Validator.isNull(
+					salesforceOpportunity.getAmendedContractId()) &&
+				 Validator.isNull(salesforceOpportunity.getContractId())) {
+
+			contractId = 0L;
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					"Unlinking opportunity " + salesforceOpportunity.getId() +
+						" from its contract");
+			}
+		}
 		else {
 			_addWarning(
 				warningMessages,
@@ -663,6 +679,13 @@ public class SalesforceOpportunityPubsubSubscriber
 		_provisioningProjectEntitlementService.processProjectEntitlements(
 			account, contractId, currencyCode, recordJSONObject, renewal,
 			salesforceOpportunity, salesforceProject, warningMessages);
+
+		if ((contractId != null) &&
+			Validator.isNull(salesforceOpportunity.getAmendedContractId())) {
+
+			_contractService.syncOpportunityContract(
+				contract, salesforceOpportunity.getId());
+		}
 
 		List<Long> userIds = new ArrayList<>();
 
