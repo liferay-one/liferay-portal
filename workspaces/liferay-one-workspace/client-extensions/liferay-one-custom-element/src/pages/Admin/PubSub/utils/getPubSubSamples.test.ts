@@ -128,7 +128,30 @@ describe('[MOD-ADMIN-PUBSUB-GETPUBSUBSAMPLES] getPubSubSamples', () => {
 			'Contract'
 		);
 
-		expect(payload.records[0]).toMatchObject({
+		const [opportunityRecord] = generate(
+			'SalesforceOpportunityPubsubSubscriber',
+			'New Business, Closed Won',
+			'Opportunity'
+		).payload.records;
+
+		const [contractRecord] = payload.records;
+
+		expect(Object.keys(contractRecord).sort()).toEqual([
+			'AccountId',
+			'ContractTerm',
+			'EndDate',
+			'Id',
+			'Name',
+			'Project__c',
+			'SBQQ__OpportunityPricebookId__c',
+			'SBQQ__Opportunity__c',
+			'SBQQ__RenewalOpportunity__c',
+			'StartDate',
+		]);
+		expect(Object.keys(contractRecord).sort()).toEqual(
+			Object.keys(opportunityRecord.contracts[0]).sort()
+		);
+		expect(contractRecord).toMatchObject({
 			Name: expect.stringMatching(/^Sample Contract /),
 			Project__c: expect.stringMatching(/^a0X/),
 			SBQQ__OpportunityPricebookId__c: expect.stringMatching(/^01s/),

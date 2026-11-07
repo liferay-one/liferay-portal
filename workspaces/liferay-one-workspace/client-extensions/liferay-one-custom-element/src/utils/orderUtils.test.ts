@@ -598,6 +598,34 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			);
 		});
 
+		it('keeps the whole order of an item that names no contract', () => {
+			const pendingOrder = toContractPlacedOrder({
+				id: 5,
+				placedOrderItems: [
+					{customFields: {}, productId: 7},
+					{customFields: {}, productId: 8},
+				],
+			});
+
+			expect(
+				getContractProductOrders([pendingOrder], 7, 38227564)
+			).toEqual([pendingOrder]);
+		});
+
+		it('keeps every product order when only another contract holds the items', () => {
+			const otherContractOrder = toContractOrder(6, 99);
+
+			expect(
+				getContractProductOrders([otherContractOrder], 7, 38227564)
+			).toEqual([otherContractOrder]);
+		});
+
+		it('returns no order when no order holds the product', () => {
+			expect(getContractProductOrders(placedOrders, 9, 38227564)).toEqual(
+				[]
+			);
+		});
+
 		it('keeps every product order without a selected contract', () => {
 			expect(getContractProductOrders(placedOrders, 7)).toEqual([
 				legacyOrder,
