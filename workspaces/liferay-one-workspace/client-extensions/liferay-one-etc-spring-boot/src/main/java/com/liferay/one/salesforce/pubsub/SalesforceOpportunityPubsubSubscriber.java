@@ -686,7 +686,7 @@ public class SalesforceOpportunityPubsubSubscriber
 			try {
 				_commerceOrderItemService.upsertOrderItems(
 					contracts, newOrder, skuSalesforceOpportunityLineItems,
-					salesforceOpportunity.getStageName());
+					salesforceOpportunity.getStageName(), true);
 
 				provisionedOrderItemCount =
 					skuSalesforceOpportunityLineItems.size();
@@ -702,6 +702,20 @@ public class SalesforceOpportunityPubsubSubscriber
 							skuSalesforceOpportunityLineItem.getProductName(),
 						exception);
 				}
+			}
+		}
+
+		if (provisionedOrderItemCount > 0) {
+			try {
+				_contractService.updateEntitlementContracts(
+					newOrder, skuSalesforceOpportunityLineItems, true);
+			}
+			catch (Exception exception) {
+				_addWarning(
+					warningMessages,
+					"Unable to update the entitlement contracts of " +
+						"opportunity " + salesforceOpportunity.getId(),
+					exception);
 			}
 		}
 

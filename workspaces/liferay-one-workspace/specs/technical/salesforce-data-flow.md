@@ -174,7 +174,9 @@ The handler runs these steps for each record in `records`, in this order. A step
 
 1. Upsert the order (`:539`).
 
-1. Upsert one order item for each provisionable line item whose SKU exists (`:566`).
+1. Upsert one order item for each provisionable line item whose SKU exists (`:566`). An item that no contract matches gets the contract `0`, which removes an earlier link.
+
+1. Set the contract of each entitlement of the order items that the message carries to the contract of its order item, when one or more items were written (`:710`). This moves an entitlement to a new contract and unlinks an entitlement whose item has no contract. An order item that the message does not carry keeps its entitlements. It creates no entitlement. When the update fails, the subscriber adds a warning and continues.
 
 1. Move the order to completed with the payment status "not required", when one or more items were written and the order was not completed before (`:601`).
 
@@ -237,7 +239,7 @@ The order item is written by `service/CommerceOrderItemService.java:91`. A new i
 | `Product_Type__c` | As is | `CommerceOrderItem.orderType` (expando) | No | Keeps | `service/CommerceOrderItemService.java:228` |
 | `Quantity` | Number. Zero or less makes the line a realignment, not an item. | `CommerceOrderItem.quantity` | No | Keeps | `service/CommerceOrderItemService.java:113` |
 | `ServiceDate` | `yyyy-MM-dd` to midnight UTC | `CommerceOrderItem.startDate` (expando) | No | Keeps | `service/CommerceOrderItemService.java:240` |
-| (contract) | ID of the contract of the message whose `EndDate` plus one day equals `End_Date__c`. When several contracts match, the contract with the same `StartDate` as `ServiceDate`, then the lowest ID. | `CommerceOrderItem.contractId` (expando) | No | Keeps. The item has no contract when no contract matches. | `service/CommerceOrderItemService.java`, `util/ContractUtil.java` |
+| (contract) | ID of the contract of the message whose `EndDate` plus one day equals `End_Date__c`. When several contracts match, the contract with the same `StartDate` as `ServiceDate`, then the lowest ID. | `CommerceOrderItem.contractId` (expando) | No | **Clears**: written as `0` when no contract matches. A message without the `contracts` array writes `0` on each line that the amended contract does not match. The project entitlement line item object message keeps the contract of an item that no contract matches. | `service/CommerceOrderItemService.java`, `util/ContractUtil.java` |
 | `TotalPrice` | Number | `CommerceOrderItem.finalPrice` | No | Keeps | `service/CommerceOrderItemService.java:127` |
 | `UnitPrice` | Number | `CommerceOrderItem.unitPrice` | No | Keeps | `service/CommerceOrderItemService.java:120` |
 | opportunity `StageName` | `Closed Won` to `Approved`. `Closed`, `Closed Lost`, `Disqualified`, and `Rejected` to `Canceled`. Any other value to `On Hold`. A canceled item keeps `Canceled`. | `CommerceOrderItem.customStatus` (expando) | Yes | **Overwrites** with `On Hold` | `service/CommerceOrderItemService.java:250`, `:321`, `:152` |
@@ -309,6 +311,8 @@ A record can carry a `projectEntitlements` array and a `projectEntitlementLineIt
 
 1. Upsert one item for each line item. The line item becomes an opportunity line item, as the next table shows (`:432`). A missing SKU fails that item. A SKU with no active entitlement definition adds a warning only (`:473`).
 
+1. Set the contract of each entitlement of the order items that the message carries to the contract of its order item, when one or more items were written (`:457`). The message carries the line items of this project entitlement. An order item that the message does not carry keeps its entitlements. A failure adds a warning only.
+
 1. Complete the order when one or more items were written and it was not completed (`:417`).
 
 | Salesforce Field | Transform | Liferay Target | Source |
@@ -365,7 +369,7 @@ The object path calls `upsertAccount` with no "sold by" value, so it never write
 | (chain) | `renewal` when a predecessor exists, else `initial`. The update path writes `renewal` only. | `C_CONTRACT.contractType` | No | Create path **overwrites** | `service/ContractService.java:448`, `:692` |
 | (chain) | ERC of the contract whose `renewalOpportunityId` is this `SBQQ__Opportunity__c` | `C_CONTRACT.r_originalContractToContract_c_contractERC` | No | Keeps | `service/ContractService.java:339` |
 
-After the write, the handler reconciles the opportunity (`:375`). That attaches the account and the project of each contract of the opportunity when they are empty, sets `contractId` on the order items without a contract of the opportunity order and of every order whose `salesforceOpportunityId` is that opportunity (each item gets the contract that matches its end date), and sets the contract of the order item and the project on their entitlements when those are empty (`:167`, `:602`). It then links a successor contract that arrived first (`:411`). A scheduled job runs the same reconcile every 15 minutes for the contracts changed in the last day (`:211`, `liferay.one.contract.reconcile.cron`).
+After the write, the handler reconciles the opportunity (`:375`). That attaches the account and the project of each contract of the opportunity when they are empty, sets `contractId` on the order items without a contract of the opportunity order and of every order whose `salesforceOpportunityId` is that opportunity (each item gets the contract that matches its end date), and sets the contract of the order item and the project on their entitlements when those are empty (`:167`, `:602`). It then links a successor contract that arrived first (`:411`). The reconcile only fills empty links. It never removes a link. A scheduled job runs the same reconcile every 15 minutes for the contracts changed in the last day (`:211`, `liferay.one.contract.reconcile.cron`).
 
 ### PricebookEntry
 
@@ -394,7 +398,7 @@ The price list is added in the catalog `LIFERAY_INC_CATALOG` when it does not ex
 
 `upsertProjectEntitlement` finds the project by `Project__c` and ignores the record with a warning when it does not exist (`service/ProvisioningProjectEntitlementService.java:173`). When an order with the project entitlement ID exists, it updates only `projectName` and `salesforceProjectId` (`:189`). Otherwise it copies the order of `Purchasing_Opportunity__c` into a new order, and throws when that order does not exist (`:206`, `service/CommerceOrderService.java:741`). The copy keeps every custom field of the source order and replaces `projectName`, `salesforceOpportunityId`, and `salesforceProjectId`.
 
-`upsertProjectEntitlementLineItem` throws when the order of `ProjectEntitlement__c` does not exist (`:228`). It trims the renewed items of the project when the order has `renewal` set, upserts the item with the stage `Closed Won`, and completes the order when it is not completed (`:243`).
+`upsertProjectEntitlementLineItem` throws when the order of `ProjectEntitlement__c` does not exist (`:228`). It trims the renewed items of the project when the order has `renewal` set, upserts the item with the stage `Closed Won`, and completes the order when it is not completed (`:243`). It links the item to the contract of the opportunity that matches its end date. It keeps the contract of an item that no contract matches. It then sets the contract of each entitlement of the order items that the message carries to the contract of its order item. The message carries one line, so the other items of the order keep their entitlements. This message does not unlink an entitlement. It skips an entitlement whose item has no contract.
 
 A `delete` of either object sets `effectiveEndDate` to the current time on the matched items, unless the item already ends earlier (`:452`).
 
@@ -430,11 +434,11 @@ The handlers do not compare record ages (TECH-SALESFORCE-043). Each message type
 | `ProjectEntitlement__c` object | Order of the purchasing opportunity | Throws, so the message is nacked | Pub/Sub redelivers |
 | `Project__c` object | Account | Liferay rejects the relationship ERC, so the message is nacked (see Open Questions) | Pub/Sub redelivers |
 | Opportunity line item | SKU (`Product2`) | Skips the item with a warning | A later reprocessing of the opportunity adds it |
-| Opportunity | Contract | Writes the order items with no `contractId`, with a warning | The contract message reconciles the order items |
+| Opportunity | Contract | Writes the contract `0` on the order items, which unlinks them and their entitlements, with a warning | The contract message reconciles the order items |
 
 ### Redelivery
 
-The opportunity subscriber acks every message, so Pub/Sub delivers an opportunity again only by its at least once rule. Salesforce can also publish the opportunity again. A second run is a reprocessing when the order has items. It then updates the order and the items by ERC, sends the "assigned" welcome email, and opens no "opportunity invoiced" issue. It does not change an order that is already completed, because it completes only an order that was not completed (`:601`).
+The opportunity subscriber acks every message, so Pub/Sub delivers an opportunity again only by its at least once rule. Salesforce can also publish the opportunity again. A second run is a reprocessing when the order has items. It then updates the order and the items by ERC, sends the "assigned" welcome email, and opens no "opportunity invoiced" issue. It does not change an order that is already completed, because it completes only an order that was not completed (`:601`). It also sets the contract of each order item again, and then moves the entitlements of the order items that the message carries to the contract of their item. A message without the `contracts` array unlinks each item that the amended contract does not match, and the entitlements of that item. A later message with the array links them again, to the same entitlements. A second run of the same message sends no entitlement PATCH. After an unlink, the scheduled contract reconcile fills the item again from any contract that still names the opportunity and matches the end date of the item.
 
 The object subscriber nacks a message when one record fails. Pub/Sub then delivers the whole message again, and every record runs again (TECH-SALESFORCE-041). The account, project, price, and product writes are upserts, so a second run gives the same result. The contract create path is not quite the same: it writes `contractType` and the project again on every run (finding 7).
 
@@ -521,6 +525,7 @@ sequenceDiagram
     Sub->>LR: POST order: ERC 006A, currency, total, custom fields
     Sub->>LR: GET SKU 01tA
     Sub->>LR: PATCH order with item 00kA: SKU, quantity, prices, dates, contractId 800A, customStatus Approved
+    Sub->>LR: PATCH the contract of the entitlements of the order items that the message carries when it differs from the contract of their item
     LR-->>OA: onAfterAdd of the order item
     OA->>LR: POST one entitlement for each active entitlement definition of 01tA
     Sub->>LR: PATCH order status pending, processing, then completed

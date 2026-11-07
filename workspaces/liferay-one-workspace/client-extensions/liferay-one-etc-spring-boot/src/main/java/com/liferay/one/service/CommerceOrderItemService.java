@@ -146,7 +146,7 @@ public class CommerceOrderItemService extends OneBaseService {
 	public void upsertOrderItems(
 			List<Contract> contracts, Order order,
 			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
-			String stageName)
+			String stageName, boolean unlinkUnmatched)
 		throws Exception {
 
 		Map<String, OrderItem> orderItemsMap = new LinkedHashMap<>();
@@ -161,8 +161,8 @@ public class CommerceOrderItemService extends OneBaseService {
 			orderItemsMap.put(
 				salesforceOpportunityLineItem.getId(),
 				_toOrderItem(
-					contracts, order, salesforceOpportunityLineItem,
-					stageName));
+					contracts, order, salesforceOpportunityLineItem, stageName,
+					unlinkUnmatched));
 		}
 
 		patchOrderItems(
@@ -199,7 +199,7 @@ public class CommerceOrderItemService extends OneBaseService {
 	private Map<String, Object> _getCustomFieldValues(
 		List<Contract> contracts,
 		SalesforceOpportunityLineItem salesforceOpportunityLineItem,
-		String stageName) {
+		String stageName, boolean unlinkUnmatched) {
 
 		Map<String, Object> customFieldValues = new HashMap<>();
 
@@ -216,6 +216,9 @@ public class CommerceOrderItemService extends OneBaseService {
 
 		if (contract != null) {
 			customFieldValues.put("contractId", contract.getId());
+		}
+		else if (unlinkUnmatched) {
+			customFieldValues.put("contractId", 0L);
 		}
 
 		customFieldValues.put("customStatus", _getCustomStatus(stageName));
@@ -296,7 +299,7 @@ public class CommerceOrderItemService extends OneBaseService {
 	private OrderItem _toOrderItem(
 		List<Contract> contracts, Order order,
 		SalesforceOpportunityLineItem salesforceOpportunityLineItem,
-		String stageName) {
+		String stageName, boolean unlinkUnmatched) {
 
 		OrderItem orderItem = new OrderItem();
 
@@ -348,7 +351,8 @@ public class CommerceOrderItemService extends OneBaseService {
 		}
 
 		Map<String, Object> customFieldValues = _getCustomFieldValues(
-			contracts, salesforceOpportunityLineItem, stageName);
+			contracts, salesforceOpportunityLineItem, stageName,
+			unlinkUnmatched);
 
 		OrderItem existingOrderItem = CommerceOrderItemUtil.fetchOrderItem(
 			salesforceOpportunityLineItem.getId(), order);

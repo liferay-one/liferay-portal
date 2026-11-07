@@ -73,6 +73,7 @@ sequenceDiagram
     SB->>LR: PATCH order once with every order item, with contractId set to the contract whose end date matches the line (a line item that comes again replaces its item, a new line item is added with ERC = line item ID, the other items are sent back unchanged)
     LR-->>OA: onAfterUpdate (EntitlementUpdate) for each existing item
     LR-->>OA: onAfterAdd (EntitlementGeneration) for each new item
+    SB->>LR: PATCH the contract of each entitlement of the order items that the message carries when it differs from the contract of its order item (a failure adds a warning)
     opt at least one item provisioned and order not completed
         SB->>LR: order status pending, then processing, then completed (payment not required)
     end
@@ -94,7 +95,7 @@ sequenceDiagram
 | Order total | Sum of line item `TotalPrice`, or not set when the sum is negative | `_getTotal` (`CommerceOrderService.java:1525`) |
 | Order item ERC | Salesforce line item ID | `CommerceOrderItemService.upsertOrderItems` (`…/one/service/CommerceOrderItemService.java`) |
 | Order item SKU | `Product2Id`, which is the SKU ERC | `upsertOrderItems` |
-| Order item `contractId` | ID of the contract of the message whose `EndDate` plus one day equals the end date of the line, or not set when no contract matches | `_getCustomFieldValues`, `ContractUtil.fetchContract` |
+| Order item `contractId` | ID of the contract of the message whose `EndDate` plus one day equals the end date of the line, or `0` when no contract matches. The value `0` removes an earlier link. Only the opportunity message writes `0`. A project entitlement line item message writes no value for an item that no contract matches, so the item keeps its contract. | `_getCustomFieldValues`, `ContractUtil.fetchContract` |
 | Order item `startDate` | Line item `ServiceDate` | `_getCustomFieldValues` |
 | Order item `endDate` | Line item end date | `_getCustomFieldValues` |
 | Order item `effectiveEndDate` | End date plus 30 days (`EFFECTIVE_END_DATE_GRACE`) | `_getCustomFieldValues`, `…/one/constants/CommerceOrderItemConstants.java` |
@@ -132,7 +133,13 @@ sequenceDiagram
     end
 ```
 
-This is the only job that repairs an entitlement after it exists, and it repairs only the contract and project links. It fills an order item that has no contract. It never replaces the contract of an order item.
+This job repairs the contract and project links of an entitlement after it exists. It fills an order item that has no contract. It never replaces or removes the contract of an order item.
+
+### A Message That Comes Again
+
+An opportunity message sets the contract of every line item again, and `0` removes a link when no contract of the message matches. After the order items are written, `ContractService.updateEntitlementContracts` finds the order items that the message carries. It matches each line of the message to an order item by external reference code. It reads the entitlements of those order items in batches. It sets the contract of each entitlement of the order items that the message carries to the contract of its order item, with `CommerceOrderItemUtil.getContractId`. The value `0` unlinks an entitlement. An AI Hub order keeps the `contractEntityId` of its `order-metadata` for an item with no contract. An order item that the message does not carry keeps its entitlements as they are. The method creates no entitlement, so a second run changes nothing. The project entitlement paths do the same after they write their order items, with the lines that their message carries. A project entitlement line item message does not unlink an order item or an entitlement. It keeps the contract of an item that no contract matches. It skips an entitlement whose item has no contract.
+
+After an unlink, the scheduled contract reconcile fills the order item again from any contract that still names the opportunity and matches the end date of the item.
 
 ## Source 2: Self Service Checkout
 
@@ -466,7 +473,7 @@ Only `EntitlementUpdate` moves the dates, and only from the order item custom fi
 
 | Step | On a retry or a second run | On a failure |
 | --- | --- | --- |
-| Opportunity message | Upserts by ERC. The order is found by opportunity ID and items by line item ID, so a resend changes the existing records. Welcome emails go only to newly assigned contacts. | Every exception is caught and logged, and a Jira provisioning issue is filed. The message is acknowledged, so Pub/Sub does not redeliver it (`SalesforceOpportunityPubsubSubscriber.java:93`, `:104`). |
+| Opportunity message | Upserts by ERC. The order is found by opportunity ID and items by line item ID, so a resend changes the existing records. A resend moves the existing entitlements to the contract of their item and creates none. Welcome emails go only to newly assigned contacts. | Every exception is caught and logged, and a Jira provisioning issue is filed. The message is acknowledged, so Pub/Sub does not redeliver it (`SalesforceOpportunityPubsubSubscriber.java:93`, `:104`). |
 | Salesforce object message (contract, project entitlement) | Upserts by ERC | One failed record makes the message throw, so it is not acknowledged and Pub/Sub redelivers it until the dead letter topic (`SalesforceObjectPubsubSubscriber.java:121`, `BasePubsubSubscriber.java:100`, `:110`). The records that succeeded run again. |
 | Order item with an unknown SKU | Skipped with a warning | The order completes without that item |
 | `EntitlementGeneration` or `CommerceOrderUpdate` on the same item twice | Generation skips each definition that the item already has. A lock on the order, or on the account for a self service trial, makes concurrent runs wait. The check by order item and definition, and the unique ERC `<orderItemId>-<definitionId>`, stop a duplicate. | Each definition is in its own `try`. An error is logged, and the next update of the order tries again. |
@@ -474,7 +481,7 @@ Only `EntitlementUpdate` moves the dates, and only from the order item custom fi
 | `EntitlementGeneration` with no matching definition | Not applicable | Skipped with an info log. A definition created later does not reach the existing items. |
 | `EntitlementGeneration` on a deleted item | Not applicable | Logged and skipped |
 | `EntitlementUpdate` | Writes only the fields that differ | An exception answers 500. The next item update tries again. |
-| Contract reconcile | Every 15 minutes. Writes only links that are empty or differ. | Each opportunity is in its own `try` |
+| Contract reconcile | Every 15 minutes. Fills empty links only. | Each opportunity is in its own `try` |
 | Entitlement definition reconcile | Daily. Upserts by SKU ERC, and sets the maximum quantity of a generated definition to 1 when it is empty or 0. Deactivates generated definitions whose SKU no longer exists. | Each product and SKU is in its own `try` |
 | Settled order completion | Daily, and on each order update. An in memory set stops two threads from completing the same order. | Each order is in its own `try` |
 | Usage report generation | Skips a report whose ERC exists | Each project is in its own `try` |
