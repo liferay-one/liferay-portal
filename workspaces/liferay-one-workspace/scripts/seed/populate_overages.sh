@@ -55,15 +55,6 @@ function main {
 	fi
 }
 
-# Strips the fields the commerce order create does not accept -- the external
-# reference codes resolved to numeric IDs, the order and order item customFields
-# applied by a later PATCH, and the order item name denormalized from the SKU --
-# and sets the
-# channel, contract, and project foreign keys. The audit link back to the usage
-# report that generated this overage is not set here: it lives on the report as
-# its plain commerceOrderId field, set once this order exists (see
-# _create_usage_report).
-
 function _build_order_payload {
 	local file="${1}"
 	local channel_id="${2}"
@@ -84,7 +75,7 @@ project_external_reference_code = order.pop(
 
 order['channelId'] = ${channel_id}
 
-custom_fields = {'contractId': ${contract_id}}
+custom_fields = {}
 
 if project_external_reference_code:
 	custom_fields['salesforceProjectId'] = project_external_reference_code
@@ -92,7 +83,9 @@ if project_external_reference_code:
 order['customFields'] = custom_fields
 
 for order_item in order.get('orderItems', []):
-	order_item.pop('customFields', None)
+	order_item['customFields'] = [
+		{'customValue': {'data': ${contract_id}}, 'name': 'contractId'}
+	]
 	order_item.pop('name', None)
 
 print(json.dumps(order))

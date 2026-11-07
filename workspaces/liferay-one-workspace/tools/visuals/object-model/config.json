@@ -95,8 +95,8 @@
 		},
 		{
 			"field": "contractId",
-			"from": "L_COMMERCE_ORDER",
-			"note": "Contract ID. The order to contract link since LPD-92222.",
+			"from": "L_COMMERCE_ORDER_ITEM",
+			"note": "Contract ID. The order item to contract link since LPD-113729.",
 			"to": "C_CONTRACT"
 		},
 		{

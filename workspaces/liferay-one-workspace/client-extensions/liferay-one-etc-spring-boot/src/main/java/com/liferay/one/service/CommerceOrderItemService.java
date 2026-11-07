@@ -15,8 +15,10 @@ import com.liferay.headless.commerce.admin.order.client.problem.Problem;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderItemResource;
 import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResource;
 import com.liferay.one.constants.CommerceOrderItemConstants;
+import com.liferay.one.model.Contract;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.CommerceOrderItemUtil;
+import com.liferay.one.util.ContractUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -142,7 +144,7 @@ public class CommerceOrderItemService extends OneBaseService {
 	}
 
 	public void upsertOrderItems(
-			Order order,
+			List<Contract> contracts, Order order,
 			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			String stageName)
 		throws Exception {
@@ -158,7 +160,9 @@ public class CommerceOrderItemService extends OneBaseService {
 
 			orderItemsMap.put(
 				salesforceOpportunityLineItem.getId(),
-				_toOrderItem(order, salesforceOpportunityLineItem, stageName));
+				_toOrderItem(
+					contracts, order, salesforceOpportunityLineItem,
+					stageName));
 		}
 
 		patchOrderItems(
@@ -193,6 +197,7 @@ public class CommerceOrderItemService extends OneBaseService {
 	}
 
 	private Map<String, Object> _getCustomFieldValues(
+		List<Contract> contracts,
 		SalesforceOpportunityLineItem salesforceOpportunityLineItem,
 		String stageName) {
 
@@ -203,6 +208,14 @@ public class CommerceOrderItemService extends OneBaseService {
 
 			customFieldValues.put(
 				"cloudRegion", salesforceOpportunityLineItem.getCloudRegion());
+		}
+
+		Contract contract = ContractUtil.fetchContract(
+			contracts, salesforceOpportunityLineItem.getEndDateInstant(),
+			salesforceOpportunityLineItem.getServiceDateInstant());
+
+		if (contract != null) {
+			customFieldValues.put("contractId", contract.getId());
 		}
 
 		customFieldValues.put("customStatus", _getCustomStatus(stageName));
@@ -281,7 +294,7 @@ public class CommerceOrderItemService extends OneBaseService {
 	}
 
 	private OrderItem _toOrderItem(
-		Order order,
+		List<Contract> contracts, Order order,
 		SalesforceOpportunityLineItem salesforceOpportunityLineItem,
 		String stageName) {
 
@@ -335,7 +348,7 @@ public class CommerceOrderItemService extends OneBaseService {
 		}
 
 		Map<String, Object> customFieldValues = _getCustomFieldValues(
-			salesforceOpportunityLineItem, stageName);
+			contracts, salesforceOpportunityLineItem, stageName);
 
 		OrderItem existingOrderItem = CommerceOrderItemUtil.fetchOrderItem(
 			salesforceOpportunityLineItem.getId(), order);

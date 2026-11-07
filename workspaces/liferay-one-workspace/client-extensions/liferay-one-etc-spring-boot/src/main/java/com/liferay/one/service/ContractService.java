@@ -13,8 +13,11 @@ import com.liferay.one.exception.AmbiguousContractChainException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.salesforce.model.SalesforceContract;
+import com.liferay.one.util.CommerceOrderItemUtil;
+import com.liferay.one.util.ContractUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.net.URI;
@@ -23,6 +26,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -120,39 +124,6 @@ public class ContractService extends OneBaseService {
 		return new Contract(new JSONObject(response));
 	}
 
-	public Contract fetchLatestContractByOpportunityId(String opportunityId)
-		throws Exception {
-
-		String response = get(
-			getAuthorization(),
-			UriComponentsBuilder.fromPath(
-				"/o/c/contracts"
-			).queryParam(
-				"filter", "opportunityId eq '" + opportunityId + "'"
-			).queryParam(
-				"page", 1
-			).queryParam(
-				"pageSize", 1
-			).queryParam(
-				"sort", "dateCreated:desc,id:desc"
-			).build(
-			).toUri());
-
-		if (Validator.isNull(response)) {
-			return null;
-		}
-
-		JSONObject jsonObject = new JSONObject(response);
-
-		JSONArray jsonArray = jsonObject.optJSONArray("items");
-
-		if ((jsonArray == null) || (jsonArray.length() == 0)) {
-			return null;
-		}
-
-		return new Contract(jsonArray.getJSONObject(0));
-	}
-
 	public List<Long> getAccountContractIds(long accountEntryId)
 		throws Exception {
 
@@ -162,6 +133,41 @@ public class ContractService extends OneBaseService {
 				"r_accountEntryToContract_accountEntryId eq '", accountEntryId,
 				"'"),
 			jsonObject -> jsonObject.getLong("id"));
+	}
+
+	public List<Contract> getContracts(List<String> externalReferenceCodes)
+		throws Exception {
+
+		if (externalReferenceCodes.isEmpty()) {
+			return new ArrayList<>();
+		}
+
+		List<String> escapedExternalReferenceCodes = new ArrayList<>();
+
+		for (String externalReferenceCode : externalReferenceCodes) {
+			escapedExternalReferenceCodes.add(
+				escapeODataString(externalReferenceCode));
+		}
+
+		return getAllItems(
+			"/o/c/contracts",
+			StringBundler.concat(
+				"externalReferenceCode in ('",
+				StringUtil.merge(escapedExternalReferenceCodes, "','"), "')"),
+			Contract::new);
+	}
+
+	public List<Contract> getOpportunityContracts(String opportunityId)
+		throws Exception {
+
+		if (Validator.isNull(opportunityId)) {
+			return new ArrayList<>();
+		}
+
+		return getAllItems(
+			"/o/c/contracts",
+			"opportunityId eq '" + escapeODataString(opportunityId) + "'",
+			Contract::new);
 	}
 
 	public List<Contract> getProjectContracts(
@@ -182,9 +188,9 @@ public class ContractService extends OneBaseService {
 			return;
 		}
 
-		Contract contract = fetchLatestContractByOpportunityId(opportunityId);
+		List<Contract> contracts = getOpportunityContracts(opportunityId);
 
-		if (contract == null) {
+		if (contracts.isEmpty()) {
 			return;
 		}
 
@@ -198,24 +204,29 @@ public class ContractService extends OneBaseService {
 
 		Long accountId = opportunityOrder.getAccountId();
 
-		if ((contract.getAccountEntryId() <= 0) && (accountId != null) &&
-			(accountId > 0)) {
-
-			attachContractToAccount(contract.getId(), accountId);
-		}
-
 		String projectExternalReferenceCode = _getSalesforceProjectId(
 			opportunityOrder);
 
-		if (Validator.isNull(contract.getProjectExternalReferenceCode()) &&
-			Validator.isNotNull(projectExternalReferenceCode)) {
+		for (Contract contract : contracts) {
+			if ((contract.getAccountEntryId() <= 0) && (accountId != null) &&
+				(accountId > 0)) {
+
+				attachContractToAccount(contract.getId(), accountId);
+			}
+
+			if (Validator.isNotNull(
+					contract.getProjectExternalReferenceCode()) ||
+				Validator.isNull(projectExternalReferenceCode)) {
+
+				continue;
+			}
 
 			attachContractToProject(
 				contract.getId(), projectExternalReferenceCode);
 		}
 
 		for (Order order : _getOpportunityOrders(opportunityOrder)) {
-			_syncOrderContract(contract, order);
+			_syncOrderContracts(contracts, order);
 		}
 	}
 
@@ -614,22 +625,8 @@ public class ContractService extends OneBaseService {
 		return GetterUtil.getString(customFields.get("salesforceProjectId"));
 	}
 
-	private void _syncOrderContract(Contract contract, Order order)
+	private void _syncOrderContracts(List<Contract> contracts, Order order)
 		throws Exception {
-
-		Map<String, ?> customFields = order.getCustomFields();
-
-		long orderContractId = 0;
-
-		if (customFields != null) {
-			orderContractId = GetterUtil.getLong(
-				customFields.get("contractId"));
-		}
-
-		if (orderContractId != contract.getId()) {
-			_commerceOrderService.patchOrderCustomFields(
-				order.getId(), Map.of("contractId", contract.getId()));
-		}
 
 		OrderItem[] orderItems = order.getOrderItems();
 
@@ -637,37 +634,76 @@ public class ContractService extends OneBaseService {
 			return;
 		}
 
-		String projectExternalReferenceCode = _getSalesforceProjectId(order);
-
-		if (Validator.isNull(projectExternalReferenceCode)) {
-			projectExternalReferenceCode =
-				contract.getProjectExternalReferenceCode();
-		}
+		Map<Long, Map<String, Object>> customFieldValuesMap = new HashMap<>();
 
 		for (OrderItem orderItem : orderItems) {
-			List<Entitlement> entitlements =
-				_entitlementService.getEntitlements(
-					StringBundler.concat(
-						"r_commerceOrderItemToEntitlement_commerceOrderItemId ",
-						"eq '", orderItem.getId(), "'"));
-
-			for (Entitlement entitlement : entitlements) {
-				if (entitlement.getContractId() <= 0) {
-					_entitlementService.updateEntitlementContract(
-						entitlement.getEntitlementId(), contract.getId());
-				}
-
-				if (Validator.isNull(projectExternalReferenceCode) ||
-					Validator.isNotNull(
-						entitlement.getProjectExternalReferenceCode())) {
-
-					continue;
-				}
-
-				_entitlementService.updateEntitlementProject(
-					entitlement.getEntitlementId(),
-					projectExternalReferenceCode);
+			if (CommerceOrderItemUtil.getContractId(order, orderItem) > 0) {
+				continue;
 			}
+
+			Contract contract = ContractUtil.fetchContract(
+				contracts, CommerceOrderItemUtil.getEndDateInstant(orderItem),
+				CommerceOrderItemUtil.getStartDateInstant(orderItem));
+
+			if (contract == null) {
+				continue;
+			}
+
+			customFieldValuesMap.put(
+				orderItem.getId(), Map.of("contractId", contract.getId()));
+		}
+
+		_commerceOrderItemService.patchOrderItemCustomFields(
+			customFieldValuesMap, order);
+
+		Map<Long, Contract> contractsMap = new HashMap<>();
+
+		for (Contract contract : contracts) {
+			contractsMap.put(contract.getId(), contract);
+		}
+
+		String orderProjectExternalReferenceCode = _getSalesforceProjectId(
+			order);
+
+		Map<Long, OrderItem> orderItemsMap = new HashMap<>();
+
+		for (OrderItem orderItem : order.getOrderItems()) {
+			orderItemsMap.put(orderItem.getId(), orderItem);
+		}
+
+		for (Entitlement entitlement :
+				_entitlementService.getOrderItemEntitlements(
+					new ArrayList<>(orderItemsMap.keySet()))) {
+
+			long contractId = CommerceOrderItemUtil.getContractId(
+				order, orderItemsMap.get(entitlement.getCommerceOrderItemId()));
+
+			if ((contractId > 0) && (entitlement.getContractId() <= 0)) {
+				_entitlementService.updateEntitlementContract(
+					entitlement.getEntitlementId(), contractId);
+			}
+
+			String projectExternalReferenceCode =
+				orderProjectExternalReferenceCode;
+
+			Contract contract = contractsMap.get(contractId);
+
+			if (Validator.isNull(projectExternalReferenceCode) &&
+				(contract != null)) {
+
+				projectExternalReferenceCode =
+					contract.getProjectExternalReferenceCode();
+			}
+
+			if (Validator.isNull(projectExternalReferenceCode) ||
+				Validator.isNotNull(
+					entitlement.getProjectExternalReferenceCode())) {
+
+				continue;
+			}
+
+			_entitlementService.updateEntitlementProject(
+				entitlement.getEntitlementId(), projectExternalReferenceCode);
 		}
 	}
 
@@ -736,6 +772,9 @@ public class ContractService extends OneBaseService {
 
 	@Autowired
 	private AccountService _accountService;
+
+	@Autowired
+	private CommerceOrderItemService _commerceOrderItemService;
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;

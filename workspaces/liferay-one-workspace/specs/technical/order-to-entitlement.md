@@ -24,8 +24,8 @@ When this file and the code disagree, the code is correct. All paths below are r
 | 4 | Other commerce object actions: `EntitlementUpdate`, `CommerceOrderItemUpdate`, `CommerceOrderUpdate`, `CommerceProductDefinitionUpdate` |
 | 1 | Object action whose handler does not do its work yet: `UsageReportApproved` on `C_USAGE_REPORT` |
 | 2 | Order custom fields that attribute an order to a project: `salesforceProjectId`, then `projectName` |
-| 1 | Order custom field that attributes an order to a contract: `contractId` |
-| 0 | Relationships from an order to a project or a contract (removed by LPD-92222) |
+| 1 | Order item custom field that attributes an order item to a contract: `contractId` |
+| 0 | Relationships from an order or an order item to a project or a contract (removed by LPD-92222) |
 | 3 | Scheduled jobs on this path: contract reconcile (every 15 minutes), entitlement definition reconcile (03:00 daily), settled order completion (00:00 daily) |
 | 1 | Scheduled job that makes usage reports: 02:00 UTC on day 5 of each month |
 | 0 | Scheduled jobs that repair a missing entitlement |
@@ -58,9 +58,10 @@ sequenceDiagram
     SB->>SB: skip unless product family has E, P, or S
     SB->>SB: skip unless Closed Won, or Closed Lost when type is Renewal
     SB->>LR: upsert account, account currency, project
-    SB->>LR: find contract by amended contract ID or latest by opportunity ID
-    opt contract found
-        SB->>LR: attach contract to account and project when missing
+    SB->>LR: upsert each contract named in the contracts array of the message (a failed upsert adds a warning and the next contract continues)
+    SB->>LR: find the contracts named in the contracts array of the message, and the amended contract
+    opt contracts found
+        SB->>LR: attach each contract to account and project when missing
     end
     opt realignment line items
         SB->>LR: PATCH each affected order once, setting effectiveEndDate on its matching parent order items (the other items are sent back unchanged)
@@ -68,8 +69,8 @@ sequenceDiagram
     opt renewal
         SB->>LR: PATCH each affected order once, setting effectiveEndDate on its matching earlier order items of the same project (the other items are sent back unchanged)
     end
-    SB->>LR: upsert order by ERC = opportunity ID (custom fields include contractId, projectName, salesforceProjectId)
-    SB->>LR: PATCH order once with every order item (a line item that comes again replaces its item, a new line item is added with ERC = line item ID, the other items are sent back unchanged)
+    SB->>LR: upsert order by ERC = opportunity ID (custom fields include projectName, salesforceProjectId)
+    SB->>LR: PATCH order once with every order item, with contractId set to the contract whose end date matches the line (a line item that comes again replaces its item, a new line item is added with ERC = line item ID, the other items are sent back unchanged)
     LR-->>OA: onAfterUpdate (EntitlementUpdate) for each existing item
     LR-->>OA: onAfterAdd (EntitlementGeneration) for each new item
     opt at least one item provisioned and order not completed
@@ -85,7 +86,6 @@ sequenceDiagram
 | Target | Value | Source in code |
 | --- | --- | --- |
 | Order ERC | Salesforce opportunity ID | `CommerceOrderService.upsertOrder` → `_upsertOrder` (`…/one/service/CommerceOrderService.java:1947`) |
-| Order `contractId` | ID of the `C_CONTRACT` found for the opportunity, or not set | `_getCustomFields` (`CommerceOrderService.java:1178`) |
 | Order `projectName` | Name of the Salesforce project in the message, when there is one | `_getCustomFields` |
 | Order `salesforceProjectId` | `ProjectId` of the opportunity | `_getCustomFields` |
 | Order `salesforceOpportunityId` | Opportunity ID | `_getCustomFields` |
@@ -94,12 +94,15 @@ sequenceDiagram
 | Order total | Sum of line item `TotalPrice`, or not set when the sum is negative | `_getTotal` (`CommerceOrderService.java:1525`) |
 | Order item ERC | Salesforce line item ID | `CommerceOrderItemService.upsertOrderItems` (`…/one/service/CommerceOrderItemService.java`) |
 | Order item SKU | `Product2Id`, which is the SKU ERC | `upsertOrderItems` |
+| Order item `contractId` | ID of the contract of the message whose `EndDate` plus one day equals the end date of the line, or not set when no contract matches | `_getCustomFieldValues`, `ContractUtil.fetchContract` |
 | Order item `startDate` | Line item `ServiceDate` | `_getCustomFieldValues` |
 | Order item `endDate` | Line item end date | `_getCustomFieldValues` |
 | Order item `effectiveEndDate` | End date plus 30 days (`EFFECTIVE_END_DATE_GRACE`) | `_getCustomFieldValues`, `…/one/constants/CommerceOrderItemConstants.java` |
 | Order item `customStatus` | Closed Won → Approved. Closed, Closed Lost, Disqualified, Rejected → Canceled. Any other stage → On Hold. | `_stageNameCustomStatuses` |
 
 On reprocessing, `upsertOrderItems` keeps a Canceled status and keeps a trimmed `effectiveEndDate` unless the new end date is earlier.
+
+`ContractUtil.fetchContract` is the only place that matches a line item or an order item to a contract. A contract matches when its `EndDate` plus one day equals the end date of the item. When several contracts match, the rule keeps the contracts whose `StartDate` equals the `ServiceDate` of the line, when any has it. When two or more contracts are left, the rule takes the contract with the lowest external reference code and logs a warning. The same rule picks the contract of a cloud native environment. When no cloud native line matches and the message has exactly one found contract, the environments use that contract.
 
 ### Project Entitlements
 
@@ -118,18 +121,18 @@ sequenceDiagram
 
     SF->>SB: Contract record (object subscriber)
     SB->>LR: upsert C_CONTRACT by ERC
-    SB->>LR: find order with ERC = opportunity ID
-    SB->>LR: attach contract to account and project when missing
+    SB->>LR: find the contracts of the opportunity and the order with ERC = opportunity ID
+    SB->>LR: attach each contract to account and project when missing
     loop opportunity order and orders whose salesforceOpportunityId matches
-        SB->>LR: PATCH order contractId when it differs
-        loop each order item, each entitlement
-            SB->>LR: set entitlement contract when empty
+        SB->>LR: PATCH order items without a contract: contractId of the contract whose end date matches
+        loop each entitlement of the order items
+            SB->>LR: set entitlement contract when empty (contract of the order item)
             SB->>LR: set entitlement project when empty (order salesforceProjectId, else contract project)
         end
     end
 ```
 
-This is the only job that repairs an entitlement after it exists, and it repairs only the contract and project links.
+This is the only job that repairs an entitlement after it exists, and it repairs only the contract and project links. It fills an order item that has no contract. It never replaces the contract of an order item.
 
 ## Source 2: Self Service Checkout
 
@@ -267,7 +270,7 @@ sequenceDiagram
 
 The report ERC is the prefix plus the project ERC, the usage definition ERC, and the year and month (`…/one/usage/UsageReportGenerator.java:462`). A second run for the same month skips the report.
 
-`scripts/seed/populate_overages.sh` shows the intended overage order: a separate order with `marketplaceOrderType` = `overage`, `contractId`, and `salesforceProjectId`, one order item for the overage SKU, and the report's `commerceOrderId` set to the order ID. When such an order item is added, the shared tail runs like any other.
+`scripts/seed/populate_overages.sh` shows the intended overage order: a separate order with `marketplaceOrderType` = `overage` and `salesforceProjectId`, one order item for the overage SKU with the `contractId` custom field, and the report's `commerceOrderId` set to the order ID. When such an order item is added, the shared tail runs like any other.
 
 ## The Shared Tail
 
@@ -298,7 +301,7 @@ sequenceDiagram
     alt item missing
         ES-->>C: log error, return
     end
-    ES->>LR: GET order (orderStatus, accountId, contractId, salesforceProjectId)
+    ES->>LR: GET order (orderStatus, accountId, salesforceProjectId)
     alt order is not completed
         ES-->>C: log info, return
     else customStatus is Canceled
@@ -337,7 +340,7 @@ Each new entitlement gets these values (`…/one/service/EntitlementService.java
 | `skuExternalReferenceCode` | Order item SKU |
 | `productOptions` | Order item options as JSON |
 | `r_accountEntryToEntitlement_accountEntryId` | Order account |
-| `r_contractToEntitlement_c_contractId` | Order `contractId`, when above 0 |
+| `r_contractToEntitlement_c_contractId` | Order item `contractId`, when above 0. Else `contractEntityId` of the `order-metadata` of an AI Hub order. |
 | `r_projectToEntitlement_c_projectERC` | Order `salesforceProjectId`, when not empty |
 | `r_commerceOrderItemToEntitlement_commerceOrderItemId` | Order item |
 | `r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId` | Definition |
@@ -380,12 +383,12 @@ The sidecar checks entitlements by machine key from `EntitlementConstants` (for 
 
 ## Attribution to a Project and a Contract
 
-Since LPD-92222 there is no relationship from `L_COMMERCE_ORDER` to `C_PROJECT` or `C_CONTRACT`. The batch files keep only order relationships to the Requests folder objects, AI Hub applications, license keys, and the publisher sales summary. An order points to a project and a contract only through custom fields on the order.
+Since LPD-92222 there is no relationship from `L_COMMERCE_ORDER` to `C_PROJECT` or `C_CONTRACT`. The batch files keep only order relationships to the Requests folder objects, AI Hub applications, license keys, and the publisher sales summary. An order points to a project through custom fields on the order. An order item points to a contract through the `contractId` custom field of the order item.
 
 | Question | Sidecar answer | Custom element answer |
 | --- | --- | --- |
 | Which project owns this order? | `salesforceProjectId` only (`EntitlementService._getProjectExternalReferenceCode`, `ProvisioningOrderService._isProjectOrder`, `ContractService._getSalesforceProjectId`) | `salesforceProjectId`, else `order-metadata.salesforceProjectId`, else `projectName`, else `koroneiki-project` (`useProjectOrders.ts:110`, `:147`, `:153`) |
-| Which contract owns this order? | `contractId` (`EntitlementService._getContractId`) | Not read from the order |
+| Which contract owns this order item? | `contractId` of the order item, else `order-metadata.contractEntityId` of the order (`CommerceOrderItemUtil.getContractId`) | Not read from the order |
 | Which project owns this entitlement? | `r_projectToEntitlement_c_projectERC`, set at generation from the order, or later by contract reconcile | Same relationship |
 | Which contract owns this entitlement? | `r_contractToEntitlement_c_contractId`, set at generation or by contract reconcile | Same relationship |
 
@@ -394,7 +397,7 @@ The consequences:
 - **Project orders** match by `salesforceProjectId` first. `projectName` is a fallback, so a renamed project still matches when the ID is present.
 - **One Time Purchases** are, on the order side, orders for which `hasProject` is false: no `salesforceProjectId`, no `order-metadata.salesforceProjectId`, no `projectName`, and no `koroneiki-project`. The Unassigned pseudo project lists them (`useProjectItems.ts:43`). On the entitlement side, the One Time Purchases pseudo contract holds the project's entitlements whose contract is not one of the project's contracts (`useProjectCommerce.ts:308`).
 - **Account level contracts** have no project. When a project has no contract of its own, `useProjectCommerce` falls back to the account level contracts (`usingAccountFallback`). Their entitlements reach a project only through `r_projectToEntitlement_c_projectERC`, which comes from the order's `salesforceProjectId`, or from the contract's project during reconcile.
-- **Self service orders** store the project in `order-metadata.salesforceProjectId` and have no `contractId`. The custom element counts the order for the project. The sidecar does not, so the entitlements of a self service order have no project and no contract. See Findings.
+- **Self service orders** store the project in `order-metadata.salesforceProjectId` and have no order item `contractId`. The custom element counts the order for the project. The sidecar does not, so the entitlements of a self service order have no project and no contract. See Findings.
 
 ## Where the Custom Element Reads Each Thing
 
