@@ -74,6 +74,13 @@ export const OrderCustomFields = {
 export type OrderCustomFields =
 	(typeof OrderCustomFields)[keyof typeof OrderCustomFields];
 
+export const OrderItemCustomFields = {
+	CUSTOM_STATUS: 'customStatus',
+} as const;
+
+export type OrderItemCustomFields =
+	(typeof OrderItemCustomFields)[keyof typeof OrderItemCustomFields];
+
 export const OrderWorkflowStatusCode = {
 	CANCELLED: 8,
 	COMPLETED: 0,
@@ -374,6 +381,28 @@ export function getProjectItemStatusToken(
 	return itemType === 'application'
 		? getOrderStatusToken(order)
 		: getProductStatusToken(order, placedOrderItems);
+}
+
+const NOT_WON_ORDER_ITEM_CUSTOM_STATUSES = ['Canceled', 'On Hold'];
+
+export function isClosedWonOrder(order: {
+	placedOrderItems?: Pick<PlacedOrderItems, 'customFields'>[];
+}): boolean {
+	const placedOrderItems = order.placedOrderItems ?? [];
+
+	return (
+		!placedOrderItems.length ||
+		placedOrderItems.some(
+			(placedOrderItem) =>
+				!NOT_WON_ORDER_ITEM_CUSTOM_STATUSES.includes(
+					String(
+						placedOrderItem.customFields?.[
+							OrderItemCustomFields.CUSTOM_STATUS
+						] ?? ''
+					)
+				)
+		)
+	);
 }
 
 const BETA_SKU_OPTION_VALUE_KEYS = ['beta', 'open-beta', 'private-beta'];
