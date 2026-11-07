@@ -491,7 +491,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray bundleProductsJSONArray =
 			_getGenerateFormBundleProductsJSONArray(
-				_toProductVersion("2026.Q3", "DXP 2026.Q3"),
+				"2026.Q3", _toProductVersion("2026.Q3", "DXP 2026.Q3"),
 				_toProductVersion("2026.Q2", "DXP 2026.Q2"),
 				_toProductVersion("7.4", "DXP 7.4"));
 
@@ -520,12 +520,32 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetGenerateFormForAccountLicensesAnAppWithoutAMinimumVersionOnEveryVersion()
+		throws Exception {
+
+		JSONArray bundleProductsJSONArray =
+			_getGenerateFormBundleProductsJSONArray(
+				null, _toProductVersion("2026.Q2", "DXP 2026.Q2"),
+				_toProductVersion("7.4", "DXP 7.4"));
+
+		JSONObject cmpBundleProductJSONObject =
+			bundleProductsJSONArray.getJSONObject(0);
+
+		Assertions.assertTrue(
+			cmpBundleProductJSONObject.getBoolean("licensable"));
+		Assertions.assertTrue(
+			cmpBundleProductJSONObject.getJSONArray(
+				"licensedVersions"
+			).isEmpty());
+	}
+
+	@Test
 	public void testGetGenerateFormForAccountLicensesNoAppBeforeItsMinimumVersion()
 		throws Exception {
 
 		JSONArray bundleProductsJSONArray =
 			_getGenerateFormBundleProductsJSONArray(
-				_toProductVersion("2026.Q2", "DXP 2026.Q2"),
+				"2026.Q3", _toProductVersion("2026.Q2", "DXP 2026.Q2"),
 				_toProductVersion("7.4", "DXP 7.4"));
 
 		JSONObject cmpBundleProductJSONObject =
@@ -1575,21 +1595,24 @@ public class LicenseKeyGenerateFormServiceTest {
 		for (String licenseKeyFamily : Arrays.asList("CMP", "DSR")) {
 			Assertions.assertFalse(
 				licenseKeyGenerateFormService.isLicensedForVersion(
-					licenseKeyFamily, null));
+					licenseKeyFamily, "2026.Q3", null));
 			Assertions.assertFalse(
 				licenseKeyGenerateFormService.isLicensedForVersion(
-					licenseKeyFamily, "7.4"));
+					licenseKeyFamily, "2026.Q3", "7.4"));
 			Assertions.assertFalse(
 				licenseKeyGenerateFormService.isLicensedForVersion(
-					licenseKeyFamily, "2026.Q2"));
+					licenseKeyFamily, "2026.Q3", "2026.Q2"));
 			Assertions.assertTrue(
 				licenseKeyGenerateFormService.isLicensedForVersion(
-					licenseKeyFamily, "2026.Q3"));
+					licenseKeyFamily, "2026.Q3", "2026.Q3"));
+			Assertions.assertTrue(
+				licenseKeyGenerateFormService.isLicensedForVersion(
+					licenseKeyFamily, null, "2026.Q2"));
 		}
 
 		Assertions.assertTrue(
 			licenseKeyGenerateFormService.isLicensedForVersion(
-				"Search", "2026.Q2"));
+				"Search", null, "2026.Q2"));
 	}
 
 	@Test
@@ -1619,7 +1642,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		Assertions.assertTrue(
 			licenseKeyGenerateFormService.isLicensedForVersion(
-				"DXP", "2025.Q2"));
+				"DXP", null, "2025.Q2"));
 	}
 
 	@Test
@@ -1743,21 +1766,21 @@ public class LicenseKeyGenerateFormServiceTest {
 			Arrays.asList("2026.Q4", "2026.Q3", "2026.Q2", "7.4"));
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
-			licenseKeyGenerateFormService, "_toMinimumVersionsJSONArray", "CMP",
-			versionsJSONArray);
+			licenseKeyGenerateFormService, "_toMinimumVersionsJSONArray",
+			versionsJSONArray, "2026.Q3");
 
 		Assertions.assertEquals(
 			Arrays.asList("2026.Q4", "2026.Q3"), jsonArray.toList());
 
 		jsonArray = ReflectionTestUtils.invokeMethod(
-			licenseKeyGenerateFormService, "_toMinimumVersionsJSONArray", "DSR",
-			new JSONArray(Arrays.asList("2026.Q2", "7.4")));
+			licenseKeyGenerateFormService, "_toMinimumVersionsJSONArray",
+			new JSONArray(Arrays.asList("2026.Q2", "7.4")), "2026.Q3");
 
 		Assertions.assertTrue(jsonArray.isEmpty());
 
 		jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_toMinimumVersionsJSONArray",
-			"Search", versionsJSONArray);
+			versionsJSONArray, "");
 
 		Assertions.assertEquals(versionsJSONArray.toList(), jsonArray.toList());
 	}
@@ -1895,7 +1918,7 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	private JSONArray _getGenerateFormBundleProductsJSONArray(
-			ProductVersion... productVersions)
+			String minimumVersion, ProductVersion... productVersions)
 		throws Exception {
 
 		CommerceProductService commerceProductService = Mockito.mock(
@@ -1903,9 +1926,25 @@ public class LicenseKeyGenerateFormServiceTest {
 		CommerceSkuService commerceSkuService = Mockito.mock(
 			CommerceSkuService.class);
 
+		Product cmpProduct = _toProduct(2L, "PRDCT-CONTENT-MARKETING-TRIAL");
+
+		if (minimumVersion != null) {
+			ProductSpecification productSpecification =
+				new ProductSpecification();
+
+			productSpecification.setSpecificationKey(
+				ProductSpecificationConstants.KEY_MINIMUM_DXP_VERSION);
+			productSpecification.setValue(
+				HashMapBuilder.put(
+					"en_US", minimumVersion
+				).build());
+
+			cmpProduct.setProductSpecifications(
+				new ProductSpecification[] {productSpecification});
+		}
+
 		Map<String, Product> products = HashMapBuilder.put(
-			"PRDCT-CONTENT-MARKETING-TRIAL",
-			_toProduct(2L, "PRDCT-CONTENT-MARKETING-TRIAL")
+			"PRDCT-CONTENT-MARKETING-TRIAL", cmpProduct
 		).put(
 			"PRDCT-DXP-TRIAL", _toProduct(1L, "PRDCT-DXP-TRIAL")
 		).build();
@@ -2123,13 +2162,13 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		Constructor<?> constructor = clazz.getDeclaredConstructor(
 			boolean.class, boolean.class, Entitlement.class, String.class,
-			boolean.class, String.class, String.class);
+			boolean.class, String.class, String.class, String.class);
 
 		constructor.setAccessible(true);
 
 		return constructor.newInstance(
 			false, false, null, "PRDCT-" + licenseKeyFamily, true,
-			licenseKeyFamily, licenseKeyFamily);
+			licenseKeyFamily, null, licenseKeyFamily);
 	}
 
 	private Entitlement _toEntitlement(Double maxQuantity) {

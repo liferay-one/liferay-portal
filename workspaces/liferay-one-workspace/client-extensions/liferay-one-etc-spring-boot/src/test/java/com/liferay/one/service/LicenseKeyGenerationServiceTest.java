@@ -245,6 +245,32 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyBundlesAnAddOnWithoutAMinimumVersion()
+		throws Exception {
+
+		Entitlement leadingEntitlement = _toEntitlement(1L, 5.0, "PRDCT-DXP");
+		Entitlement addOnEntitlement = _toEntitlement(2L, 5.0, "PRDCT-DSR");
+
+		_stubEntitlements(leadingEntitlement, addOnEntitlement);
+
+		_stubBundledProducts(addOnEntitlement, leadingEntitlement);
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			new LicenseKeyGenerationService.GenerateRequest(
+				Arrays.asList(1L, 2L), "Description", null, "Environment",
+				"backup", 0, null, null, _toProject(), null, null,
+				_toServers(1), null, 1L, "DXP 2026.Q2", false));
+
+		Assertions.assertEquals(
+			Arrays.asList("DXP", "DSR"),
+			_getInvocationArguments(_licenseKeyService, "addLicenseKey", 14));
+	}
+
+	@Test
 	public void testGenerateActivationKeyChargesTheSelectedKeyType()
 		throws Exception {
 
@@ -2176,6 +2202,8 @@ public class LicenseKeyGenerationServiceTest {
 
 		_stubBundledProducts(addOnEntitlement, leadingEntitlement);
 
+		_stubMinimumVersion(addOnEntitlement, "2026.Q3", "Digital Sales Room");
+
 		_stubActivationKey();
 
 		_stubAddLicenseKey();
@@ -2565,7 +2593,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.isLicensedForVersion(
-				Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			true
 		);
@@ -2637,6 +2665,9 @@ public class LicenseKeyGenerationServiceTest {
 					ProductSpecificationConstants.KEY_APP_ENTRY_UUID,
 					"dsr-app-entry-uuid"),
 				_toProductSpecification(
+					ProductSpecificationConstants.KEY_MINIMUM_DXP_VERSION,
+					"2026.Q3"),
+				_toProductSpecification(
 					ProductSpecificationConstants.KEY_PROJECT_ITEM_TYPE,
 					ProductSpecificationConstants.
 						PROJECT_ITEM_TYPE_APPLICATION),
@@ -2655,7 +2686,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.isLicensedForVersion(
-				Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			true
 		);
@@ -2668,6 +2699,12 @@ public class LicenseKeyGenerationServiceTest {
 			Arrays.asList(
 				LicenseConstants.PRODUCT_ID_PORTAL, "dsr-app-entry-uuid"),
 			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 5));
+
+		Mockito.verify(
+			_licenseKeyGenerateFormService
+		).isLicensedForVersion(
+			Mockito.any(), Mockito.eq("2026.Q3"), Mockito.eq("7.4")
+		);
 	}
 
 	@Test
@@ -2750,7 +2787,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.isLicensedForVersion(
-				Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			true
 		);
@@ -2997,7 +3034,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.isLicensedForVersion(
-				Mockito.any(), Mockito.any())
+				Mockito.any(), Mockito.any(), Mockito.any())
 		).thenReturn(
 			true
 		);
@@ -3428,6 +3465,33 @@ public class LicenseKeyGenerationServiceTest {
 				Mockito.anyBoolean())
 		).thenReturn(
 			new LicenseEntry("portal", "DXP Backup", "production", "7.4", "7.4")
+		);
+	}
+
+	private void _stubMinimumVersion(
+			Entitlement entitlement, String minimumVersion, String name)
+		throws Exception {
+
+		Product product = _toProduct(
+			name, entitlement.getSkuExternalReferenceCode());
+
+		product.setProductSpecifications(
+			new ProductSpecification[] {
+				_toProductSpecification(
+					ProductSpecificationConstants.KEY_MINIMUM_DXP_VERSION,
+					minimumVersion)
+			});
+
+		Mockito.doReturn(
+			product
+		).when(
+			_licenseKeyGenerateFormService
+		).fetchProduct(
+			Mockito.argThat(
+				argument ->
+					(argument != null) &&
+					(argument.getEntitlementId() ==
+						entitlement.getEntitlementId()))
 		);
 	}
 
