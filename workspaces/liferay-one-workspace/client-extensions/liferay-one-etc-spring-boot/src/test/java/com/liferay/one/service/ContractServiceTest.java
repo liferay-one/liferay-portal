@@ -193,6 +193,339 @@ public class ContractServiceTest {
 	}
 
 	@Test
+	public void testHideContractClearsTheOpportunityOfTheContract()
+		throws Exception {
+
+		Order opportunityOrder = _createOrder(
+			Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 77L),
+			_createOrderItem(12, "2028-11-01T00:00:00Z", 78L));
+		Order projectEntitlementOrder = _createOrder(
+			_PROJECT_ENTITLEMENT_ORDER_ID,
+			Map.of("salesforceOpportunityId", "OPP-1"),
+			_createOrderItem(13, "2027-11-01T00:00:00Z", 77L));
+
+		_whenHideContractFindsTheLinks(
+			opportunityOrder, projectEntitlementOrder);
+
+		_testContractService.hideContract("C1");
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(11L, Map.of("contractId", 0L)), opportunityOrder
+		);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(13L, Map.of("contractId", 0L)), projectEntitlementOrder
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 0
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			3, 0
+		);
+
+		Assertions.assertEquals(
+			List.of("PATCH /o/c/contracts/77"), _testContractService.requests);
+		Assertions.assertEquals(
+			"{\"opportunityId\":\"\"}", _testContractService.bodies.get(0));
+	}
+
+	@Test
+	public void testHideContractFinishesTheWorkOnASecondRun() throws Exception {
+		Order opportunityOrder = _createOrder(
+			Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 77L));
+
+		OrderItem projectEntitlementOrderItem = _createOrderItem(
+			13, "2027-11-01T00:00:00Z", 77L);
+
+		Order projectEntitlementOrder = _createOrder(
+			_PROJECT_ENTITLEMENT_ORDER_ID,
+			Map.of("salesforceOpportunityId", "OPP-1"),
+			projectEntitlementOrderItem);
+
+		_whenHideContractFindsTheLinks(
+			opportunityOrder, projectEntitlementOrder);
+
+		Mockito.doThrow(
+			new IllegalStateException()
+		).doNothing(
+		).when(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			ArgumentMatchers.anyMap(), ArgumentMatchers.same(opportunityOrder)
+		);
+
+		Mockito.doThrow(
+			new IllegalStateException()
+		).doNothing(
+		).when(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 0
+		);
+
+		Assertions.assertThrows(
+			Exception.class, () -> _testContractService.hideContract("C1"));
+
+		Assertions.assertTrue(_testContractService.requests.isEmpty());
+
+		_setCustomField(projectEntitlementOrderItem, "contractId", 0L);
+
+		Mockito.when(
+			_entitlementService.getEntitlements(_CONTRACT_ENTITLEMENTS_FILTER)
+		).thenReturn(
+			List.of(_createEntitlement(1, 11, 77, null))
+		);
+
+		_testContractService.hideContract("C1");
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.times(2)
+		).patchOrderItemCustomFields(
+			Map.of(11L, Map.of("contractId", 0L)), opportunityOrder
+		);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.times(1)
+		).patchOrderItemCustomFields(
+			Map.of(13L, Map.of("contractId", 0L)), projectEntitlementOrder
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.times(2)
+		).updateEntitlementContract(
+			1, 0
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.times(1)
+		).updateEntitlementContract(
+			3, 0
+		);
+
+		Assertions.assertEquals(
+			List.of("PATCH /o/c/contracts/77"), _testContractService.requests);
+		Assertions.assertEquals(
+			"{\"opportunityId\":\"\"}", _testContractService.bodies.get(0));
+	}
+
+	@Test
+	public void testHideContractKeepsTheItemsWithoutAStoredLinkToTheContract()
+		throws Exception {
+
+		_whenHideContractFindsTheLinks(
+			_createOrder(
+				Map.of("order-metadata", "{\"contractEntityId\": 77}"),
+				_createOrderItem(11, "2027-11-01T00:00:00Z", 0L)));
+
+		_testContractService.hideContract("C1");
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.never()
+		).patchOrderItems(
+			ArgumentMatchers.any(Order.class), ArgumentMatchers.any()
+		);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.never()
+		).patchOrderItemCustomFields(
+			ArgumentMatchers.argThat(map -> !map.isEmpty()),
+			ArgumentMatchers.any(Order.class)
+		);
+
+		Assertions.assertEquals(
+			List.of("PATCH /o/c/contracts/77"), _testContractService.requests);
+	}
+
+	@Test
+	public void testHideContractKeepsTheOpportunityWhenAnEntryFails()
+		throws Exception {
+
+		Order opportunityOrder = _createOrder(
+			Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 77L));
+
+		_whenHideContractFindsTheLinks(opportunityOrder);
+
+		Mockito.doThrow(
+			new IllegalStateException()
+		).when(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 0
+		);
+
+		Assertions.assertThrows(
+			Exception.class, () -> _testContractService.hideContract("C1"));
+
+		Assertions.assertTrue(_testContractService.requests.isEmpty());
+	}
+
+	@Test
+	public void testHideContractLeavesTheOrdersOfAnotherAccountUntouched()
+		throws Exception {
+
+		Order otherAccountOrder = _createOrder(
+			_OTHER_ACCOUNT_ORDER_ID, Map.of(),
+			_createOrderItem(15, "2027-11-01T00:00:00Z", 77L));
+
+		otherAccountOrder.setAccountId(_OTHER_ACCOUNT_ID);
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_OTHER_ACCOUNT_ID)
+		).thenReturn(
+			List.of(otherAccountOrder)
+		);
+
+		_whenHideContractFindsTheLinks(
+			_createOrder(
+				Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 77L)));
+
+		_testContractService.hideContract("C1");
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).getAccountOrders(
+			_OTHER_ACCOUNT_ID
+		);
+
+		Mockito.verify(
+			_commerceOrderItemService, Mockito.never()
+		).patchOrderItemCustomFields(
+			ArgumentMatchers.anyMap(), ArgumentMatchers.same(otherAccountOrder)
+		);
+	}
+
+	@Test
+	public void testHideContractProcessesTheOtherEntriesWhenOneFails()
+		throws Exception {
+
+		Order opportunityOrder = _createOrder(
+			Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 77L));
+		Order projectEntitlementOrder = _createOrder(
+			_PROJECT_ENTITLEMENT_ORDER_ID,
+			Map.of("salesforceOpportunityId", "OPP-1"),
+			_createOrderItem(13, "2027-11-01T00:00:00Z", 77L));
+
+		_whenHideContractFindsTheLinks(
+			opportunityOrder, projectEntitlementOrder);
+
+		Mockito.doThrow(
+			new IllegalStateException()
+		).when(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			ArgumentMatchers.anyMap(), ArgumentMatchers.same(opportunityOrder)
+		);
+
+		Mockito.doThrow(
+			new IllegalStateException()
+		).when(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 0
+		);
+
+		Exception exception = Assertions.assertThrows(
+			Exception.class, () -> _testContractService.hideContract("C1"));
+
+		Assertions.assertEquals(
+			"Unable to hide contract C1 because 2 unlink steps failed",
+			exception.getMessage());
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(13L, Map.of("contractId", 0L)), projectEntitlementOrder
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			3, 0
+		);
+	}
+
+	@Test
+	public void testHideContractSkipsTheItemsOfAContractWithoutAnAccount()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			if (_isExistingContractQuery(uri)) {
+				return _createExistingContractJSONObject(
+					0, null
+				).toString();
+			}
+
+			return null;
+		};
+
+		Mockito.when(
+			_entitlementService.getEntitlements(_CONTRACT_ENTITLEMENTS_FILTER)
+		).thenReturn(
+			List.of(_createEntitlement(1, 11, 77, null))
+		);
+
+		_testContractService.hideContract("C1");
+
+		Mockito.verifyNoInteractions(
+			_commerceOrderItemService, _commerceOrderService);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 0
+		);
+
+		Assertions.assertEquals(
+			List.of("PATCH /o/c/contracts/77"), _testContractService.requests);
+	}
+
+	@Test
+	public void testHideContractUnlinksTheItemsOfAnAmendmentOrder()
+		throws Exception {
+
+		Order amendmentOrder = _createOrder(
+			_AMENDMENT_ORDER_ID, Map.of("salesforceOpportunityId", "OPP-9"),
+			_createOrderItem(14, "2027-11-01T00:00:00Z", 77L));
+
+		_whenHideContractFindsTheLinks(amendmentOrder);
+
+		_testContractService.hideContract("C1");
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(14L, Map.of("contractId", 0L)), amendmentOrder
+		);
+	}
+
+	@Test
+	public void testHideContractWritesNothingForAContractThatDoesNotExist()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			throw _createException(404);
+		};
+
+		_testContractService.hideContract("C1");
+
+		Mockito.verifyNoInteractions(
+			_commerceOrderItemService, _commerceOrderService,
+			_entitlementService);
+
+		Assertions.assertTrue(_testContractService.requests.isEmpty());
+	}
+
+	@Test
 	public void testReconcileOpportunityContractKeepsAnItemThatHasAContract()
 		throws Exception {
 
@@ -1198,6 +1531,24 @@ public class ContractServiceTest {
 			"error".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 	}
 
+	private JSONObject _createExistingContractJSONObject(
+		long accountEntryId, String opportunityId) {
+
+		JSONObject jsonObject = _createContractJSONObject(
+			77, "2027-10-31T00:00:00Z", "2026-11-01T00:00:00Z");
+
+		if (accountEntryId > 0) {
+			jsonObject.put(
+				"r_accountEntryToContract_accountEntryId", accountEntryId);
+		}
+
+		if (opportunityId != null) {
+			jsonObject.put("opportunityId", opportunityId);
+		}
+
+		return jsonObject;
+	}
+
 	private String _createItemsResponse(JSONObject... jsonObjects) {
 		return new JSONObject(
 		).put(
@@ -1332,9 +1683,46 @@ public class ContractServiceTest {
 		);
 	}
 
+	private void _whenHideContractFindsTheLinks(Order... orders)
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			if (_isExistingContractQuery(uri)) {
+				return _createExistingContractJSONObject(
+					_ACCOUNT_ID, "OPP-1"
+				).toString();
+			}
+
+			return null;
+		};
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(orders)
+		);
+
+		Mockito.when(
+			_entitlementService.getEntitlements(_CONTRACT_ENTITLEMENTS_FILTER)
+		).thenReturn(
+			List.of(
+				_createEntitlement(1, 11, 77, null),
+				_createEntitlement(3, 13, 77, null))
+		);
+	}
+
 	private static final long _ACCOUNT_ID = 5L;
 
+	private static final long _AMENDMENT_ORDER_ID = 903L;
+
+	private static final String _CONTRACT_ENTITLEMENTS_FILTER =
+		"r_contractToEntitlement_c_contractId eq '77'";
+
 	private static final long _ORDER_ID = 900L;
+
+	private static final long _OTHER_ACCOUNT_ID = 6L;
+
+	private static final long _OTHER_ACCOUNT_ORDER_ID = 904L;
 
 	private static final long _PROJECT_ENTITLEMENT_ORDER_ID = 901L;
 

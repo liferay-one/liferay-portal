@@ -51,6 +51,16 @@ public class CommerceOrderItemUtilTest {
 	}
 
 	@Test
+	public void testGetContractIdOfAnOrderItemIgnoresTheOrderMetadata() {
+		Assertions.assertEquals(
+			0L, CommerceOrderItemUtil.getContractId(_createOrderItem()));
+		Assertions.assertEquals(
+			5L,
+			CommerceOrderItemUtil.getContractId(
+				_createOrderItem("contractId", "5")));
+	}
+
+	@Test
 	public void testGetContractIdPrefersTheOrderItemContract() {
 		Assertions.assertEquals(
 			5L,
