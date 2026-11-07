@@ -520,6 +520,31 @@ public class EntitlementService extends OneBaseService {
 			_NESTED_FIELDS_ENTITLEMENT_DEFINITION);
 	}
 
+	public List<Entitlement> getOrderItemEntitlements(
+			List<Long> commerceOrderItemIds)
+		throws Exception {
+
+		List<Entitlement> entitlements = new ArrayList<>();
+
+		for (int i = 0; i < commerceOrderItemIds.size();
+			 i += _FILTER_BATCH_SIZE) {
+
+			List<Long> batchCommerceOrderItemIds = commerceOrderItemIds.subList(
+				i,
+				Math.min(i + _FILTER_BATCH_SIZE, commerceOrderItemIds.size()));
+
+			entitlements.addAll(
+				getEntitlements(
+					StringBundler.concat(
+						"r_commerceOrderItemToEntitlement_commerceOrderItemId ",
+						"in ('",
+						StringUtil.merge(batchCommerceOrderItemIds, "','"),
+						"')")));
+		}
+
+		return entitlements;
+	}
+
 	public Set<String> getSkuExternalReferenceCodes(
 			long accountEntryId, List<Long> contractIds)
 		throws Exception {
@@ -949,7 +974,7 @@ public class EntitlementService extends OneBaseService {
 		}
 
 		long accountEntryId = _getAccountEntryId(order);
-		long contractId = _getContractId(order);
+		long contractId = CommerceOrderItemUtil.getContractId(order, orderItem);
 		String projectExternalReferenceCode = _getProjectExternalReferenceCode(
 			order);
 
@@ -1058,21 +1083,6 @@ public class EntitlementService extends OneBaseService {
 		return StringBundler.concat(
 			_getUnexpiredFilterString(instant), " and (", filterString,
 			") and (startDate eq null or startDate le ", instant, ")");
-	}
-
-	private long _getContractId(Order order) {
-		if (order == null) {
-			return 0;
-		}
-
-		Map<String, Object> customFields =
-			(Map<String, Object>)order.getCustomFields();
-
-		if (customFields == null) {
-			return 0;
-		}
-
-		return GetterUtil.getLong(customFields.get("contractId"));
 	}
 
 	private String _getEntitlementNamesFilterString(

@@ -15,6 +15,7 @@ import com.liferay.one.model.Project;
 import com.liferay.one.pubsub.Message;
 import com.liferay.one.pubsub.subscriber.BasePubsubSubscriber;
 import com.liferay.one.salesforce.model.SalesforceAccount;
+import com.liferay.one.salesforce.model.SalesforceContract;
 import com.liferay.one.salesforce.model.SalesforceOpportunity;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.salesforce.model.SalesforceProject;
@@ -35,17 +36,18 @@ import com.liferay.one.service.ProvisioningOrderService;
 import com.liferay.one.service.ProvisioningProjectEntitlementService;
 import com.liferay.one.service.ProvisioningSubdomainService;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.ContractUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -129,16 +131,74 @@ public class SalesforceOpportunityPubsubSubscriber
 		}
 	}
 
-	private Contract _fetchContract(SalesforceOpportunity salesforceOpportunity)
+	private List<Contract> _getContracts(
+			List<SalesforceContract> salesforceContracts,
+			SalesforceOpportunity salesforceOpportunity,
+			List<String> warningMessages)
 		throws Exception {
 
+		for (SalesforceContract salesforceContract : salesforceContracts) {
+			try {
+				_contractService.upsertContract("update", salesforceContract);
+			}
+			catch (Exception exception) {
+				_addWarning(
+					warningMessages,
+					StringBundler.concat(
+						"Unable to upsert contract ",
+						salesforceContract.getId(), " for opportunity ",
+						salesforceOpportunity.getId()),
+					exception);
+			}
+		}
+
+		Set<String> externalReferenceCodes = new LinkedHashSet<>();
+
+		for (SalesforceContract salesforceContract : salesforceContracts) {
+			if (Validator.isNull(salesforceContract.getId())) {
+				continue;
+			}
+
+			externalReferenceCodes.add(salesforceContract.getId());
+		}
+
 		if (Validator.isNotNull(salesforceOpportunity.getAmendedContractId())) {
-			return _contractService.fetchContractByExternalReferenceCode(
+			externalReferenceCodes.add(
 				salesforceOpportunity.getAmendedContractId());
 		}
 
-		return _contractService.fetchLatestContractByOpportunityId(
-			salesforceOpportunity.getId());
+		List<Contract> contracts = _contractService.getContracts(
+			new ArrayList<>(externalReferenceCodes));
+
+		Set<String> foundExternalReferenceCodes = new HashSet<>();
+
+		for (Contract contract : contracts) {
+			foundExternalReferenceCodes.add(
+				contract.getExternalReferenceCode());
+		}
+
+		for (String externalReferenceCode : externalReferenceCodes) {
+			if (foundExternalReferenceCodes.contains(externalReferenceCode)) {
+				continue;
+			}
+
+			_addWarning(
+				warningMessages,
+				StringBundler.concat(
+					"Unable to find contract ", externalReferenceCode,
+					" for opportunity ", salesforceOpportunity.getId()),
+				null);
+		}
+
+		if (contracts.isEmpty()) {
+			_addWarning(
+				warningMessages,
+				"Unable to find a contract for opportunity " +
+					salesforceOpportunity.getId(),
+				null);
+		}
+
+		return contracts;
 	}
 
 	private String _getCurrencyCode(
@@ -177,6 +237,26 @@ public class SalesforceOpportunityPubsubSubscriber
 		}
 
 		return currencyCode;
+	}
+
+	private List<SalesforceContract> _getSalesforceContracts(
+		JSONObject recordJSONObject) {
+
+		List<SalesforceContract> salesforceContracts = new ArrayList<>();
+
+		JSONArray contractsJSONArray = recordJSONObject.optJSONArray(
+			"contracts");
+
+		if (contractsJSONArray == null) {
+			return salesforceContracts;
+		}
+
+		for (int i = 0; i < contractsJSONArray.length(); i++) {
+			salesforceContracts.add(
+				new SalesforceContract(contractsJSONArray.getJSONObject(i)));
+		}
+
+		return salesforceContracts;
 	}
 
 	private List<SalesforceOpportunityLineItem>
@@ -450,31 +530,25 @@ public class SalesforceOpportunityPubsubSubscriber
 				salesforceOpportunity.getAccountId(), salesforceProject);
 		}
 
-		Contract contract = _fetchContract(salesforceOpportunity);
+		List<Contract> contracts = _getContracts(
+			_getSalesforceContracts(recordJSONObject), salesforceOpportunity,
+			warningMessages);
 
-		Long contractId = null;
-
-		if (contract != null) {
-			contractId = contract.getId();
-
+		for (Contract contract : contracts) {
 			if (contract.getAccountEntryId() <= 0) {
 				_contractService.attachContractToAccount(
 					contract.getId(), account.getId());
 			}
 
-			if ((salesforceProject != null) &&
-				Validator.isNull(contract.getProjectExternalReferenceCode())) {
+			if ((salesforceProject == null) ||
+				Validator.isNotNull(
+					contract.getProjectExternalReferenceCode())) {
 
-				_contractService.attachContractToProject(
-					contract.getId(), salesforceProject.getId());
+				continue;
 			}
-		}
-		else {
-			_addWarning(
-				warningMessages,
-				"Unable to find a contract for opportunity " +
-					salesforceOpportunity.getId(),
-				null);
+
+			_contractService.attachContractToProject(
+				contract.getId(), salesforceProject.getId());
 		}
 
 		if (!realignmentSalesforceOpportunityLineItems.isEmpty()) {
@@ -543,7 +617,7 @@ public class SalesforceOpportunityPubsubSubscriber
 			_getSalesforceProjectContactRoles(recordJSONObject);
 
 		Order newOrder = _commerceOrderService.upsertOrder(
-			account, contractId, currencyCode, salesforceOpportunity,
+			account, currencyCode, salesforceOpportunity,
 			provisionableSalesforceOpportunityLineItems, salesforceProject);
 
 		if (Objects.equals(
@@ -555,21 +629,19 @@ public class SalesforceOpportunityPubsubSubscriber
 				salesforceProjectContactRoles, warningMessages);
 		}
 
-		if ((contract != null) && (contract.getEndDateInstant() != null)) {
-			Instant contractEndDateInstant = contract.getEndDateInstant(
-			).plus(
-				1, ChronoUnit.DAYS
-			);
-
+		if (!contracts.isEmpty()) {
 			for (SalesforceOpportunityLineItem
 					provisionableSalesforceOpportunityLineItem :
 						provisionableSalesforceOpportunityLineItems) {
 
-				if (Objects.equals(
-						provisionableSalesforceOpportunityLineItem.
-							getEndDateInstant(),
-						contractEndDateInstant)) {
+				Contract contract = ContractUtil.fetchContract(
+					contracts,
+					provisionableSalesforceOpportunityLineItem.
+						getEndDateInstant(),
+					provisionableSalesforceOpportunityLineItem.
+						getServiceDateInstant());
 
+				if (contract != null) {
 					continue;
 				}
 
@@ -579,8 +651,8 @@ public class SalesforceOpportunityPubsubSubscriber
 						"The end date of line ",
 						provisionableSalesforceOpportunityLineItem.
 							getProductName(),
-						" differs from the end date of contract ",
-						contract.getExternalReferenceCode()),
+						" matches no contract of opportunity ",
+						salesforceOpportunity.getId()),
 					null);
 			}
 		}
@@ -613,7 +685,7 @@ public class SalesforceOpportunityPubsubSubscriber
 		if (!skuSalesforceOpportunityLineItems.isEmpty()) {
 			try {
 				_commerceOrderItemService.upsertOrderItems(
-					newOrder, skuSalesforceOpportunityLineItems,
+					contracts, newOrder, skuSalesforceOpportunityLineItems,
 					salesforceOpportunity.getStageName());
 
 				provisionedOrderItemCount =
@@ -648,7 +720,7 @@ public class SalesforceOpportunityPubsubSubscriber
 		}
 
 		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
-			account, contract, provisionableSalesforceOpportunityLineItems);
+			account, contracts, provisionableSalesforceOpportunityLineItems);
 
 		if (provisionedOrderItemCount > 0) {
 			_provisioningAnalyticsCloudService.provisionAnalyticsCloudProject(
@@ -661,7 +733,7 @@ public class SalesforceOpportunityPubsubSubscriber
 			account, provisionableSalesforceOpportunityLineItems);
 
 		_provisioningProjectEntitlementService.processProjectEntitlements(
-			account, contractId, currencyCode, recordJSONObject, renewal,
+			account, contracts, currencyCode, recordJSONObject, renewal,
 			salesforceOpportunity, salesforceProject, warningMessages);
 
 		List<Long> userIds = new ArrayList<>();

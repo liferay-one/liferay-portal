@@ -164,7 +164,9 @@ The handler runs these steps for each record in `records`, in this order. A step
 
 1. Upsert the project when the record has a `project` block (`:440`).
 
-1. Find the contract: by `SBQQ__AmendedContract__c`, or else the newest contract whose `opportunityId` is the opportunity ID. Attach the account and the project to it when they are empty (`:450`, `:129`).
+1. Upsert each contract of the `contracts` array of the message with the update action. When an upsert fails, the subscriber adds a warning and continues with the next contract.
+
+1. Find the contracts: the contracts of the `contracts` array of the message, and the contract of `SBQQ__AmendedContract__c`, by their external reference codes in one query. A message without the array, or with an empty array, finds only the amended contract. When the query finds no contract, the subscriber adds a warning. Attach the account and the project to each contract when they are empty.
 
 1. Trim the realigned order items of the parent opportunity family (`:477`).
 
@@ -204,7 +206,7 @@ The order is written by `service/CommerceOrderService.java:673`. Its custom fiel
 | `Product_Family__c` | Gate: must contain `E`, `P`, or `S` | `CommerceOrder.opportunityProductFamily` (expando) | Yes | Record skipped | `service/CommerceOrderService.java:1214` |
 | `Project__c` | As is | `CommerceOrder.salesforceProjectId` (expando). Also the project for the renewal trim. | No | Keeps | `service/CommerceOrderService.java:1268` |
 | `Reseller__r.Name` | As is | `CommerceOrder.partnerAccount` (expando) | No | Keeps | `service/CommerceOrderService.java:1243` |
-| `SBQQ__AmendedContract__c` | Contract lookup by ERC | `CommerceOrder.contractId` (expando), through the contract | No | Falls back to the newest contract of the opportunity | `salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java:132` |
+| `SBQQ__AmendedContract__c` | Contract lookup by ERC, added to the contracts of the message | `CommerceOrderItem.contractId` (expando), through the contract that matches the end date of the line | No | Only the contracts of the message | `salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java` |
 | `SBQQ__AmendedContract__r.SBQQ__Opportunity__c` | As is. Also the parent family for the realignment trim. | `CommerceOrder.parentOpportunityId` (expando) | Only with realignment lines | Keeps | `service/CommerceOrderService.java:1235` |
 | `Sold_By__c` | As is. Also an input to the licensing defaults of a new account. | `CommerceOrder.opportunitySoldBy` (expando) | No | Keeps | `service/CommerceOrderService.java:1220` |
 | `StageName` | Gate. Also mapped to the item status. | `CommerceOrder.opportunityStageName` (expando) | Yes | Record skipped | `service/CommerceOrderService.java:1225` |
@@ -216,7 +218,6 @@ The order is written by `service/CommerceOrderService.java:673`. Its custom fiel
 | project `Name` | As is | `CommerceOrder.projectName` (expando) | No | Keeps | `service/CommerceOrderService.java:1252` |
 | (account) | Default billing and shipping address of the account | `CommerceOrder.billingAddressId`, `shippingAddressId` | No | Keeps | `service/CommerceOrderService.java:695` |
 | (configuration) | `liferay.one.commerce.channel.external.reference.code` | `CommerceOrder.channelId` | Yes | none | `service/CommerceOrderService.java:688` |
-| (contract) | ID of the contract found in step 10 | `CommerceOrder.contractId` (expando) | No | Keeps | `service/CommerceOrderService.java:1203` |
 
 ### OpportunityLineItem to CommerceOrderItem
 
@@ -236,6 +237,7 @@ The order item is written by `service/CommerceOrderItemService.java:91`. A new i
 | `Product_Type__c` | As is | `CommerceOrderItem.orderType` (expando) | No | Keeps | `service/CommerceOrderItemService.java:228` |
 | `Quantity` | Number. Zero or less makes the line a realignment, not an item. | `CommerceOrderItem.quantity` | No | Keeps | `service/CommerceOrderItemService.java:113` |
 | `ServiceDate` | `yyyy-MM-dd` to midnight UTC | `CommerceOrderItem.startDate` (expando) | No | Keeps | `service/CommerceOrderItemService.java:240` |
+| (contract) | ID of the contract of the message whose `EndDate` plus one day equals `End_Date__c`. When several contracts match, the contract with the same `StartDate` as `ServiceDate`, then the lowest ID. | `CommerceOrderItem.contractId` (expando) | No | Keeps. The item has no contract when no contract matches. | `service/CommerceOrderItemService.java`, `util/ContractUtil.java` |
 | `TotalPrice` | Number | `CommerceOrderItem.finalPrice` | No | Keeps | `service/CommerceOrderItemService.java:127` |
 | `UnitPrice` | Number | `CommerceOrderItem.unitPrice` | No | Keeps | `service/CommerceOrderItemService.java:120` |
 | opportunity `StageName` | `Closed Won` to `Approved`. `Closed`, `Closed Lost`, `Disqualified`, and `Rejected` to `Canceled`. Any other value to `On Hold`. A canceled item keeps `Canceled`. | `CommerceOrderItem.customStatus` (expando) | Yes | **Overwrites** with `On Hold` | `service/CommerceOrderItemService.java:250`, `:321`, `:152` |
@@ -363,7 +365,7 @@ The object path calls `upsertAccount` with no "sold by" value, so it never write
 | (chain) | `renewal` when a predecessor exists, else `initial`. The update path writes `renewal` only. | `C_CONTRACT.contractType` | No | Create path **overwrites** | `service/ContractService.java:448`, `:692` |
 | (chain) | ERC of the contract whose `renewalOpportunityId` is this `SBQQ__Opportunity__c` | `C_CONTRACT.r_originalContractToContract_c_contractERC` | No | Keeps | `service/ContractService.java:339` |
 
-After the write, the handler reconciles the opportunity (`:375`). That attaches the account and the project when they are empty, sets `contractId` on the opportunity order and on every order whose `salesforceOpportunityId` is that opportunity, and sets the contract and the project on their entitlements when those are empty (`:167`, `:602`). It then links a successor contract that arrived first (`:411`). A scheduled job runs the same reconcile every 15 minutes for the contracts changed in the last day (`:211`, `liferay.one.contract.reconcile.cron`).
+After the write, the handler reconciles the opportunity (`:375`). That attaches the account and the project of each contract of the opportunity when they are empty, sets `contractId` on the order items without a contract of the opportunity order and of every order whose `salesforceOpportunityId` is that opportunity (each item gets the contract that matches its end date), and sets the contract of the order item and the project on their entitlements when those are empty (`:167`, `:602`). It then links a successor contract that arrived first (`:411`). A scheduled job runs the same reconcile every 15 minutes for the contracts changed in the last day (`:211`, `liferay.one.contract.reconcile.cron`).
 
 ### PricebookEntry
 
@@ -428,7 +430,7 @@ The handlers do not compare record ages (TECH-SALESFORCE-043). Each message type
 | `ProjectEntitlement__c` object | Order of the purchasing opportunity | Throws, so the message is nacked | Pub/Sub redelivers |
 | `Project__c` object | Account | Liferay rejects the relationship ERC, so the message is nacked (see Open Questions) | Pub/Sub redelivers |
 | Opportunity line item | SKU (`Product2`) | Skips the item with a warning | A later reprocessing of the opportunity adds it |
-| Opportunity | Contract | Writes the order with no `contractId`, with a warning | The contract message reconciles the order |
+| Opportunity | Contract | Writes the order items with no `contractId`, with a warning | The contract message reconciles the order items |
 
 ### Redelivery
 
@@ -513,11 +515,12 @@ sequenceDiagram
     Sub->>LR: GET account 001A, check duplicate names
     Sub->>LR: POST or PATCH account channel currency
     Sub->>LR: PATCH project a0PA (404), then PUT project a0PA
-    Sub->>LR: GET newest contract with opportunityId 006A (800A)
+    Sub->>LR: upsert contract 800A named in the contracts array of the message
+    Sub->>LR: GET contract 800A named in the contracts array of the message
     Sub->>LR: PATCH contract 800A: account, and project a0PA when empty
-    Sub->>LR: POST order: ERC 006A, currency, total, custom fields, contractId
+    Sub->>LR: POST order: ERC 006A, currency, total, custom fields
     Sub->>LR: GET SKU 01tA
-    Sub->>LR: PATCH order with item 00kA: SKU, quantity, prices, dates, customStatus Approved
+    Sub->>LR: PATCH order with item 00kA: SKU, quantity, prices, dates, contractId 800A, customStatus Approved
     LR-->>OA: onAfterAdd of the order item
     OA->>LR: POST one entitlement for each active entitlement definition of 01tA
     Sub->>LR: PATCH order status pending, processing, then completed
@@ -526,7 +529,7 @@ sequenceDiagram
     Sub->>LR: queue welcome emails
     Sub->>J: open the opportunity invoiced issue with the warnings
     Sub-->>PS: ack
-    Note over SF,LR: A later contract message for 800A reconciles contractId on order 006A and the contract on its entitlements.
+    Note over SF,LR: A later contract message for 800A reconciles contractId on the items of order 006A that have none, and the contract on their entitlements.
 ```
 
 ## LPD-108526: Cloud Contact Designations

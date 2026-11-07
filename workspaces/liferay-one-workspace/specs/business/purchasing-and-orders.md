@@ -116,7 +116,7 @@ Terms used in this file:
 | REQ-ORDERS-091 | An order that names no project belongs to One Time Purchases. | P1 | LPD-90955 | `HOOK-USEPROJECTITEMS`, `HOOK-USEPROJECTORDERS` |
 | REQ-ORDERS-092 | When a buyer buys an app for a Salesforce project, the order metadata records the external reference code of that project. | P0 | LPD-90605 | `CLIENT-COMMERCE-PRODUCTPURCHASEAPP` |
 | REQ-ORDERS-093 | An AI Hub order records the project that the buyer selects in its metadata. The system writes the project name onto the order only when the project belongs to the account of the order. | P0 | LPD-102570 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUB`, `FLOW-AI-HUB-PURCHASE` |
-| REQ-ORDERS-094 | The contract ID field of an order links the order to its contract. | P0 | LPD-102570 | `FLOW-PRODUCT-PURCHASE-CONTRACT`, `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUB` |
+| REQ-ORDERS-094 | The contract ID field of each order item links the order item to its contract. The contract is the one whose end date matches the end date of the order item. | P0 | LPD-102570 | `FLOW-PRODUCT-PURCHASE-CONTRACT`, `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUB` |
 | REQ-ORDERS-095 | A token order takes its project and contract from a completed AI Hub order of the same project. When the project has no completed AI Hub order, the system refuses the token order. | P0 | LPD-102570 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBTOKEN` |
 
 ## My Account Orders

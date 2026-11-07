@@ -12,6 +12,7 @@ import com.liferay.one.model.Contract;
 import com.liferay.one.model.Environment;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.ActivationCodeUtil;
+import com.liferay.one.util.ContractUtil;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.List;
@@ -29,29 +30,38 @@ import org.springframework.stereotype.Component;
 public class ProvisioningEnvironmentService {
 
 	public void provisionCloudNativeEnvironments(
-			Account account, Contract contract,
+			Account account, List<Contract> contracts,
 			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems)
 		throws Exception {
 
-		if (contract == null) {
-			return;
-		}
-
 		boolean cloudNative = false;
+		Contract contract = null;
 
 		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
 				salesforceOpportunityLineItems) {
 
-			if (CommerceProductConstants.namesCloudNativeProducts.contains(
+			if (!CommerceProductConstants.namesCloudNativeProducts.contains(
 					salesforceOpportunityLineItem.getProductName())) {
 
-				cloudNative = true;
+				continue;
+			}
 
+			cloudNative = true;
+
+			contract = ContractUtil.fetchContract(
+				contracts, salesforceOpportunityLineItem.getEndDateInstant(),
+				salesforceOpportunityLineItem.getServiceDateInstant());
+
+			if (contract != null) {
 				break;
 			}
 		}
 
-		if (!cloudNative) {
+		if (cloudNative && (contract == null) && (contracts.size() == 1)) {
+			contract = contracts.get(0);
+		}
+
+		if (contract == null) {
 			return;
 		}
 

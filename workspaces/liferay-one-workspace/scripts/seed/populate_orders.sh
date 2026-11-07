@@ -179,23 +179,6 @@ import json
 with open('${file}') as file:
 	order = json.load(file)['order']
 
-# channelExternalReferenceCode is not resolved on create, so the numeric
-# channelId is required. The contract and project are linked through the
-# contractId and salesforceProjectId custom fields, which is what the runtime
-# reads -- contractId holds the numeric contract entry ID and salesforceProjectId
-# holds the project external reference code. The publisher sales summary is
-# linked through the publisherToCommerceOrder object relationship, whose foreign
-# key field on the order takes the numeric object entry ID. The order item name
-# is denormalized
-# from the SKU on create -- sending it rejects the nested mapping -- so it is
-# kept in the file for readability and dropped here. The order item custom
-# fields and final price are sent on create, in the list shape the endpoint
-# takes rather than the plain object the file authors. A later order item PATCH
-# fails with 'The product is no longer available' whenever the product is not
-# approved, which is the state of every product in the
-# liferay-one-batch-products client extension, while the create
-# accepts them.
-
 order.pop('channelExternalReferenceCode', None)
 order.pop('contractExternalReferenceCode', None)
 order.pop('publisherSalesSummaryExternalReferenceCode', None)
@@ -208,9 +191,6 @@ order['channelId'] = ${channel_id}
 custom_fields = order.get('customFields') or {}
 
 contract_id = '${contract_id}'
-
-if contract_id:
-	custom_fields['contractId'] = int(contract_id)
 
 if project_external_reference_code:
 	custom_fields['salesforceProjectId'] = project_external_reference_code
@@ -228,6 +208,9 @@ for order_item in order.get('orderItems', []):
 	order_item.pop('name', None)
 
 	order_item_custom_fields = order_item.pop('customFields', None) or {}
+
+	if contract_id:
+		order_item_custom_fields['contractId'] = int(contract_id)
 
 	if order_item_custom_fields:
 		order_item['customFields'] = [

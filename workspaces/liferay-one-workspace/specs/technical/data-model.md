@@ -223,7 +223,7 @@ Defined in `client-extensions/liferay-one-batch/batch/09-commerce-option.batch-e
 | `userId` | long | |
 | `createDate`, `modifiedDate` | datetime | |
 
-**Custom fields (links):** `projectName` (text) and `contractId` (long) are the only link from an order to its Project and Contract. LPD-92222 removed the `projectToCommerceOrder` and `contractToCommerceOrder` relationships, because the commerce order API returns custom fields but not relationship fields. The project link is the project **name**, so a project rename breaks it.
+**Custom fields (links):** `projectName` (text) is the only link from an order to its Project. LPD-92222 removed the `projectToCommerceOrder` and `contractToCommerceOrder` relationships, because the commerce order API returns custom fields but not relationship fields. The project link is the project **name**, so a project rename breaks it. Since LPD-113729 the contract link is the `contractId` custom field of the order item.
 
 **Custom fields (other):** `accountOwnerEmailAddress`, `accountOwnerFirstName`, `accountOwnerLastName`, `cloud-provisioning`, `cloudProjectName`, `dossieraProjectKey`, `dsrAnalyticsCloudProject`, `dsrError`, `dsrErrorDate`, `dsrSettings`, `dsrWorkspaceName`, `gsInvolved`, `ldpAnalyticsCloudProject`, `ldpError`, `ldpErrorDate`, `ldpSettings`, `ldpWorkspaceName`, `marketplaceOrderType`, `order-metadata`, `opportunityProductFamily`, `opportunitySoldBy`, `opportunityStageName`, `opportunityTerritory`, `opportunityType`, `parentOpportunityId`, `partnerAccount`, `partnerFirstLineSupport`, `projectDescription`, `projectKey`, `projectSolution`, `renewal`, `salesforceOpportunityId`, `salesforcePricebookId`, `salesforceProjectId`, `trial-end-date`, `trial-error`, `trial-error-date`, `trial-notify-end-date`, `trial-settings`, `trial-start-date`, `trial-virtual-host`. The source is `liferay-one-site-initializer/site-initializer/expando-columns.json`.
 
@@ -255,7 +255,7 @@ Replaces `SubscriptionItem`. Each row corresponds to a Salesforce OpportunityLin
 | `userId` | long | |
 | `createDate`, `modifiedDate` | datetime | |
 
-**Custom fields:** `cloudRegion` (e.g. `us-central1`), `machineType` (`Standard` · `High`), `orderType` (`New Business` · `Renewal`), `sizing` (int), `startDate`, `endDate`, `effectiveEndDate` (endDate + 30-day grace period), `customStatus` (`Approved` · `Canceled` · `On Hold`), `spendLimit` (double; per-product spend cap), `opportunitySoldBy`
+**Custom fields:** `cloudRegion` (e.g. `us-central1`), `contractId` (long; ID of the Contract that matches the end date of the item), `machineType` (`Standard` · `High`), `orderType` (`New Business` · `Renewal`), `sizing` (int), `startDate`, `endDate`, `effectiveEndDate` (endDate + 30-day grace period), `customStatus` (`Approved` · `Canceled` · `On Hold`), `spendLimit` (double; per-product spend cap), `opportunitySoldBy`
 
 **Relationships:** parent of Entitlement (`commerceOrderItemToEntitlement`, disassociate).
 
@@ -288,7 +288,7 @@ Replaces `SubscriptionItem`. Each row corresponds to a Salesforce OpportunityLin
 | `renewalState` | string | |
 | `spendLimit` | double | Account-level spend cap from Salesforce |
 
-The contract has no status field. Its children are Entitlements (`contractToEntitlement`) and Environments (`contractToEnvironment`), both `disassociate`: deleting a contract keeps them. A Commerce Order links to its contract only through the order's `contractId` custom field.
+The contract has no status field. Its children are Entitlements (`contractToEntitlement`) and Environments (`contractToEnvironment`), both `disassociate`: deleting a contract keeps them. A Commerce Order Item links to its contract only through the `contractId` custom field of the item.
 
 ---
 

@@ -46,6 +46,15 @@ public class Contract {
 		else {
 			_endDateInstant = Instant.parse(endDate);
 		}
+
+		String startDate = jsonObject.optString("startDate");
+
+		if (Validator.isNull(startDate)) {
+			_startDateInstant = null;
+		}
+		else {
+			_startDateInstant = Instant.parse(startDate);
+		}
 	}
 
 	public long getAccountEntryId() {
@@ -84,6 +93,10 @@ public class Contract {
 		return _renewalOpportunityId;
 	}
 
+	public Instant getStartDateInstant() {
+		return _startDateInstant;
+	}
+
 	private final long _accountEntryId;
 	private final String _contractType;
 	private final Instant _endDateInstant;
@@ -93,5 +106,6 @@ public class Contract {
 	private final String _originalContractExternalReferenceCode;
 	private final String _projectExternalReferenceCode;
 	private final String _renewalOpportunityId;
+	private final Instant _startDateInstant;
 
 }
