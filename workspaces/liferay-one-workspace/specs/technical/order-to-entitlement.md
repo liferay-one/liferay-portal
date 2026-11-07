@@ -111,7 +111,7 @@ An opportunity can split its lines across projects through Salesforce `ProjectEn
 
 ### A Contract That Arrives Late
 
-The contract can reach Liferay after the opportunity. `ContractService.upsertContract` then calls `reconcileOpportunityContract`, and a scheduled job runs the same method every 15 minutes for contracts modified in the lookback window (`…/one/service/ContractService.java:167`, `:212`).
+The contract can reach Liferay after the opportunity. `ContractService.upsertContract` then calls `reconcileOpportunityContract`, and a scheduled job runs the same method every 15 minutes for contracts modified in the lookback window (`…/one/service/ContractService.java:411`, `:263`).
 
 ```mermaid
 sequenceDiagram
@@ -402,7 +402,7 @@ Since LPD-92222 there is no relationship from `L_COMMERCE_ORDER` to `C_PROJECT` 
 The consequences:
 
 - **Project orders** match by `salesforceProjectId` first. `projectName` is a fallback, so a renamed project still matches when the ID is present.
-- **One Time Purchases** are, on the order side, orders for which `hasProject` is false: no `salesforceProjectId`, no `order-metadata.salesforceProjectId`, no `projectName`, and no `koroneiki-project`. The Unassigned pseudo project lists them (`useProjectItems.ts:43`). On the order item side, the One Time Purchases pseudo contract of a project holds the order items of that project that meet two conditions. The contract of the order item is not one of the project's contracts. No project contract entitles the product of the order item (`hasOneTimeOrders`, `useProjectCommerce.ts`). On the entitlement side, the One Time Purchases pseudo contract holds the project's entitlements whose contract is not one of the project's contracts (`useProjectCommerce.ts:308`).
+- **One Time Purchases** are, on the order side, orders for which `hasProject` is false: no `salesforceProjectId`, no `order-metadata.salesforceProjectId`, no `projectName`, and no `koroneiki-project`. The Unassigned pseudo project lists them (`useProjectItems.ts:49`). On the order item side, the One Time Purchases option of a project appears when an order item of the project meets two conditions. The contract of the order item is not one of the project's contracts. No project contract entitles the product of the order item (`hasOneTimeOrders`, `useProjectCommerce.ts:392`). While a user selects the option, the row and the detail tabs of a product read every order of the product, which includes the orders of a project contract. The stakeholder accepted this behavior. On the entitlement side, the One Time Purchases pseudo contract holds the project's entitlements whose contract is not one of the project's contracts (`useProjectCommerce.ts:375`).
 - **Account level contracts** have no project. When a project has no contract of its own, `useProjectCommerce` falls back to the account level contracts (`usingAccountFallback`). Their entitlements reach a project only through `r_projectToEntitlement_c_projectERC`, which comes from the order's `salesforceProjectId`, or from the contract's project during reconcile.
 - **Self service orders** store the project in `order-metadata.salesforceProjectId` and have no order item `contractId`. The custom element counts the order for the project. The sidecar does not, so the entitlements of a self service order have no project and no contract. See Findings.
 
