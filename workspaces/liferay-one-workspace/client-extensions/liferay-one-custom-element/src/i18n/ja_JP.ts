@@ -1438,6 +1438,8 @@ export default {
 	'share-your-feedback': 'フィードバックを共有',
 	'shared-investigator-platform': '共有治験責任医師プラットフォーム',
 	'show-less': '表示を減らす',
+	'showing-the-first-x-of-x-members-type-to-narrow-the-results':
+		'{1} 人中最初の {0} 人のメンバーを表示しています。入力して結果を絞り込んでください。',
 	'showing-x-to-x-of-x': '{2} 件中 {0} 件から {1} 件を表示',
 	'sign-in': 'ログイン',
 	'sign-in-with-a-different-account': '別のアカウントでログイン',

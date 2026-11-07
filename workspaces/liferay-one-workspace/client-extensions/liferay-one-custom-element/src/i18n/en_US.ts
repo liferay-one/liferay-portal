@@ -1729,6 +1729,8 @@ export default {
 	'share-your-feedback': 'Share Your Feedback',
 	'shared-investigator-platform': 'Shared Investigator Platform',
 	'show-less': 'Show Less',
+	'showing-the-first-x-of-x-members-type-to-narrow-the-results':
+		'Showing the first {0} of {1} members. Type to narrow the results.',
 	'showing-x-to-x-of-x': 'Showing {0} to {1} of {2}',
 	'sign-in': 'Sign In',
 	'sign-in-with-a-different-account': 'Sign in with a Different Account',
