@@ -126,7 +126,7 @@ The code uses the Salesforce ID as the external reference code (ERC) with no pre
 | Account postal address | `<Account Id>-billing`, `<Account Id>-shipping` | Billing and shipping fields | `001…-billing` | `service/AccountService.java:596`, `:610` |
 | Account web URL | `<Account Id>-website` | `Website` | `001…-website` | `service/AccountService.java:515` |
 | AccountEntry | Account `Id` | Account | `001…` | `service/AccountService.java:732` |
-| C_CONTRACT | Contract `Id` | Contract | `800…` | `service/ContractService.java:277` |
+| C_CONTRACT | Contract `Id` | Contract | `800…` | `service/ContractService.java:429` |
 | C_PROJECT | Project__c `Id` | Project__c | custom object ID | `service/ProjectService.java:112` |
 | CommerceOrder | Opportunity `Id` | Opportunity | `006…` | `service/CommerceOrderService.java:693` |
 | CommerceOrder (project entitlement) | ProjectEntitlement__c `Id` | ProjectEntitlement__c | custom object ID | `service/ProvisioningProjectEntitlementService.java:386`, `service/CommerceOrderService.java:768` |
@@ -355,7 +355,7 @@ The object path calls `upsertAccount` with no "sold by" value, so it never write
 
 ### Contract
 
-`service/ContractService.java:259` skips a contract with no `Id` or no `AccountId`, with a warning. The create path is a `PATCH` by ERC, and a `PUT` on a 404 (`:443`). The update path fetches the contract and uses the create path when it does not exist (`:671`).
+`service/ContractService.java:415` skips a contract with no `Id` or no `AccountId`, with a warning. The create path is a `PATCH` by ERC, and a `PUT` on a 404 (`:632`). The update path fetches the contract and uses the create path when it does not exist (`:887`).
 
 | Salesforce Field | Transform | Liferay Target | Required | Missing Value | Source |
 | --- | --- | --- | --- | --- | --- |
