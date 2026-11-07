@@ -7,9 +7,13 @@ import {
 	getProjectExternalReferenceCode,
 	getProjectName,
 } from '~/hooks/useProjectOrders';
+import {isClosedWonOrder} from '~/utils/orderUtils';
+
+import type {PlacedOrderItems} from '~/types/orders';
 
 type ProjectOrder = {
 	customFields?: {[key: string]: string};
+	placedOrderItems?: Pick<PlacedOrderItems, 'customFields'>[];
 };
 
 type OrderedProject = {
@@ -24,7 +28,7 @@ export function getProjectsWithOrders<T extends OrderedProject>(
 	const projectExternalReferenceCodes = new Set<string>();
 	const projectNames = new Set<string>();
 
-	placedOrders.forEach((order) => {
+	placedOrders.filter(isClosedWonOrder).forEach((order) => {
 		const projectExternalReferenceCode =
 			getProjectExternalReferenceCode(order);
 
