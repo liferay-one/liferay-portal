@@ -46,8 +46,10 @@ public class CommerceOrderConstants {
 
 	public static final String ORDER_TYPE_EXTERNAL_REFERENCE_CODE_LDP = "LDP";
 
-	public static final List<String> cloudAppOrderTypeExternalReferenceCodes =
-		Collections.unmodifiableList(Arrays.asList("CLOUDAPP", "CLOUD_APP"));
+	public static final List<String>
+		cloudInstallableOrderTypeExternalReferenceCodes =
+			Collections.unmodifiableList(
+				Arrays.asList("CLIENT_EXTENSION", "CLOUDAPP", "CLOUD_APP"));
 	public static final List<String>
 		selfServiceTrialOrderTypeExternalReferenceCodes =
 			Collections.unmodifiableList(
