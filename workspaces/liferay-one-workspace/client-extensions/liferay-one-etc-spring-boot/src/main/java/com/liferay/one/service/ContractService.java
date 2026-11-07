@@ -183,6 +183,83 @@ public class ContractService extends OneBaseService {
 			Contract::new);
 	}
 
+	public void hideContract(String externalReferenceCode) throws Exception {
+		Contract contract = fetchContractByExternalReferenceCode(
+			externalReferenceCode);
+
+		if (contract == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to hide contract " + externalReferenceCode +
+						" because it does not exist");
+			}
+
+			return;
+		}
+
+		int failureCount = 0;
+
+		if (contract.getAccountEntryId() > 0) {
+			for (Order order :
+					_commerceOrderService.getAccountOrders(
+						contract.getAccountEntryId())) {
+
+				try {
+					_unlinkOrderItems(contract.getId(), order);
+				}
+				catch (Exception exception) {
+					failureCount++;
+
+					_log.error(
+						StringBundler.concat(
+							"Unable to unlink the items of order ",
+							order.getId(), " from contract ",
+							externalReferenceCode),
+						exception);
+				}
+			}
+		}
+
+		for (Entitlement entitlement :
+				_entitlementService.getEntitlements(
+					"r_contractToEntitlement_c_contractId eq '" +
+						contract.getId() + "'")) {
+
+			try {
+				_entitlementService.updateEntitlementContract(
+					entitlement.getEntitlementId(), 0);
+			}
+			catch (Exception exception) {
+				failureCount++;
+
+				_log.error(
+					StringBundler.concat(
+						"Unable to unlink entitlement ",
+						entitlement.getEntitlementId(), " from contract ",
+						externalReferenceCode),
+					exception);
+			}
+		}
+
+		if (failureCount > 0) {
+			throw new Exception(
+				StringBundler.concat(
+					"Unable to hide contract ", externalReferenceCode,
+					" because ", failureCount, " unlink steps failed"));
+		}
+
+		patch(
+			getAuthorization(),
+			new JSONObject(
+			).put(
+				"opportunityId", ""
+			).toString(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/contracts/" + contract.getId()
+			).build(
+			).toUri());
+	}
+
 	public void reconcileOpportunityContract(String opportunityId)
 		throws Exception {
 
@@ -772,6 +849,30 @@ public class ContractService extends OneBaseService {
 		}
 
 		return value;
+	}
+
+	private void _unlinkOrderItems(long contractId, Order order)
+		throws Exception {
+
+		OrderItem[] orderItems = order.getOrderItems();
+
+		if (orderItems == null) {
+			return;
+		}
+
+		Map<Long, Map<String, Object>> customFieldValuesMap = new HashMap<>();
+
+		for (OrderItem orderItem : orderItems) {
+			if (CommerceOrderItemUtil.getContractId(orderItem) != contractId) {
+				continue;
+			}
+
+			customFieldValuesMap.put(
+				orderItem.getId(), Map.of("contractId", 0L));
+		}
+
+		_commerceOrderItemService.patchOrderItemCustomFields(
+			customFieldValuesMap, order);
 	}
 
 	private String _updateContract(

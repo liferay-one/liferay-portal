@@ -331,7 +331,7 @@ const OKTA_USERS_SAMPLES: PubSubSample[] = OKTA_USER_EVENT_TYPES.map(
 
 const SALESFORCE_OBJECT_ACTIONS: [string, string[]][] = [
 	['Account', ['update']],
-	['Contract', ['insert', 'update']],
+	['Contract', ['insert', 'update', 'delete']],
 	['PricebookEntry', ['update', 'delete']],
 	['Product2', ['update', 'delete']],
 	['Project__c', ['update']],
