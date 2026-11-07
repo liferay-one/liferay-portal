@@ -23,6 +23,7 @@ import type {
 	AccountInspection,
 	AccountTreeNode,
 	InspectedEntry,
+	InspectedOrder,
 } from '~/types/accountInspection';
 
 import type {SeverityIndex} from './accountTreeNodeUtils';
@@ -48,6 +49,10 @@ function groupBy<Entry>(
 
 function toPlacementKey(contractId: number, projectId: number) {
 	return `${contractId}/${projectId}`;
+}
+
+function toOrderItemsKey(contractId: number, orderId: number) {
+	return `${contractId}/${orderId}`;
 }
 
 function buildTreeIndex(inspection: AccountInspection) {
@@ -84,6 +89,29 @@ function buildTreeIndex(inspection: AccountInspection) {
 
 		return projectIds.has(id) ? id : NO_PROJECT_ID;
 	};
+
+	const getItemContractIds = (order: InspectedOrder) => {
+		const orderContractIds = new Set(
+			(order.orderItems ?? []).map(({customFields}) =>
+				toContractId(customFields?.contractId)
+			)
+		);
+
+		return orderContractIds.size ? [...orderContractIds] : [NO_CONTRACT_ID];
+	};
+
+	const orderPlacements = orders.items.flatMap((order) =>
+		getItemContractIds(order).map((contractId) => ({contractId, order}))
+	);
+
+	const ordersByPlacement = groupBy(orderPlacements, ({contractId, order}) =>
+		toPlacementKey(
+			contractId,
+			projectIdsByName.get(
+				String(order.customFields?.projectName ?? '')
+			) ?? NO_PROJECT_ID
+		)
+	);
 
 	const byProject = (entries: InspectedEntry[], fieldName: string) =>
 		groupBy(entries, (entry) => toProjectId(entry[fieldName]));
@@ -133,14 +161,14 @@ function buildTreeIndex(inspection: AccountInspection) {
 			related.licenseKeys.items.filter(isUnderEntitlement),
 			getEntitlementId
 		),
-		orderItems: groupBy(orderItems, ({orderId}) => orderId ?? 0),
-		orders: groupBy(orders.items, ({customFields}) =>
-			toPlacementKey(
+		orderItems: groupBy(orderItems, ({customFields, orderId}) =>
+			toOrderItemsKey(
 				toContractId(customFields?.contractId),
-				projectIdsByName.get(String(customFields?.projectName ?? '')) ??
-					NO_PROJECT_ID
+				orderId ?? 0
 			)
 		),
+		orders: (placementKey: string) =>
+			ordersByPlacement(placementKey).map(({order}) => order),
 		projectMemberships: byProject(
 			related.projectMemberships.items,
 			'r_projectToProjectMembership_c_projectId'
@@ -195,7 +223,7 @@ function buildPlacementChildren(
 				toGroupNode(
 					orderKey,
 					'orderItems',
-					index.orderItems(order.id),
+					index.orderItems(toOrderItemsKey(contractId, order.id)),
 					severityIndex,
 					(orderItem, orderItemKey) =>
 						buildEntitlementNodes(

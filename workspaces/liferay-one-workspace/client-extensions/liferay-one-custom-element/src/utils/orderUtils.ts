@@ -58,7 +58,6 @@ export function isBillingAddress(address: {type?: number}) {
 export const OrderCustomFields = {
 	CLOUD_PROJECT_NAME: 'cloudProjectName',
 	CLOUD_PROVISIONING: 'cloud-provisioning',
-	CONTRACT_ID: 'contractId',
 	KORONEIKI_PROJECT: 'koroneiki-project',
 	LDP_ANALYTICS_CLOUD_PROJECT: 'ldpAnalyticsCloudProject',
 	ORDER_METADATA: 'order-metadata',
@@ -256,10 +255,11 @@ export function toStatusToken(label: string): string {
 	return STATUS_TOKEN_ALIASES[token] ?? token;
 }
 
-export function getOrderContractId(placedOrder: PlacedOrder): number {
-	const contractId = Number(
-		placedOrder.customFields?.[OrderCustomFields.CONTRACT_ID]
-	);
+export function getPlacedOrderItemContractId(
+	placedOrder: PlacedOrder,
+	placedOrderItem: PlacedOrderItems
+): number {
+	const contractId = Number(placedOrderItem.customFields?.contractId);
 
 	if (contractId) {
 		return contractId;
@@ -299,9 +299,18 @@ export function getContractProductOrders(
 		return productOrders;
 	}
 
-	const contractOrders = productOrders.filter(
-		(placedOrder) => getOrderContractId(placedOrder) === contractId
-	);
+	const contractOrders = productOrders.flatMap((placedOrder) => {
+		const contractItems = (placedOrder.placedOrderItems ?? []).filter(
+			(placedOrderItem) =>
+				placedOrderItem.productId === productId &&
+				getPlacedOrderItemContractId(placedOrder, placedOrderItem) ===
+					contractId
+		);
+
+		return contractItems.length
+			? [{...placedOrder, placedOrderItems: contractItems}]
+			: [];
+	});
 
 	return contractOrders.length ? contractOrders : productOrders;
 }

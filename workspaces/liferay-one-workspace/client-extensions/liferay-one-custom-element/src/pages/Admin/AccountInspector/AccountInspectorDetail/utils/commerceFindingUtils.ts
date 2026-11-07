@@ -66,11 +66,17 @@ export function getOrderChecks({
 		...toFinding(
 			'orders',
 			contractIds
-				? getIds(orders.items, ({customFields}) => {
-						const contractId = toNumber(customFields?.contractId);
+				? getIds(orders.items, ({orderItems}) =>
+						(orderItems ?? []).some(({customFields}) => {
+							const contractId = toNumber(
+								customFields?.contractId
+							);
 
-						return contractId !== 0 && !contractIds.has(contractId);
-					})
+							return (
+								contractId !== 0 && !contractIds.has(contractId)
+							);
+						})
+					)
 				: [],
 			'orders-reference-contracts-outside-the-account',
 			'danger'

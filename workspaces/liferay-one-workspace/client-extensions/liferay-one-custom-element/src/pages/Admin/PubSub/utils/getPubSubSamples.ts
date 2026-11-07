@@ -117,6 +117,21 @@ function getSalesforceAccount(ids: SalesforceIds) {
 	};
 }
 
+function getSalesforceContract(ids: SalesforceIds) {
+	return {
+		AccountId: ids.accountId,
+		ContractTerm: 12,
+		EndDate: toDateString(addYears(new Date(), 1)),
+		Id: ids.contractId,
+		Name: `Sample Contract ${ids.contractId.slice(-6)}`,
+		Project__c: ids.projectId,
+		SBQQ__Opportunity__c: ids.opportunityId,
+		SBQQ__OpportunityPricebookId__c: ids.pricebook2Id,
+		SBQQ__RenewalOpportunity__c: '',
+		StartDate: toDateString(new Date()),
+	};
+}
+
 function getSalesforceId(keyPrefix: string) {
 	return keyPrefix + getRandomString(15);
 }
@@ -160,14 +175,7 @@ function getSalesforceObjectRecord(
 		return getSalesforceAccount(ids);
 	}
 	else if (salesforceObjectName === 'Contract') {
-		return {
-			AccountId: ids.accountId,
-			ContractTerm: 12,
-			EndDate: endDate,
-			Id: ids.contractId,
-			SBQQ__Opportunity__c: ids.opportunityId,
-			StartDate: startDate,
-		};
+		return getSalesforceContract(ids);
 	}
 	else if (salesforceObjectName === 'PricebookEntry') {
 		return {
@@ -221,6 +229,7 @@ function getSalesforceOpportunityPayload(stageName: string, type: string) {
 					...getSalesforceAccount(ids),
 					'Owner.Email': 'sample.owner@example.com',
 				},
+				contracts: [getSalesforceContract(ids)],
 				opportunity: {
 					'AccountId': ids.accountId,
 					'First_Line_Support__c': false,

@@ -22,6 +22,7 @@ export type InspectedCollection<Entry = InspectedEntry> = {
 };
 
 export type InspectedOrderItem = InspectedEntry & {
+	customFields?: Record<string, unknown>;
 	name?: Record<string, string>;
 	orderId?: number;
 	quantity?: number;
