@@ -107,6 +107,28 @@ public class ConsoleRestControllerTest {
 	}
 
 	@Test
+	public void testPostProvisioningOrderDeploysClientExtensionOrderType()
+		throws Exception {
+
+		_whenFetchCommerceOrder(
+			_createOrder(
+				"CLIENT_EXTENSION",
+				CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED));
+
+		ResponseEntity<Void> responseEntity =
+			_consoleRestController.postProvisioningOrder(
+				null, _ORDER_ID, _createProvisioningJSON(_PROJECT_ID));
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_cloudAppService
+		).deployCloudApp(
+			_ORDER_ID, _ORDER_ITEM_ID, _PROJECT_ID
+		);
+	}
+
+	@Test
 	public void testPostProvisioningOrderDeploysDXPOrderType()
 		throws Exception {
 

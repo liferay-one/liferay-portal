@@ -135,6 +135,24 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEPRODUCTTABCONFIG] resolveProductTabConf
 		expect(config.utilizationProfile).toBeUndefined();
 	});
 
+	it('shows the activation and download tabs for a client extension application', () => {
+		const config = resolveProductTabConfig({
+			activeSkuExternalReferenceCodes: [],
+			hasActiveExperienceOffering: false,
+			itemType: 'application',
+			product: toProduct({type: 'client-extension'}),
+		});
+
+		expect(config.activationProfile).toBe('app-provisioning');
+		expect(config.downloadProfile).toBe('app');
+		expect(config.tabKeys).toEqual([
+			'details',
+			'activation',
+			'download',
+			'orders',
+		]);
+	});
+
 	it('shows the activation tab and no download tab for a cloud application', () => {
 		const config = resolveProductTabConfig({
 			activeSkuExternalReferenceCodes: [],
