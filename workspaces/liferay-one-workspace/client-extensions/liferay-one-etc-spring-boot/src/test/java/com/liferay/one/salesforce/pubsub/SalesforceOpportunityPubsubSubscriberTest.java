@@ -2224,7 +2224,11 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		inOrder.verify(
 			_contractService
 		).updateEntitlementContracts(
-			Mockito.any(Order.class), Mockito.anyList(), Mockito.eq(true)
+			Mockito.any(Order.class),
+			Mockito.argThat(
+				salesforceOpportunityLineItems -> _hasLineItemIds(
+					salesforceOpportunityLineItems, "LINE-1")),
+			Mockito.eq(true)
 		);
 
 		inOrder.verify(
@@ -2251,7 +2255,11 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_contractService, Mockito.times(2)
 		).updateEntitlementContracts(
-			Mockito.any(Order.class), Mockito.anyList(), Mockito.eq(true)
+			Mockito.any(Order.class),
+			Mockito.argThat(
+				salesforceOpportunityLineItems -> _hasLineItemIds(
+					salesforceOpportunityLineItems, "LINE-1")),
+			Mockito.eq(true)
 		);
 
 		ArgumentCaptor<List<Contract>> contractsArgumentCaptor =
@@ -2394,6 +2402,16 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		Assertions.assertEquals(
 			"LINE-1", salesforceOpportunityLineItem.getId());
+
+		Mockito.verify(
+			_contractService
+		).updateEntitlementContracts(
+			Mockito.any(Order.class),
+			Mockito.argThat(
+				relinkedSalesforceOpportunityLineItems -> _hasLineItemIds(
+					relinkedSalesforceOpportunityLineItems, "LINE-1")),
+			Mockito.eq(true)
+		);
 
 		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
 			ArgumentCaptor.forClass(List.class);
@@ -3316,6 +3334,21 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			SalesforceModelTestUtil.createAccountJSONObject(
 				_ACCOUNT_ID_SF, "Test Salesforce Account"),
 			opportunityJSONObject, new JSONArray(), new JSONArray(), null);
+	}
+
+	private boolean _hasLineItemIds(
+		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
+		String... lineItemIds) {
+
+		List<String> actualLineItemIds = new ArrayList<>();
+
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
+			actualLineItemIds.add(salesforceOpportunityLineItem.getId());
+		}
+
+		return actualLineItemIds.equals(List.of(lineItemIds));
 	}
 
 	private void _receiveOpportunityMessage(JSONObject recordJSONObject)

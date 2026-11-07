@@ -16,6 +16,7 @@ import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.salesforce.model.SalesforceContract;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
+import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 
 import java.net.URI;
@@ -237,6 +238,29 @@ public class ContractServiceTest {
 			List.of("PATCH /o/c/contracts/77"), _testContractService.requests);
 		Assertions.assertEquals(
 			"{\"opportunityId\":\"\"}", _testContractService.bodies.get(0));
+	}
+
+	@Test
+	public void testHideContractDoesNotTouchAnAIHubOrderItemWithOnlyTheMetadataContract()
+		throws Exception {
+
+		OrderItem orderItem = _createOrderItem(11, "2027-11-01T00:00:00Z", 0L);
+
+		Order aiHubOrder = _createOrder(
+			Map.of("order-metadata", "{\"contractEntityId\": 77}"), orderItem);
+
+		_whenHideContractFindsTheLinks(aiHubOrder);
+
+		_testContractService.hideContract("C1");
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(), aiHubOrder
+		);
+
+		Assertions.assertEquals(
+			77L, CommerceOrderItemUtil.getContractId(aiHubOrder, orderItem));
 	}
 
 	@Test
@@ -487,6 +511,58 @@ public class ContractServiceTest {
 
 		Assertions.assertEquals(
 			List.of("PATCH /o/c/contracts/77"), _testContractService.requests);
+	}
+
+	@Test
+	public void testHideContractThrowsWhenReadingTheAccountOrdersFails()
+		throws Exception {
+
+		_whenHideContractFindsTheLinks(
+			_createOrder(
+				Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 77L)));
+
+		IllegalStateException illegalStateException =
+			new IllegalStateException();
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenThrow(
+			illegalStateException
+		);
+
+		Assertions.assertSame(
+			illegalStateException,
+			Assertions.assertThrows(
+				IllegalStateException.class,
+				() -> _testContractService.hideContract("C1")));
+
+		Assertions.assertTrue(_testContractService.requests.isEmpty());
+	}
+
+	@Test
+	public void testHideContractThrowsWhenReadingTheEntitlementsFails()
+		throws Exception {
+
+		_whenHideContractFindsTheLinks(
+			_createOrder(
+				Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 77L)));
+
+		IllegalStateException illegalStateException =
+			new IllegalStateException();
+
+		Mockito.when(
+			_entitlementService.getEntitlements(_CONTRACT_ENTITLEMENTS_FILTER)
+		).thenThrow(
+			illegalStateException
+		);
+
+		Assertions.assertSame(
+			illegalStateException,
+			Assertions.assertThrows(
+				IllegalStateException.class,
+				() -> _testContractService.hideContract("C1")));
+
+		Assertions.assertTrue(_testContractService.requests.isEmpty());
 	}
 
 	@Test
