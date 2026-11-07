@@ -51,6 +51,8 @@ public class ProvisioningEnvironmentServiceTest {
 		_contract = new Contract(
 			new JSONObject(
 			).put(
+				"endDate", "2027-03-31T00:00:00Z"
+			).put(
 				"externalReferenceCode", _CONTRACT_ERC
 			).put(
 				"id", 5000L
@@ -74,7 +76,8 @@ public class ProvisioningEnvironmentServiceTest {
 		);
 
 		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
-			_account, _contract, List.of(_createCloudNativeLineItem()));
+			_account, List.of(_contract),
+			List.of(_createCloudNativeLineItem()));
 
 		ArgumentCaptor<String> activationCodeArgumentCaptor =
 			ArgumentCaptor.forClass(String.class);
@@ -130,7 +133,8 @@ public class ProvisioningEnvironmentServiceTest {
 		);
 
 		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
-			_account, _contract, List.of(_createCloudNativeLineItem()));
+			_account, List.of(_contract),
+			List.of(_createCloudNativeLineItem()));
 
 		Mockito.verify(
 			_environmentService
@@ -142,16 +146,38 @@ public class ProvisioningEnvironmentServiceTest {
 	}
 
 	@Test
+	public void testProvisionCloudNativeEnvironmentsSkipsWithTwoContractsWithoutMatch()
+		throws Exception {
+
+		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
+			_account,
+			List.of(
+				_contract,
+				new Contract(
+					new JSONObject(
+					).put(
+						"endDate", "2029-03-31T00:00:00Z"
+					).put(
+						"externalReferenceCode", "C_CONTRACT_OTHER"
+					).put(
+						"id", 5001L
+					))),
+			List.of(_createUnmatchedCloudNativeLineItem()));
+
+		Mockito.verifyNoInteractions(_environmentService);
+	}
+
+	@Test
 	public void testProvisionCloudNativeEnvironmentsSkipsWithoutCloudNative()
 		throws Exception {
 
 		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
-			_account, _contract,
+			_account, List.of(_contract),
 			List.of(
 				new SalesforceOpportunityLineItem(
 					SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
-						"USD", null, "LINE-1", "PROD-1", "PaaS Experience",
-						"Subscription", 1, null))));
+						"USD", "2027-03-31", "LINE-1", "PROD-1",
+						"PaaS Experience", "Subscription", 1, null))));
 
 		Mockito.verifyNoInteractions(_environmentService);
 	}
@@ -161,15 +187,50 @@ public class ProvisioningEnvironmentServiceTest {
 		throws Exception {
 
 		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
-			_account, null, List.of(_createCloudNativeLineItem()));
+			_account, Collections.emptyList(),
+			List.of(_createCloudNativeLineItem()));
 
 		Mockito.verifyNoInteractions(_environmentService);
+	}
+
+	@Test
+	public void testProvisionCloudNativeEnvironmentsUsesTheSingleContractWithoutMatch()
+		throws Exception {
+
+		Mockito.when(
+			_environmentService.getEnvironments(Mockito.anyString())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		_provisioningEnvironmentService.provisionCloudNativeEnvironments(
+			_account, List.of(_contract),
+			List.of(_createUnmatchedCloudNativeLineItem()));
+
+		Mockito.verify(
+			_environmentService, Mockito.times(3)
+		).addCloudNativeEnvironment(
+			Mockito.eq(_ACCOUNT_ID), Mockito.anyString(),
+			Mockito.eq(_CONTRACT_ERC), Mockito.eq(_PROJECT_ERC),
+			Mockito.anyString()
+		);
 	}
 
 	private SalesforceOpportunityLineItem _createCloudNativeLineItem() {
 		return new SalesforceOpportunityLineItem(
 			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
-				"USD", null, "LINE-1", "PROD-1",
+				"USD", "2027-03-31", "LINE-1", "PROD-1",
+				CommerceProductConstants.
+					NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE,
+				"Subscription", 1, null));
+	}
+
+	private SalesforceOpportunityLineItem
+		_createUnmatchedCloudNativeLineItem() {
+
+		return new SalesforceOpportunityLineItem(
+			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+				"USD", "2028-03-31", "LINE-1", "PROD-1",
 				CommerceProductConstants.
 					NAME_LIFERAY_CLOUD_NATIVE_STANDARD_OPERATIONS_BUNDLE,
 				"Subscription", 1, null));

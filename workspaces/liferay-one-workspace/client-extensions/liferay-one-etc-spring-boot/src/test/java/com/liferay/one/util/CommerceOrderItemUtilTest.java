@@ -7,6 +7,7 @@ package com.liferay.one.util;
 
 import com.liferay.headless.commerce.admin.order.client.custom.field.CustomField;
 import com.liferay.headless.commerce.admin.order.client.custom.field.CustomValue;
+import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.constants.CommerceOrderItemConstants;
 
@@ -28,6 +29,35 @@ import org.junit.jupiter.api.Test;
  */
 @DisplayName("[CLS-COMMERCEORDERITEMUTIL] CommerceOrderItemUtil")
 public class CommerceOrderItemUtilTest {
+
+	@Test
+	public void testGetContractIdFallsBackToTheAIHubOrderContract() {
+		Order order = _createOrder("{\"contractEntityId\": 9}");
+
+		Assertions.assertEquals(
+			9L, CommerceOrderItemUtil.getContractId(order, _createOrderItem()));
+		Assertions.assertEquals(
+			9L,
+			CommerceOrderItemUtil.getContractId(
+				order, _createOrderItem("contractId", "0")));
+	}
+
+	@Test
+	public void testGetContractIdIsZeroWithoutAContract() {
+		Assertions.assertEquals(
+			0L,
+			CommerceOrderItemUtil.getContractId(
+				_createOrder(null), _createOrderItem()));
+	}
+
+	@Test
+	public void testGetContractIdPrefersTheOrderItemContract() {
+		Assertions.assertEquals(
+			5L,
+			CommerceOrderItemUtil.getContractId(
+				_createOrder("{\"contractEntityId\": 9}"),
+				_createOrderItem("contractId", "5")));
+	}
 
 	@Test
 	public void testGetEntitlementEffectiveEndDateInstantFallsBackToEndDate() {
@@ -250,6 +280,16 @@ public class CommerceOrderItemUtilTest {
 		Assertions.assertEquals(
 			Map.of("edition", "Enterprise"),
 			CommerceOrderItemUtil.getProductOptions(orderItem));
+	}
+
+	private Order _createOrder(String orderMetadata) {
+		Order order = new Order();
+
+		if (orderMetadata != null) {
+			order.setCustomFields(Map.of("order-metadata", orderMetadata));
+		}
+
+		return order;
 	}
 
 	private OrderItem _createOrderItem(String... namesAndValues) {

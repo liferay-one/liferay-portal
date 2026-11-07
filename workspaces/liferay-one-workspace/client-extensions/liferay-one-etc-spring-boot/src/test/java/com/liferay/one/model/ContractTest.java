@@ -73,6 +73,8 @@ public class ContractTest {
 				"r_projectToContract_c_projectERC", "PROJECT_ERC"
 			).put(
 				"renewalOpportunityId", "OPP-2"
+			).put(
+				"startDate", "2026-07-01T00:00:00Z"
 			));
 
 		Assertions.assertEquals("subscription", contract.getContractType());
@@ -89,6 +91,24 @@ public class ContractTest {
 		Assertions.assertEquals(
 			"PROJECT_ERC", contract.getProjectExternalReferenceCode());
 		Assertions.assertEquals("OPP-2", contract.getRenewalOpportunityId());
+		Assertions.assertEquals(
+			Instant.parse("2026-07-01T00:00:00Z"),
+			contract.getStartDateInstant());
+	}
+
+	@Test
+	public void testStartDateInstantIsNullWhenBlank() {
+		Assertions.assertNull(
+			new Contract(
+				new JSONObject()
+			).getStartDateInstant());
+		Assertions.assertNull(
+			new Contract(
+				new JSONObject(
+				).put(
+					"startDate", ""
+				)
+			).getStartDateInstant());
 	}
 
 }
