@@ -13,6 +13,7 @@ import com.liferay.one.exception.AmbiguousContractChainException;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.salesforce.model.SalesforceContract;
+import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.one.util.ContractUtil;
 import com.liferay.petra.string.StringBundler;
@@ -27,6 +28,7 @@ import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -275,6 +277,57 @@ public class ContractService extends OneBaseService {
 		}
 		finally {
 			_reconciling.set(false);
+		}
+	}
+
+	public void updateEntitlementContracts(
+			Order order,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
+			boolean unlinkUnmatched)
+		throws Exception {
+
+		OrderItem[] orderItems = order.getOrderItems();
+
+		if (orderItems == null) {
+			return;
+		}
+
+		Set<String> salesforceOpportunityLineItemIds = new HashSet<>();
+
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
+			salesforceOpportunityLineItemIds.add(
+				salesforceOpportunityLineItem.getId());
+		}
+
+		Map<Long, OrderItem> orderItemsMap = new HashMap<>();
+
+		for (OrderItem orderItem : orderItems) {
+			if (!salesforceOpportunityLineItemIds.contains(
+					orderItem.getExternalReferenceCode())) {
+
+				continue;
+			}
+
+			orderItemsMap.put(orderItem.getId(), orderItem);
+		}
+
+		for (Entitlement entitlement :
+				_entitlementService.getOrderItemEntitlements(
+					new ArrayList<>(orderItemsMap.keySet()))) {
+
+			long contractId = CommerceOrderItemUtil.getContractId(
+				order, orderItemsMap.get(entitlement.getCommerceOrderItemId()));
+
+			if (((contractId == 0) && !unlinkUnmatched) ||
+				(entitlement.getContractId() == contractId)) {
+
+				continue;
+			}
+
+			_entitlementService.updateEntitlementContract(
+				entitlement.getEntitlementId(), contractId);
 		}
 	}
 

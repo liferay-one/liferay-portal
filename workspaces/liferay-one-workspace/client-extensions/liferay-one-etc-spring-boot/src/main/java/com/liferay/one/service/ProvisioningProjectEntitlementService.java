@@ -256,7 +256,11 @@ public class ProvisioningProjectEntitlementService {
 				GetterUtil.getString(
 					customFields.get("salesforceOpportunityId"))),
 			order, List.of(salesforceOpportunityLineItem),
-			OpportunityConstants.STAGE_NAME_CLOSED_WON);
+			OpportunityConstants.STAGE_NAME_CLOSED_WON, false);
+
+		_updateEntitlementContracts(
+			order, projectEntitlementId, List.of(salesforceOpportunityLineItem),
+			false, new ArrayList<>());
 
 		if (!_isCompleted(order)) {
 			_commerceOrderService.completeOrder(
@@ -429,7 +433,7 @@ public class ProvisioningProjectEntitlementService {
 			try {
 				_commerceOrderItemService.upsertOrderItems(
 					contracts, order, skuSalesforceOpportunityLineItems,
-					salesforceOpportunity.getStageName());
+					salesforceOpportunity.getStageName(), true);
 
 				provisionedOrderItemCount =
 					skuSalesforceOpportunityLineItems.size();
@@ -448,6 +452,12 @@ public class ProvisioningProjectEntitlementService {
 						exception);
 				}
 			}
+		}
+
+		if (provisionedOrderItemCount > 0) {
+			_updateEntitlementContracts(
+				order, projectEntitlementId, skuSalesforceOpportunityLineItems,
+				true, warningMessages);
 		}
 
 		if ((provisionedOrderItemCount > 0) && !_isCompleted(order)) {
@@ -513,6 +523,24 @@ public class ProvisioningProjectEntitlementService {
 
 		_commerceOrderItemService.patchOrderItemCustomFields(
 			customFieldValuesMap, order);
+	}
+
+	private void _updateEntitlementContracts(
+		Order order, String projectEntitlementId,
+		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
+		boolean unlinkUnmatched, List<String> warningMessages) {
+
+		try {
+			_contractService.updateEntitlementContracts(
+				order, salesforceOpportunityLineItems, unlinkUnmatched);
+		}
+		catch (Exception exception) {
+			_addWarning(
+				warningMessages,
+				"Unable to update the entitlement contracts of project " +
+					"entitlement " + projectEntitlementId,
+				exception);
+		}
 	}
 
 	private void _validateSku(
