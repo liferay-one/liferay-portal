@@ -9,9 +9,14 @@ import {Liferay} from '~/services/liferay/liferay';
 
 import {useProjectContacts} from './useProjectContacts';
 
-const {useFetchMock} = vi.hoisted(() => ({useFetchMock: vi.fn()}));
+const {useFetchMock, useObjectItemsMock} = vi.hoisted(() => ({
+	useFetchMock: vi.fn(),
+	useObjectItemsMock: vi.fn(),
+}));
 
 vi.mock('~/hooks/useFetch', () => ({useFetch: useFetchMock}));
+
+vi.mock('~/hooks/useObjectItems', () => ({default: useObjectItemsMock}));
 
 const CONTACT_ROLE = 'C_SECURITY_INCIDENT_CONTACT';
 
@@ -44,6 +49,17 @@ function mockResponses(
 describe('[HOOK-USEPROJECTCONTACTS] useProjectContacts', () => {
 	beforeEach(() => {
 		useFetchMock.mockReset();
+		useObjectItemsMock.mockReset();
+		useObjectItemsMock.mockImplementation((path: string | null) => {
+			const {data, error, isLoading, mutate} = useFetchMock(path) ?? {};
+
+			return {
+				error,
+				items: data?.items,
+				loading: isLoading,
+				revalidate: mutate,
+			};
+		});
 
 		Liferay.CommerceContext.account = {
 			accountId: 42,
@@ -98,8 +114,9 @@ describe('[HOOK-USEPROJECTCONTACTS] useProjectContacts', () => {
 			useProjectContacts('PRJCT-1', CONTACT_ROLE)
 		);
 
-		expect(useFetchMock.mock.calls.at(-1)?.[0]).toBe(
-			'/o/headless-admin-user/v1.0/accounts/42/user-accounts'
+		expect(useObjectItemsMock).toHaveBeenLastCalledWith(
+			'/o/headless-admin-user/v1.0/accounts/42/user-accounts',
+			{fields: 'emailAddress,id,name', sort: 'givenName:asc'}
 		);
 		expect(result.current.contacts).toEqual([
 			{emailAddress: 'ana@example.com', name: 'Ana'},
