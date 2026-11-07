@@ -145,6 +145,11 @@ public class LicenseKeyGenerateFormService {
 		return entitlement.getLicenseKeyType();
 	}
 
+	public static String getMinimumVersion(Product product) {
+		return CommerceProductUtil.getSpecificationValue(
+			product, ProductSpecificationConstants.KEY_MINIMUM_DXP_VERSION);
+	}
+
 	public static String getProductId(
 		Entitlement entitlement, Product product) {
 
@@ -192,13 +197,9 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	public static boolean isMinimumVersion(
-		String licenseKeyFamily, String version) {
+		String minimumVersion, String version) {
 
-		String minimumVersion =
-			LicenseKeyGenerationConstants.minimumLicenseKeyFamilyVersions.get(
-				licenseKeyFamily);
-
-		if (minimumVersion == null) {
+		if (Validator.isNull(minimumVersion)) {
 			return true;
 		}
 
@@ -362,10 +363,11 @@ public class LicenseKeyGenerateFormService {
 		return _isAllowPermanentLicenses(_accountService.getAccount(accountId));
 	}
 
-	public boolean isLicensedForVersion(String licenseKeyFamily, String version)
+	public boolean isLicensedForVersion(
+			String licenseKeyFamily, String minimumVersion, String version)
 		throws Exception {
 
-		if (!isMinimumVersion(licenseKeyFamily, version)) {
+		if (!isMinimumVersion(minimumVersion, version)) {
 			return false;
 		}
 
@@ -534,7 +536,8 @@ public class LicenseKeyGenerateFormService {
 					entitlement, externalReferenceCode,
 					generatesActivationKeyExternalReferenceCodes.contains(
 						externalReferenceCode),
-					licenseKeyFamily, getProductName(entitlement, product)));
+					licenseKeyFamily, getMinimumVersion(product),
+					getProductName(entitlement, product)));
 		}
 
 		return entitledProducts;
@@ -640,9 +643,8 @@ public class LicenseKeyGenerateFormService {
 
 			boolean hasLicenseEntries = !licensedVersionsJSONArray.isEmpty();
 
-			boolean hasMinimumVersion =
-				LicenseKeyGenerationConstants.minimumLicenseKeyFamilyVersions.
-					containsKey(entitledProduct.getLicenseKeyFamily());
+			boolean hasMinimumVersion = Validator.isNotNull(
+				entitledProduct.getMinimumVersion());
 
 			if (!hasLicenseEntries && hasMinimumVersion) {
 				licensedVersionsJSONArray = _toVersionsJSONArray(
@@ -650,8 +652,7 @@ public class LicenseKeyGenerateFormService {
 			}
 
 			licensedVersionsJSONArray = _toMinimumVersionsJSONArray(
-				entitledProduct.getLicenseKeyFamily(),
-				licensedVersionsJSONArray);
+				licensedVersionsJSONArray, entitledProduct.getMinimumVersion());
 
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
 				admin, allowComplimentary, allowPermanentLicenses,
@@ -1345,11 +1346,9 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private JSONArray _toMinimumVersionsJSONArray(
-		String licenseKeyFamily, JSONArray versionsJSONArray) {
+		JSONArray versionsJSONArray, String minimumVersion) {
 
-		if (!LicenseKeyGenerationConstants.minimumLicenseKeyFamilyVersions.
-				containsKey(licenseKeyFamily)) {
-
+		if (Validator.isNull(minimumVersion)) {
 			return versionsJSONArray;
 		}
 
@@ -1358,7 +1357,7 @@ public class LicenseKeyGenerateFormService {
 		for (int i = 0; i < versionsJSONArray.length(); i++) {
 			String version = versionsJSONArray.getString(i);
 
-			if (!isMinimumVersion(licenseKeyFamily, version)) {
+			if (!isMinimumVersion(minimumVersion, version)) {
 				continue;
 			}
 
@@ -1463,7 +1462,7 @@ public class LicenseKeyGenerateFormService {
 		public EntitledProduct(
 			boolean app, boolean appLicense, Entitlement entitlement,
 			String externalReferenceCode, boolean generatesActivationKey,
-			String licenseKeyFamily, String name) {
+			String licenseKeyFamily, String minimumVersion, String name) {
 
 			_app = app;
 			_appLicense = appLicense;
@@ -1471,6 +1470,7 @@ public class LicenseKeyGenerateFormService {
 			_externalReferenceCode = externalReferenceCode;
 			_generatesActivationKey = generatesActivationKey;
 			_licenseKeyFamily = licenseKeyFamily;
+			_minimumVersion = minimumVersion;
 			_name = name;
 		}
 
@@ -1484,6 +1484,10 @@ public class LicenseKeyGenerateFormService {
 
 		public String getLicenseKeyFamily() {
 			return _licenseKeyFamily;
+		}
+
+		public String getMinimumVersion() {
+			return _minimumVersion;
 		}
 
 		public String getName() {
@@ -1508,6 +1512,7 @@ public class LicenseKeyGenerateFormService {
 		private final String _externalReferenceCode;
 		private final boolean _generatesActivationKey;
 		private final String _licenseKeyFamily;
+		private final String _minimumVersion;
 		private final String _name;
 
 	}

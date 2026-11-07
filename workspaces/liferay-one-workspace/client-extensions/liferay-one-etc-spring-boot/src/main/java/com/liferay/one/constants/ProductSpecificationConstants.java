@@ -16,6 +16,8 @@ public class ProductSpecificationConstants {
 
 	public static final String KEY_LATEST_VERSION = "latest-version";
 
+	public static final String KEY_MINIMUM_DXP_VERSION = "minimum-dxp-version";
+
 	public static final String KEY_PRICE_MODEL = "price-model";
 
 	public static final String KEY_PROJECT_CONTACTS_ROLE_ERCS =

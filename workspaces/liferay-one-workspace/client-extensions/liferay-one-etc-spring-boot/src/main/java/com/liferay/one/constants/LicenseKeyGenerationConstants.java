@@ -40,15 +40,9 @@ public class LicenseKeyGenerationConstants {
 
 	public static final String LICENSE_KEY_FAMILY_CLOUD_NATIVE = "Cloud Native";
 
-	public static final String LICENSE_KEY_FAMILY_CMP = "CMP";
-
-	public static final String LICENSE_KEY_FAMILY_DSR = "DSR";
-
 	public static final String LICENSE_KEY_FAMILY_DXP = "DXP";
 
 	public static final String LICENSE_KEY_FAMILY_PORTAL = "Portal";
-
-	public static final String MINIMUM_APP_LICENSE_VERSION = "2026.Q3";
 
 	public static final String MINIMUM_DEVELOPER_VERSION = "7.4";
 
@@ -72,10 +66,6 @@ public class LicenseKeyGenerationConstants {
 			LICENSE_KEY_FAMILY_CLOUD_NATIVE, "Cloud Native",
 			LICENSE_KEY_FAMILY_DXP, "Liferay DXP", LICENSE_KEY_FAMILY_PORTAL,
 			"Liferay Portal");
-	public static final Map<String, String> minimumLicenseKeyFamilyVersions =
-		Map.of(
-			LICENSE_KEY_FAMILY_CMP, MINIMUM_APP_LICENSE_VERSION,
-			LICENSE_KEY_FAMILY_DSR, MINIMUM_APP_LICENSE_VERSION);
 
 	public static int getActivationCount(
 		String licenseType, int maxClusterNodes) {
