@@ -168,6 +168,28 @@ public class SalesforceObjectPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveHidesContractOnDelete() throws Exception {
+		_receiveMessage(
+			"delete", "Contract",
+			new JSONObject(
+			).put(
+				"Id", "SF-CONTRACT-1"
+			));
+
+		Mockito.verify(
+			_contractService
+		).hideContract(
+			"SF-CONTRACT-1"
+		);
+
+		Mockito.verify(
+			_contractService, Mockito.never()
+		).upsertContract(
+			Mockito.any(), Mockito.any(SalesforceContract.class)
+		);
+	}
+
+	@Test
 	public void testReceiveIgnoresUnknownSalesforceObjectName()
 		throws Exception {
 
@@ -481,6 +503,12 @@ public class SalesforceObjectPubsubSubscriberTest {
 			"SF-CONTRACT-1",
 			salesforceContractArgumentCaptor.getValue(
 			).getId());
+
+		Mockito.verify(
+			_contractService, Mockito.never()
+		).hideContract(
+			Mockito.any()
+		);
 	}
 
 	@Test

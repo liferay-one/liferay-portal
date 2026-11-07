@@ -135,6 +135,24 @@ describe('[MOD-ADMIN-PUBSUB-GETPUBSUBSAMPLES] getPubSubSamples', () => {
 		});
 	});
 
+	it('offers the insert, update, and delete actions for a Contract object record', () => {
+		const actions = getPubSubSamples('SalesforceObjectPubsubSubscriber')
+			.filter((sample) => sample.group === 'Contract')
+			.map((sample) => sample.label);
+
+		expect(actions).toEqual(['insert', 'update', 'delete']);
+
+		const {payload} = generate(
+			'SalesforceObjectPubsubSubscriber',
+			'delete',
+			'Contract'
+		);
+
+		expect(payload.action).toBe('delete');
+		expect(payload.salesforceObjectName).toBe('Contract');
+		expect(payload.records[0].Id).toMatch(/^800/);
+	});
+
 	it('generates new IDs on every call', () => {
 		const first = generate(
 			'OktaAppCreatedPubsubSubscriber',
