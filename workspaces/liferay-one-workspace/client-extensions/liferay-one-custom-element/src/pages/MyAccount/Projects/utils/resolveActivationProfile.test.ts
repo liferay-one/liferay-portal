@@ -44,7 +44,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEACTIVATIONPROFILE] resolveActivationPro
 
 	it('maps an application app type through the table', () => {
 		const cases: [string, string][] = [
-			['client-extension', 'app-licenses'],
+			['client-extension', 'app-provisioning'],
 			['cloud', 'app-provisioning'],
 			['composite-app', 'app-licenses'],
 			['dxp', 'app-licenses'],
