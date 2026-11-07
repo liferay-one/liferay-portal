@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => ({
 	getInvitations: vi.fn(),
 	swrResult: {} as FetchResult,
 	useFetch: vi.fn(),
+	useObjectItems: vi.fn(),
 	useSWR: vi.fn(),
 }));
 
@@ -29,6 +30,10 @@ vi.mock('swr', () => ({
 
 vi.mock('~/hooks/useFetch', () => ({
 	useFetch: mocks.useFetch,
+}));
+
+vi.mock('~/hooks/useObjectItems', () => ({
+	default: mocks.useObjectItems,
 }));
 
 vi.mock('~/services/liferay/liferay', () => ({
@@ -103,6 +108,17 @@ describe('[HOOK-MYACCOUNT-ACCOUNTMEMBERS-USEACCOUNTMEMBERS] useAccountMembers', 
 		mocks.useFetch.mockImplementation(
 			(url: string | null) => (url && mocks.fetchResults[url]) || {}
 		);
+		mocks.useObjectItems.mockReset();
+		mocks.useObjectItems.mockImplementation((path: string | null) => {
+			const {data, error, isLoading, mutate} = mocks.useFetch(path) ?? {};
+
+			return {
+				error,
+				items: data?.items,
+				loading: isLoading,
+				revalidate: mutate,
+			};
+		});
 		mocks.useSWR.mockReset();
 		mocks.useSWR.mockImplementation(() => mocks.swrResult);
 	});
@@ -256,6 +272,16 @@ describe('[HOOK-MYACCOUNT-ACCOUNTMEMBERS-USEACCOUNTMEMBERS] useAccountMembers', 
 
 		expect(result.current.loading).toBe(true);
 		expect(result.current.error).toEqual(new Error('invitations'));
+	});
+
+	it('reads every page of the account user accounts', () => {
+		setUp();
+
+		renderHook(() => useAccountMembers());
+
+		expect(mocks.useObjectItems).toHaveBeenCalledWith(USER_ACCOUNTS_URL, {
+			sort: 'givenName:asc',
+		});
 	});
 
 	it('mutates both the invitations and the user accounts', async () => {

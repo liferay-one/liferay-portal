@@ -168,8 +168,9 @@ describe('[HOOK-USEOBJECTITEMS] useObjectItems', () => {
 		expect(result.current.items).toEqual([1, 2]);
 		expect(result.current.totalCount).toBe(2);
 
-		result.current.revalidate();
+		mutate.mockResolvedValue(undefined);
 
+		expect(result.current.revalidate()).toBeInstanceOf(Promise);
 		expect(mutate).toHaveBeenCalledTimes(1);
 	});
 });

@@ -40,6 +40,7 @@ const mocks = vi.hoisted(() => ({
 		placedOrders: [] as unknown[],
 	},
 	useFetch: vi.fn(),
+	useObjectItems: vi.fn(),
 }));
 
 vi.mock('~/context/OneContextProvider', () => ({
@@ -48,6 +49,10 @@ vi.mock('~/context/OneContextProvider', () => ({
 
 vi.mock('~/hooks/useFetch', () => ({
 	useFetch: mocks.useFetch,
+}));
+
+vi.mock('~/hooks/useObjectItems', () => ({
+	default: mocks.useObjectItems,
 }));
 
 vi.mock('~/hooks/useProjectCommerce', () => ({
@@ -183,6 +188,18 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 			mutate: vi.fn(() => Promise.resolve()),
 			...(url ? mocks.fetchResponses[url] : {}),
 		}));
+
+		mocks.useObjectItems.mockReset();
+		mocks.useObjectItems.mockImplementation((path: string | null) => {
+			const {data, error, isLoading, mutate} = mocks.useFetch(path) ?? {};
+
+			return {
+				error,
+				items: data?.items,
+				loading: isLoading,
+				revalidate: mutate,
+			};
+		});
 
 		setDefaultResponses();
 	});
@@ -443,6 +460,20 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 
 		expect(mutateMemberships).toHaveBeenCalledTimes(1);
 		expect(mutateUserAccounts).toHaveBeenCalledTimes(1);
+	});
+
+	it('reads every page of the memberships and the account user accounts', () => {
+		renderHook(() => useProjectMembers());
+
+		expect(mocks.useObjectItems).toHaveBeenCalledWith(
+			MEMBERSHIPS_URL,
+			expect.objectContaining({
+				filter: "r_accountEntryToProjectMembership_accountEntryId eq '7'",
+			})
+		);
+		expect(mocks.useObjectItems).toHaveBeenCalledWith(USER_ACCOUNTS_URL, {
+			sort: 'givenName:asc',
+		});
 	});
 
 	it('sorts members by name with unnamed members last', () => {
