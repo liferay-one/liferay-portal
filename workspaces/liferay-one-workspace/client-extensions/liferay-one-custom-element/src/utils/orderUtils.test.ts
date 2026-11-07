@@ -16,6 +16,7 @@ import {
 	hasAIHubOrder,
 	hasProvisionedAIHubOrder,
 	isBetaOrder,
+	isClosedWonOrder,
 	isTermExpired,
 	isTermFuture,
 	toStatusToken,
@@ -44,6 +45,16 @@ function toContractPlacedOrder(order: Record<string, unknown>) {
 
 function toPlacedOrderItem(endDate?: string, startDate?: string) {
 	return {customFields: {endDate, startDate}} as unknown as PlacedOrderItems;
+}
+
+function toPlacedOrderWithCustomStatuses(
+	...customStatuses: (string | undefined)[]
+) {
+	return {
+		placedOrderItems: customStatuses.map((customStatus) => ({
+			customFields: customStatus === undefined ? {} : {customStatus},
+		})),
+	} as unknown as PlacedOrder;
 }
 
 function toPlacedOrderWithOptions(...optionsList: (string | undefined)[]) {
@@ -276,6 +287,55 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 					'endDate'
 				)
 			).toBeUndefined();
+		});
+	});
+
+	describe('isClosedWonOrder', () => {
+		it('accepts an order with an Approved item', () => {
+			expect(
+				isClosedWonOrder(toPlacedOrderWithCustomStatuses('Approved'))
+			).toBe(true);
+		});
+
+		it('accepts a self service order that has no custom status', () => {
+			expect(
+				isClosedWonOrder(toPlacedOrderWithCustomStatuses(undefined, ''))
+			).toBe(true);
+		});
+
+		it('accepts an order with Approved and Canceled items', () => {
+			expect(
+				isClosedWonOrder(
+					toPlacedOrderWithCustomStatuses('Canceled', 'Approved')
+				)
+			).toBe(true);
+		});
+
+		it('accepts an order with no items', () => {
+			expect(isClosedWonOrder({})).toBe(true);
+			expect(isClosedWonOrder({placedOrderItems: []})).toBe(true);
+		});
+
+		it('rejects an order whose items are all On Hold', () => {
+			expect(
+				isClosedWonOrder(
+					toPlacedOrderWithCustomStatuses('On Hold', 'On Hold')
+				)
+			).toBe(false);
+		});
+
+		it('rejects an order whose items are all Canceled', () => {
+			expect(
+				isClosedWonOrder(toPlacedOrderWithCustomStatuses('Canceled'))
+			).toBe(false);
+		});
+
+		it('rejects an order with On Hold and Canceled items', () => {
+			expect(
+				isClosedWonOrder(
+					toPlacedOrderWithCustomStatuses('Canceled', 'On Hold')
+				)
+			).toBe(false);
 		});
 	});
 

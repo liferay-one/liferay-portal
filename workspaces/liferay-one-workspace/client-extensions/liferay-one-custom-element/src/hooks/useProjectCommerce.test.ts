@@ -428,6 +428,10 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 			],
 			placedOrders: [
 				{
+					customFields: {contractId: '20'},
+					placedOrderItems: [{productId: 1}],
+				},
+				{
 					customFields: {contractId: '0'},
 					placedOrderItems: [{productId: 1}],
 				},
@@ -573,18 +577,89 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce contract list', () => {
 		} as unknown as ReturnType<typeof useUserProjects>);
 	});
 
-	it('hides a contract that has no orders and no entitlements', () => {
+	function contractOrder(contractId: number, customStatuses: string[]) {
+		return {
+			customFields: {contractId: String(contractId)},
+			placedOrderItems: customStatuses.map((customStatus) => ({
+				customFields: {customStatus},
+			})),
+		};
+	}
+
+	function listContracts() {
+		return renderProjectCommerce().contracts.map(
+			(contract) => contract.externalReferenceCode
+		);
+	}
+
+	it('hides a contract that has no orders', () => {
 		mockQueries({
-			entitlements: [{r_contractToEntitlement_c_contractId: 1}],
 			placedOrders: [{customFields: {contractId: '2'}}],
 			projectContracts: [contractA, contractB, contractC],
 		});
 
-		expect(
-			renderProjectCommerce().contracts.map(
-				(contract) => contract.externalReferenceCode
-			)
-		).toEqual(['C_A', 'C_B']);
+		expect(listContracts()).toEqual(['C_B']);
+	});
+
+	it('hides a contract that has entitlements but no counted order', () => {
+		mockQueries({
+			entitlements: [{r_contractToEntitlement_c_contractId: 1}],
+			placedOrders: [contractOrder(2, ['Approved'])],
+			projectContracts: [contractA, contractB],
+		});
+
+		expect(listContracts()).toEqual(['C_B']);
+	});
+
+	it('hides a contract whose only order has On Hold items', () => {
+		mockQueries({
+			placedOrders: [
+				contractOrder(1, ['On Hold', 'On Hold']),
+				contractOrder(2, ['Approved']),
+			],
+			projectContracts: [contractA, contractB],
+		});
+
+		expect(listContracts()).toEqual(['C_B']);
+	});
+
+	it('hides a contract whose orders have only Canceled or On Hold items', () => {
+		mockQueries({
+			placedOrders: [
+				contractOrder(1, ['Canceled']),
+				contractOrder(1, ['Canceled', 'On Hold']),
+				contractOrder(2, ['Approved']),
+			],
+			projectContracts: [contractA, contractB],
+		});
+
+		expect(listContracts()).toEqual(['C_B']);
+	});
+
+	it('keeps a contract that has one Approved order among Canceled orders', () => {
+		mockQueries({
+			placedOrders: [
+				contractOrder(1, ['Canceled']),
+				contractOrder(1, ['Approved']),
+			],
+			projectContracts: [contractA],
+		});
+
+		expect(listContracts()).toEqual(['C_A']);
+	});
+
+	it('keeps a contract with a self service order that has no custom status', () => {
+		mockQueries({
+			placedOrders: [
+				{
+					customFields: {contractId: '1'},
+					placedOrderItems: [{customFields: {}}],
+				},
+			],
+			projectContracts: [contractA, contractB],
+		});
+
+		expect(listContracts()).toEqual(['C_A']);
 	});
 
 	it('keeps every contract when the orders cannot be read', () => {
