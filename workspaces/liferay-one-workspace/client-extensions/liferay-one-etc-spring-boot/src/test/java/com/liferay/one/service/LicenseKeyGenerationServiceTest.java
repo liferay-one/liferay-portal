@@ -1886,29 +1886,6 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
-	public void testGenerateActivationKeyLicensesAStandaloneAppWithoutAVersion()
-		throws Exception {
-
-		Entitlement appEntitlement = _toEntitlement(2L, 5.0, "PRDCT-DSR");
-
-		_stubEntitlements(appEntitlement);
-
-		_stubStandaloneApp(appEntitlement);
-
-		_stubActivationKey();
-
-		_stubAddLicenseKey();
-
-		_licenseKeyGenerationService.generateActivationKey(
-			new LicenseKeyGenerationService.GenerateRequest(
-				Collections.singletonList(2L), "Description", null,
-				"Environment", "backup", 0, null, null, _toProject(), null,
-				null, _toServers(1), null, 2L, null, false));
-
-		_assertStandaloneAppLicenseKey("production");
-	}
-
-	@Test
 	public void testGenerateActivationKeyLicensesAStandaloneAppForDevelopment()
 		throws Exception {
 
@@ -1930,6 +1907,29 @@ public class LicenseKeyGenerationServiceTest {
 				null, _toServers(1), null, 2L, "DXP 7.4", false));
 
 		_assertStandaloneAppLicenseKey("developer");
+	}
+
+	@Test
+	public void testGenerateActivationKeyLicensesAStandaloneAppWithoutAVersion()
+		throws Exception {
+
+		Entitlement appEntitlement = _toEntitlement(2L, 5.0, "PRDCT-DSR");
+
+		_stubEntitlements(appEntitlement);
+
+		_stubStandaloneApp(appEntitlement);
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			new LicenseKeyGenerationService.GenerateRequest(
+				Collections.singletonList(2L), "Description", null,
+				"Environment", "backup", 0, null, null, _toProject(), null,
+				null, _toServers(1), null, 2L, null, false));
+
+		_assertStandaloneAppLicenseKey("production");
 	}
 
 	@Test
@@ -2766,6 +2766,48 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateDeveloperLicenseXMLLicensesAStandaloneAppOnAnyVersion()
+		throws Exception {
+
+		Entitlement appEntitlement = _toDeveloperEntitlement(2L, "PRDCT-DSR");
+
+		_stubEntitlements(appEntitlement);
+
+		_stubStandaloneApp(appEntitlement);
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Collections.emptyList(), "developer", "Digital Sales Room",
+			_toProject(), "7.3");
+
+		Assertions.assertEquals(
+			Collections.singletonList("dsr-app-entry-uuid"),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 5));
+		Assertions.assertEquals(
+			Collections.singletonList(
+				LicenseKeyGenerationConstants.APP_PRODUCT_VERSION),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 6));
+	}
+
+	@Test
+	public void testGenerateDeveloperLicenseXMLLicensesAStandaloneAppWithoutAVersion()
+		throws Exception {
+
+		Entitlement appEntitlement = _toDeveloperEntitlement(2L, "PRDCT-DSR");
+
+		_stubEntitlements(appEntitlement);
+
+		_stubStandaloneApp(appEntitlement);
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Collections.emptyList(), "developer", "Digital Sales Room",
+			_toProject(), null);
+
+		Assertions.assertEquals(
+			Collections.singletonList("dsr-app-entry-uuid"),
+			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 5));
+	}
+
+	@Test
 	public void testGenerateDeveloperLicenseXMLLicensesAnAddOnAsItsApp()
 		throws Exception {
 
@@ -2810,48 +2852,6 @@ public class LicenseKeyGenerationServiceTest {
 			Arrays.asList(
 				"7.4", LicenseKeyGenerationConstants.APP_PRODUCT_VERSION),
 			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 6));
-	}
-
-	@Test
-	public void testGenerateDeveloperLicenseXMLLicensesAStandaloneAppOnAnyVersion()
-		throws Exception {
-
-		Entitlement appEntitlement = _toDeveloperEntitlement(2L, "PRDCT-DSR");
-
-		_stubEntitlements(appEntitlement);
-
-		_stubStandaloneApp(appEntitlement);
-
-		_licenseKeyGenerationService.generateDeveloperLicenseXML(
-			Collections.emptyList(), "developer", "Digital Sales Room",
-			_toProject(), "7.3");
-
-		Assertions.assertEquals(
-			Collections.singletonList("dsr-app-entry-uuid"),
-			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 5));
-		Assertions.assertEquals(
-			Collections.singletonList(
-				LicenseKeyGenerationConstants.APP_PRODUCT_VERSION),
-			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 6));
-	}
-
-	@Test
-	public void testGenerateDeveloperLicenseXMLLicensesAStandaloneAppWithoutAVersion()
-		throws Exception {
-
-		Entitlement appEntitlement = _toDeveloperEntitlement(2L, "PRDCT-DSR");
-
-		_stubEntitlements(appEntitlement);
-
-		_stubStandaloneApp(appEntitlement);
-
-		_licenseKeyGenerationService.generateDeveloperLicenseXML(
-			Collections.emptyList(), "developer", "Digital Sales Room",
-			_toProject(), null);
-
-		Assertions.assertEquals(
-			Collections.singletonList("dsr-app-entry-uuid"),
-			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 5));
 	}
 
 	@Test
