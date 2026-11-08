@@ -50,7 +50,9 @@ function main {
 	echo "Redeploying the site initializer."
 	SINCE="$(date +%s)"
 
-	./gradlew ":client-extensions:liferay-one-site-initializer:deploy" \
+	./gradlew \
+		":client-extensions:liferay-one-site-initializer:clean" \
+		":client-extensions:liferay-one-site-initializer:deploy" \
 		-Ddeploy.docker.container.id="${container_id}"
 
 	_wait_for_site_initializer
