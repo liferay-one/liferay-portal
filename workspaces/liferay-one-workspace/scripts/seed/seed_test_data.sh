@@ -40,14 +40,15 @@ function main {
 	return "${status}"
 }
 
-# The batch client extensions create three kinds of record only on an
-# environment that does not have them yet, and fail on each later deploy: the
-# SGD currency and the C_PROJECT_MEMBERSHIP validation rule have no upsert on
-# 2026.q1.2, and a product import fails for each product that already has its
-# options. When a first import did not create one of them, no later deploy does,
-# so create each one that is missing. The rule must exist before the project
-# memberships, because Liferay refuses a composite key rule on an object that
-# has entries.
+# Three kinds of record have no upsert on 2026.q1.2: the SGD currency, the
+# C_PROJECT_MEMBERSHIP validation rule, and a product that already has its
+# options. A batch file that inserts the currency or the rule again fails with
+# HTTP 400, and on Liferay Cloud that stops the batch job before its later files,
+# so those two records are in batch-records and not in the batch client
+# extension. A product import fails for each product that already has its
+# options, and the product batch keeps its products. Create each record that is
+# missing. The rule must exist before the project memberships, because Liferay
+# refuses a composite key rule on an object that has entries.
 
 function _ensure_batch_records {
 	local status=0
@@ -69,11 +70,11 @@ function _ensure_currency {
 
 	[[ ${http_code} == "200" ]] && return 0
 
-	_import "${BATCH_DIR}/07-commerce-currency.batch-engine-data.json"
+	_import batch-records/commerce-currency.batch-engine-data.json
 }
 
 function _ensure_object_validation_rule {
-	local file="${BATCH_DIR}/05-object-validation-rule.batch-engine-data.json"
+	local file=batch-records/object-validation-rule.batch-engine-data.json
 
 	local object_definition_external_reference_code
 	object_definition_external_reference_code=$(_read_config "${file}" "externalReferenceCode")
