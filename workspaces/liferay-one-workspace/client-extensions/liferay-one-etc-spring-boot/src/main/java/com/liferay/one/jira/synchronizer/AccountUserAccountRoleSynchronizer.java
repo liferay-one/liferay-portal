@@ -354,6 +354,9 @@ public class AccountUserAccountRoleSynchronizer {
 			shouldSkipUpdateBiPredicate);
 	}
 
+	private static final Log _log = LogFactory.getLog(
+		AccountUserAccountRoleSynchronizer.class);
+
 	private static final Map<String, String>
 		_contactRoleExternalKeysByRoleExternalKey = Collections.unmodifiableMap(
 			LinkedHashMapBuilder.put(
@@ -366,8 +369,6 @@ public class AccountUserAccountRoleSynchronizer {
 				RoleConstants.ERC_PROJECT_USER,
 				ContactRoleConstants.EXTERNAL_KEY_SUPPORT_USER
 			).build());
-	private static final Log _log = LogFactory.getLog(
-		AccountUserAccountRoleSynchronizer.class);
 
 	@Autowired
 	private AccountContactRoleAssignmentConverter

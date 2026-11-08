@@ -144,33 +144,6 @@ public class ProductVersionServiceSyncProductVersionsTest {
 	}
 
 	@Test
-	public void testSyncProductVersionsLeavesFreeTierUnchanged()
-		throws Exception {
-
-		_testProductVersionService.releasesResponse = new JSONArray(
-		).put(
-			_createReleaseJSONObject(
-				"2026.q3.7", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.7")
-		).toString();
-
-		_testProductVersionService.releaseProperties.put(
-			_RELEASES_CDN_URL + "/2026.q3.7/release.properties",
-			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.7/bundle.zip");
-
-		_productVersionService.syncProductVersions();
-
-		Map<String, JSONObject> jsonObjects = _getPatchJSONObjects();
-
-		Assertions.assertEquals(2, jsonObjects.size());
-
-		for (JSONObject jsonObject : jsonObjects.values()) {
-			Assertions.assertFalse(jsonObject.has("freeTier"));
-		}
-
-		Assertions.assertTrue(_testProductVersionService.putBodies.isEmpty());
-	}
-
-	@Test
 	public void testSyncProductVersionsKeepsCacheWhenParseFails()
 		throws Exception {
 
@@ -202,6 +175,33 @@ public class ProductVersionServiceSyncProductVersionsTest {
 		_productVersionService.getProductVersions("dxp", true);
 
 		Assertions.assertEquals(1, _testProductVersionService.getAllItemsCount);
+	}
+
+	@Test
+	public void testSyncProductVersionsLeavesFreeTierUnchanged()
+		throws Exception {
+
+		_testProductVersionService.releasesResponse = new JSONArray(
+		).put(
+			_createReleaseJSONObject(
+				"2026.q3.7", "2026.q3", "DXP 2026.Q3", "DXP 2026.Q3.7")
+		).toString();
+
+		_testProductVersionService.releaseProperties.put(
+			_RELEASES_CDN_URL + "/2026.q3.7/release.properties",
+			"bundle.url=" + _RELEASES_CDN_URL + "/2026.q3.7/bundle.zip");
+
+		_productVersionService.syncProductVersions();
+
+		Map<String, JSONObject> jsonObjects = _getPatchJSONObjects();
+
+		Assertions.assertEquals(2, jsonObjects.size());
+
+		for (JSONObject jsonObject : jsonObjects.values()) {
+			Assertions.assertFalse(jsonObject.has("freeTier"));
+		}
+
+		Assertions.assertTrue(_testProductVersionService.putBodies.isEmpty());
 	}
 
 	@Test

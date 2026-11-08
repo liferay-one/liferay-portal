@@ -332,6 +332,20 @@ public class UserAccountSynchronizerTest {
 	}
 
 	@Test
+	public void testSyncUserAccountSkipsAccountWhenProjectMembershipFails()
+		throws Exception {
+
+		Mockito.when(
+			_projectMembershipService.getProjectMembershipsByUserId(
+				Mockito.anyLong())
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		_assertSkipsAttribute(ContactConstants.ATTRIBUTE_NAME_ACCOUNT);
+	}
+
+	@Test
 	public void testSyncUserAccountSkipsRolesOfOktaGroupOrganizations()
 		throws Exception {
 
@@ -351,20 +365,6 @@ public class UserAccountSynchronizerTest {
 		).syncAssignRole(
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
-	}
-
-	@Test
-	public void testSyncUserAccountSkipsAccountWhenProjectMembershipFails()
-		throws Exception {
-
-		Mockito.when(
-			_projectMembershipService.getProjectMembershipsByUserId(
-				Mockito.anyLong())
-		).thenThrow(
-			new RuntimeException()
-		);
-
-		_assertSkipsAttribute(ContactConstants.ATTRIBUTE_NAME_ACCOUNT);
 	}
 
 	@Test

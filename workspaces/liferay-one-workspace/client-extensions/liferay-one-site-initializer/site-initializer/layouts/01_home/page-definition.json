@@ -6,7 +6,10 @@
 		"pageElements": [
 			{
 				"definition": {
-					"cssClasses": ["bg-white", "overflow-hidden"],
+					"cssClasses": [
+						"bg-white",
+						"overflow-hidden"
+					],
 					"fragmentStyle": {
 						"backgroundFragmentImage": {
 							"url": {
@@ -23,7 +26,8 @@
 						"paddingTop": "6"
 					},
 					"indexed": true,
-					"layout": {},
+					"layout": {
+					},
 					"name": "Hero"
 				},
 				"pageElements": [
@@ -57,7 +61,8 @@
 										},
 										{
 											"id": "tablet",
-											"rowViewportDefinition": {}
+											"rowViewportDefinition": {
+											}
 										}
 									],
 									"verticalAlignment": "middle"
@@ -79,7 +84,8 @@
 													"id": "portraitMobile"
 												},
 												{
-													"columnViewportDefinition": {},
+													"columnViewportDefinition": {
+													},
 													"id": "tablet"
 												}
 											],
@@ -106,7 +112,8 @@
 																{
 																	"id": "element-text",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"value_i18n": {
 																				"en_US": "One Portal. Every Liferay Service",
@@ -138,7 +145,8 @@
 																{
 																	"id": "element-text",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"value_i18n": {
 																				"en_US": "Marketplace, Support, Projects and Account unified into one experience. Browse the catalog freely or manage your account.",
@@ -366,7 +374,8 @@
 													"id": "portraitMobile"
 												},
 												{
-													"columnViewportDefinition": {},
+													"columnViewportDefinition": {
+													},
 													"id": "tablet"
 												}
 											],
@@ -396,7 +405,8 @@
 																		}
 																	}
 																},
-																"fragmentLink": {}
+																"fragmentLink": {
+																}
 															}
 														}
 													],
@@ -456,7 +466,8 @@
 										},
 										{
 											"id": "tablet",
-											"rowViewportDefinition": {}
+											"rowViewportDefinition": {
+											}
 										}
 									]
 								},
@@ -477,7 +488,8 @@
 													"id": "portraitMobile"
 												},
 												{
-													"columnViewportDefinition": {},
+													"columnViewportDefinition": {
+													},
 													"id": "tablet"
 												}
 											],
@@ -542,7 +554,8 @@
 																				}
 																			}
 																		},
-																		"fragmentLink": {}
+																		"fragmentLink": {
+																		}
 																	}
 																}
 															],
@@ -567,7 +580,8 @@
 																{
 																	"id": "element-text",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"value_i18n": {
 																				"en_US": "Account",
@@ -600,7 +614,8 @@
 																{
 																	"id": "element-text",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"value_i18n": {
 																				"en_US": "Manage your Liferay account and project.",
@@ -641,7 +656,8 @@
 													"id": "portraitMobile"
 												},
 												{
-													"columnViewportDefinition": {},
+													"columnViewportDefinition": {
+													},
 													"id": "tablet"
 												}
 											],
@@ -718,7 +734,8 @@
 																								}
 																							}
 																						},
-																						"fragmentLink": {}
+																						"fragmentLink": {
+																						}
 																					}
 																				}
 																			],
@@ -743,7 +760,8 @@
 																				{
 																					"id": "element-text",
 																					"value": {
-																						"fragmentLink": {},
+																						"fragmentLink": {
+																						},
 																						"text": {
 																							"value_i18n": {
 																								"en_US": "My Tickets",
@@ -776,7 +794,8 @@
 																				{
 																					"id": "element-text",
 																					"value": {
-																						"fragmentLink": {},
+																						"fragmentLink": {
+																						},
 																						"text": {
 																							"value_i18n": {
 																								"en_US": "Track your open and closed support requests.",
@@ -823,7 +842,8 @@
 													"id": "portraitMobile"
 												},
 												{
-													"columnViewportDefinition": {},
+													"columnViewportDefinition": {
+													},
 													"id": "tablet"
 												}
 											],
@@ -879,7 +899,8 @@
 																				}
 																			}
 																		},
-																		"fragmentLink": {}
+																		"fragmentLink": {
+																		}
 																	}
 																}
 															],
@@ -904,7 +925,8 @@
 																{
 																	"id": "element-text",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"value_i18n": {
 																				"en_US": "Submit a Request",
@@ -937,7 +959,8 @@
 																{
 																	"id": "element-text",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"value_i18n": {
 																				"en_US": "Get help with your Liferay products, submit tickets, and find answers in our knowledge base.",
@@ -978,7 +1001,8 @@
 													"id": "portraitMobile"
 												},
 												{
-													"columnViewportDefinition": {},
+													"columnViewportDefinition": {
+													},
 													"id": "tablet"
 												}
 											],
@@ -1034,7 +1058,8 @@
 																				}
 																			}
 																		},
-																		"fragmentLink": {}
+																		"fragmentLink": {
+																		}
 																	}
 																}
 															],
@@ -1059,7 +1084,8 @@
 																{
 																	"id": "element-text",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"value_i18n": {
 																				"en_US": "Learn",
@@ -1092,7 +1118,8 @@
 																{
 																	"id": "element-text",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"value_i18n": {
 																				"en_US": "Explore documentation and courses to master Liferay products.",
@@ -1133,7 +1160,8 @@
 													"id": "portraitMobile"
 												},
 												{
-													"columnViewportDefinition": {},
+													"columnViewportDefinition": {
+													},
 													"id": "tablet"
 												}
 											],
@@ -1198,7 +1226,8 @@
 																				}
 																			}
 																		},
-																		"fragmentLink": {}
+																		"fragmentLink": {
+																		}
 																	}
 																}
 															],
@@ -1223,7 +1252,8 @@
 																{
 																	"id": "element-text",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"value_i18n": {
 																				"en_US": "Marketplace",
@@ -1256,7 +1286,8 @@
 																{
 																	"id": "element-text",
 																	"value": {
-																		"fragmentLink": {},
+																		"fragmentLink": {
+																		},
 																		"text": {
 																			"value_i18n": {
 																				"en_US": "Find the latest apps, products and other resources to extend your Liferay platform.",
@@ -1300,7 +1331,8 @@
 							{
 								"definition": {
 									"indexed": true,
-									"layout": {}
+									"layout": {
+									}
 								},
 								"pageElements": [
 									{
@@ -1325,7 +1357,8 @@
 														{
 															"id": "element-text",
 															"value": {
-																"fragmentLink": {},
+																"fragmentLink": {
+																},
 																"text": {
 																	"value_i18n": {
 																		"en_US": "Announcements",
@@ -1394,7 +1427,8 @@
 												{
 													"id": "element-text",
 													"value": {
-														"fragmentLink": {},
+														"fragmentLink": {
+														},
 														"text": {
 															"value_i18n": {
 																"en_US": "See what is new with Liferay",
@@ -1462,7 +1496,8 @@
 										"pageElements": [
 											{
 												"definition": {
-													"collectionItemConfig": {}
+													"collectionItemConfig": {
+													}
 												},
 												"pageElements": [
 													{
@@ -1509,7 +1544,8 @@
 																		"backgroundColor": ""
 																	},
 																	"indexed": true,
-																	"layout": {}
+																	"layout": {
+																	}
 																},
 																"pageElements": [
 																	{
@@ -1524,7 +1560,8 @@
 																				{
 																					"id": "element-text",
 																					"value": {
-																						"fragmentLink": {},
+																						"fragmentLink": {
+																						},
 																						"text": {
 																							"mapping": {
 																								"fieldKey": "title",
@@ -1549,12 +1586,14 @@
 																			"fragment": {
 																				"key": "BASIC_COMPONENT-paragraph"
 																			},
-																			"fragmentConfig": {},
+																			"fragmentConfig": {
+																			},
 																			"fragmentFields": [
 																				{
 																					"id": "element-text",
 																					"value": {
-																						"fragmentLink": {},
+																						"fragmentLink": {
+																						},
 																						"text": {
 																							"mapping": {
 																								"fieldKey": "content",
@@ -1588,7 +1627,8 @@
 																					"fragment": {
 																						"key": "BASIC_COMPONENT-date"
 																					},
-																					"fragmentConfig": {},
+																					"fragmentConfig": {
+																					},
 																					"fragmentFields": [
 																						{
 																							"id": "element-date",
@@ -1619,7 +1659,8 @@
 																						"key": "badge",
 																						"siteKey": "[$GROUP_KEY$]"
 																					},
-																					"fragmentConfig": {},
+																					"fragmentConfig": {
+																					},
 																					"fragmentFields": [
 																						{
 																							"id": "categories",
@@ -1719,7 +1760,8 @@
 																								}
 																							}
 																						},
-																						"fragmentLink": {}
+																						"fragmentLink": {
+																						}
 																					}
 																				}
 																			],
@@ -1741,7 +1783,8 @@
 																				{
 																					"id": "element-text",
 																					"value": {
-																						"fragmentLink": {},
+																						"fragmentLink": {
+																						},
 																						"text": {
 																							"value_i18n": {
 																								"en_US": "Get the latest updates on products, security, and system improvements.",
@@ -1823,7 +1866,8 @@
 								"marginBottom": "5rem"
 							},
 							"indexed": true,
-							"layout": {},
+							"layout": {
+							},
 							"name": "Liferay Products"
 						},
 						"pageElements": [
@@ -1865,7 +1909,9 @@
 									},
 									{
 										"definition": {
-											"cssClasses": ["font-weight-bold"],
+											"cssClasses": [
+												"font-weight-bold"
+											],
 											"fragment": {
 												"key": "BASIC_COMPONENT-button"
 											},
@@ -1902,7 +1948,9 @@
 							},
 							{
 								"definition": {
-									"cssClasses": ["lo-section-subtitle"],
+									"cssClasses": [
+										"lo-section-subtitle"
+									],
 									"fragment": {
 										"key": "BASIC_COMPONENT-paragraph"
 									},
@@ -2015,7 +2063,8 @@
 					{
 						"definition": {
 							"indexed": true,
-							"layout": {},
+							"layout": {
+							},
 							"name": "What Is New on Marketplace"
 						},
 						"id": "9a2da114-bd42-888f-09b7-9ad62d57f38a",
@@ -2035,7 +2084,8 @@
 										"sectionTitle": "What's new on Marketplace",
 										"specificationFilterValue": "What Is new"
 									},
-									"fragmentFields": [],
+									"fragmentFields": [
+									],
 									"indexed": true
 								},
 								"id": "1bd18479-f7ea-475f-afce-b3f5ed5e5ab0",
