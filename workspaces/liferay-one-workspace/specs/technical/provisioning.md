@@ -74,7 +74,7 @@ flowchart TD
 | Client extensions | Deploys seven client extensions in a fixed order. It sleeps 10 seconds after each light one, waits for the batch log to go quiet for 20 seconds, and waits for the `Initialized One for group` log line. | `scripts/bootstrap/deploy_client_extensions.sh:26-48`, `:88-140`, `:145-150` |
 | OAuth applications | Each client extension deploy creates its own OAuth2 applications: `liferay-one-batch-oahs`, `liferay-one-batch-products-oahs`, `liferay-one-site-initializer-oahs`, the `oahs` and `oaua` applications of the Spring Boot client extension, and the `liferay-one-instance-settings-cloud-infra-oahs`, `liferay-one-instance-settings-data-engineering-oahs`, and `liferay-one-instance-settings-release-team-oahs` applications of the instance settings client extension. | `client-extensions/*/client-extension.yaml` |
 | Instance settings | Four `instanceSettings` entries and the OAuth2 applications of Cloud Infra, Data Engineering, and Release Team. Three are scoped to the site by `siteExternalReferenceCode: LIFERAY_ONE`. Liferay matches that code when it reads the configuration, so the site does not have to exist at deploy time. | `client-extensions/liferay-one-instance-settings/client-extension.yaml`, `modules/apps/configuration-admin/.../ConfigurationFilterStringUtil.java:51-73` |
-| Batch import | Imports 18 files, one at a time, in natural file name order. | `modules/apps/batch-engine/.../BatchEngineUnitReaderImpl.java:111-112`, `BatchEngineUnitProcessorImpl.java:540-561` |
+| Batch import | Imports 15 files, one at a time, in natural file name order. | `modules/apps/batch-engine/.../BatchEngineUnitReaderImpl.java:111-112`, `BatchEngineUnitProcessorImpl.java:540-561` |
 | Site initializer | Creates or updates the `LIFERAY_ONE` site through `putSiteByExternalReferenceCode` in one transaction. | `modules/apps/site-initializer/.../SiteInitializerClientExtension.java:168-229` |
 | Sidecar | Rebuilds the Spring Boot image and recreates its container, so it reads the routes the deploy wrote. | `scripts/bootstrap/deploy_client_extensions.sh:50-60` |
 | Virtual host | Binds `one.localhost` to the public layout set of the One site. | `scripts/bootstrap/set_virtual_hosts.sh:14-26` |
@@ -142,9 +142,7 @@ The table lists every file in `client-extensions/liferay-one-batch/batch/`. REST
 | `03-system-object-field` | `ObjectDefinition` (6 system objects, with their 23 relationships) | 6 | `UPSERT`, `UPDATE` | false | `00` (picklist `LT_PRODUCT_FAMILY`); `03` (the 23 child objects); 6 Liferay system objects; 14 Spring Boot object action entries |
 | `04-object-relationship` | `ObjectRelationship` (a custom object parent) | 28 | `UPSERT`, `UPDATE` | not set | `03` (the objects); 6 Liferay system objects as children |
 | `05-object-definition-account-entry-restricted` | `ObjectDefinition` | 14 | `UPSERT`, `PARTIAL_UPDATE` | false | `03` (14 objects); `03-system-object-field` (the `accountEntryTo*` relationships) |
-| `05-object-validation-rule` | `ObjectValidationRule` | 1 | `INSERT` | false | `03` (`C_PROJECT_MEMBERSHIP`); `03-system-object-field` (`userToProjectMembership`); `04` (`projectToProjectMembership`) |
 | `06-commerce-catalog` | `Catalog` | 1 | `UPSERT`, `PARTIAL_UPDATE` | false | the built in currency `USD` |
-| `07-commerce-currency` | `Currency` (`SGD`) | 1 | `INSERT` | not set | nothing |
 | `08-commerce-option-category` | `OptionCategory` | 5 | `UPSERT`, `PARTIAL_UPDATE` | false | nothing |
 | `09-commerce-option` | `Option` | 3 | `INSERT`, `PARTIAL_UPDATE` | false | nothing |
 | `12-commerce-order-type` | `OrderType` | 19 | `UPSERT`, `PARTIAL_UPDATE` | false | nothing |
@@ -156,7 +154,7 @@ The table lists every file in `client-extensions/liferay-one-batch/batch/`. REST
 
 ### Dependency Graph
 
-An arrow points from the file that creates an entity to the file that references it. The two `03` files sort as `03-object-definition` before `03-system-object-field`, and the two `05` files sort as `05-object-definition-account-entry-restricted` before `05-object-validation-rule`, because the batch engine uses natural string order.
+An arrow points from the file that creates an entity to the file that references it. The two `03` files sort as `03-object-definition` before `03-system-object-field`, because the batch engine uses natural string order.
 
 ```mermaid
 flowchart LR
@@ -166,9 +164,7 @@ flowchart LR
     F03s["03-system-object-field"]
     F04["04-object-relationship"]
     F05["05-object-definition-account-entry-restricted"]
-    F05b["05-object-validation-rule"]
     F06["06-commerce-catalog"]
-    F07["07-commerce-currency"]
     F08["08-commerce-option-category"]
     F09["09-commerce-option"]
     F12["12-commerce-order-type"]
@@ -184,10 +180,7 @@ flowchart LR
     F03 --> F03s
     F03 --> F04
     F03 --> F05
-    F03 --> F05b
     F03s --> F05
-    F03s --> F05b
-    F04 --> F05b
     F13 --> F16
     F14 --> F15
     SB -. "executor keys" .-> F03s
@@ -196,9 +189,9 @@ flowchart LR
 
 ### Order Check
 
-The file order respects all 12 edges. No file references an entity that a later file creates. Three references point outside the batch:
+The file order respects all 9 edges. No file references an entity that a later file creates. Three references point outside the batch:
 
-1. `06-commerce-catalog` uses `USD`, a currency that Liferay creates. `07-commerce-currency` adds only `SGD`, so the numbers `06` and `07` are not in conflict.
+1. `06-commerce-catalog` uses `USD`, a currency that Liferay creates.
 
 1. `02` and `03` name 16 Spring Boot object action entries as `function#<entry>`. 15 of them exist (see finding 6). The Spring Boot client extension deploys after the batch. Liferay accepts an executor key that is not registered yet, so the order works.
 
@@ -296,11 +289,11 @@ The batch rule holds: no batch file holds test data. The batch OAuth application
 
 | Step | Second Run | What Makes It Run Again |
 | --- | --- | --- |
-| Batch client extension | The batch engine writes a processed marker per file and company, keyed on the bundle modification time. An identical zip does nothing. A changed zip imports all 18 files again, in order. | A new zip (`gradlew clean deploy`), or a reinstall of the bundle. Source: `BatchEngineUnitProcessorImpl.java:456-530`. |
+| Batch client extension | The batch engine writes a processed marker per file and company, keyed on the bundle modification time. An identical zip does nothing. A changed zip imports all 15 files again, in order. | A new zip (`gradlew clean deploy`), or a reinstall of the bundle. Source: `BatchEngineUnitProcessorImpl.java:456-530`. |
 | `00`, `01`, `04`, `14`, `15`, `17` | Upsert by external reference code with full replace. Safe. | as above |
 | `03-system-object-field` | PUT by external reference code. Each item lists the relationships of its system object, so the PUT updates them in place and deletes none. A relationship with a system object parent belongs in this file, not in `04`: the PUT deletes any relationship that the item does not list, and `yarn viz:check` reports one in `04`. The same holds for object actions, so `OA_COMMERCE_PRODUCT_DEFINITION_CREATE` is in this file and not in the site initializer. | as above. See trap 3. |
 | `03`, `05`, `06`, `08` to `10`, `12`, `13`, `16` | PATCH by external reference code. The objects keep their relationships, because the PATCH starts from the stored definition. | as above |
-| `05-object-validation-rule`, `07-commerce-currency` | `INSERT` posts the item again and the item fails as a duplicate, which changes nothing. On `2026.q1.2` neither can do better: the batch engine rejects `UPSERT` for a currency, a validation rule has no `UPSERT`, and a PATCH of the object definition does not add a missing rule. The `_ensure_batch_records` step of `scripts/seed/seed_test_data.sh` creates both when they are missing. | as above. Finding 10. |
+| `scripts/seed/batch-records` | The `SGD` currency and the `C_PROJECT_MEMBERSHIP` validation rule are not in the batch. `INSERT` is the only create strategy for both on `2026.q1.2`: the batch engine rejects `UPSERT` for a currency, a validation rule has no `UPSERT`, and a PATCH of the object definition does not add a missing rule. A second `INSERT` returns HTTP 400, and on Liferay Cloud the batch job then exits before its later files. The `_ensure_batch_records` step of `scripts/seed/seed_test_data.sh` creates both when they are missing. | every seed. Finding 10. |
 | Site initializer | A new zip calls `putSiteByExternalReferenceCode`, which updates the existing group and runs every handler again in one transaction. Most handlers upsert. A failure rolls back the whole run and leaves the site as it was. | A new zip. Deleting the site and deploying a new zip creates it from nothing. |
 | `set_virtual_hosts.sh` | Sets the same host. Safe. | every bootstrap and reset |
 | `set_redirect_entries.sh` | Looks up each entry before it writes. Safe. | every bootstrap and reset |
@@ -393,7 +386,7 @@ Sources: `scripts/_common.sh:87-97`, `:209-221`, `:296-317`; `scripts/instance.s
 
 1. **The seed ignores `updateStrategy`.** `scripts/seed/seed_test_data.sh:84` and `:92` send `createStrategy` only, so the import uses the default `UPDATE`. `05-commerce-catalog`, `05-commerce-option`, and `06-commerce-product` ask for `PARTIAL_UPDATE`. `populate_orders.sh` passes `updateStrategy`, so the two scripts behave differently.
 
-1. **Three batch files fail on every reimport, and the data stays as it was.** `05-object-validation-rule` and `07-commerce-currency` use `INSERT` and fail as duplicates. The batch engine of `2026.q1.2` rejects `UPSERT` for a currency, the validation rule has no `UPSERT`, and a PATCH of the object definition does not add a missing rule. The product batch `05-commerce-product` fails for each product that already has its options, because `ProductOptionUtil.addOrUpdateCPDefinitionOptionRel` passes the null `optionId` of the request to `updateCPDefinitionOptionRel`. A fix of that line belongs in the portal. The `_ensure_batch_records` step of `scripts/seed/seed_test_data.sh` creates the currency, the rule, and the products that are missing, on the environments that run the seed.
+1. **Fixed on 2026-11-08: the batch job on Liferay Cloud stopped before `06`.** `05-object-validation-rule` and `07-commerce-currency` used `INSERT`, which is the only create strategy for both on `2026.q1.2`. On UAT, the second `INSERT` of the rule returned HTTP 400 (`This external reference code is already in use`), the batch job exited with status 1, and files `06` to `17` did not import. The two files are now `scripts/seed/batch-records/object-validation-rule.batch-engine-data.json` and `scripts/seed/batch-records/commerce-currency.batch-engine-data.json`, and the batch does not create them on an environment that does not have them. The product batch `05-commerce-product` fails for each product that already has its options, because `ProductOptionUtil.addOrUpdateCPDefinitionOptionRel` passes the null `optionId` of the request to `updateCPDefinitionOptionRel`. A fix of that line belongs in the portal. The `_ensure_batch_records` step of `scripts/seed/seed_test_data.sh` creates the currency, the rule, and the products that are missing, on the environments that run the seed.
 
 1. **The `one-bootstrap` skill documents commands that `bootstrap.sh` does not have.** `.claude/skills/one-bootstrap/SKILL.md:29-39` lists `up`, `start`, `stop`, `down`, and `clean`. `scripts/bootstrap.sh:10-16` reads only `--reset` and ignores every other argument, so `scripts/bootstrap.sh stop` runs a full bootstrap, and `clean` does not delete the volumes. Point the skill at `docker compose` for those commands.
 

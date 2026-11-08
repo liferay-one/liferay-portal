@@ -200,7 +200,7 @@ function _delete_commerce_currencies {
 
 	local ercs
 
-	ercs=$(_read_ercs "${BATCH_DIR}/07-commerce-currency.batch-engine-data.json")
+	ercs=$(_read_ercs batch-records/commerce-currency.batch-engine-data.json)
 
 	_delete_from_collection "commerce currencies" \
 		"${LIFERAY_URL}/o/headless-commerce-admin-catalog/v1.0/currencies" \
