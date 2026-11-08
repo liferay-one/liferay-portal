@@ -12,7 +12,7 @@ services:
                             status_code: 200
                         name: request-termination
         url: http://localhost:8100
-    -   name: provisioning-uat
+    -   name: liferay-one-etc-spring-boot
         routes:
             -   methods:
                     -   POST
@@ -22,7 +22,7 @@ services:
                 plugins:
                     -   config:
                             replace:
-                                uri: /o/provisioning-rest/v1.0/cloud/environments/$(uri_captures["environment_id"])/activation
+                                uri: /cloud/environments/$(uri_captures["environment_id"])/activation
                         name: request-transformer
             -   methods:
                     -   POST
@@ -32,6 +32,6 @@ services:
                 plugins:
                     -   config:
                             replace:
-                                uri: /o/provisioning-rest/v1.0/cloud/environments/$(uri_captures["environment_id"])/manifest
+                                uri: /cloud/environments/$(uri_captures["environment_id"])/manifest
                         name: request-transformer
-        url: https://webserver-lrprovisioning-uat.lfr.cloud
+        url: http://liferayoneetcspringboot:58081
