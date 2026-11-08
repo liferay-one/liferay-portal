@@ -39,7 +39,7 @@ flowchart TD
     E3 --> E4["Deploy liferay-one-batch, creates liferay-one-batch-oahs"]
     E4 --> BATCH
     subgraph BATCH["Batch import, sequential, natural file order"]
-        B00["00 picklists"] --> B01["01 object folders"] --> B02["02 system object fields and actions"] --> B03["03 object definitions"] --> B04["04 object relationships"] --> B05a["05 account restrictions"] --> B05b["05 validation rule"] --> B06["06 catalog"] --> B07["07 currency"] --> B08["08 option categories"] --> B09["09 options"] --> B12["12 order types"] --> B13["13 roles"] --> B14["14 vocabularies"] --> B15["15 categories"] --> B16["16 user groups"] --> B17["17 search blueprint"]
+        B00["00 picklists"] --> B01["01 object folders"] --> B02["02 system object fields and actions"] --> B03["03 object definitions"] --> B04["04 object relationships"] --> B05a["05 account restrictions"] --> B06["06 catalog"] --> B08["08 option categories"] --> B09["09 options"] --> B12["12 order types"] --> B13["13 roles"] --> B14["14 vocabularies"] --> B15["15 categories"] --> B16["16 user groups"] --> B17["17 search blueprint"]
     end
     BATCH --> E4b["Deploy liferay-one-batch-products: usage definitions, entitlement definitions, SKU links, options, specifications, products"]
     E4b --> E5["Deploy liferay-one-etc-spring-boot, creates oahs, oaua and 16 object action entries"]
@@ -253,12 +253,12 @@ The workspace rule is: the batch client extension holds definitions, configurati
 | Object action on Commerce Order | site initializer `object-actions/` | none | none | none |
 | Object relationships (52) | batch `04` | none | none | none |
 | Account restrictions (12) | batch `05` | none | none | none |
-| Validation rule (1) | batch `05` | none | none | none |
+| Validation rule (1) | `scripts/seed/batch-records`, which the seed creates when it is missing. UAT and production got it from the batch before 2026-11-08 (finding 11). | none | none | none |
 | Custom fields (expando, 81 columns on 7 models) | site initializer `expando-columns.json` | site initializer `expando-values.json` | none | migration |
 | Commerce channel | site initializer `commerce-channel.json` | none | none | none |
 | Channel payment methods | none | bootstrap `set_payment_methods.sh` | none | none |
 | Commerce catalogs | batch `06` (`LIFERAY_INC_CATALOG`) | none | seed `05` (the IGNEK publisher catalog) | migration (marketplace publishers) |
-| Currency `SGD` | batch `07` | none | none | migration (account currencies) |
+| Currency `SGD` | `scripts/seed/batch-records`, which the seed creates when it is missing. UAT and production got it from the batch before 2026-11-08 (finding 11). | none | none | migration (account currencies) |
 | Option categories | batch `08` | none | none | none |
 | Specifications | Salesforce product batch `04` (62) | none | none | none |
 | Options | batch `09` (3); seed `05` (the 5 options of the seed products that the batch does not define), finding 9; the Salesforce product batch `03` (`MACHINE_TYPE` and one option per Salesforce product family) | none | none | migration creates `MACHINE_TYPE` when it is missing |
