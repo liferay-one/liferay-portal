@@ -18,7 +18,7 @@ Pure Liferay SaaS client-extension workspace — no OSGi modules, no Ant. Client
 - `liferay-one-etc-spring-boot/` — custom REST, Salesforce Pub/Sub subscriber, crons, integration clients.
 - `liferay-one-global-css/` — shared styles.
 - `liferay-one-instance-settings/` — global Liferay instance configs.
-- `liferay-one-batch-products/` — the catalog data that we own: every product specification, and the Salesforce products of UAT with their entitlement definitions, SKU links, and usage definitions. The products are as UAT holds them: 47 draft products and 1 approved, with all SKUs unpublished except one. The batch files are the source of truth and are edited by hand. No script writes UAT or production data; the batch deploy is the only write. It deploys to every environment, after `liferay-one-batch`.
+- `liferay-one-batch-products/` — the catalog data that we own: every product specification, and the Salesforce products of UAT with their entitlement definitions, SKU links, and usage definitions. The products are as UAT holds them: 47 draft products and 1 approved, with all SKUs unpublished except one. The batch files are the source of truth and are edited by hand. No script writes UAT or production data; the batch deploy is the only write. It deploys to local environments, after `liferay-one-batch`. It does not deploy to Liferay Cloud, because its product import fails for each product that already has its options (`ProductOptionUtil.addOrUpdateCPDefinitionOptionRel` passes a null option ID to `updateCPDefinitionOptionRel`), and that fails the batch job on Liferay Cloud.
 - `liferay-one-site-initializer/` — single site, all Object definitions + roles + fragments.
 
 ## Related Repos
