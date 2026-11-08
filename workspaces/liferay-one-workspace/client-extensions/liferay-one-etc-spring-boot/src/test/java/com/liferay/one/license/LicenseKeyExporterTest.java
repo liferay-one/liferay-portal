@@ -94,18 +94,18 @@ public class LicenseKeyExporterTest {
 	}
 
 	@Test
+	public void testGetFileNameLeavesOutABlankVersion() {
+		Assertions.assertEquals(
+			"activation-key-dsr-developer.xml",
+			_licenseKeyExporter.getFileName("DSR", null, "developer"));
+	}
+
+	@Test
 	public void testGetFileNameStripsPathSeparators() {
 		Assertions.assertEquals(
 			"activation-key-dxp-7.4-......etccron.d.xml",
 			_licenseKeyExporter.getFileName(
 				"DXP", "7.4", "../../../etc/cron.d"));
-	}
-
-	@Test
-	public void testGetFileNameLeavesOutABlankVersion() {
-		Assertions.assertEquals(
-			"activation-key-dsr-developer.xml",
-			_licenseKeyExporter.getFileName("DSR", null, "developer"));
 	}
 
 	@Test
