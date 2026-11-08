@@ -154,7 +154,6 @@ flowchart TB
     paypal["PayPal"]
     smtp["SMTP server"]
     marketo["Marketo forms"]
-    provisioningUAT["Legacy provisioning webserver, UAT"]
 
     browser -- "session cookie and CSRF token" --> headless
     browser -- "oaua bearer JWT" --> sidecar
@@ -188,7 +187,7 @@ flowchart TB
     customerDXP -- "marketplace-client-id bearer JWT" --> headless
     customerDXP -- "marketplace-client-id bearer JWT" --> sidecar
     cloudNative -- "JWT signed by the environment key" --> sidecar
-    kong -- "pass through" --> provisioningUAT
+    kong -- "pass through, path rewrite" --> sidecar
 ```
 
 ## Connection Table
@@ -206,7 +205,7 @@ Each row is one connection. "From" is the caller. Rows are sorted by "From", the
 | Cloud Native environment | Sidecar `/cloud/environments/{id}/activation`, `/manifest`, `/cloud/products/{erc}/virtual-entry/{id}/download` | HTTPS `POST` | No OAuth2 (excluded paths). The body is a JWT signed with the environment's RSA key. Activation verifies it with the public key in the JWT. Manifest verifies it with the public key stored on the environment. | `liferay.oauth.urls.excludes` | `client-extensions/liferay-one-etc-spring-boot/src/main/java/com/liferay/one/CloudRestController.java`, `util/CloudNativeSignatureValidator.java` |
 | Customer DXP | Liferay delivery catalog, cart, order, and `commerce-media` APIs | HTTPS REST, cross origin | OAuth2 authorization code with PKCE and refresh token, client ID `marketplace-client-id` | `DXP_OAUTH_CLIENT_ID`, `DXP_OAUTH_REDIRECT_URIS`, CORS filter `dxp-connector` | `scripts/bootstrap/create_dxp_oauth_application.sh`, `configs/common/osgi/configs/com.liferay.portal.remote.cors.configuration.PortalCORSConfiguration~dxp-connector.config` |
 | Customer DXP | Sidecar `/dxp/project-usage`, `/dxp/provisioning/{orderId}` | HTTPS REST | Bearer JWT issued to `marketplace-client-id`. The sidecar accepts it through the `external-dxp` entry. | `external-dxp.oauth2.user.agent.client.id`, `liferay.oauth.application.external.reference.codes` | `client-extensions/liferay-one-etc-spring-boot/src/main/java/com/liferay/one/DXPRestController.java`, `application-default.properties` |
-| Kong gateway | Legacy provisioning webserver, UAT | HTTPS, path rewrite of `/cloud/v1/environments/{id}/activation` and `/manifest` to `/o/provisioning-rest/v1.0/...` | Pass through. Kong adds no credentials. | Upstream URL in `kong.yml`. Custom domains `api.one.liferay.com` (`extprd`) and `api.one-uat.liferay.com` (`extuat`). | `client-extensions/liferay-one-kong/kong/kong.yml`, `client-extensions/liferay-one-kong/LCP.json` |
+| Kong gateway | Sidecar `/cloud/environments/{id}/activation`, `/manifest` | HTTP inside the Cloud environment, to the service `liferayoneetcspringboot` on port 58081. Kong rewrites `/cloud/v1/environments/{id}/activation` and `/manifest` to `/cloud/environments/...`. | Pass through. Kong adds no credentials. The sidecar verifies the signed JWT in the body. | Upstream URL in `kong.yml`. Custom domains `api.one.liferay.com` (`extprd`) and `api.one-uat.liferay.com` (`extuat`). | `client-extensions/liferay-one-kong/kong/kong.yml`, `client-extensions/liferay-one-kong/LCP.json` |
 | Liferay Commerce | PayPal | HTTPS, Commerce payment integration `paypal-integration` | PayPal credentials in the channel payment method settings. They are not in the repository. | Channel payment methods | `scripts/bootstrap/set_payment_methods.sh` |
 | Liferay notification queue | SMTP server | SMTP | Mail settings of the portal. Local stacks use `mail:1025` with no credentials. | `LIFERAY_CONFIGURATION_..._OUTGOING_SMTP_*` in `docker-compose.yaml` | `docker-compose.yaml` |
 | Liferay object actions | Sidecar `/object/action/...` (16 paths) | HTTP `POST` | Bearer JWT of `liferay-one-etc-spring-boot-oaua`. The sidecar verifies the signature against `/o/oauth2/jwks`, the type `at+jwt`, and the client ID. | `.serviceAddress: localhost:58081` and `resourcePath` | `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml`, `modules/util/client-extension-util-spring-boot3/src/main/java/com/liferay/client/extension/util/spring/boot3/LiferayOAuth2ResourceServerEnableWebSecurity.java` |
@@ -292,8 +291,6 @@ The frontend, batch, configuration, and site initializer client extensions run i
 
 1. **The sidecar has no restart policy and no wait on the JWK set.** `docker-compose.yaml:60-83` gives the sidecar no `restart` key (only `mail` has one, at line 90). `client-extensions/liferay-one-etc-spring-boot/scripts/wait-for-routes.sh` waits only for the `mainDomain` file. Together with the eager JWK fetch, a 503 from `/o/oauth2/jwks` during boot leaves the sidecar stopped.
 
-1. **Kong sends activation calls to a legacy UAT host.** `client-extensions/liferay-one-kong/kong/kong.yml:15-37` routes `/cloud/v1/environments/{id}/activation` and `/manifest` to `https://webserver-lrprovisioning-uat.lfr.cloud`, while the sidecar now serves the same operations at `/cloud/environments/{id}/activation` and `/manifest`. The same `kong.yml` is deployed to `extprd`, so production traffic on `api.one.liferay.com` also goes to the UAT provisioning host.
-
 1. **2 client extension directories hold only ignored build output.** `client-extensions/liferay-one-etc-cron` and `client-extensions/liferay-one-mock-mail` contain only `build/` and `dist/`, which `.gitignore:15` ignores. Nothing in Git defines them.
 
 ## Open Questions
@@ -303,8 +300,6 @@ The frontend, batch, configuration, and site initializer client extensions run i
 1. Does the `oahs` token exceed 8 KB? The size depends on the token format of the portal. The repository records the risk only for an all scopes token, in `scripts/_common.sh:32-33`.
 
 1. Where are the PayPal credentials, the production SMTP server, and the Salesforce Pub/Sub publisher configured? They are outside this repository.
-
-1. Is the Kong route to the UAT provisioning host correct for `extprd`? See finding 4.
 
 1. Which hosts do `external-ai-hub`, `external-ssa`, and `external-trial` point at in UAT and production? The home page URLs and token URIs come from the route files of each Cloud environment.
 
