@@ -93,7 +93,7 @@ Each target deploys the client extensions in a different order. The batch must c
 | --- | --- | --- | --- |
 | Local Docker | global CSS, instance settings, custom element, batch, Salesforce product batch, Spring Boot, site initializer | Yes, log quiet for 20 seconds, after each batch | `scripts/bootstrap/deploy_client_extensions.sh:26-48` |
 | Partitioned instance | global CSS, instance settings, custom element, batch, Salesforce product batch, site initializer, then Spring Boot in `_set_up` | Yes, reads import tasks from the partition, after each batch | `scripts/instance.sh:25-31`, `:161-233`, `:531-553` |
-| UAT and production | batch, Salesforce product batch, site initializer, then the others. Only the client extensions that changed since a base commit. | No. `lcp deploy` returns when the upload finishes. | `scripts/deploy.sh:16-19`, `:63-69`, `:161-176` |
+| UAT and production | batch, site initializer, then the others. Only the client extensions that changed since a base commit. The Salesforce product batch does not deploy (`EXCLUDED_CLIENT_EXTENSIONS`). | No. `lcp deploy` returns when the upload finishes. | `scripts/deploy.sh` |
 
 An object action whose executor key names a client extension entry that does not exist yet is allowed: Liferay logs it at debug level and saves the action (`modules/apps/object/.../ObjectActionLocalServiceImpl.java:726-740`). So the batch can define actions before the Spring Boot client extension deploys.
 
@@ -199,7 +199,7 @@ The file order respects all 9 edges. No file references an entity that a later f
 
 ### Salesforce Product Batch
 
-`client-extensions/liferay-one-batch-products/batch/` holds what we own for the Salesforce products: the specifications of every product, and the products, entitlement definitions, SKU links, and usage definitions of the Salesforce SKUs. Salesforce owns the SKUs and the orders. The files are the source of truth and are edited by hand. No script writes this data to UAT or production: the deploy of the batch is the only write. A pull from UAT is a check that is run by hand and is not part of the repository.
+`client-extensions/liferay-one-batch-products/batch/` holds what we own for the Salesforce products: the specifications of every product, and the products, entitlement definitions, SKU links, and usage definitions of the Salesforce SKUs. Salesforce owns the SKUs and the orders. The files are the source of truth and are edited by hand. No script writes this data to UAT or production, and since 2026-11-08 `scripts/deploy.sh` and `scripts/deploy_uat.sh` do not deploy the Salesforce product batch either, because its product import fails for each product that already has its options (`ProductOptionUtil.addOrUpdateCPDefinitionOptionRel` passes a null option ID to `updateCPDefinitionOptionRel`), and that fails the batch job on Liferay Cloud. A change to these files reaches local environments only, until the portal fixes that import. A pull from UAT is a check that is run by hand and is not part of the repository.
 
 | File | Entity | Items | Create, Update in the File | Depends On |
 | --- | --- | --- | --- | --- |
@@ -374,7 +374,7 @@ Sources: `scripts/_common.sh:87-97`, `:209-221`, `:296-317`; `scripts/instance.s
 
 ### Medium
 
-1. **Two layers own the same 10 company vocabularies and 5 categories.** `14-taxonomy-vocabulary` and `client-extensions/liferay-one-site-initializer/site-initializer/taxonomy-vocabularies/company/` both write `MARKETPLACE_APP_CATEGORY` and 9 more. `15-taxonomy-category` and the site initializer both write `MARKETPLACE_LISTING_LISTED` and the 4 `MARKETPLACE_PRODUCT_TYPE_*` categories. `MARKETPLACE_SOLUTION_EDITION` exists only in the site initializer. A change in one layer is reverted by the other on the next run. Keep the company vocabularies in the batch only.
+1. **Two layers own the same 10 company vocabularies and 5 categories.** `14-taxonomy-vocabulary` and `client-extensions/liferay-one-site-initializer/site-initializer/taxonomy-vocabularies/company/` both write `MARKETPLACE_APP_CATEGORY` and 9 more. `15-taxonomy-category` and the site initializer both write `MARKETPLACE_LISTING_LISTED` and the 4 `MARKETPLACE_PRODUCT_TYPE_*` categories. `MARKETPLACE_SOLUTION_EDITION` exists only in the site initializer. A change in one layer is reverted by the other on the next run, so change both copies together. Do not delete the site initializer copies: the site initializer registers `[$TAXONOMY_VOCABULARY_ID:<name>$]` and `[$TAXONOMY_CATEGORY_ID:<path>$]` only for the files it reads, and the marketplace pages in `layouts/` use both tokens. The batch keeps all 128 categories, because the site initializer does not run again on an existing UAT or production site.
 
 1. **The `UsageReportApproved` action does not create the overage order.** `03-object-definition.batch-engine-data.json:8072` names `function#liferay-one-etc-spring-boot-object-action-usage-report-approved`. The entry in `client-extensions/liferay-one-etc-spring-boot/client-extension.yaml:133` and the controller `ObjectActionUsageReportApprovedRestController` exist. The controller does nothing unless the usage report is approved, and then it only logs a warning. An approved usage report creates no overage order and no Salesforce opportunity. Add the order and the opportunity to the controller.
 

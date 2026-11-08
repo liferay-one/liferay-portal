@@ -5,7 +5,7 @@ set -o nounset
 set -o pipefail
 
 #
-# Cleans and builds six liferay-one client extensions and deploys them to UAT
+# Cleans and builds five liferay-one client extensions and deploys them to UAT
 # in one Liferay Cloud build.
 #
 # lcp deploy --deploy-dir reads one folder for each service, and each folder
@@ -18,15 +18,13 @@ set -o pipefail
 # absolute path inside this checkout. A --message replaces only the commit
 # message, so the script does not set one.
 #
-# All services in one build deploy at the same time, so liferay-one-batch does
-# not finish before liferay-one-batch-products starts. That is safe only when
-# the environment already has the objects and the relationships that
-# liferay-one-batch defines. Use scripts/deploy.sh for an environment that does
-# not have them.
+# The Salesforce product batch, liferay-one-batch-products, does not deploy.
+# Its product import fails for each product that already has its options, and
+# that fails the batch job on Liferay Cloud. See scripts/deploy.sh.
 #
 # Usage: scripts/deploy_uat.sh [<client-extension>...]
 #
-# With no arguments, all six client extensions deploy.
+# With no arguments, all five client extensions deploy.
 #
 # Environment:
 # DRY_RUN (optional) Set to true to build and extract, and print the lcp
@@ -36,7 +34,6 @@ set -o pipefail
 
 CXS=(
 	liferay-one-batch
-	liferay-one-batch-products
 	liferay-one-custom-element
 	liferay-one-etc-spring-boot
 	liferay-one-global-css
