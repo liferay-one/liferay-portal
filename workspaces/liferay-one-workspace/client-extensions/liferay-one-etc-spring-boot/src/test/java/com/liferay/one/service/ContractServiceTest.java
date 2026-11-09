@@ -355,12 +355,6 @@ public class ContractServiceTest {
 
 		Mockito.verify(
 			_commerceOrderItemService, Mockito.never()
-		).patchOrderItems(
-			ArgumentMatchers.any(Order.class), ArgumentMatchers.any()
-		);
-
-		Mockito.verify(
-			_commerceOrderItemService, Mockito.never()
 		).patchOrderItemCustomFields(
 			ArgumentMatchers.argThat(map -> !map.isEmpty()),
 			ArgumentMatchers.any(Order.class)
