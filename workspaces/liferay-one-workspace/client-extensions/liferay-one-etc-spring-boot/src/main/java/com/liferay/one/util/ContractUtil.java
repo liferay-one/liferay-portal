@@ -66,30 +66,13 @@ public class ContractUtil {
 			startDateContracts.add(contract);
 		}
 
-		if (startDateContracts.isEmpty()) {
-			startDateContracts = endDateContracts;
+		if (startDateContracts.size() == 1) {
+			return startDateContracts.get(0);
 		}
 
-		Contract firstContract = startDateContracts.get(0);
+		_warnAmbiguousContracts(endDateInstant, endDateContracts);
 
-		for (Contract contract : startDateContracts) {
-			String externalReferenceCode = contract.getExternalReferenceCode();
-
-			int comparison = externalReferenceCode.compareTo(
-				firstContract.getExternalReferenceCode());
-
-			if (comparison >= 0) {
-				continue;
-			}
-
-			firstContract = contract;
-		}
-
-		if (startDateContracts.size() > 1) {
-			_warnAmbiguousContracts(endDateInstant, startDateContracts);
-		}
-
-		return firstContract;
+		return null;
 	}
 
 	private static void _warnAmbiguousContracts(
@@ -109,7 +92,7 @@ public class ContractUtil {
 			StringBundler.concat(
 				"Several contracts ", externalReferenceCodes,
 				" end the day before ", endDateInstant,
-				" and cannot be told apart by start date"));
+				" and the start date does not tell them apart"));
 	}
 
 	private static final Log _log = LogFactory.getLog(ContractUtil.class);

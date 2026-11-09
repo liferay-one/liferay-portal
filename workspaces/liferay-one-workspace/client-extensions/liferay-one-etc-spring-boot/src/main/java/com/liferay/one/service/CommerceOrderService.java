@@ -350,6 +350,13 @@ public class CommerceOrderService extends OneBaseService {
 
 			Map<String, Object> customFields = new HashMap<>();
 
+			long contractEntityId = orderMetadataJSONObject.optLong(
+				"contractEntityId");
+
+			if (contractEntityId > 0) {
+				customFields.put("contractId", contractEntityId);
+			}
+
 			customFields.put(
 				"order-metadata", orderMetadataJSONObject.toString());
 			customFields.put("salesforceProjectId", salesforceProjectId);

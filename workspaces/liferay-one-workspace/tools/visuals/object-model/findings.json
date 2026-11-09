@@ -80,9 +80,10 @@
 		"title": "commerceOrderToLicenseKey is unused"
 	},
 	{
-		"body": "Since LPD-92222 the order to project link is the projectName custom field. Since LPD-113729 the contract link is the contractId custom field of the order item. A project rename breaks the project link with no error.",
+		"body": "Since LPD-92222 the order to project link is the projectName custom field. Since LPD-113729 the contract link is the contractId custom field of the order item, else the contractId custom field of its order. A project rename breaks the project link with no error.",
 		"edges": [
 			"SOFT_L_COMMERCE_ORDER_projectName",
+			"SOFT_L_COMMERCE_ORDER_contractId",
 			"SOFT_L_COMMERCE_ORDER_ITEM_contractId"
 		],
 		"nodes": [

@@ -412,6 +412,14 @@ public class ContractService extends OneBaseService {
 			String action, SalesforceContract salesforceContract)
 		throws Exception {
 
+		return upsertContract(action, true, salesforceContract);
+	}
+
+	public boolean upsertContract(
+			String action, boolean reconcile,
+			SalesforceContract salesforceContract)
+		throws Exception {
+
 		if (Validator.isNull(salesforceContract.getId()) ||
 			Validator.isNull(salesforceContract.getAccountId())) {
 
@@ -524,7 +532,9 @@ public class ContractService extends OneBaseService {
 			contract = new Contract(new JSONObject(response));
 		}
 
-		reconcileOpportunityContract(salesforceContract.getOpportunityId());
+		if (reconcile) {
+			reconcileOpportunityContract(salesforceContract.getOpportunityId());
+		}
 
 		_attachSuccessorContract(contract, salesforceContract);
 
