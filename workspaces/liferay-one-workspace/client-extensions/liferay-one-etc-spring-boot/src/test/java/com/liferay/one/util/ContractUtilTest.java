@@ -79,7 +79,7 @@ public class ContractUtilTest {
 	}
 
 	@Test
-	public void testFetchContractSharedEndDateIsDecidedByTheLowestExternalReferenceCode() {
+	public void testFetchContractSharedEndDateAndStartDateMatchesNoContract() {
 		Contract contract1 = _createContract(
 			"C2", 2L, _CONTRACT_END_DATE, _CONTRACT_START_DATE);
 		Contract contract2 = _createContract(
@@ -87,8 +87,7 @@ public class ContractUtilTest {
 		Contract contract3 = _createContract(
 			"C3", 3L, _CONTRACT_END_DATE, "2027-02-01T00:00:00Z");
 
-		Assertions.assertSame(
-			contract2,
+		Assertions.assertNull(
 			ContractUtil.fetchContract(
 				List.of(contract1, contract2, contract3),
 				Instant.parse(_LINE_END_DATE),
@@ -110,14 +109,13 @@ public class ContractUtilTest {
 	}
 
 	@Test
-	public void testFetchContractSharedEndDateWithoutAMatchingStartDateUsesTheLowestExternalReferenceCode() {
+	public void testFetchContractSharedEndDateWithoutAMatchingStartDateMatchesNoContract() {
 		Contract contract1 = _createContract(
 			"C2", 2L, _CONTRACT_END_DATE, "2026-11-01T00:00:00Z");
 		Contract contract2 = _createContract(
 			"C1", 1L, _CONTRACT_END_DATE, _CONTRACT_START_DATE);
 
-		Assertions.assertSame(
-			contract2,
+		Assertions.assertNull(
 			ContractUtil.fetchContract(
 				List.of(contract1, contract2), Instant.parse(_LINE_END_DATE),
 				null));

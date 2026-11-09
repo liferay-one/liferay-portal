@@ -1120,7 +1120,7 @@ public class CommerceOrderServiceTest {
 
 		Map<String, Object> customFields = mapArgumentCaptor.getValue();
 
-		Assertions.assertFalse(customFields.containsKey("contractId"));
+		Assertions.assertEquals(123L, customFields.get("contractId"));
 		Assertions.assertEquals(
 			"a1tTEST", customFields.get("salesforceProjectId"));
 

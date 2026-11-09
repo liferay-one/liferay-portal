@@ -14,6 +14,7 @@ import com.liferay.one.constants.CommerceOrderItemConstants;
 import java.time.Instant;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,8 +32,8 @@ import org.junit.jupiter.api.Test;
 public class CommerceOrderItemUtilTest {
 
 	@Test
-	public void testGetContractIdFallsBackToTheAIHubOrderContract() {
-		Order order = _createOrder("{\"contractEntityId\": 9}");
+	public void testGetContractIdFallsBackToTheOrderContract() {
+		Order order = _createOrder("contractId", 9L);
 
 		Assertions.assertEquals(
 			9L, CommerceOrderItemUtil.getContractId(order, _createOrderItem()));
@@ -43,11 +44,20 @@ public class CommerceOrderItemUtilTest {
 	}
 
 	@Test
+	public void testGetContractIdIgnoresTheOrderMetadata() {
+		Assertions.assertEquals(
+			0L,
+			CommerceOrderItemUtil.getContractId(
+				_createOrder("order-metadata", "{\"contractEntityId\": 9}"),
+				_createOrderItem()));
+	}
+
+	@Test
 	public void testGetContractIdIsZeroWithoutAContract() {
 		Assertions.assertEquals(
 			0L,
 			CommerceOrderItemUtil.getContractId(
-				_createOrder(null), _createOrderItem()));
+				_createOrder(), _createOrderItem()));
 	}
 
 	@Test
@@ -65,7 +75,7 @@ public class CommerceOrderItemUtilTest {
 		Assertions.assertEquals(
 			5L,
 			CommerceOrderItemUtil.getContractId(
-				_createOrder("{\"contractEntityId\": 9}"),
+				_createOrder("contractId", 9L),
 				_createOrderItem("contractId", "5")));
 	}
 
@@ -292,12 +302,16 @@ public class CommerceOrderItemUtilTest {
 			CommerceOrderItemUtil.getProductOptions(orderItem));
 	}
 
-	private Order _createOrder(String orderMetadata) {
+	private Order _createOrder(Object... namesAndValues) {
 		Order order = new Order();
 
-		if (orderMetadata != null) {
-			order.setCustomFields(Map.of("order-metadata", orderMetadata));
+		Map<String, Object> customFields = new HashMap<>();
+
+		for (int i = 0; i < namesAndValues.length; i += 2) {
+			customFields.put((String)namesAndValues[i], namesAndValues[i + 1]);
 		}
+
+		order.setCustomFields(customFields);
 
 		return order;
 	}

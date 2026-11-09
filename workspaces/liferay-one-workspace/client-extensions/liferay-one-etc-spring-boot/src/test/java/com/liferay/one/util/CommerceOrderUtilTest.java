@@ -27,6 +27,21 @@ import org.junit.jupiter.api.Test;
 public class CommerceOrderUtilTest {
 
 	@Test
+	public void testGetContractIdReadsTheContractOfTheOrder() {
+		Order order = new Order();
+
+		Assertions.assertEquals(0L, CommerceOrderUtil.getContractId(order));
+
+		order.setCustomFields(Map.of("contractId", "9"));
+
+		Assertions.assertEquals(9L, CommerceOrderUtil.getContractId(order));
+
+		order.setCustomFields(Map.of("contractId", 7L));
+
+		Assertions.assertEquals(7L, CommerceOrderUtil.getContractId(order));
+	}
+
+	@Test
 	public void testGetOrderMetadataJSONObjectFallsBackToEmptyObject() {
 		Order order = new Order();
 

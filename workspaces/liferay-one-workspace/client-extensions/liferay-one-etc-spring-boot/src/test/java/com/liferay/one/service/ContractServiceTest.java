@@ -241,7 +241,7 @@ public class ContractServiceTest {
 	}
 
 	@Test
-	public void testHideContractDoesNotTouchAnAIHubOrderItemWithOnlyTheMetadataContract()
+	public void testHideContractIgnoresTheOrderMetadataContract()
 		throws Exception {
 
 		OrderItem orderItem = _createOrderItem(11, "2027-11-01T00:00:00Z", 0L);
@@ -260,7 +260,7 @@ public class ContractServiceTest {
 		);
 
 		Assertions.assertEquals(
-			77L, CommerceOrderItemUtil.getContractId(aiHubOrder, orderItem));
+			0L, CommerceOrderItemUtil.getContractId(aiHubOrder, orderItem));
 	}
 
 	@Test
@@ -919,11 +919,11 @@ public class ContractServiceTest {
 	}
 
 	@Test
-	public void testUpdateEntitlementContractsKeepsTheAIHubOrderContract()
+	public void testUpdateEntitlementContractsUsesTheOrderContract()
 		throws Exception {
 
 		Order order = _createOrder(
-			Map.of("order-metadata", "{\"contractEntityId\": 9}"),
+			Map.of("contractId", "9"),
 			_createOrderItem(11, "2027-11-01T00:00:00Z", 0L));
 
 		Mockito.when(
@@ -1563,6 +1563,45 @@ public class ContractServiceTest {
 
 		Assertions.assertEquals(
 			"PRJ-1", jsonObject.getString("r_projectToContract_c_projectERC"));
+	}
+
+	@Test
+	public void testUpsertContractWithoutReconcileReadsNoOpportunityContracts()
+		throws Exception {
+
+		List<URI> uris = new ArrayList<>();
+
+		_testContractService.getFunction = uri -> {
+			uris.add(uri);
+
+			return null;
+		};
+
+		_testContractService.patchResponse = "{\"id\": 77}";
+
+		_testContractService.upsertContract(
+			"create", false,
+			new SalesforceContract(
+				_createSalesforceContract().put(
+					"SBQQ__Opportunity__c", "OPP-1")));
+
+		Assertions.assertFalse(
+			uris.stream(
+			).anyMatch(
+				this::_isOpportunityContractsQuery
+			));
+
+		_testContractService.upsertContract(
+			"create", true,
+			new SalesforceContract(
+				_createSalesforceContract().put(
+					"SBQQ__Opportunity__c", "OPP-1")));
+
+		Assertions.assertTrue(
+			uris.stream(
+			).anyMatch(
+				this::_isOpportunityContractsQuery
+			));
 	}
 
 	private JSONObject _createContractJSONObject(

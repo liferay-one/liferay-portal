@@ -1423,6 +1423,69 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveReconcilesTheOpportunityOfEachContractOnceAfterTheOrderItems()
+		throws Exception {
+
+		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
+
+		recordJSONObject.put(
+			"contracts",
+			new JSONArray(
+			).put(
+				new JSONObject(
+				).put(
+					"Id", "C1"
+				).put(
+					"SBQQ__Opportunity__c", "OPP-A"
+				)
+			).put(
+				new JSONObject(
+				).put(
+					"Id", "C2"
+				).put(
+					"SBQQ__Opportunity__c", "OPP-A"
+				)
+			).put(
+				new JSONObject(
+				).put(
+					"Id", "C3"
+				).put(
+					"SBQQ__Opportunity__c", "OPP-B"
+				)
+			));
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		InOrder inOrder = Mockito.inOrder(
+			_commerceOrderItemService, _contractService);
+
+		inOrder.verify(
+			_commerceOrderItemService
+		).upsertOrderItems(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean()
+		);
+
+		inOrder.verify(
+			_contractService
+		).reconcileOpportunityContract(
+			"OPP-A"
+		);
+
+		inOrder.verify(
+			_contractService
+		).reconcileOpportunityContract(
+			"OPP-B"
+		);
+
+		Mockito.verify(
+			_contractService, Mockito.times(1)
+		).reconcileOpportunityContract(
+			"OPP-A"
+		);
+	}
+
+	@Test
 	public void testReceiveReprocessesRedeliveredMessageWithoutDuplicating()
 		throws Exception {
 
@@ -2338,7 +2401,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		inOrder.verify(
 			_contractService
 		).upsertContract(
-			Mockito.eq("update"),
+			Mockito.eq("update"), Mockito.eq(false),
 			Mockito.argThat(
 				salesforceContract -> Objects.equals(
 					salesforceContract.getId(), "C1"))
@@ -2347,7 +2410,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		inOrder.verify(
 			_contractService
 		).upsertContract(
-			Mockito.eq("update"),
+			Mockito.eq("update"), Mockito.eq(false),
 			Mockito.argThat(
 				salesforceContract -> Objects.equals(
 					salesforceContract.getId(), "C2"))
@@ -2595,7 +2658,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		).when(
 			_contractService
 		).upsertContract(
-			Mockito.anyString(),
+			Mockito.anyString(), Mockito.anyBoolean(),
 			Mockito.argThat(
 				salesforceContract -> Objects.equals(
 					salesforceContract.getId(), "C1"))
@@ -2622,7 +2685,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_contractService
 		).upsertContract(
-			Mockito.eq("update"),
+			Mockito.eq("update"), Mockito.eq(false),
 			Mockito.argThat(
 				salesforceContract -> Objects.equals(
 					salesforceContract.getId(), "C2"))
