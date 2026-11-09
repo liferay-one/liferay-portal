@@ -290,13 +290,13 @@ describe('[HOOK-USEPROJECTITEMS] useProjectContractItems', () => {
 		]);
 	});
 
-	it('keeps a pending order under the contract its metadata names', () => {
+	it('keeps a pending order under the contract of the order', () => {
 		mockOrders([
 			{
 				...toOrder(1, [2], 'Project A'),
 				customFields: {
-					'order-metadata': JSON.stringify({contractEntityId: 20}),
-					'projectName': 'Project A',
+					contractId: 20,
+					projectName: 'Project A',
 				},
 				orderStatusInfo: {code: 1},
 			},
@@ -349,12 +349,12 @@ describe('[HOOK-USEPROJECTITEMS] useProjectContractItems', () => {
 		]);
 	});
 
-	it('keeps a pending item under the contract of its order metadata when the item has no contract', () => {
+	it('keeps a pending item under the contract of its order when the item has no contract', () => {
 		mockOrders([
 			{
 				customFields: {
-					'order-metadata': JSON.stringify({contractEntityId: 10}),
-					'projectName': 'Project A',
+					contractId: 10,
+					projectName: 'Project A',
 				},
 				id: 1,
 				orderStatusInfo: {code: 1},
