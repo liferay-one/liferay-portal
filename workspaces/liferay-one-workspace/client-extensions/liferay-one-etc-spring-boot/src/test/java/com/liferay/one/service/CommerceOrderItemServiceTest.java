@@ -15,6 +15,7 @@ import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResou
 import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
+import com.liferay.one.util.CommerceOrderUtil;
 
 import java.math.BigDecimal;
 
@@ -184,6 +185,36 @@ public class CommerceOrderItemServiceTest {
 	}
 
 	@Test
+	public void testUpsertOrderItemsKeepsTheOrderContractWhenNotUnlinking()
+		throws Exception {
+
+		OrderItem orderItem = _createOrderItem(12L, _ERC_B, null, null);
+
+		Order order = _createOrder(
+			_createOrderItem(11L, _ERC_A, null, null), orderItem);
+
+		order.setCustomFields(Map.of("contractId", "77"));
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			order
+		);
+
+		_upsertOrderItems(
+			List.of(_createContract(5001L, "2027-10-30T00:00:00Z")), order,
+			false, _createLineItemJSON(_ERC_A, 3, "2027-10-31"));
+
+		Order patchedOrder = _getPatchedOrder();
+
+		Assertions.assertNull(patchedOrder.getCustomFields());
+
+		Assertions.assertNull(orderItem.getCustomFields());
+		Assertions.assertEquals(77L, CommerceOrderUtil.getContractId(order));
+	}
+
+	@Test
 	public void testUpsertOrderItemsLinksAMatchedItemWhenNotUnlinking()
 		throws Exception {
 
@@ -229,6 +260,47 @@ public class CommerceOrderItemServiceTest {
 
 		Assertions.assertEquals(
 			"5002", _getCustomFieldData(patchedOrderItems[0], "contractId"));
+	}
+
+	@Test
+	public void testUpsertOrderItemsMovesTheOrderContractToTheOrderItems()
+		throws Exception {
+
+		OrderItem orderItemB = _createOrderItem(12L, _ERC_B, null, null);
+		OrderItem orderItemC = _createOrderItem(
+			13L, _ERC_C, "contractId", "5001");
+
+		Order order = _createOrder(
+			_createOrderItem(11L, _ERC_A, null, null), orderItemB, orderItemC);
+
+		order.setCustomFields(Map.of("contractId", "77"));
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			order
+		);
+
+		_upsertOrderItems(
+			List.of(_createContract(5001L, "2027-10-30T00:00:00Z")), order,
+			_createLineItemJSON(_ERC_A, 3, "2027-10-31"));
+
+		Order patchedOrder = _getPatchedOrder();
+
+		Assertions.assertEquals(
+			Map.of("contractId", 0L), patchedOrder.getCustomFields());
+
+		OrderItem[] patchedOrderItems = patchedOrder.getOrderItems();
+
+		Assertions.assertEquals(
+			"0", _getCustomFieldData(patchedOrderItems[0], "contractId"));
+		Assertions.assertEquals(
+			"77", _getCustomFieldData(patchedOrderItems[1], "contractId"));
+		Assertions.assertEquals(
+			"5001", _getCustomFieldData(patchedOrderItems[2], "contractId"));
+
+		Assertions.assertEquals(0L, CommerceOrderUtil.getContractId(order));
 	}
 
 	@Test
@@ -484,7 +556,7 @@ public class CommerceOrderItemServiceTest {
 		return null;
 	}
 
-	private OrderItem[] _getPatchedOrderItems() throws Exception {
+	private Order _getPatchedOrder() throws Exception {
 		ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(
 			Order.class);
 
@@ -494,7 +566,11 @@ public class CommerceOrderItemServiceTest {
 			ArgumentMatchers.eq(_ORDER_ID), orderArgumentCaptor.capture()
 		);
 
-		Order patchedOrder = orderArgumentCaptor.getValue();
+		return orderArgumentCaptor.getValue();
+	}
+
+	private OrderItem[] _getPatchedOrderItems() throws Exception {
+		Order patchedOrder = _getPatchedOrder();
 
 		return patchedOrder.getOrderItems();
 	}
