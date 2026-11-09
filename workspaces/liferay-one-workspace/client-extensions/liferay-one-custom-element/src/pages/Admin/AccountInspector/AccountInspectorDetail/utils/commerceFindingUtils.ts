@@ -7,6 +7,7 @@ import {
 	endsBeforeStart,
 	getIds,
 	getLoadedIds,
+	getOrderItemContractId,
 	getOrderItems,
 	getOutsideReferenceIds,
 	isComplete,
@@ -66,10 +67,11 @@ export function getOrderChecks({
 		...toFinding(
 			'orders',
 			contractIds
-				? getIds(orders.items, ({orderItems}) =>
-						(orderItems ?? []).some(({customFields}) => {
-							const contractId = toNumber(
-								customFields?.contractId
+				? getIds(orders.items, (order) =>
+						(order.orderItems ?? []).some((orderItem) => {
+							const contractId = getOrderItemContractId(
+								order,
+								orderItem
 							);
 
 							return (

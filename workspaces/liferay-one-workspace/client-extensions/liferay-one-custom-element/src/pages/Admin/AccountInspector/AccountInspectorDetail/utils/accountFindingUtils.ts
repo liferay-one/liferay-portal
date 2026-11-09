@@ -64,6 +64,16 @@ export function getOrderItemCollection(
 	};
 }
 
+export function getOrderItemContractId(
+	order: InspectedOrder | undefined,
+	orderItem: InspectedOrderItem
+) {
+	return (
+		toNumber(orderItem.customFields?.contractId) ||
+		toNumber(order?.customFields?.contractId)
+	);
+}
+
 export function getInspectedCollections({
 	orders,
 	related,

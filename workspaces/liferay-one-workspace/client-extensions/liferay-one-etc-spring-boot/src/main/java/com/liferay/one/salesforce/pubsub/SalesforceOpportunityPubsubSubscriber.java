@@ -654,7 +654,7 @@ public class SalesforceOpportunityPubsubSubscriber
 						"The end date of line ",
 						provisionableSalesforceOpportunityLineItem.
 							getProductName(),
-						" matches no contract of opportunity ",
+						" matches no single contract of opportunity ",
 						salesforceOpportunity.getId()),
 					null);
 			}

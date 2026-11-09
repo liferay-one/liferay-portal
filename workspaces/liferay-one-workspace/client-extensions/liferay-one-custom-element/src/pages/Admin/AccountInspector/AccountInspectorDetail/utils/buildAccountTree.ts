@@ -8,6 +8,7 @@ import i18n from '~/i18n';
 import {
 	getInspectedCollections,
 	getOrderItemCollection,
+	getOrderItemContractId,
 	toNumber,
 } from './accountFindingUtils';
 import {
@@ -63,6 +64,7 @@ function buildTreeIndex(inspection: AccountInspection) {
 		related.entitlements.items.map(({id}) => id)
 	);
 	const orderItems = getOrderItemCollection(orders).items;
+	const ordersById = new Map(orders.items.map((order) => [order.id, order]));
 	const projectIds = new Set(related.projects.items.map(({id}) => id));
 
 	const orderItemIds = new Set(orderItems.map(({id}) => id));
@@ -92,8 +94,8 @@ function buildTreeIndex(inspection: AccountInspection) {
 
 	const getItemContractIds = (order: InspectedOrder) => {
 		const orderContractIds = new Set(
-			(order.orderItems ?? []).map(({customFields}) =>
-				toContractId(customFields?.contractId)
+			(order.orderItems ?? []).map((orderItem) =>
+				toContractId(getOrderItemContractId(order, orderItem))
 			)
 		);
 
@@ -161,10 +163,15 @@ function buildTreeIndex(inspection: AccountInspection) {
 			related.licenseKeys.items.filter(isUnderEntitlement),
 			getEntitlementId
 		),
-		orderItems: groupBy(orderItems, ({customFields, orderId}) =>
+		orderItems: groupBy(orderItems, (orderItem) =>
 			toOrderItemsKey(
-				toContractId(customFields?.contractId),
-				orderId ?? 0
+				toContractId(
+					getOrderItemContractId(
+						ordersById.get(orderItem.orderId ?? 0),
+						orderItem
+					)
+				),
+				orderItem.orderId ?? 0
 			)
 		),
 		orders: (placementKey: string) =>
