@@ -28,6 +28,7 @@ import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.DataOpsUsageService;
 import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.PlacedOrderService;
 import com.liferay.one.service.ProjectContactRoleService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
@@ -38,7 +39,9 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,6 +87,8 @@ public class ProjectRestControllerTest {
 			_dataOpsUsageService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_entitlementService", _entitlementService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_placedOrderService", _placedOrderService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_projectContactRoleService",
 			_projectContactRoleService);
@@ -279,6 +284,107 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
+	public void testGetContactRolesRejectsTooManyProjects() throws Exception {
+		List<String> externalReferenceCodes = new ArrayList<>();
+
+		for (int i = 0; i <= 100; i++) {
+			externalReferenceCodes.add("PRJCT-" + i);
+		}
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _projectRestController.getContactRoles(
+					null, externalReferenceCodes));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_projectContactRoleService);
+	}
+
+	@Test
+	public void testGetContactRolesReturnsTheContactRoleNamesOfEachViewableProject()
+		throws Exception {
+
+		Mockito.when(
+			_projectPermission.contains(
+				Mockito.eq(ActionKeys.VIEW), Mockito.isNull(),
+				Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE), Mockito.any())
+		).thenReturn(
+			true
+		);
+
+		Mockito.when(
+			_projectContactRoleService.getContactRoleNames(
+				List.of(_PROJECT_EXTERNAL_REFERENCE_CODE))
+		).thenReturn(
+			Map.of(
+				_PROJECT_EXTERNAL_REFERENCE_CODE,
+				new LinkedHashMap<>(
+					Map.of(
+						_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE,
+						"Critical Incident Contact")))
+		);
+
+		ResponseEntity<String> responseEntity =
+			_projectRestController.getContactRoles(
+				null,
+				List.of(
+					_PROJECT_EXTERNAL_REFERENCE_CODE,
+					_PROJECT_EXTERNAL_REFERENCE_CODE,
+					_PROJECT_EXTERNAL_REFERENCE_CODE_UNKNOWN));
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(
+			Set.of(_PROJECT_EXTERNAL_REFERENCE_CODE), jsonObject.keySet());
+
+		JSONArray jsonArray = jsonObject.getJSONArray(
+			_PROJECT_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(1, jsonArray.length());
+
+		JSONObject contactRoleJSONObject = jsonArray.getJSONObject(0);
+
+		Assertions.assertEquals(
+			_CONTACT_ROLE_EXTERNAL_REFERENCE_CODE,
+			contactRoleJSONObject.getString("externalReferenceCode"));
+		Assertions.assertEquals(
+			"Critical Incident Contact",
+			contactRoleJSONObject.getString("name"));
+
+		Mockito.verify(
+			_userAccountService
+		).getMyUserAccount(
+			null
+		);
+	}
+
+	@Test
+	public void testGetContactRolesSkipsProjectsWithoutViewPermission()
+		throws Exception {
+
+		ResponseEntity<String> responseEntity =
+			_projectRestController.getContactRoles(
+				null, List.of(_PROJECT_EXTERNAL_REFERENCE_CODE));
+
+		Assertions.assertEquals(
+			"{}",
+			new JSONObject(
+				responseEntity.getBody()
+			).toString());
+
+		Mockito.verify(
+			_projectContactRoleService
+		).getContactRoleNames(
+			List.of()
+		);
+	}
+
+	@Test
 	public void testGetJiraObjectKeyChecksViewPermission() throws Exception {
 		_denyProjectPermission(ActionKeys.VIEW);
 
@@ -311,6 +417,70 @@ public class ProjectRestControllerTest {
 		).check(
 			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
+	}
+
+	@Test
+	public void testGetPlacedOrdersChecksViewPermission() throws Exception {
+		_denyProjectPermission(ActionKeys.VIEW);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _projectRestController.getPlacedOrders(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE, null));
+
+		Mockito.verifyNoInteractions(_placedOrderService);
+	}
+
+	@Test
+	public void testGetPlacedOrdersReturnsTheProjectPlacedOrders()
+		throws Exception {
+
+		Mockito.when(
+			_placedOrderService.getProjectPlacedOrders(
+				Mockito.any(Project.class), Mockito.eq("account"))
+		).thenReturn(
+			new JSONArray(
+			).put(
+				new JSONObject(
+				).put(
+					"id", 1
+				)
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			_projectRestController.getPlacedOrders(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE, "account");
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertEquals(1, jsonObject.getInt("totalCount"));
+
+		JSONArray itemsJSONArray = jsonObject.getJSONArray("items");
+
+		JSONObject itemJSONObject = itemsJSONArray.getJSONObject(0);
+
+		Assertions.assertEquals(1, itemJSONObject.getInt("id"));
+
+		Mockito.verify(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+	}
+
+	@Test
+	public void testGetPlacedOrdersThrowsForAnUnknownProject()
+		throws Exception {
+
+		Assertions.assertThrows(
+			ProjectNotFoundException.class,
+			() -> _projectRestController.getPlacedOrders(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE_UNKNOWN, null));
+
+		Mockito.verifyNoInteractions(_placedOrderService);
 	}
 
 	@Test
@@ -2050,6 +2220,8 @@ public class ProjectRestControllerTest {
 		DataOpsUsageService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
+	private final PlacedOrderService _placedOrderService = Mockito.mock(
+		PlacedOrderService.class);
 	private final ProjectContactRoleService _projectContactRoleService =
 		Mockito.mock(ProjectContactRoleService.class);
 	private final ProjectMembershipService _projectMembershipService =

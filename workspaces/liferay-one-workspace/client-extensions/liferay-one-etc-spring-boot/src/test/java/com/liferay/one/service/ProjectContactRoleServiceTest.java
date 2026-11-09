@@ -5,11 +5,13 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.one.constants.ProductSpecificationConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.ProjectMembership;
 
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,12 @@ public class ProjectContactRoleServiceTest {
 		ReflectionTestUtils.setField(
 			_projectContactRoleService, "_entitlementService",
 			_entitlementService);
+		ReflectionTestUtils.setField(
+			_projectContactRoleService, "_accountRoleService",
+			_accountRoleService);
+		ReflectionTestUtils.setField(
+			_projectContactRoleService, "_projectMembershipService",
+			_projectMembershipService);
 	}
 
 	@Test
@@ -158,6 +166,121 @@ public class ProjectContactRoleServiceTest {
 				_PROJECT_EXTERNAL_REFERENCE_CODE));
 	}
 
+	@Test
+	public void testGetContactRoleNamesAddsTheContactRolesThatProjectMembersHold()
+		throws Exception {
+
+		_setUpContactRoleExternalReferenceCodes("C_CRITICAL_INCIDENT_CONTACT");
+
+		Mockito.when(
+			_projectMembershipService.getProjectMemberships(
+				List.of(
+					_PROJECT_EXTERNAL_REFERENCE_CODE,
+					_PROJECT_EXTERNAL_REFERENCE_CODE_OTHER))
+		).thenReturn(
+			List.of(
+				_createProjectMembership(
+					_PROJECT_EXTERNAL_REFERENCE_CODE, 10, "C_PROJECT_USER"),
+				_createProjectMembership(
+					_PROJECT_EXTERNAL_REFERENCE_CODE, 10,
+					"C_DATA_BREACH_CONTACT"),
+				_createProjectMembership(
+					_PROJECT_EXTERNAL_REFERENCE_CODE, 10,
+					"C_CRITICAL_INCIDENT_CONTACT"),
+				_createProjectMembership(
+					_PROJECT_EXTERNAL_REFERENCE_CODE, 20, "C_PAAS_USER"),
+				_createProjectMembership(
+					_PROJECT_EXTERNAL_REFERENCE_CODE_OTHER, 20,
+					"C_PROJECT_ADMIN"),
+				_createProjectMembership(
+					_PROJECT_EXTERNAL_REFERENCE_CODE_OTHER, 20, "C_PAAS_USER"))
+		);
+
+		_setUpAccountRoles(
+			_createAccountRole(
+				"C_CRITICAL_INCIDENT_CONTACT", "Critical Incident Contact"),
+			_createAccountRole("C_DATA_BREACH_CONTACT", "Data Breach Contact"),
+			_createAccountRole("C_PAAS_USER", "PaaS User"));
+
+		Map<String, Map<String, String>> contactRoleNamesMap =
+			_projectContactRoleService.getContactRoleNames(
+				List.of(
+					_PROJECT_EXTERNAL_REFERENCE_CODE,
+					_PROJECT_EXTERNAL_REFERENCE_CODE_OTHER));
+
+		Assertions.assertEquals(
+			List.of(
+				_PROJECT_EXTERNAL_REFERENCE_CODE,
+				_PROJECT_EXTERNAL_REFERENCE_CODE_OTHER),
+			List.copyOf(contactRoleNamesMap.keySet()));
+
+		Map<String, String> contactRoleNames = contactRoleNamesMap.get(
+			_PROJECT_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(
+			List.of("C_CRITICAL_INCIDENT_CONTACT", "C_DATA_BREACH_CONTACT"),
+			List.copyOf(contactRoleNames.keySet()));
+		Assertions.assertEquals(
+			"Critical Incident Contact",
+			contactRoleNames.get("C_CRITICAL_INCIDENT_CONTACT"));
+		Assertions.assertEquals(
+			"Data Breach Contact",
+			contactRoleNames.get("C_DATA_BREACH_CONTACT"));
+
+		Assertions.assertEquals(
+			Map.of("C_PAAS_USER", "PaaS User"),
+			contactRoleNamesMap.get(_PROJECT_EXTERNAL_REFERENCE_CODE_OTHER));
+
+		Mockito.verify(
+			_accountRoleService, Mockito.times(1)
+		).getAccountRoles();
+	}
+
+	@Test
+	public void testGetContactRoleNamesReturnsAnEmptyMapForNoProjects()
+		throws Exception {
+
+		Assertions.assertEquals(
+			Map.of(),
+			_projectContactRoleService.getContactRoleNames(List.of()));
+
+		Mockito.verifyNoInteractions(
+			_accountRoleService, _projectMembershipService);
+	}
+
+	@Test
+	public void testGetContactRoleNamesSkipsAContactRoleWithoutAnAccountRole()
+		throws Exception {
+
+		_setUpContactRoleExternalReferenceCodes(
+			"C_CRITICAL_INCIDENT_CONTACT, C_MISSING");
+
+		_setUpAccountRoles(
+			_createAccountRole(
+				"C_CRITICAL_INCIDENT_CONTACT", "Critical Incident Contact"),
+			_createAccountRole(null, "No ERC Role"));
+
+		Assertions.assertEquals(
+			Map.of(
+				_PROJECT_EXTERNAL_REFERENCE_CODE,
+				Map.of(
+					"C_CRITICAL_INCIDENT_CONTACT",
+					"Critical Incident Contact")),
+			_projectContactRoleService.getContactRoleNames(
+				List.of(_PROJECT_EXTERNAL_REFERENCE_CODE)));
+	}
+
+	private AccountRole _createAccountRole(
+		String externalReferenceCode, String name) {
+
+		AccountRole accountRole = new AccountRole();
+
+		accountRole.setExternalReferenceCode(() -> externalReferenceCode);
+		accountRole.setName(() -> name);
+
+		return accountRole;
+	}
+
 	private Contract _createContract(long id) {
 		return new Contract(
 			new JSONObject(
@@ -205,8 +328,69 @@ public class ProjectContactRoleServiceTest {
 		return product;
 	}
 
+	private ProjectMembership _createProjectMembership(
+		String projectExternalReferenceCode, long userId,
+		String roleExternalReferenceCode) {
+
+		return new ProjectMembership(
+			new JSONObject(
+			).put(
+				"r_projectToProjectMembership_c_projectERC",
+				projectExternalReferenceCode
+			).put(
+				"r_userToProjectMembership_userId", userId
+			).put(
+				"roleExternalReferenceCode", roleExternalReferenceCode
+			));
+	}
+
+	private void _setUpAccountRoles(AccountRole... accountRoles)
+		throws Exception {
+
+		Mockito.when(
+			_accountRoleService.getAccountRoles()
+		).thenReturn(
+			List.of(accountRoles)
+		);
+	}
+
+	private void _setUpContactRoleExternalReferenceCodes(
+			String contactRoleExternalReferenceCodes)
+		throws Exception {
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(100L)
+		).thenReturn(
+			_createProduct(contactRoleExternalReferenceCodes)
+		);
+
+		Mockito.when(
+			_commerceSkuService.fetchProductId("SKU-PAAS")
+		).thenReturn(
+			100L
+		);
+
+		Mockito.when(
+			_entitlementService.getEntitlements(ArgumentMatchers.anyString())
+		).thenReturn(
+			List.of(_createEntitlement(1, "SKU-PAAS"))
+		);
+
+		Mockito.when(
+			_contractService.getProjectContracts(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(_createContract(11))
+		);
+	}
+
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-1";
 
+	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE_OTHER =
+		"PRJCT-2";
+
+	private final AccountRoleService _accountRoleService = Mockito.mock(
+		AccountRoleService.class);
 	private final CommerceProductService _commerceProductService = Mockito.mock(
 		CommerceProductService.class);
 	private final CommerceSkuService _commerceSkuService = Mockito.mock(
@@ -216,5 +400,7 @@ public class ProjectContactRoleServiceTest {
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
 	private ProjectContactRoleService _projectContactRoleService;
+	private final ProjectMembershipService _projectMembershipService =
+		Mockito.mock(ProjectMembershipService.class);
 
 }
