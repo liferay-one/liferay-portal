@@ -1203,38 +1203,6 @@ public class ContractServiceTest {
 	}
 
 	@Test
-	public void testUpdateEntitlementContractsUsesTheOrderContract()
-		throws Exception {
-
-		Order order = _createOrder(
-			Map.of("contractId", "9"),
-			_createOrderItem(11, "2027-11-01T00:00:00Z", 0L));
-
-		Mockito.when(
-			_entitlementService.getOrderItemEntitlements(List.of(11L))
-		).thenReturn(
-			List.of(
-				_createEntitlement(1, 11, 9, null),
-				_createEntitlement(2, 11, 0, null))
-		);
-
-		_testContractService.updateEntitlementContracts(
-			order, _createLineItems("L11"), true);
-
-		Mockito.verify(
-			_entitlementService
-		).updateEntitlementContract(
-			2, 9
-		);
-
-		Mockito.verify(
-			_entitlementService, Mockito.never()
-		).updateEntitlementContract(
-			ArgumentMatchers.eq(1L), ArgumentMatchers.anyLong()
-		);
-	}
-
-	@Test
 	public void testUpdateEntitlementContractsKeepsTheEntitlementsOfAnItemAtZeroWhenNotUnlinking()
 		throws Exception {
 
@@ -1426,6 +1394,38 @@ public class ContractServiceTest {
 			_entitlementService, Mockito.never()
 		).updateEntitlementContract(
 			ArgumentMatchers.eq(2L), ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
+	public void testUpdateEntitlementContractsUsesTheOrderContract()
+		throws Exception {
+
+		Order order = _createOrder(
+			Map.of("contractId", "9"),
+			_createOrderItem(11, "2027-11-01T00:00:00Z", 0L));
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(11L))
+		).thenReturn(
+			List.of(
+				_createEntitlement(1, 11, 9, null),
+				_createEntitlement(2, 11, 0, null))
+		);
+
+		_testContractService.updateEntitlementContracts(
+			order, _createLineItems("L11"), true);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			2, 9
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).updateEntitlementContract(
+			ArgumentMatchers.eq(1L), ArgumentMatchers.anyLong()
 		);
 	}
 
