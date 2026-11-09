@@ -5,6 +5,7 @@
 
 import {renderHook} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {useDataQuery} from '~/hooks/useDataQuery';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 import {Liferay} from '~/services/liferay/liferay';
 import {getOrderStatusToken} from '~/utils/orderUtils';
@@ -28,6 +29,12 @@ vi.mock('./usePlacedOrder', async (importOriginal) => ({
 	usePlacedOrders: vi.fn(),
 }));
 
+vi.mock('~/hooks/useDataQuery', () => ({useDataQuery: vi.fn()}));
+
+vi.mock('~/services/spring-boot/Projects', () => ({
+	default: {getPlacedOrders: vi.fn()},
+}));
+
 function placedOrder(order: Record<string, unknown>) {
 	return order as unknown as PlacedOrder;
 }
@@ -38,6 +45,14 @@ function mockPlacedOrders(items?: PlacedOrder[]) {
 		error: undefined,
 		isLoading: false,
 	} as ReturnType<typeof usePlacedOrders>);
+}
+
+function mockProjectPlacedOrders(items?: PlacedOrder[]) {
+	vi.mocked(useDataQuery).mockReturnValue({
+		data: items && {items},
+		error: undefined,
+		isLoading: false,
+	} as ReturnType<typeof useDataQuery>);
 }
 
 const alphaOrder = placedOrder({
@@ -215,13 +230,56 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		]);
 	});
 
-	it('filters the orders by project', () => {
+	it('reads the orders of a project from Spring Boot and skips the account orders', () => {
 		mockPlacedOrders([alphaOrder, betaOrder]);
+		mockProjectPlacedOrders([betaOrder]);
 
 		const {result} = renderHook(() => useProjectOrders(betaProject));
 
+		expect(useDataQuery).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				key: '/project-placed-orders/PRJCT-BETA',
+			})
+		);
+		expect(usePlacedOrders).toHaveBeenLastCalledWith(
+			expect.objectContaining({shouldFetch: false})
+		);
 		expect(result.current.placedOrders).toEqual([betaOrder]);
 		expect(result.current.orders.map(({id}) => id)).toEqual(['2']);
+	});
+
+	it('reads the account orders for the one time purchases project', () => {
+		mockPlacedOrders([alphaOrder, placedOrder({id: 3})]);
+		mockProjectPlacedOrders(undefined);
+
+		const {result} = renderHook(() =>
+			useProjectOrders({
+				externalReferenceCode: ONE_TIME_PURCHASES,
+				name: 'One-Time Purchases',
+			})
+		);
+
+		expect(useDataQuery).toHaveBeenLastCalledWith(
+			expect.objectContaining({key: null})
+		);
+		expect(usePlacedOrders).toHaveBeenLastCalledWith(
+			expect.objectContaining({shouldFetch: true})
+		);
+		expect(result.current.orders.map(({id}) => id)).toEqual(['3']);
+	});
+
+	it('keeps every order that Spring Boot returns for the project', () => {
+		const renamedOrder = placedOrder({
+			customFields: {projectName: 'Renamed'},
+			id: 5,
+		});
+
+		mockPlacedOrders([]);
+		mockProjectPlacedOrders([renamedOrder]);
+
+		const {result} = renderHook(() => useProjectOrders(alphaProject));
+
+		expect(result.current.placedOrders).toEqual([renamedOrder]);
 	});
 
 	it('filters the orders by the product in their items', () => {
@@ -231,7 +289,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			placedOrderItems: [{productId: 9}, {productId: 12}],
 		});
 
-		mockPlacedOrders([alphaOrder, betaOrder, productOrder]);
+		mockProjectPlacedOrders([alphaOrder, productOrder]);
 
 		const {result} = renderHook(() => useProjectOrders(alphaProject, 12));
 

@@ -65,6 +65,12 @@ vi.mock('~/services/headless/HeadlessAdminUser', () => ({
 
 vi.mock('~/services/liferay/liferay', () => ({Liferay: liferay}));
 
+vi.mock('~/services/queries/projectPlacedOrdersQuery', () => ({
+	projectPlacedOrdersQuery: (projectERC: string) => ({
+		key: `projectPlacedOrders:${projectERC}`,
+	}),
+}));
+
 vi.mock('~/services/spring-boot/ActivationKeys', () => ({
 	default: {getSummary: vi.fn()},
 }));
@@ -212,6 +218,7 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 				'userProjectMemberships:101:42',
 				'accountLevelContracts:101',
 				'projectContracts:PRJCT-001',
+				'projectPlacedOrders:PRJCT-001',
 				'projectEntitlements:PRJCT-001',
 				'projectOrders:101',
 				'projectProducts:ACCNT-001',

@@ -5,16 +5,17 @@
 
 import {renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import Projects from '~/services/spring-boot/Projects';
 
 import {useProjectMembers} from './useProjectMembers';
 
+import type {Designation} from '~/pages/MyAccount/ProjectMembers/types';
+
 const mocks = vi.hoisted(() => ({
 	contactRoles: {
-		contactRoleExternalReferenceCodesByProjectId: new Map<
-			number,
-			string[]
-		>(),
-		loading: false,
+		data: undefined as Record<string, Designation[]> | undefined,
+		isLoading: false,
+		mutate: vi.fn(),
 	},
 	fetchResponses: {} as Record<
 		string,
@@ -25,7 +26,7 @@ const mocks = vi.hoisted(() => ({
 			account: {accountId: 7 as number | null},
 		},
 		ThemeDisplay: {
-			getUserId: () => '10',
+			getUserId: (): string => '10',
 		},
 	},
 	oneContext: {
@@ -39,8 +40,13 @@ const mocks = vi.hoisted(() => ({
 		loading: false,
 		placedOrders: [] as unknown[],
 	},
+	useDataQuery: vi.fn(),
 	useFetch: vi.fn(),
 	useObjectItems: vi.fn(),
+}));
+
+vi.mock('~/hooks/useDataQuery', () => ({
+	useDataQuery: mocks.useDataQuery,
 }));
 
 vi.mock('~/context/OneContextProvider', () => ({
@@ -55,10 +61,6 @@ vi.mock('~/hooks/useObjectItems', () => ({
 	default: mocks.useObjectItems,
 }));
 
-vi.mock('~/hooks/useProjectCommerce', () => ({
-	useAccountProjectContactRoles: () => mocks.contactRoles,
-}));
-
 vi.mock('~/hooks/useProjectOrders', async (importOriginal) => ({
 	...(await importOriginal<typeof import('~/hooks/useProjectOrders')>()),
 	useProjectOrders: () => mocks.projectOrders,
@@ -68,12 +70,33 @@ vi.mock('~/services/liferay/liferay', () => ({
 	Liferay: mocks.liferay,
 }));
 
+vi.mock('~/services/spring-boot/Projects', () => ({
+	default: {getContactRoles: vi.fn()},
+}));
+
 const PROJECTS_URL = '/o/c/projects';
 const MEMBERSHIPS_URL = '/o/c/projectmemberships';
 const USER_ACCOUNTS_URL =
 	'/o/headless-admin-user/v1.0/accounts/7/user-accounts';
-const ACCOUNT_ROLES_URL =
-	'/o/headless-admin-user/v1.0/accounts/7/account-roles';
+
+const BILLING_DESIGNATION = {
+	externalReferenceCode: 'ROLE_BILLING',
+	name: 'Billing Contact',
+};
+
+const TECH_DESIGNATION = {
+	externalReferenceCode: 'ROLE_TECH',
+	name: 'Technical Contact',
+};
+
+function getContactRolesQuery() {
+	const [query] = mocks.useDataQuery.mock.lastCall ?? [];
+
+	return query as {
+		fetcher: () => Promise<Record<string, Designation[]>>;
+		key: string | null;
+	};
+}
 
 function membership(
 	id: number,
@@ -117,21 +140,6 @@ function setDefaultResponses() {
 	};
 
 	mocks.fetchResponses = {
-		[ACCOUNT_ROLES_URL]: {
-			data: {
-				items: [
-					{
-						externalReferenceCode: 'ROLE_TECH',
-						name: 'Technical Contact',
-					},
-					{
-						externalReferenceCode: 'ROLE_BILLING',
-						name: 'Billing Contact',
-					},
-					{externalReferenceCode: '', name: 'No ERC Role'},
-				],
-			},
-		},
 		[MEMBERSHIPS_URL]: {
 			data: {
 				items: [
@@ -173,14 +181,19 @@ function setDefaultResponses() {
 describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', () => {
 	beforeEach(() => {
 		mocks.liferay.CommerceContext.account.accountId = 7;
+		mocks.liferay.ThemeDisplay.getUserId = () => '10';
 		mocks.oneContext.userAccountModel.isAccountMember = true;
 		mocks.contactRoles = {
-			contactRoleExternalReferenceCodesByProjectId: new Map([
-				[100, ['ROLE_TECH', 'ROLE_MISSING']],
-				[200, ['ROLE_BILLING']],
-			]),
-			loading: false,
+			data: {
+				'PRJ-A': [TECH_DESIGNATION, BILLING_DESIGNATION],
+				'PRJ-B': [BILLING_DESIGNATION, TECH_DESIGNATION],
+			},
+			isLoading: false,
+			mutate: vi.fn(() => Promise.resolve()),
 		};
+		mocks.useDataQuery.mockReset();
+		mocks.useDataQuery.mockImplementation(() => mocks.contactRoles);
+		vi.mocked(Projects.getContactRoles).mockReset();
 		mocks.useFetch.mockReset();
 		mocks.useFetch.mockImplementation((url: string | null) => ({
 			data: undefined,
@@ -319,7 +332,7 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 		).toEqual(['PRJ-A', 'PRJ-B']);
 	});
 
-	it('lists available designations per project from the contact roles', () => {
+	it('lists the available designations of each project from Spring Boot', () => {
 		const {result} = renderHook(() => useProjectMembers());
 
 		expect(
@@ -327,54 +340,124 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 				({availableDesignations}) => availableDesignations
 			)
 		).toEqual([
-			[
-				{externalReferenceCode: 'ROLE_TECH', name: 'Technical Contact'},
-				{
-					externalReferenceCode: 'ROLE_BILLING',
-					name: 'Billing Contact',
-				},
-			],
-			[
-				{
-					externalReferenceCode: 'ROLE_BILLING',
-					name: 'Billing Contact',
-				},
-				{externalReferenceCode: 'ROLE_TECH', name: 'Technical Contact'},
-			],
+			[TECH_DESIGNATION, BILLING_DESIGNATION],
+			[BILLING_DESIGNATION, TECH_DESIGNATION],
 			[],
 		]);
 	});
 
-	it('keeps a designation that the project no longer offers so that it can be removed', () => {
-		mocks.contactRoles = {
-			contactRoleExternalReferenceCodesByProjectId: new Map([[100, []]]),
-			loading: false,
+	it('requests the contact roles of the visible projects only', () => {
+		mocks.oneContext.userAccountModel.isAccountMember = false;
+
+		renderHook(() => useProjectMembers());
+
+		expect(getContactRolesQuery().key).toBe(
+			'/project-contact-roles/PRJ-A,PRJ-B'
+		);
+	});
+
+	it('requests no contact roles when no project is visible', () => {
+		mocks.fetchResponses[PROJECTS_URL].data = {items: []};
+
+		renderHook(() => useProjectMembers());
+
+		expect(getContactRolesQuery().key).toBeNull();
+	});
+
+	it('reads the contact roles of every visible project in one request', async () => {
+		vi.mocked(Projects.getContactRoles).mockResolvedValue({
+			'PRJ-A': [TECH_DESIGNATION],
+			'PRJ-C': [BILLING_DESIGNATION],
+		});
+
+		renderHook(() => useProjectMembers());
+
+		await expect(getContactRolesQuery().fetcher()).resolves.toEqual({
+			'PRJ-A': [TECH_DESIGNATION],
+			'PRJ-C': [BILLING_DESIGNATION],
+		});
+
+		expect(Projects.getContactRoles).toHaveBeenCalledTimes(1);
+		expect(Projects.getContactRoles).toHaveBeenCalledWith([
+			'PRJ-A',
+			'PRJ-B',
+			'PRJ-C',
+		]);
+	});
+
+	it('fails the contact roles query when the contact roles cannot be read', async () => {
+		vi.mocked(Projects.getContactRoles).mockRejectedValue(
+			new Error('Unable to read contact roles')
+		);
+
+		renderHook(() => useProjectMembers());
+
+		await expect(getContactRolesQuery().fetcher()).rejects.toThrow(
+			'Unable to read contact roles'
+		);
+	});
+
+	it('requests the contact roles in groups of 100 projects', async () => {
+		mocks.fetchResponses[PROJECTS_URL].data = {
+			items: Array.from({length: 150}, (_, index) => ({
+				externalReferenceCode: `PRJ-${index}`,
+				id: index,
+				name: `Project ${index}`,
+			})),
 		};
-		mocks.fetchResponses[MEMBERSHIPS_URL].data = {
-			items: [
-				membership(1, 'PRJ-A', 10, 'C_PROJECT_USER'),
-				membership(2, 'PRJ-A', 10, 'ROLE_TECH'),
-				membership(3, 'PRJ-A', 12, 'ROLE_BILLING'),
-			],
-		};
+		mocks.projectOrders.error = new Error('Unable to read orders');
+
+		vi.mocked(Projects.getContactRoles).mockImplementation(
+			async (projectExternalReferenceCodes) =>
+				Object.fromEntries(
+					projectExternalReferenceCodes.map(
+						(projectExternalReferenceCode) => [
+							projectExternalReferenceCode,
+							[TECH_DESIGNATION],
+						]
+					)
+				)
+		);
+
+		renderHook(() => useProjectMembers());
+
+		const designationsByProject = await getContactRolesQuery().fetcher();
+
+		expect(Projects.getContactRoles).toHaveBeenCalledTimes(2);
+		expect(
+			vi
+				.mocked(Projects.getContactRoles)
+				.mock.calls.map(
+					([projectExternalReferenceCodes]) =>
+						projectExternalReferenceCodes.length
+				)
+		).toEqual([100, 50]);
+		expect(Object.keys(designationsByProject)).toHaveLength(150);
+	});
+
+	it('shows the designations to a project admin without an account role', () => {
+		mocks.oneContext.userAccountModel.isAccountMember = false;
+		mocks.liferay.ThemeDisplay.getUserId = () => '11';
 
 		const {result} = renderHook(() => useProjectMembers());
 
 		const [alpha] = result.current.rows;
 
+		expect(alpha.externalReferenceCode).toBe('PRJ-A');
 		expect(alpha.availableDesignations).toEqual([
-			{externalReferenceCode: 'ROLE_TECH', name: 'Technical Contact'},
+			TECH_DESIGNATION,
+			BILLING_DESIGNATION,
 		]);
-		expect(alpha.members[0].designations).toEqual(['ROLE_TECH']);
 	});
 
 	it('reads designations from the memberships of each project only', () => {
 		mocks.contactRoles = {
-			contactRoleExternalReferenceCodesByProjectId: new Map([
-				[100, ['ROLE_TECH']],
-				[200, ['ROLE_TECH']],
-			]),
-			loading: false,
+			data: {
+				'PRJ-A': [TECH_DESIGNATION],
+				'PRJ-B': [TECH_DESIGNATION],
+			},
+			isLoading: false,
+			mutate: vi.fn(() => Promise.resolve()),
 		};
 		mocks.fetchResponses[MEMBERSHIPS_URL].data = {
 			items: [
@@ -400,13 +483,13 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 		expect(result.current.loading).toBe(true);
 
 		mocks.fetchResponses[MEMBERSHIPS_URL].isLoading = false;
-		mocks.contactRoles = {...mocks.contactRoles, loading: true};
+		mocks.contactRoles = {...mocks.contactRoles, isLoading: true};
 
 		rerender();
 
 		expect(result.current.loading).toBe(true);
 
-		mocks.contactRoles = {...mocks.contactRoles, loading: false};
+		mocks.contactRoles = {...mocks.contactRoles, isLoading: false};
 
 		rerender();
 
@@ -447,7 +530,7 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 		]);
 	});
 
-	it('revalidates memberships and user accounts on mutate', async () => {
+	it('revalidates the contact roles, memberships, and user accounts on mutate', async () => {
 		const mutateMemberships = vi.fn(() => Promise.resolve());
 		const mutateUserAccounts = vi.fn(() => Promise.resolve());
 
@@ -458,6 +541,7 @@ describe('[HOOK-MYACCOUNT-PROJECTMEMBERS-USEPROJECTMEMBERS] useProjectMembers', 
 
 		await result.current.mutate();
 
+		expect(mocks.contactRoles.mutate).toHaveBeenCalledTimes(1);
 		expect(mutateMemberships).toHaveBeenCalledTimes(1);
 		expect(mutateUserAccounts).toHaveBeenCalledTimes(1);
 	});
