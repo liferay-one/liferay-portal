@@ -5,6 +5,7 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.ProductSpecificationConstants;
@@ -29,6 +30,7 @@ import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.DataOpsUsageService;
 import com.liferay.one.service.EntitlementService;
+import com.liferay.one.service.PlacedOrderService;
 import com.liferay.one.service.ProjectContactRoleService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
@@ -47,11 +49,15 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -135,6 +141,69 @@ public class ProjectRestController extends OneBaseRestController {
 			_getProject(projectId), contactRoleExternalReferenceCode, userId);
 	}
 
+	@GetMapping("/contact-roles")
+	public ResponseEntity<String> getContactRoles(
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam("externalReferenceCodes") List<String>
+				externalReferenceCodes)
+		throws Exception {
+
+		Set<String> uniqueExternalReferenceCodes = new LinkedHashSet<>(
+			externalReferenceCodes);
+
+		if (uniqueExternalReferenceCodes.size() > _MAX_CONTACT_ROLE_PROJECTS) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				StringBundler.concat(
+					"Unable to get contact roles for more than ",
+					_MAX_CONTACT_ROLE_PROJECTS, " projects"));
+		}
+
+		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
+
+		List<String> viewableExternalReferenceCodes = new ArrayList<>();
+
+		for (String externalReferenceCode : uniqueExternalReferenceCodes) {
+			if (!_projectPermission.contains(
+					ActionKeys.VIEW, jwt, externalReferenceCode, userAccount)) {
+
+				continue;
+			}
+
+			viewableExternalReferenceCodes.add(externalReferenceCode);
+		}
+
+		JSONObject jsonObject = new JSONObject();
+
+		Map<String, Map<String, String>> contactRoleNamesMap =
+			_projectContactRoleService.getContactRoleNames(
+				viewableExternalReferenceCodes);
+
+		for (Map.Entry<String, Map<String, String>> entry :
+				contactRoleNamesMap.entrySet()) {
+
+			JSONArray jsonArray = new JSONArray();
+
+			Map<String, String> contactRoleNames = entry.getValue();
+
+			for (Map.Entry<String, String> contactRoleNameEntry :
+					contactRoleNames.entrySet()) {
+
+				jsonArray.put(
+					new JSONObject(
+					).put(
+						"externalReferenceCode", contactRoleNameEntry.getKey()
+					).put(
+						"name", contactRoleNameEntry.getValue()
+					));
+			}
+
+			jsonObject.put(entry.getKey(), jsonArray);
+		}
+
+		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
+	}
+
 	@GetMapping("/{externalReferenceCode}/jira/object-key")
 	public ResponseEntity<String> getJiraObjectKey(
 			@AuthenticationPrincipal Jwt jwt,
@@ -146,6 +215,29 @@ public class ProjectRestController extends OneBaseRestController {
 		return new ResponseEntity<>(
 			_accountAssetService.getAccountObjectKey(externalReferenceCode),
 			HttpStatus.OK);
+	}
+
+	@GetMapping("/{externalReferenceCode}/placed-orders")
+	public ResponseEntity<String> getPlacedOrders(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@RequestParam(name = "restrictFields", required = false) String
+				restrictFields)
+		throws Exception {
+
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
+
+		JSONArray jsonArray = _placedOrderService.getProjectPlacedOrders(
+			_getProject(externalReferenceCode), restrictFields);
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"items", jsonArray
+		).put(
+			"totalCount", jsonArray.length()
+		);
+
+		return new ResponseEntity<>(jsonObject.toString(), HttpStatus.OK);
 	}
 
 	@GetMapping("/{externalReferenceCode}/usage")
@@ -773,6 +865,8 @@ public class ProjectRestController extends OneBaseRestController {
 
 	private static final String _GRANULARITY_MONTH = "month";
 
+	private static final int _MAX_CONTACT_ROLE_PROJECTS = 100;
+
 	private static final long _MAX_YEARS = 10;
 
 	private static final long _MAX_YEARS_DAY_GRANULARITY = 1;
@@ -797,6 +891,9 @@ public class ProjectRestController extends OneBaseRestController {
 
 	@Autowired
 	private EntitlementService _entitlementService;
+
+	@Autowired
+	private PlacedOrderService _placedOrderService;
 
 	@Autowired
 	private ProjectContactRoleService _projectContactRoleService;
