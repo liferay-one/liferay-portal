@@ -160,6 +160,11 @@ export const INSPECTED_COLLECTION_COLUMNS: Record<
 			value: (entry) =>
 				(entry as InspectedOrder).customFields?.projectName,
 		},
+		{
+			label: 'contract',
+			value: (entry) =>
+				(entry as InspectedOrder).customFields?.contractId,
+		},
 		hiddenField('order-type', 'orderTypeExternalReferenceCode'),
 		{
 			hidden: true,
