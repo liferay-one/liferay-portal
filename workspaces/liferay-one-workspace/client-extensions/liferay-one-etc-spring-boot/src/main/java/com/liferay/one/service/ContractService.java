@@ -410,13 +410,6 @@ public class ContractService extends OneBaseService {
 	}
 
 	public boolean upsertContract(
-			String action, SalesforceContract salesforceContract)
-		throws Exception {
-
-		return upsertContract(action, true, salesforceContract);
-	}
-
-	public boolean upsertContract(
 			String action, boolean reconcile,
 			SalesforceContract salesforceContract)
 		throws Exception {
@@ -540,6 +533,13 @@ public class ContractService extends OneBaseService {
 		_attachSuccessorContract(contract, salesforceContract);
 
 		return true;
+	}
+
+	public boolean upsertContract(
+			String action, SalesforceContract salesforceContract)
+		throws Exception {
+
+		return upsertContract(action, true, salesforceContract);
 	}
 
 	private void _attachOriginalContract(
