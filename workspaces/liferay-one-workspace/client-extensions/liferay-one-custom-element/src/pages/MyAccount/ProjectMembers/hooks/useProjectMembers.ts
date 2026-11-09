@@ -5,9 +5,9 @@
 
 import {useMemo} from 'react';
 import {useOneContext} from '~/context/OneContextProvider';
+import {useDataQuery} from '~/hooks/useDataQuery';
 import {useFetch} from '~/hooks/useFetch';
 import useObjectItems from '~/hooks/useObjectItems';
-import {useAccountProjectContactRoles} from '~/hooks/useProjectCommerce';
 import {useProjectOrders} from '~/hooks/useProjectOrders';
 import {canViewAllAccountProjects} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {
@@ -16,13 +16,17 @@ import {
 } from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {getProjectsWithOrders} from '~/pages/MyAccount/Projects/utils/getProjectsWithOrders';
 import {Liferay} from '~/services/liferay/liferay';
+import Projects from '~/services/spring-boot/Projects';
 
 import type {
 	AccountMemberOption,
+	Designation,
 	ProjectMembersRow,
 } from '~/pages/MyAccount/ProjectMembers/types';
-import type {AccountRole, UserAccount} from '~/types/accounts';
-import type {APIResponse} from '~/types/api';
+import type {UserAccount} from '~/types/accounts';
+import type {APIResponse, DataQuery} from '~/types/api';
+
+const CONTACT_ROLES_CHUNK_SIZE = 100;
 
 type ProjectItem = {
 	externalReferenceCode: string;
@@ -41,6 +45,38 @@ type UserInfo = {
 	email: string;
 	name: string;
 };
+
+function projectContactRolesQuery(
+	projectExternalReferenceCodes: string[]
+): DataQuery<Record<string, Designation[]>> {
+	return {
+		fetcher: async () => {
+			const chunks: string[][] = [];
+
+			for (
+				let index = 0;
+				index < projectExternalReferenceCodes.length;
+				index += CONTACT_ROLES_CHUNK_SIZE
+			) {
+				chunks.push(
+					projectExternalReferenceCodes.slice(
+						index,
+						index + CONTACT_ROLES_CHUNK_SIZE
+					)
+				);
+			}
+
+			const results = await Promise.all(
+				chunks.map((chunk) => Projects.getContactRoles(chunk))
+			);
+
+			return Object.assign({}, ...results);
+		},
+		key: projectExternalReferenceCodes.length
+			? `/project-contact-roles/${projectExternalReferenceCodes.join(',')}`
+			: null,
+	};
+}
 
 export function useProjectMembers() {
 	const accountId = Liferay.CommerceContext?.account?.accountId;
@@ -90,31 +126,59 @@ export function useProjectMembers() {
 		{sort: 'givenName:asc'}
 	);
 
-	const {
-		contactRoleExternalReferenceCodesByProjectId,
-		loading: contactRolesLoading,
-	} = useAccountProjectContactRoles();
+	const membershipsByProject = useMemo(() => {
+		const map = new Map<string, ProjectMembershipItem[]>();
 
-	const {data: accountRoleData, isLoading: accountRolesLoading} = useFetch<
-		APIResponse<AccountRole>
-	>(
-		accountId
-			? `/o/headless-admin-user/v1.0/accounts/${accountId}/account-roles`
-			: null,
-		{params: {pageSize: -1}}
-	);
+		(accountMemberships ?? []).forEach((membership) => {
+			const projectExternalReferenceCode =
+				membership.r_projectToProjectMembership_c_projectERC;
 
-	const contactRoleNameByExternalReferenceCode = useMemo(() => {
-		const map = new Map<string, string>();
+			const memberships = map.get(projectExternalReferenceCode) ?? [];
 
-		(accountRoleData?.items ?? []).forEach((accountRole) => {
-			if (accountRole.externalReferenceCode) {
-				map.set(accountRole.externalReferenceCode, accountRole.name);
-			}
+			memberships.push(membership);
+
+			map.set(projectExternalReferenceCode, memberships);
 		});
 
 		return map;
-	}, [accountRoleData]);
+	}, [accountMemberships]);
+
+	const projects = useMemo(() => {
+		const accountProjects = projectData?.items ?? [];
+
+		const projectsWithOrders = ordersError
+			? accountProjects
+			: getProjectsWithOrders(accountProjects, placedOrders);
+
+		return projectsWithOrders.filter(
+			(project) =>
+				showAllAccountProjects ||
+				membershipsByProject
+					.get(project.externalReferenceCode)
+					?.some(
+						(membership) =>
+							membership.r_userToProjectMembership_userId ===
+							userId
+					)
+		);
+	}, [
+		membershipsByProject,
+		ordersError,
+		placedOrders,
+		projectData,
+		showAllAccountProjects,
+		userId,
+	]);
+
+	const {
+		data: designationsByProject,
+		isLoading: contactRolesLoading,
+		mutate: mutateContactRoles,
+	} = useDataQuery(
+		projectContactRolesQuery(
+			projects.map(({externalReferenceCode}) => externalReferenceCode)
+		)
+	);
 
 	const userInfoById = useMemo(() => {
 		const map = new Map<number, UserInfo>();
@@ -140,81 +204,12 @@ export function useProjectMembers() {
 	);
 
 	const rows = useMemo<ProjectMembersRow[]>(() => {
-		const membershipsByProject = new Map<string, ProjectMembershipItem[]>();
-
-		(accountMemberships ?? []).forEach((membership) => {
-			const projectExternalReferenceCode =
-				membership.r_projectToProjectMembership_c_projectERC;
-
-			const memberships =
-				membershipsByProject.get(projectExternalReferenceCode) ?? [];
-
-			memberships.push(membership);
-
-			membershipsByProject.set(projectExternalReferenceCode, memberships);
-		});
-
-		const accountProjects = projectData?.items ?? [];
-
-		const projectsWithOrders = ordersError
-			? accountProjects
-			: getProjectsWithOrders(accountProjects, placedOrders);
-
-		const projects = projectsWithOrders.filter(
-			(project) =>
-				showAllAccountProjects ||
-				membershipsByProject
-					.get(project.externalReferenceCode)
-					?.some(
-						(membership) =>
-							membership.r_userToProjectMembership_userId ===
-							userId
-					)
-		);
-
 		return projects.map((project) => {
 			const memberships =
 				membershipsByProject.get(project.externalReferenceCode) ?? [];
 
-			const projectMemberUserIds = new Set(
-				memberships
-					.filter((membership) =>
-						PROJECT_ROLE_ERCS.includes(
-							membership.roleExternalReferenceCode
-						)
-					)
-					.map(
-						(membership) =>
-							membership.r_userToProjectMembership_userId
-					)
-			);
-
-			const heldContactRoleExternalReferenceCodes = memberships
-				.filter(
-					(membership) =>
-						!PROJECT_ROLE_ERCS.includes(
-							membership.roleExternalReferenceCode
-						) &&
-						projectMemberUserIds.has(
-							membership.r_userToProjectMembership_userId
-						)
-				)
-				.map((membership) => membership.roleExternalReferenceCode);
-
-			const availableDesignations = [
-				...new Set([
-					...(contactRoleExternalReferenceCodesByProjectId.get(
-						project.id
-					) ?? []),
-					...heldContactRoleExternalReferenceCodes,
-				]),
-			].flatMap((externalReferenceCode) => {
-				const name = contactRoleNameByExternalReferenceCode.get(
-					externalReferenceCode
-				);
-
-				return name ? [{externalReferenceCode, name}] : [];
-			});
+			const availableDesignations =
+				designationsByProject?.[project.externalReferenceCode] ?? [];
 
 			const designationsByUserId = new Map<number, string[]>();
 
@@ -283,26 +278,19 @@ export function useProjectMembers() {
 				name: project.name,
 			};
 		});
-	}, [
-		contactRoleExternalReferenceCodesByProjectId,
-		contactRoleNameByExternalReferenceCode,
-		accountMemberships,
-		ordersError,
-		placedOrders,
-		projectData,
-		showAllAccountProjects,
-		userId,
-		userInfoById,
-	]);
+	}, [designationsByProject, membershipsByProject, projects, userInfoById]);
 
 	const mutate = async () => {
-		await Promise.all([revalidateMemberships(), revalidateUserAccounts()]);
+		await Promise.all([
+			mutateContactRoles(),
+			revalidateMemberships(),
+			revalidateUserAccounts(),
+		]);
 	};
 
 	return {
 		accountMemberOptions,
 		loading:
-			accountRolesLoading ||
 			contactRolesLoading ||
 			membershipsLoading ||
 			ordersLoading ||

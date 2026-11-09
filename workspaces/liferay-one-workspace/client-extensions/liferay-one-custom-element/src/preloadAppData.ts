@@ -22,6 +22,7 @@ import HeadlessAdminUser, {
 	MY_USER_ACCOUNT_URL,
 } from '~/services/headless/HeadlessAdminUser';
 import {Liferay} from '~/services/liferay/liferay';
+import {projectPlacedOrdersQuery} from '~/services/queries/projectPlacedOrdersQuery';
 
 const ACTIVATION_SECTION = 'activation';
 
@@ -130,6 +131,9 @@ export default function preloadAppData(route: string) {
 	preloadDataQuery(accountLevelContractsQuery(accountId));
 	preloadDataQuery(
 		projectContractsQuery(parseHash().projectExternalReferenceCode)
+	);
+	preloadDataQuery(
+		projectPlacedOrdersQuery(parseHash().projectExternalReferenceCode)
 	);
 	preloadDataQuery(
 		projectEntitlementsQuery(

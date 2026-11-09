@@ -10,7 +10,6 @@ import {useCurrentAccount} from '~/hooks/useAccounts';
 import {useDataQuery} from '~/hooks/useDataQuery';
 import {useProjectOrders} from '~/hooks/useProjectOrders';
 import i18n from '~/i18n';
-import {getProductContactRoleExternalReferenceCodes} from '~/pages/MyAccount/ProjectMembers/projectRoles';
 import {useUserProjects} from '~/pages/MyAccount/Projects/hooks/useUserProjects';
 import {
 	ONE_TIME_PURCHASES,
@@ -860,72 +859,5 @@ export function useHasActiveExperienceOffering() {
 				activeSkuExternalReferenceCodesByProduct.has(code)
 			),
 		loading,
-	};
-}
-
-export function useAccountProjectContactRoles() {
-	const {data: contractsData, isLoading: contractsLoading} =
-		useAccountContractsWithEntitlements();
-
-	const {data: productsData, isLoading: productsLoading} =
-		useProjectProducts();
-
-	const contactRoleExternalReferenceCodesByProjectId = useMemo(() => {
-		const productsBySkuExternalReferenceCode =
-			toProductsBySkuExternalReferenceCode(productsData?.items ?? []);
-
-		const externalReferenceCodesByProjectId = new Map<
-			number,
-			Set<string>
-		>();
-
-		(contractsData?.items ?? []).forEach((contract) => {
-			const projectId = contract.r_projectToContract_c_projectId;
-
-			if (!projectId) {
-				return;
-			}
-
-			const externalReferenceCodes =
-				externalReferenceCodesByProjectId.get(projectId) ??
-				new Set<string>();
-
-			toProductEntitlements(contract.contractToEntitlement).forEach(
-				(entitlement) => {
-					const product = productsBySkuExternalReferenceCode.get(
-						entitlement.skuExternalReferenceCode as string
-					);
-
-					if (!product) {
-						return;
-					}
-
-					getProductContactRoleExternalReferenceCodes(
-						product.productSpecifications ?? []
-					).forEach((externalReferenceCode) =>
-						externalReferenceCodes.add(externalReferenceCode)
-					);
-				}
-			);
-
-			externalReferenceCodesByProjectId.set(
-				projectId,
-				externalReferenceCodes
-			);
-		});
-
-		return new Map(
-			[...externalReferenceCodesByProjectId].map(
-				([projectId, externalReferenceCodes]) => [
-					projectId,
-					[...externalReferenceCodes],
-				]
-			)
-		);
-	}, [contractsData, productsData]);
-
-	return {
-		contactRoleExternalReferenceCodesByProjectId,
-		loading: contractsLoading || productsLoading,
 	};
 }
