@@ -418,7 +418,7 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
-	public void testGenerateEntitlementsFallsBackToTheAIHubOrderContract()
+	public void testGenerateEntitlementsFallsBackToTheOrderContract()
 		throws Exception {
 
 		_setUpOrderItem(_createOrderItem());
@@ -434,9 +434,7 @@ public class EntitlementServiceTest {
 
 		order.setAccountId(_ACCOUNT_ID);
 		order.setCustomFields(
-			Map.of(
-				"order-metadata",
-				"{\"contractEntityId\": " + _CONTRACT_ID + "}"));
+			Map.of("contractId", String.valueOf(_CONTRACT_ID)));
 		order.setOrderStatus(CommerceOrderConstants.ORDER_STATUS_COMPLETED);
 
 		Mockito.when(

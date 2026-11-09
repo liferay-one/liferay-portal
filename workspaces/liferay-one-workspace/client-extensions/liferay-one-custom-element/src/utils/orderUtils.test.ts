@@ -519,6 +519,10 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			},
 		});
 
+		const toOrderContract = (contractId: number) => ({
+			customFields: {contractId},
+		});
+
 		const toItem = (contractId?: number | string) =>
 			({
 				customFields: {contractId},
@@ -533,33 +537,33 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			).toBe(38227564);
 		});
 
-		it('falls back to the contract in the order metadata of an AI Hub order', () => {
-			const order = toContractPlacedOrder(toMetadata(77));
+		it('falls back to the contract of the order', () => {
+			const order = toContractPlacedOrder(toOrderContract(77));
 
 			expect(getPlacedOrderItemContractId(order, toItem(0))).toBe(77);
 			expect(getPlacedOrderItemContractId(order, toItem('0'))).toBe(77);
 			expect(getPlacedOrderItemContractId(order, toItem())).toBe(77);
 		});
 
-		it('prefers the contract of the order item over the order metadata', () => {
+		it('prefers the contract of the order item over the contract of the order', () => {
 			expect(
 				getPlacedOrderItemContractId(
-					toContractPlacedOrder(toMetadata(77)),
+					toContractPlacedOrder(toOrderContract(77)),
 					toItem(12)
 				)
 			).toBe(12);
 		});
 
-		it('ignores the order level contract field', () => {
+		it('ignores the contract in the order metadata', () => {
 			expect(
 				getPlacedOrderItemContractId(
-					toContractPlacedOrder({customFields: {contractId: 5}}),
+					toContractPlacedOrder(toMetadata(77)),
 					toItem(0)
 				)
 			).toBe(0);
 		});
 
-		it('returns 0 without an item contract and without metadata', () => {
+		it('returns 0 without an item contract and without an order contract', () => {
 			expect(
 				getPlacedOrderItemContractId(
 					toContractPlacedOrder({}),
@@ -660,11 +664,9 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			]);
 		});
 
-		it('matches an AI Hub item through the contract in the order metadata', () => {
+		it('matches an item without a contract through the contract of its order', () => {
 			const aiHubOrder = toContractPlacedOrder({
-				customFields: {
-					'order-metadata': JSON.stringify({contractEntityId: 88}),
-				},
+				customFields: {contractId: 88},
 				id: 4,
 				placedOrderItems: [{customFields: {}, productId: 7}],
 			});
