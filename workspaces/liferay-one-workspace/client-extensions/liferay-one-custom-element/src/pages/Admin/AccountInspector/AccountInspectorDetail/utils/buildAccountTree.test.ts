@@ -260,6 +260,69 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-BUILDACCOUNTTREE] b
 		]);
 	});
 
+	it('places an item with no contract under the contract of its order', () => {
+		const inspection = buildInspection(
+			{
+				contracts: [
+					{externalReferenceCode: 'C-1', id: 30},
+					{externalReferenceCode: 'C-2', id: 31},
+				],
+				projects: [PROJECT],
+			},
+			{
+				orders: toCollection([
+					{
+						customFields: {contractId: 31, projectName: 'Main'},
+						externalReferenceCode: 'ORDER-1',
+						id: 50,
+						orderItems: [
+							{
+								customFields: {contractId: 30},
+								id: 501,
+								name: {en_US: 'Year 1'},
+							},
+							{
+								customFields: {},
+								id: 502,
+								name: {en_US: 'Year 2'},
+							},
+						],
+					},
+				]),
+			}
+		);
+
+		const toOrders = (itemLabel: string) => ({
+			children: [
+				{
+					children: [
+						{
+							children: [{label: itemLabel}],
+							count: 1,
+							label: 'Order Items',
+						},
+					],
+					label: 'ORDER-1',
+				},
+			],
+			count: 1,
+			label: 'Orders',
+		});
+
+		const [projectsNode] = buildAccountTree(inspection, []);
+
+		expect(summarize(projectsNode.children[0].children)).toEqual([
+			{
+				children: [
+					{children: [toOrders('Year 1')], label: 'C-1'},
+					{children: [toOrders('Year 2')], label: 'C-2'},
+				],
+				count: 2,
+				label: 'Contracts',
+			},
+		]);
+	});
+
 	it('shows an account level contract under each project that holds a record in it', () => {
 		const inspection = buildInspection({
 			contracts: [{externalReferenceCode: 'C-ACCOUNT', id: 30}],

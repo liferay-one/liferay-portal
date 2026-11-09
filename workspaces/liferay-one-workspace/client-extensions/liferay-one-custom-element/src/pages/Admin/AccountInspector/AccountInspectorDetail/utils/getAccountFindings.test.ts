@@ -233,6 +233,12 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-GETACCOUNTFINDINGS]
 						orderItems: [{customFields: {contractId: 0}, id: 521}],
 						orderStatus: 1,
 					},
+					{
+						customFields: {contractId: 32, projectName: 'Main'},
+						id: 53,
+						orderItems: [{customFields: {}, id: 531}],
+						orderStatus: 1,
+					},
 				]),
 			}
 		);
@@ -248,7 +254,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-GETACCOUNTFINDINGS]
 				inspection,
 				'orders-reference-contracts-outside-the-account'
 			)
-		).toEqual([51]);
+		).toEqual([51, 53]);
 		expect(
 			findIds(
 				inspection,

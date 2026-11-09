@@ -487,15 +487,11 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 		).toEqual(['C_YEAR_1', 'C_YEAR_2']);
 	});
 
-	it('lists the contract of an AI Hub item through the order metadata and adds no one time purchases contract', () => {
+	it('lists the contract of an item through the contract of its order and adds no one time purchases contract', () => {
 		mockQueries({
 			placedOrders: [
 				{
-					customFields: {
-						'order-metadata': JSON.stringify({
-							contractEntityId: 20,
-						}),
-					},
+					customFields: {contractId: 20},
 					placedOrderItems: [{customFields: {}, productId: 1}],
 				},
 			],

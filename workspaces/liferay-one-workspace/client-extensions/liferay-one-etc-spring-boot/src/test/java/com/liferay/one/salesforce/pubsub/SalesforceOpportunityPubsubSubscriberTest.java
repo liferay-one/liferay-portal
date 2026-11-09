@@ -3128,7 +3128,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 		Assertions.assertTrue(
 			_containsSubstring(
-				"matches no contract of opportunity " + _OPPORTUNITY_ID,
+				"matches no single contract of opportunity " + _OPPORTUNITY_ID,
 				warningMessagesArgumentCaptor.getValue()));
 	}
 
