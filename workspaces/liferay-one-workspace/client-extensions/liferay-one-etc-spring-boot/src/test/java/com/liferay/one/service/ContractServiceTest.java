@@ -241,29 +241,6 @@ public class ContractServiceTest {
 	}
 
 	@Test
-	public void testHideContractIgnoresTheOrderMetadataContract()
-		throws Exception {
-
-		OrderItem orderItem = _createOrderItem(11, "2027-11-01T00:00:00Z", 0L);
-
-		Order aiHubOrder = _createOrder(
-			Map.of("order-metadata", "{\"contractEntityId\": 77}"), orderItem);
-
-		_whenHideContractFindsTheLinks(aiHubOrder);
-
-		_testContractService.hideContract("C1");
-
-		Mockito.verify(
-			_commerceOrderItemService
-		).patchOrderItemCustomFields(
-			Map.of(), aiHubOrder
-		);
-
-		Assertions.assertEquals(
-			0L, CommerceOrderItemUtil.getContractId(aiHubOrder, orderItem));
-	}
-
-	@Test
 	public void testHideContractFinishesTheWorkOnASecondRun() throws Exception {
 		Order opportunityOrder = _createOrder(
 			Map.of(), _createOrderItem(11, "2027-11-01T00:00:00Z", 77L));
@@ -343,6 +320,29 @@ public class ContractServiceTest {
 	}
 
 	@Test
+	public void testHideContractIgnoresTheOrderMetadataContract()
+		throws Exception {
+
+		OrderItem orderItem = _createOrderItem(11, "2027-11-01T00:00:00Z", 0L);
+
+		Order aiHubOrder = _createOrder(
+			Map.of("order-metadata", "{\"contractEntityId\": 77}"), orderItem);
+
+		_whenHideContractFindsTheLinks(aiHubOrder);
+
+		_testContractService.hideContract("C1");
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(), aiHubOrder
+		);
+
+		Assertions.assertEquals(
+			0L, CommerceOrderItemUtil.getContractId(aiHubOrder, orderItem));
+	}
+
+	@Test
 	public void testHideContractKeepsTheItemsWithoutAStoredLinkToTheContract()
 		throws Exception {
 
@@ -391,6 +391,32 @@ public class ContractServiceTest {
 			Exception.class, () -> _testContractService.hideContract("C1"));
 
 		Assertions.assertTrue(_testContractService.requests.isEmpty());
+	}
+
+	@Test
+	public void testHideContractKeepsTheOrderContractOfAnotherContract()
+		throws Exception {
+
+		Order order = _createOrder(
+			Map.of("contractId", "6"),
+			_createOrderItem(11, "2027-11-01T00:00:00Z", 77L),
+			_createOrderItem(12, "2027-11-01T00:00:00Z", 0L));
+
+		_whenHideContractFindsTheLinks(order);
+
+		_testContractService.hideContract("C1");
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(11L, Map.of("contractId", 0L)), order
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).patchOrderCustomFields(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.anyMap()
+		);
 	}
 
 	@Test
@@ -563,6 +589,32 @@ public class ContractServiceTest {
 				() -> _testContractService.hideContract("C1")));
 
 		Assertions.assertTrue(_testContractService.requests.isEmpty());
+	}
+
+	@Test
+	public void testHideContractUnlinksTheItemsAndTheContractOfAnOrder()
+		throws Exception {
+
+		Order order = _createOrder(
+			Map.of("contractId", "77"),
+			_createOrderItem(11, "2027-11-01T00:00:00Z", 0L),
+			_createOrderItem(12, "2027-11-01T00:00:00Z", 6L));
+
+		_whenHideContractFindsTheLinks(order);
+
+		_testContractService.hideContract("C1");
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(11L, Map.of("contractId", 0L)), order
+		);
+
+		Mockito.verify(
+			_commerceOrderService
+		).patchOrderCustomFields(
+			_ORDER_ID, Map.of("contractId", 0L)
+		);
 	}
 
 	@Test
