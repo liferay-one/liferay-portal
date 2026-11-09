@@ -15,6 +15,7 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.salesforce.model.SalesforceContract;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.CommerceOrderItemUtil;
+import com.liferay.one.util.CommerceOrderUtil;
 import com.liferay.one.util.ContractUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -866,23 +867,31 @@ public class ContractService extends OneBaseService {
 
 		OrderItem[] orderItems = order.getOrderItems();
 
-		if (orderItems == null) {
+		if (orderItems != null) {
+			Map<Long, Map<String, Object>> customFieldValuesMap =
+				new HashMap<>();
+
+			for (OrderItem orderItem : orderItems) {
+				if (CommerceOrderItemUtil.getContractId(order, orderItem) !=
+						contractId) {
+
+					continue;
+				}
+
+				customFieldValuesMap.put(
+					orderItem.getId(), Map.of("contractId", 0L));
+			}
+
+			_commerceOrderItemService.patchOrderItemCustomFields(
+				customFieldValuesMap, order);
+		}
+
+		if (CommerceOrderUtil.getContractId(order) != contractId) {
 			return;
 		}
 
-		Map<Long, Map<String, Object>> customFieldValuesMap = new HashMap<>();
-
-		for (OrderItem orderItem : orderItems) {
-			if (CommerceOrderItemUtil.getContractId(orderItem) != contractId) {
-				continue;
-			}
-
-			customFieldValuesMap.put(
-				orderItem.getId(), Map.of("contractId", 0L));
-		}
-
-		_commerceOrderItemService.patchOrderItemCustomFields(
-			customFieldValuesMap, order);
+		_commerceOrderService.patchOrderCustomFields(
+			order.getId(), Map.of("contractId", 0L));
 	}
 
 	private String _updateContract(

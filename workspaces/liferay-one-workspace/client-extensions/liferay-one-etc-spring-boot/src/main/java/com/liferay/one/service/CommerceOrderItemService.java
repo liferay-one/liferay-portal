@@ -18,6 +18,7 @@ import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.CommerceOrderItemUtil;
+import com.liferay.one.util.CommerceOrderUtil;
 import com.liferay.one.util.ContractUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -28,10 +29,12 @@ import java.time.Instant;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -131,16 +134,7 @@ public class CommerceOrderItemService extends OneBaseService {
 	public void patchOrderItems(Order order, OrderItem[] orderItems)
 		throws Exception {
 
-		Order patchedOrder = new Order();
-
-		patchedOrder.setOrderItems(() -> orderItems);
-
-		OrderResource orderResource = _buildOrderResource();
-
-		Order updatedOrder = orderResource.patchOrder(
-			order.getId(), patchedOrder);
-
-		order.setOrderItems(updatedOrder::getOrderItems);
+		_patchOrder(null, order, orderItems);
 	}
 
 	public void upsertOrderItems(
@@ -151,7 +145,33 @@ public class CommerceOrderItemService extends OneBaseService {
 
 		Map<String, OrderItem> orderItemsMap = new LinkedHashMap<>();
 
+		long orderContractId = 0;
+
+		if (unlinkUnmatched) {
+			orderContractId = CommerceOrderUtil.getContractId(order);
+		}
+
+		Set<String> salesforceOpportunityLineItemIds = new HashSet<>();
+
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
+			salesforceOpportunityLineItemIds.add(
+				salesforceOpportunityLineItem.getId());
+		}
+
 		for (OrderItem orderItem : order.getOrderItems()) {
+			if ((orderContractId > 0) &&
+				(CommerceOrderItemUtil.getContractId(orderItem) <= 0) &&
+				!salesforceOpportunityLineItemIds.contains(
+					orderItem.getExternalReferenceCode())) {
+
+				CustomField[] customFields = _toCustomFields(
+					Map.of("contractId", orderContractId));
+
+				orderItem.setCustomFields(() -> customFields);
+			}
+
 			orderItemsMap.put(orderItem.getExternalReferenceCode(), orderItem);
 		}
 
@@ -165,8 +185,14 @@ public class CommerceOrderItemService extends OneBaseService {
 					unlinkUnmatched));
 		}
 
-		patchOrderItems(
-			order,
+		Map<String, Object> orderCustomFields = null;
+
+		if (orderContractId > 0) {
+			orderCustomFields = Map.of("contractId", 0L);
+		}
+
+		_patchOrder(
+			orderCustomFields, order,
 			orderItemsMap.values(
 			).toArray(
 				new OrderItem[0]
@@ -272,6 +298,41 @@ public class CommerceOrderItemService extends OneBaseService {
 		}
 
 		return "On Hold";
+	}
+
+	private void _patchOrder(
+			Map<String, Object> customFields, Order order,
+			OrderItem[] orderItems)
+		throws Exception {
+
+		Order patchedOrder = new Order();
+
+		if (customFields != null) {
+			patchedOrder.setCustomFields(() -> customFields);
+		}
+
+		patchedOrder.setOrderItems(() -> orderItems);
+
+		OrderResource orderResource = _buildOrderResource();
+
+		Order updatedOrder = orderResource.patchOrder(
+			order.getId(), patchedOrder);
+
+		if (customFields != null) {
+			Map<String, Object> orderCustomFields = new HashMap<>();
+
+			Map<String, ?> existingCustomFields = order.getCustomFields();
+
+			if (existingCustomFields != null) {
+				orderCustomFields.putAll(existingCustomFields);
+			}
+
+			orderCustomFields.putAll(customFields);
+
+			order.setCustomFields(() -> orderCustomFields);
+		}
+
+		order.setOrderItems(updatedOrder::getOrderItems);
 	}
 
 	private CustomField[] _toCustomFields(Map<String, ?> customFieldValues) {
