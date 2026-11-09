@@ -53,6 +53,7 @@
 	},
 	{
 		"dataType": 1,
+		"defaultValue": true,
 		"modelResource": "com.liferay.account.model.AccountEntry",
 		"name": "allowPermanentLicenses",
 		"properties": {
@@ -66,11 +67,77 @@
 	},
 	{
 		"dataType": 1,
+		"defaultValue": true,
 		"modelResource": "com.liferay.account.model.AccountEntry",
 		"name": "allowSelfProvisioning",
 		"properties": {
 			"hidden": false,
 			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "contactEmail",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "industry",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "oktaSSO",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "passwordPolicy",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.account.model.AccountEntry",
+		"name": "twoFactorAuthentication",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
 			"localizeField": false,
 			"localizeFieldName": true,
 			"secret": false,
@@ -119,6 +186,19 @@
 	{
 		"dataType": 15,
 		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "cloud-provisioning",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
 		"name": "cloudProjectName",
 		"properties": {
 			"hidden": false,
@@ -135,7 +215,7 @@
 		"name": "contractId",
 		"properties": {
 			"hidden": false,
-			"indexType": 0,
+			"indexType": 2,
 			"localizeField": false,
 			"localizeFieldName": true,
 			"secret": false,
@@ -158,7 +238,124 @@
 	{
 		"dataType": 15,
 		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "dsrAnalyticsCloudProject",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "dsrError",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "dsrErrorDate",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "dsrSettings",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "dsrWorkspaceName",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
 		"name": "gsInvolved",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "ldpAnalyticsCloudProject",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "ldpError",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "ldpErrorDate",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "ldpSettings",
 		"properties": {
 			"hidden": false,
 			"indexType": 2,
@@ -192,6 +389,21 @@
 			"localizeFieldName": true,
 			"secret": false,
 			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"defaultValue": "{}",
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "order-metadata",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false,
+			"width": "0"
 		}
 	},
 	{
@@ -250,6 +462,19 @@
 		"dataType": 15,
 		"modelResource": "com.liferay.commerce.model.CommerceOrder",
 		"name": "opportunityType",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "parentOpportunityId",
 		"properties": {
 			"hidden": false,
 			"indexType": 2,
@@ -352,8 +577,152 @@
 	},
 	{
 		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "salesforceOpportunityId",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "salesforcePricebookId",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "salesforceProjectId",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "trial-end-date",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "trial-error",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "trial-error-date",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "trial-notify-end-date",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"defaultValue": "{}",
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "trial-settings",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "trial-start-date",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.model.CommerceOrder",
+		"name": "trial-virtual-host",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
 		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
 		"name": "cloudRegion",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 11,
+		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
+		"name": "contractId",
 		"properties": {
 			"hidden": false,
 			"indexType": 2,
@@ -456,6 +825,7 @@
 	},
 	{
 		"dataType": 5,
+		"defaultValue": 0,
 		"modelResource": "com.liferay.commerce.model.CommerceOrderItem",
 		"name": "spendLimit",
 		"properties": {
@@ -481,12 +851,51 @@
 		}
 	},
 	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.product.model.CPInstance",
+		"name": "description",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.commerce.product.model.CPInstance",
+		"name": "icon-url",
+		"properties": {
+			"hidden": false,
+			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
 		"dataType": 11,
 		"modelResource": "com.liferay.portal.kernel.model.Organization",
 		"name": "accountEntryId",
 		"properties": {
 			"hidden": false,
 			"indexType": 0,
+			"localizeField": false,
+			"localizeFieldName": true,
+			"secret": false,
+			"visibleWithUpdatePermission": false
+		}
+	},
+	{
+		"dataType": 15,
+		"modelResource": "com.liferay.portal.kernel.model.Organization",
+		"name": "oktaGroupId",
+		"properties": {
+			"hidden": false,
+			"indexType": 2,
 			"localizeField": false,
 			"localizeFieldName": true,
 			"secret": false,

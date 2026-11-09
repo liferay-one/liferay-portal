@@ -410,5 +410,21 @@
 	"linkHoverTextDecoration": {
 		"cssVariableMapping": "link-hover-text-decoration",
 		"value": "none"
+	},
+	"tableRowBackgroundColorActive": {
+		"cssVariableMapping": "table-row-background-color-active",
+		"value": "var(--color-neutral-0)"
+	},
+	"tableRowBackgroundColorAlternate": {
+		"cssVariableMapping": "table-row-background-color-alternate",
+		"value": "#FFFFFF"
+	},
+	"tableRowBackgroundColorHover": {
+		"cssVariableMapping": "table-row-background-color-hover",
+		"value": "#FFFFFF"
+	},
+	"tableRowColorHover": {
+		"cssVariableMapping": "table-row-color-hover",
+		"value": "var(--color-neutral-10)"
 	}
 }
