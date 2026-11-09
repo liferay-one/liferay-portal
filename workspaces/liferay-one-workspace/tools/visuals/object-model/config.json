@@ -95,6 +95,12 @@
 		},
 		{
 			"field": "contractId",
+			"from": "L_COMMERCE_ORDER",
+			"note": "Contract ID. The contract of an order item that has none. Orders from before LPD-113729 and AI Hub orders hold it.",
+			"to": "C_CONTRACT"
+		},
+		{
+			"field": "contractId",
 			"from": "L_COMMERCE_ORDER_ITEM",
 			"note": "Contract ID. The order item to contract link since LPD-113729.",
 			"to": "C_CONTRACT"

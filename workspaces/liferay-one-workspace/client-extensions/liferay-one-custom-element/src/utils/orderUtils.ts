@@ -58,6 +58,7 @@ export function isBillingAddress(address: {type?: number}) {
 export const OrderCustomFields = {
 	CLOUD_PROJECT_NAME: 'cloudProjectName',
 	CLOUD_PROVISIONING: 'cloud-provisioning',
+	CONTRACT_ID: 'contractId',
 	KORONEIKI_PROJECT: 'koroneiki-project',
 	LDP_ANALYTICS_CLOUD_PROJECT: 'ldpAnalyticsCloudProject',
 	ORDER_METADATA: 'order-metadata',
@@ -265,12 +266,9 @@ export function getPlacedOrderItemContractId(
 		return contractId;
 	}
 
-	const orderMetadata = safeJSONParse<{contractEntityId?: number}>(
-		placedOrder.customFields?.[OrderCustomFields.ORDER_METADATA] ?? null,
-		{}
+	return (
+		Number(placedOrder.customFields?.[OrderCustomFields.CONTRACT_ID]) || 0
 	);
-
-	return Number(orderMetadata.contractEntityId) || 0;
 }
 
 const IN_FLIGHT_ORDER_STATUS_CODES: number[] = [

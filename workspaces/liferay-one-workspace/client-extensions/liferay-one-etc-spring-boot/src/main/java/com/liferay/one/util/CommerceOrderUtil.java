@@ -8,6 +8,7 @@ package com.liferay.one.util;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.SkuOption;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 
 import java.time.ZonedDateTime;
@@ -24,6 +25,17 @@ import org.json.JSONObject;
  * @author Eduardo Diniz
  */
 public class CommerceOrderUtil {
+
+	public static long getContractId(Order order) {
+		Map<String, Object> customFields =
+			(Map<String, Object>)order.getCustomFields();
+
+		if (customFields == null) {
+			return 0;
+		}
+
+		return GetterUtil.getLong(customFields.get("contractId"));
+	}
 
 	public static String getDefaultLocale(Map<String, String> localeMap) {
 		return localeMap.get("en_US");

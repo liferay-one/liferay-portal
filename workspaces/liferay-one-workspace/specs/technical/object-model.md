@@ -102,6 +102,7 @@ erDiagram
     User ||--o{ LicenseKey : "modifiedByUser (disassociate)"
     User ||--o{ ProjectMembership : "userToProjectMembership (cascade)"
     Project |o..o{ CommerceOrder : "projectName (soft)"
+    Contract |o..o{ CommerceOrder : "contractId (soft)"
     Contract |o..o{ CommerceOrderItem : "contractId (soft)"
     AccountEntry |o..o{ Organization : "accountEntryId (soft)"
     CPInstance |o..o{ EntitlementDefinition : "skuExternalReferenceCode (soft)"
@@ -187,6 +188,7 @@ A soft link is a field that holds the ID, ERC, or name of another record. Lifera
 | Object | Field | Points To | Note |
 | --- | --- | --- | --- |
 | CommerceOrder | `projectName` | Project | Project name, not a key. The order to project link since LPD-92222. |
+| CommerceOrder | `contractId` | Contract | Contract ID. The contract of an order item that has none. Orders from before LPD-113729 and AI Hub orders hold it. |
 | CommerceOrderItem | `contractId` | Contract | Contract ID. The order item to contract link since LPD-113729. |
 | Organization | `accountEntryId` | AccountEntry | Required: Liferay forbids a relationship between two system objects. |
 | EntitlementDefinition | `skuExternalReferenceCode` | CPInstance | Required: a SKU has no system object definition. |
@@ -233,7 +235,7 @@ These five findings are fixed in the batch files and in `data-model.md`. A deplo
 
 1. A field looked like a duplicate and is not. `Environment.projectId` is the Liferay Cloud project ID typed on the activation form, not the Liferay Project. It is documented in `data-model.md`.
 
-1. **The order to project link is a project name.** Since LPD-92222, a Commerce Order finds its project through the `projectName` custom field. Since LPD-113729, a Commerce Order Item finds its contract through the `contractId` custom field. No relationship exists. A project rename breaks the link for every order of that project and no error appears. Store the project ERC beside the name, or read the name only for display.
+1. **The order to project link is a project name.** Since LPD-92222, a Commerce Order finds its project through the `projectName` custom field. Since LPD-113729, a Commerce Order Item finds its contract through the `contractId` custom field, else through the `contractId` custom field of its order. No relationship exists. A project rename breaks the link for every order of that project and no error appears. Store the project ERC beside the name, or read the name only for display.
 
 ### Medium: Soft Links Where a Relationship Is Possible
 
@@ -458,6 +460,7 @@ Liferay system object `CommerceOrder`.
 | `accountOwnerLastName` | Text | custom field |
 | `cloud-provisioning` | Text | custom field |
 | `cloudProjectName` | Text | custom field |
+| `contractId` | Long | custom field, soft link to `C_CONTRACT` |
 | `dossieraProjectKey` | Text | custom field |
 | `dsrAnalyticsCloudProject` | Text | custom field |
 | `dsrError` | Text | custom field |

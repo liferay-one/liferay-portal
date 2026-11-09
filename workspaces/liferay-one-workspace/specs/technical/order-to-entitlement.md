@@ -58,7 +58,7 @@ sequenceDiagram
     SB->>SB: skip unless product family has E, P, or S
     SB->>SB: skip unless Closed Won, or Closed Lost when type is Renewal
     SB->>LR: upsert account, account currency, project
-    SB->>LR: upsert each contract named in the contracts array of the message (a failed upsert adds a warning and the next contract continues)
+    SB->>LR: upsert each contract named in the contracts array of the message, with no reconcile (a failed upsert adds a warning and the next contract continues)
     SB->>LR: find the contracts named in the contracts array of the message, and the amended contract
     opt contracts found
         SB->>LR: attach each contract to account and project when missing
@@ -103,7 +103,7 @@ sequenceDiagram
 
 On reprocessing, `upsertOrderItems` keeps a Canceled status and keeps a trimmed `effectiveEndDate` unless the new end date is earlier.
 
-`ContractUtil.fetchContract` is the only place that matches a line item or an order item to a contract. A contract matches when its `EndDate` plus one day equals the end date of the item. When several contracts match, the rule keeps the contracts whose `StartDate` equals the `ServiceDate` of the line, when any has it. When two or more contracts are left, the rule takes the contract with the lowest external reference code and logs a warning. The same rule picks the contract of a cloud native environment. When no cloud native line matches and the message has exactly one found contract, the environments use that contract.
+`ContractUtil.fetchContract` is the only place that matches a line item or an order item to a contract. A contract matches when its `EndDate` plus one day equals the end date of the item. When several contracts match, the rule takes the one contract whose `StartDate` equals the `ServiceDate` of the line. When no contract or two or more contracts have that `StartDate`, the rule returns no contract and logs a warning. The same rule picks the contract of a cloud native environment. When no cloud native line matches and the message has exactly one found contract, the environments use that contract.
 
 ### Project Entitlements
 
@@ -137,7 +137,7 @@ This job repairs the contract and project links of an entitlement after it exist
 
 ### A Message That Comes Again
 
-An opportunity message sets the contract of every line item again, and `0` removes a link when no contract of the message matches. After the order items are written, `ContractService.updateEntitlementContracts` finds the order items that the message carries. It matches each line of the message to an order item by external reference code. It reads the entitlements of those order items in batches. It sets the contract of each entitlement of the order items that the message carries to the contract of its order item, with `CommerceOrderItemUtil.getContractId`. The value `0` unlinks an entitlement. An AI Hub order keeps the `contractEntityId` of its `order-metadata` for an item with no contract. An order item that the message does not carry keeps its entitlements as they are. The method creates no entitlement, so a second run changes nothing. The project entitlement paths do the same after they write their order items, with the lines that their message carries. A project entitlement line item message does not unlink an order item or an entitlement. It keeps the contract of an item that no contract matches. It skips an entitlement whose item has no contract. It reads only the contracts that carry its opportunity ID, not the amended contract, so a new item gets no contract from the amended contract. Only the next opportunity message links that item. The reconcile reads the same contracts as this message.
+An opportunity message sets the contract of every line item again, and `0` removes a link when no contract of the message matches. After the order items are written, `ContractService.updateEntitlementContracts` finds the order items that the message carries. It matches each line of the message to an order item by external reference code. It reads the entitlements of those order items in batches. It sets the contract of each entitlement of the order items that the message carries to the contract of its order item, with `CommerceOrderItemUtil.getContractId`. The value `0` unlinks an entitlement. An item with no contract of its own reads the `contractId` of its order. An order item that the message does not carry keeps its entitlements as they are. The method creates no entitlement, so a second run changes nothing. The project entitlement paths do the same after they write their order items, with the lines that their message carries. A project entitlement line item message does not unlink an order item or an entitlement. It keeps the contract of an item that no contract matches. It skips an entitlement whose item has no contract. It reads only the contracts that carry its opportunity ID, not the amended contract, so a new item gets no contract from the amended contract. Only the next opportunity message links that item. The reconcile reads the same contracts as this message.
 
 After an unlink, the scheduled contract reconcile fills the order item again from any contract that still names the opportunity and matches the end date of the item.
 
@@ -347,7 +347,7 @@ Each new entitlement gets these values (`…/one/service/EntitlementService.java
 | `skuExternalReferenceCode` | Order item SKU |
 | `productOptions` | Order item options as JSON |
 | `r_accountEntryToEntitlement_accountEntryId` | Order account |
-| `r_contractToEntitlement_c_contractId` | Order item `contractId`, when above 0. Else `contractEntityId` of the `order-metadata` of an AI Hub order. |
+| `r_contractToEntitlement_c_contractId` | Order item `contractId`, when above 0. Else the `contractId` of the order, which orders from before LPD-113729 and AI Hub orders hold. |
 | `r_projectToEntitlement_c_projectERC` | Order `salesforceProjectId`, when not empty |
 | `r_commerceOrderItemToEntitlement_commerceOrderItemId` | Order item |
 | `r_entitlementDefinitionToEntitlement_c_entitlementDefinitionId` | Definition |
@@ -395,7 +395,7 @@ Since LPD-92222 there is no relationship from `L_COMMERCE_ORDER` to `C_PROJECT` 
 | Question | Sidecar answer | Custom element answer |
 | --- | --- | --- |
 | Which project owns this order? | `salesforceProjectId` only (`EntitlementService._getProjectExternalReferenceCode`, `ProvisioningOrderService._isProjectOrder`, `ContractService._getSalesforceProjectId`) | `salesforceProjectId`, else `order-metadata.salesforceProjectId`, else `projectName`, else `koroneiki-project` (`useProjectOrders.ts:110`, `:147`, `:153`) |
-| Which contract owns this order item? | `contractId` of the order item, else `order-metadata.contractEntityId` of the order (`CommerceOrderItemUtil.getContractId`) | `contractId` of the order item, else `order-metadata.contractEntityId` of the order (`getPlacedOrderItemContractId`, `orderUtils.ts`). The order level `contractId` is not read. |
+| Which contract owns this order item? | `contractId` of the order item, else `contractId` of the order (`CommerceOrderItemUtil.getContractId`) | `contractId` of the order item, else `contractId` of the order (`getPlacedOrderItemContractId`, `orderUtils.ts`). The order metadata is not read. |
 | Which project owns this entitlement? | `r_projectToEntitlement_c_projectERC`, set at generation from the order, or later by contract reconcile | Same relationship |
 | Which contract owns this entitlement? | `r_contractToEntitlement_c_contractId`, set at generation or by contract reconcile | Same relationship |
 

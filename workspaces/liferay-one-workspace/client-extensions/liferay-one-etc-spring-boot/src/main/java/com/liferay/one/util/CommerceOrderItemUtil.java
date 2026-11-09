@@ -64,10 +64,7 @@ public class CommerceOrderItemUtil {
 			return contractId;
 		}
 
-		JSONObject orderMetadataJSONObject =
-			CommerceOrderUtil.getOrderMetadataJSONObject(order);
-
-		return orderMetadataJSONObject.optLong("contractEntityId");
+		return CommerceOrderUtil.getContractId(order);
 	}
 
 	public static long getContractId(OrderItem orderItem) {

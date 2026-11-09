@@ -139,7 +139,8 @@ public class SalesforceOpportunityPubsubSubscriber
 
 		for (SalesforceContract salesforceContract : salesforceContracts) {
 			try {
-				_contractService.upsertContract("update", salesforceContract);
+				_contractService.upsertContract(
+					"update", false, salesforceContract);
 			}
 			catch (Exception exception) {
 				_addWarning(
@@ -530,9 +531,11 @@ public class SalesforceOpportunityPubsubSubscriber
 				salesforceOpportunity.getAccountId(), salesforceProject);
 		}
 
+		List<SalesforceContract> salesforceContracts = _getSalesforceContracts(
+			recordJSONObject);
+
 		List<Contract> contracts = _getContracts(
-			_getSalesforceContracts(recordJSONObject), salesforceOpportunity,
-			warningMessages);
+			salesforceContracts, salesforceOpportunity, warningMessages);
 
 		for (Contract contract : contracts) {
 			if (contract.getAccountEntryId() <= 0) {
@@ -750,6 +753,8 @@ public class SalesforceOpportunityPubsubSubscriber
 			account, contracts, currencyCode, recordJSONObject, renewal,
 			salesforceOpportunity, salesforceProject, warningMessages);
 
+		_reconcileContracts(salesforceContracts, warningMessages);
+
 		List<Long> userIds = new ArrayList<>();
 
 		if (!StringUtil.equalsIgnoreCase(
@@ -776,6 +781,34 @@ public class SalesforceOpportunityPubsubSubscriber
 			_provisioningIssueService.addOpportunityInvoicedIssue(
 				account, salesforceAccount, salesforceOpportunity,
 				provisionableSalesforceOpportunityLineItems, warningMessages);
+		}
+	}
+
+	private void _reconcileContracts(
+		List<SalesforceContract> salesforceContracts,
+		List<String> warningMessages) {
+
+		Set<String> opportunityIds = new LinkedHashSet<>();
+
+		for (SalesforceContract salesforceContract : salesforceContracts) {
+			if (Validator.isNull(salesforceContract.getOpportunityId())) {
+				continue;
+			}
+
+			opportunityIds.add(salesforceContract.getOpportunityId());
+		}
+
+		for (String opportunityId : opportunityIds) {
+			try {
+				_contractService.reconcileOpportunityContract(opportunityId);
+			}
+			catch (Exception exception) {
+				_addWarning(
+					warningMessages,
+					"Unable to reconcile the contracts of opportunity " +
+						opportunityId,
+					exception);
+			}
 		}
 	}
 
