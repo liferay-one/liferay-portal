@@ -711,6 +711,61 @@ public class ContractServiceTest {
 	}
 
 	@Test
+	public void testReconcileOpportunityContractKeepsTheAmendedContractOfAnAmendmentItem()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			if (_isOpportunityContractsQuery(uri)) {
+				return _createItemsResponse(
+					_createContractJSONObject(
+						77, "2027-10-31T00:00:00Z", "2026-11-01T00:00:00Z"
+					).put(
+						"r_accountEntryToContract_accountEntryId", _ACCOUNT_ID
+					).put(
+						"r_projectToContract_c_projectERC", "PRJ-1"
+					));
+			}
+
+			return null;
+		};
+
+		Order opportunityOrder = _createOrder(
+			Map.of(
+				"parentOpportunityId", "OPP-0", "salesforceProjectId", "PRJ-1"),
+			_createOrderItem(11, "2027-11-01T00:00:00Z", 66L));
+
+		opportunityOrder.setAccountId(_ACCOUNT_ID);
+
+		_whenFetchOrder(opportunityOrder);
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(opportunityOrder)
+		);
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(11L))
+		).thenReturn(
+			List.of(_createEntitlement(1, 11, 0, "PRJ-1"))
+		);
+
+		_testContractService.reconcileOpportunityContract("OPP-1");
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(), opportunityOrder
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 66
+		);
+	}
+
+	@Test
 	public void testReconcileOpportunityContractLeavesAnItemWithoutAMatchingContract()
 		throws Exception {
 
@@ -756,6 +811,103 @@ public class ContractServiceTest {
 			_entitlementService, Mockito.never()
 		).updateEntitlementContract(
 			ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong()
+		);
+	}
+
+	@Test
+	public void testReconcileOpportunityContractLeavesTheProjectOfAnAmendmentItemUnset()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			if (_isOpportunityContractsQuery(uri)) {
+				return _createItemsResponse(
+					_createContractJSONObject(
+						77, "2027-10-31T00:00:00Z", "2026-11-01T00:00:00Z"
+					).put(
+						"r_accountEntryToContract_accountEntryId", _ACCOUNT_ID
+					).put(
+						"r_projectToContract_c_projectERC", "PRJ-1"
+					));
+			}
+
+			return null;
+		};
+
+		Order opportunityOrder = _createOrder(
+			Map.of("parentOpportunityId", "OPP-0"),
+			_createOrderItem(11, "2027-11-01T00:00:00Z", 66L));
+
+		opportunityOrder.setAccountId(_ACCOUNT_ID);
+
+		_whenFetchOrder(opportunityOrder);
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(opportunityOrder)
+		);
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(11L))
+		).thenReturn(
+			List.of(_createEntitlement(1, 11, 0, null))
+		);
+
+		_testContractService.reconcileOpportunityContract("OPP-1");
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 66
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).updateEntitlementProject(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any()
+		);
+	}
+
+	@Test
+	public void testReconcileOpportunityContractLinksAnAmendmentItemWithoutAContract()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			if (_isOpportunityContractsQuery(uri)) {
+				return _createItemsResponse(
+					_createContractJSONObject(
+						77, "2027-10-31T00:00:00Z", "2026-11-01T00:00:00Z"
+					).put(
+						"r_accountEntryToContract_accountEntryId", _ACCOUNT_ID
+					).put(
+						"r_projectToContract_c_projectERC", "PRJ-1"
+					));
+			}
+
+			return null;
+		};
+
+		Order opportunityOrder = _createOrder(
+			Map.of(
+				"parentOpportunityId", "OPP-0", "salesforceProjectId", "PRJ-1"),
+			_createOrderItem(11, "2027-11-01T00:00:00Z", 0L));
+
+		opportunityOrder.setAccountId(_ACCOUNT_ID);
+
+		_whenFetchOrder(opportunityOrder);
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(opportunityOrder)
+		);
+
+		_testContractService.reconcileOpportunityContract("OPP-1");
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(11L, Map.of("contractId", 77L)), opportunityOrder
 		);
 	}
 
@@ -890,6 +1042,86 @@ public class ContractServiceTest {
 			_entitlementService
 		).updateEntitlementProject(
 			3, "PRJ-2"
+		);
+	}
+
+	@Test
+	public void testReconcileOpportunityContractLinksOnlyTheAmendmentItemsWithoutAContract()
+		throws Exception {
+
+		_testContractService.getFunction = uri -> {
+			if (_isOpportunityContractsQuery(uri)) {
+				return _createItemsResponse(
+					_createContractJSONObject(
+						77, "2027-10-31T00:00:00Z", "2026-11-01T00:00:00Z"
+					).put(
+						"r_accountEntryToContract_accountEntryId", _ACCOUNT_ID
+					).put(
+						"r_projectToContract_c_projectERC", "PRJ-1"
+					));
+			}
+
+			return null;
+		};
+
+		Order opportunityOrder = _createOrder(
+			Map.of(
+				"parentOpportunityId", "OPP-0", "salesforceProjectId", "PRJ-1"),
+			_createOrderItem(11, "2027-11-01T00:00:00Z", 66L));
+
+		opportunityOrder.setAccountId(_ACCOUNT_ID);
+
+		_whenFetchOrder(opportunityOrder);
+
+		Order projectEntitlementOrder = _createOrder(
+			_PROJECT_ENTITLEMENT_ORDER_ID,
+			Map.of(
+				"parentOpportunityId", "OPP-0", "salesforceOpportunityId",
+				"OPP-1", "salesforceProjectId", "PRJ-2"),
+			_createOrderItem(12, "2027-11-01T00:00:00Z", 0L));
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrders(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(opportunityOrder, projectEntitlementOrder)
+		);
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(11L))
+		).thenReturn(
+			List.of(_createEntitlement(1, 11, 0, "PRJ-1"))
+		);
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(12L))
+		).thenReturn(
+			List.of(_createEntitlement(2, 12, 0, "PRJ-2"))
+		);
+
+		_testContractService.reconcileOpportunityContract("OPP-1");
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(), opportunityOrder
+		);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			Map.of(12L, Map.of("contractId", 77L)), projectEntitlementOrder
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			1, 66
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).updateEntitlementContract(
+			2, 77
 		);
 	}
 
