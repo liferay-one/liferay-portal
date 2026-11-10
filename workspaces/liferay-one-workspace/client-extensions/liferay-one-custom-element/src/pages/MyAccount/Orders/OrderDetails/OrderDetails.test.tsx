@@ -29,6 +29,7 @@ function mockPlacedOrder(options: object[]) {
 					sku: '01t4u00000f7jP1AAI',
 				},
 			],
+			summary: {totalFormatted: '$1,250.00'},
 		},
 		error: undefined,
 		isLoading: false,
@@ -152,5 +153,15 @@ describe('[ROUTE-MY-ACCOUNT-ORDERID] OrderDetails', () => {
 		renderOrderDetails();
 
 		expect(screen.getByText('Liferay SaaS')).toBeTruthy();
+	});
+
+	it('does not show the order total', () => {
+		mockPlacedOrder([]);
+
+		renderOrderDetails();
+
+		expect(screen.getByText('57942')).toBeTruthy();
+		expect(screen.queryByText('Total')).toBeNull();
+		expect(screen.queryByText('$1,250.00')).toBeNull();
 	});
 });
