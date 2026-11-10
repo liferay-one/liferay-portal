@@ -12,20 +12,21 @@ export function useOrderDates(orderIds: number[]): {
 	loading: boolean;
 	orderDates: Map<number, string>;
 } {
-	const sortedOrderIds = [...orderIds].sort((id1, id2) => id1 - id2);
+	const orderIdsKey = [...orderIds].sort((id1, id2) => id1 - id2).join(',');
 
 	const {data, isLoading} = useSWR(
-		sortedOrderIds.length
-			? `/admin-orders/order-dates/${sortedOrderIds.join(',')}`
-			: null,
-		() =>
-			HeadlessCommerceAdminOrder.getOrders(
+		orderIdsKey ? ['/admin-orders/order-dates', orderIdsKey] : null,
+		([, key]) => {
+			const ids = key.split(',').map(Number);
+
+			return HeadlessCommerceAdminOrder.getOrders(
 				new URLSearchParams({
 					fields: 'id,orderDate',
-					filter: SearchBuilder.in('orderId', sortedOrderIds),
-					pageSize: String(sortedOrderIds.length),
+					filter: SearchBuilder.in('orderId', ids),
+					pageSize: String(ids.length),
 				})
-			),
+			);
+		},
 		{shouldRetryOnError: false}
 	);
 
