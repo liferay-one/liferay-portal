@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {format} from 'date-fns';
 import {useParams} from 'react-router';
 import BackLink from '~/components/BackLink/BackLink';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import {PageRenderer} from '~/components/Page/Page';
 import Table from '~/components/Table/Table';
+import {useOrderDates} from '~/hooks/useOrderDates';
 import {usePlacedOrder} from '~/hooks/usePlacedOrder';
 import {getProjectName} from '~/hooks/useProjectOrders';
 import i18n, {Word, translate} from '~/i18n';
@@ -19,6 +19,7 @@ import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {getOrderItemProductName} from '~/utils/orderItemOptionUtils';
 import {
 	PaymentStatus,
+	formatOrderDate,
 	getOrderStatusToken,
 	paymentStatusLabels,
 } from '~/utils/orderUtils';
@@ -51,13 +52,13 @@ function OrderDetailsContent({order}: {order: PlacedOrder}) {
 
 	const projectName = getProjectName(order);
 
+	const {orderDates} = useOrderDates([order.id]);
+
 	const detailsRows: DetailsRow[] = [
 		{label: i18n.translate('order-id'), value: order.id},
 		{
 			label: i18n.translate('order-date'),
-			value: order.createDate
-				? format(new Date(order.createDate), 'MMM d, yyyy')
-				: '-',
+			value: formatOrderDate(orderDates.get(order.id), order.createDate),
 		},
 		{label: i18n.translate('project'), value: projectName || '-'},
 		{

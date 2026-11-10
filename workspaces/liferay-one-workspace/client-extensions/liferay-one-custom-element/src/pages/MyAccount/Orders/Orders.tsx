@@ -9,7 +9,6 @@ import {ClayCheckbox, ClayInput, ClayToggle} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import {ClayPaginationBarWithBasicItems} from '@clayui/pagination-bar';
 import ClayTable from '@clayui/table';
-import {format} from 'date-fns';
 import {useMemo, useState} from 'react';
 import {useNavigate} from 'react-router';
 import Button from '~/components/Button/Button';
@@ -18,6 +17,7 @@ import Page from '~/components/Page/Page';
 import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import {useOneContext} from '~/context/OneContextProvider';
 import {useFetch} from '~/hooks/useFetch';
+import {useOrderDates} from '~/hooks/useOrderDates';
 import {
 	getProjectExternalReferenceCode,
 	getProjectName,
@@ -26,7 +26,7 @@ import i18n, {Word, translate} from '~/i18n';
 import {canAccessOrders} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {Liferay} from '~/services/liferay/liferay';
-import {getOrderStatusToken} from '~/utils/orderUtils';
+import {formatOrderDate, getOrderStatusToken} from '~/utils/orderUtils';
 
 import './Orders.css';
 
@@ -268,6 +268,10 @@ export default function Orders() {
 		return filteredOrders.slice(start, start + pageSize);
 	}, [filteredOrders, page, pageSize]);
 
+	const {orderDates} = useOrderDates(
+		paginatedOrders.map((order) => order.id)
+	);
+
 	const activeFilters = useMemo(() => {
 		const filters: {
 			label: string;
@@ -496,14 +500,10 @@ export default function Orders() {
 											</ClayTable.Cell>
 
 											<ClayTable.Cell>
-												{order.createDate
-													? format(
-															new Date(
-																order.createDate
-															),
-															'MMM d, yyyy'
-														)
-													: '-'}
+												{formatOrderDate(
+													orderDates.get(order.id),
+													order.createDate
+												)}
 											</ClayTable.Cell>
 
 											<ClayTable.Cell>
