@@ -703,6 +703,16 @@
 	},
 	{
 		"actionIds": [
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Account Member",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
 			"MANAGE_COMMERCE_ORDERS",
 			"MANAGE_COMMERCE_ORDER_PRICES",
 			"VIEW_COMMERCE_ORDERS"
