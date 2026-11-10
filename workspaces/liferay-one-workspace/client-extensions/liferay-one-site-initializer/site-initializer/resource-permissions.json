@@ -435,6 +435,7 @@
 	{
 		"actionIds": [
 			"VIEW",
+			"VIEW_ACCOUNT_ROLES",
 			"VIEW_USERS"
 		],
 		"primKey": "0",
