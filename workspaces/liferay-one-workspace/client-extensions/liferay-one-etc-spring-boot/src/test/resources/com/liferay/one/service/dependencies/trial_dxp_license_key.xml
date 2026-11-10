@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<license>
+	<account-name>Liferay Docker</account-name>
+	<owner>docker@liferay.com</owner>
+	<description>Trial Activation Key</description>
+	<product-name>DXP Development</product-name>
+	<product-version>2026.Q4</product-version>
+	<license-name>DXP Development</license-name>
+	<license-type>developer</license-type>
+	<license-version>6</license-version>
+	<start-date>Tuesday, November 10, 2026 12:00:00 AM GMT</start-date>
+	<expiration-date>Monday, February 8, 2027 12:00:00 AM GMT</expiration-date>
+	<max-http-sessions>5</max-http-sessions>
+	<key>bdb86483e1e73922a7c4d5ec0a9fc21029c638825b37d4f8c66c32c02a4ef67018a9208f77569a53254bb229a78c5c3c1b75673f52a0e420a1a4cb93513b45a167c8ca1f8450ba22be6eeefacef42449f8f507e5ec12e4ecad479827d7bbc8384c41cc0353b642cdf962a0a791850356788e06cc95985836addd9274578e4e02f0e98f8d</key>
+</license>
