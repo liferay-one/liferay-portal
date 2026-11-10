@@ -6,9 +6,9 @@
 import {render, screen} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useProject} from '~/context/ProjectContext';
+import {useOrderDates} from '~/hooks/useOrderDates';
 import {useProductEnvironmentEntitlements} from '~/hooks/useProductEnvironmentEntitlements';
 import {useProjectContacts} from '~/hooks/useProjectContacts';
-import {useOrderDate} from '~/pages/MyAccount/Projects/hooks/useOrderDate';
 
 import DetailsTab from './DetailsTab';
 
@@ -28,9 +28,7 @@ vi.mock(
 
 vi.mock('~/hooks/useProjectContacts', () => ({useProjectContacts: vi.fn()}));
 
-vi.mock('~/pages/MyAccount/Projects/hooks/useOrderDate', () => ({
-	useOrderDate: vi.fn(),
-}));
+vi.mock('~/hooks/useOrderDates', () => ({useOrderDates: vi.fn()}));
 
 const orderInfo = {
 	itemName: 'Liferay Self-Hosted',
@@ -70,9 +68,9 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DetailsTab', () => {
 	});
 
 	it('does not show the create date while the order date loads', () => {
-		vi.mocked(useOrderDate).mockReturnValue({
+		vi.mocked(useOrderDates).mockReturnValue({
 			loading: true,
-			orderDate: undefined,
+			orderDates: new Map(),
 		});
 
 		renderDetailsTab();
@@ -81,9 +79,9 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DetailsTab', () => {
 	});
 
 	it('shows the create date when the order date cannot be read', () => {
-		vi.mocked(useOrderDate).mockReturnValue({
+		vi.mocked(useOrderDates).mockReturnValue({
 			loading: false,
-			orderDate: undefined,
+			orderDates: new Map(),
 		});
 
 		renderDetailsTab();
@@ -92,9 +90,9 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DetailsTab', () => {
 	});
 
 	it('shows the order date of the order when it loads', () => {
-		vi.mocked(useOrderDate).mockReturnValue({
+		vi.mocked(useOrderDates).mockReturnValue({
 			loading: false,
-			orderDate: '2023-09-30T00:00:00Z',
+			orderDates: new Map([[39196090, '2023-09-30T00:00:00Z']]),
 		});
 
 		renderDetailsTab();

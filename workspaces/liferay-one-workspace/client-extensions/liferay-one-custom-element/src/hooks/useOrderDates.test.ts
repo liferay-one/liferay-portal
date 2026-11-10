@@ -6,18 +6,26 @@
 import {renderHook, waitFor} from '@testing-library/react';
 import {createElement} from 'react';
 import {SWRConfig} from 'swr';
-import {afterEach, describe, expect, it, vi} from 'vitest';
-import HeadlessCommerceAdminOrder from '~/services/headless/HeadlessCommerceAdminOrder';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {useCurrentAccount} from '~/hooks/useAccounts';
+import Accounts from '~/services/spring-boot/Accounts';
 
 import {useOrderDates} from './useOrderDates';
 
 import type {ReactNode} from 'react';
-import type {APIResponse} from '~/types/api';
-import type {Order} from '~/types/orders';
 
-vi.mock('~/services/headless/HeadlessCommerceAdminOrder', () => ({
-	default: {getOrders: vi.fn()},
+vi.mock('~/hooks/useAccounts', () => ({useCurrentAccount: vi.fn()}));
+
+vi.mock('~/services/spring-boot/Accounts', () => ({
+	default: {getCommerceOrdersOrderDates: vi.fn()},
 }));
+
+function mockCurrentAccount(externalReferenceCode?: string) {
+	vi.mocked(useCurrentAccount).mockReturnValue({
+		data: externalReferenceCode ? {externalReferenceCode} : undefined,
+		isLoading: false,
+	} as ReturnType<typeof useCurrentAccount>);
+}
 
 function wrapper({children}: {children: ReactNode}) {
 	return createElement(
@@ -28,19 +36,21 @@ function wrapper({children}: {children: ReactNode}) {
 }
 
 describe('[HOOK-USEORDERDATES] useOrderDates', () => {
+	beforeEach(() => {
+		mockCurrentAccount('ACCNT-001');
+	});
+
 	afterEach(() => {
 		vi.clearAllMocks();
 	});
 
-	it('reads the order dates of the orders in one request', async () => {
-		vi.mocked(HeadlessCommerceAdminOrder.getOrders).mockResolvedValue({
-			items: [
-				{id: 2, orderDate: '2023-09-30T00:00:00Z'},
-				{id: 1, orderDate: '2024-01-15T00:00:00Z'},
-			],
-		} as APIResponse<Order>);
+	it('reads the order dates of the current account from Spring Boot in one request', async () => {
+		vi.mocked(Accounts.getCommerceOrdersOrderDates).mockResolvedValue({
+			1: '2024-01-15T00:00:00Z',
+			2: '2023-09-30T00:00:00Z',
+		});
 
-		const {result} = renderHook(() => useOrderDates([2, 1]), {wrapper});
+		const {result} = renderHook(() => useOrderDates(), {wrapper});
 
 		await waitFor(() =>
 			expect(result.current.orderDates).toEqual(
@@ -51,41 +61,50 @@ describe('[HOOK-USEORDERDATES] useOrderDates', () => {
 			)
 		);
 
-		expect(HeadlessCommerceAdminOrder.getOrders).toHaveBeenCalledOnce();
-		expect(HeadlessCommerceAdminOrder.getOrders).toHaveBeenCalledWith(
-			new URLSearchParams({
-				fields: 'id,orderDate',
-				filter: 'orderId in (1,2)',
-				pageSize: '2',
-			})
+		expect(Accounts.getCommerceOrdersOrderDates).toHaveBeenCalledOnce();
+		expect(Accounts.getCommerceOrdersOrderDates).toHaveBeenCalledWith(
+			'ACCNT-001'
 		);
 	});
 
-	it('leaves out an order without an order date', async () => {
-		vi.mocked(HeadlessCommerceAdminOrder.getOrders).mockResolvedValue({
-			items: [{id: 1}],
-		} as APIResponse<Order>);
+	it('reads nothing without a current account', () => {
+		mockCurrentAccount();
 
-		const {result} = renderHook(() => useOrderDates([1]), {wrapper});
+		const {result} = renderHook(() => useOrderDates(), {wrapper});
+
+		expect(result.current).toEqual({loading: false, orderDates: new Map()});
+		expect(Accounts.getCommerceOrdersOrderDates).not.toHaveBeenCalled();
+	});
+
+	it('is loading while the current account loads', () => {
+		vi.mocked(useCurrentAccount).mockReturnValue({
+			data: undefined,
+			isLoading: true,
+		} as ReturnType<typeof useCurrentAccount>);
+
+		const {result} = renderHook(() => useOrderDates(), {wrapper});
+
+		expect(result.current.loading).toBe(true);
+	});
+
+	it('reads no order dates when the order dates cannot be read', async () => {
+		vi.mocked(Accounts.getCommerceOrdersOrderDates).mockRejectedValue(
+			new Error('Forbidden')
+		);
+
+		const {result} = renderHook(() => useOrderDates(), {wrapper});
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
 		expect(result.current.orderDates.size).toBe(0);
 	});
 
-	it('reads nothing without orders', () => {
-		const {result} = renderHook(() => useOrderDates([]), {wrapper});
-
-		expect(result.current).toEqual({loading: false, orderDates: new Map()});
-		expect(HeadlessCommerceAdminOrder.getOrders).not.toHaveBeenCalled();
-	});
-
-	it('reads no order dates when the orders cannot be read', async () => {
-		vi.mocked(HeadlessCommerceAdminOrder.getOrders).mockRejectedValue(
-			new Error('Forbidden')
+	it('reads no order dates from an empty response', async () => {
+		vi.mocked(Accounts.getCommerceOrdersOrderDates).mockResolvedValue(
+			{} as Record<string, string>
 		);
 
-		const {result} = renderHook(() => useOrderDates([1]), {wrapper});
+		const {result} = renderHook(() => useOrderDates(), {wrapper});
 
 		await waitFor(() => expect(result.current.loading).toBe(false));
 
