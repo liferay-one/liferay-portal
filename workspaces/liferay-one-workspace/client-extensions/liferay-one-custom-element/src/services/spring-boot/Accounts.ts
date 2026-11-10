@@ -47,6 +47,12 @@ class AccountsOAuth2 extends OneSpringBootOAuth2 {
 		);
 	}
 
+	async getCommerceOrdersOrderDates(accountExternalReferenceCode: string) {
+		return this.get<Record<string, string>>(
+			`/${accountExternalReferenceCode}/commerce-orders/order-dates`
+		);
+	}
+
 	async getInvitations(accountExternalReferenceCode: string) {
 		return this.get<AccountInvitation[]>(
 			`/${accountExternalReferenceCode}/invitations`

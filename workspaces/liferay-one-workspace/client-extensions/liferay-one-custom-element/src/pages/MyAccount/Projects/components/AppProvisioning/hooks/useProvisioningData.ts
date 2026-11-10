@@ -13,6 +13,7 @@ import {
 import useGetProductByOrderId from '~/hooks/useGetProductByOrderId';
 import useGetResourceInfo from '~/hooks/useGetResourceInfo';
 import i18n from '~/i18n';
+import {toUTCCalendarDate} from '~/utils/dateUtils';
 import {parseProjectId} from '~/utils/parseProjectId';
 import {getProductSpecification} from '~/utils/productUtils';
 
@@ -110,7 +111,7 @@ const useProvisioningData = (orderId: string) => {
 				items.push({
 					environment: environment.toUpperCase(),
 					expirationDate: getExpirationDate(
-						new Date(order.createDate),
+						toUTCCalendarDate(order.createDate),
 						productLicenseType
 					),
 					id: deployment?.id ?? i,
@@ -119,7 +120,7 @@ const useProvisioningData = (orderId: string) => {
 					project: projectName.toUpperCase(),
 					projectId: deployment?.projectId ?? '',
 					startDate: format(
-						new Date(order.createDate),
+						toUTCCalendarDate(order.createDate),
 						'MMM dd, yyyy'
 					),
 					status: getStatus(deployment, productLicenseType, order),

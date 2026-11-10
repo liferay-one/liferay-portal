@@ -5,10 +5,10 @@
 
 import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
+import {useOrderDates} from '~/hooks/useOrderDates';
 import {useProductEnvironmentEntitlements} from '~/hooks/useProductEnvironmentEntitlements';
 import {useProjectContacts} from '~/hooks/useProjectContacts';
 import {SECURITY_INCIDENT_CONTACT_ERC} from '~/pages/MyAccount/ProjectMembers/projectRoles';
-import {useOrderDate} from '~/pages/MyAccount/Projects/hooks/useOrderDate';
 import {buildDetailsSections} from '~/pages/MyAccount/Projects/utils/buildDetailsSections';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
@@ -57,11 +57,9 @@ export default function DetailsTab({
 		SECURITY_INCIDENT_CONTACT_ERC
 	);
 
-	const {loading: orderDateLoading, orderDate} = useOrderDate(
-		orderInfo.orderId
-	);
+	const {loading: orderDatesLoading, orderDates} = useOrderDates();
 
-	if (loading || orderDateLoading) {
+	if (loading || orderDatesLoading) {
 		return <Loading.Page />;
 	}
 
@@ -70,7 +68,7 @@ export default function DetailsTab({
 		contract,
 		environmentEntitlements,
 		itemType,
-		orderDate,
+		orderDate: orderDates.get(Number(orderInfo.orderId)),
 		orderInfo,
 		productName,
 		securityIncidentContacts,

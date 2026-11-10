@@ -4,7 +4,6 @@
  */
 
 import ClayIcon from '@clayui/icon';
-import {format} from 'date-fns';
 import {useState} from 'react';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import {
@@ -14,6 +13,7 @@ import {
 import i18n, {Word, translate} from '~/i18n';
 import {getKeyType} from '~/pages/MyAccount/Projects/utils/getKeyType';
 import {getIconSpriteMap} from '~/services/liferay/liferay';
+import {formatUTCShortDate} from '~/utils/dateUtils';
 
 type LicenseKeyListProps = {
 	licenseKeys: ActivationKeyLicenseKey[];
@@ -25,7 +25,7 @@ type LicenseKeyRow = {
 };
 
 function formatDate(value: string): string {
-	return value ? format(new Date(value), 'MMM d, yyyy') : '';
+	return formatUTCShortDate(value);
 }
 
 function getRows(licenseKey: ActivationKeyLicenseKey): LicenseKeyRow[] {

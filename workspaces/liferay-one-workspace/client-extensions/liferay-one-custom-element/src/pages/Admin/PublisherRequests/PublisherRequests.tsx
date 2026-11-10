@@ -10,6 +10,7 @@ import {ComponentProps, useState} from 'react';
 import ListView from '~/components/ListView/ListView';
 import Page from '~/components/Page/Page';
 import i18n from '~/i18n';
+import {toUTCCalendarDate} from '~/utils/dateUtils';
 
 import PublisherRequestModal, {
 	PublisherStatusDisplayType,
@@ -75,7 +76,7 @@ export default function PublisherRequests() {
 							render: (dateCreated) => (
 								<span className="ml-2 text-capitalize text-nowrap">
 									{format(
-										new Date(dateCreated),
+										toUTCCalendarDate(dateCreated),
 										'MMM dd, yyyy'
 									)}
 								</span>

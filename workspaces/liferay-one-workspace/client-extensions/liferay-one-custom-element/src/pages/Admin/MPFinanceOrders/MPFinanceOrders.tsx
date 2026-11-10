@@ -100,6 +100,7 @@ const MPFinanceOrders = () => {
 											{date.toLocaleDateString('en-US', {
 												day: 'numeric',
 												month: 'short',
+												timeZone: 'UTC',
 												year: 'numeric',
 											})}
 										</p>
@@ -107,6 +108,8 @@ const MPFinanceOrders = () => {
 											{date.toLocaleTimeString('en-US', {
 												hour: 'numeric',
 												minute: '2-digit',
+												timeZone: 'UTC',
+												timeZoneName: 'short',
 											})}
 										</p>
 									</div>

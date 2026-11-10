@@ -16,7 +16,7 @@ import {
 	GenerateFormProduct,
 	GenerateFormSubscription,
 } from '~/services/spring-boot/ActivationKeys';
-import {formatDate, toLastTermDay, toUTCCalendarDate} from '~/utils/dateUtils';
+import {formatDate, toLastTermDay} from '~/utils/dateUtils';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import SelectField from '../components/SelectField/SelectField';
@@ -42,7 +42,7 @@ type SubscriptionStepProps = {
 };
 
 function formatUTCDate(value?: string) {
-	return formatDate(value ? toUTCCalendarDate(value) : undefined);
+	return formatDate(value);
 }
 
 export default function SubscriptionStep({

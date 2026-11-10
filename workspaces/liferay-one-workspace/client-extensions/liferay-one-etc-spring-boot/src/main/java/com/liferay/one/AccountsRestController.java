@@ -142,6 +142,20 @@ public class AccountsRestController extends OneBaseRestController {
 		_userAssignmentService.unassignAccount(account, userId);
 	}
 
+	@GetMapping("/{externalReferenceCode}/commerce-orders/order-dates")
+	public Map<Long, String> getCommerceOrdersOrderDates(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_accountPermission.check(externalReferenceCode, ActionKeys.VIEW, jwt);
+
+		Account account = _accountService.getAccount(
+			externalReferenceCode, jwt);
+
+		return _commerceOrderService.getAccountOrderDates(account.getId());
+	}
+
 	@GetMapping("/{externalReferenceCode}/invitations")
 	public ResponseEntity<String> getInvitations(
 			@AuthenticationPrincipal Jwt jwt,

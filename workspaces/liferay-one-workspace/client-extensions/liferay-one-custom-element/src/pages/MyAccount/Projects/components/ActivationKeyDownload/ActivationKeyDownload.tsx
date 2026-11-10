@@ -4,7 +4,6 @@
  */
 
 import {ClaySelect} from '@clayui/form';
-import {format} from 'date-fns';
 import {useEffect, useMemo, useState} from 'react';
 import useSWR from 'swr';
 import Button from '~/components/Button/Button';
@@ -19,6 +18,7 @@ import CommonLicenseKeys, {
 	CommonLicenseKey,
 	ProductGroup,
 } from '~/services/spring-boot/CommonLicenseKeys';
+import {formatUTCShortDate} from '~/utils/dateUtils';
 import {getFileNameExtension} from '~/utils/downloadFileUtils';
 import getKebabCase from '~/utils/getKebabCase';
 import {toAlphanumericLowerCase} from '~/utils/stringUtils';
@@ -37,9 +37,7 @@ function formatDate(value?: string): string {
 		return '';
 	}
 
-	const date = new Date(value);
-
-	return Number.isNaN(date.getTime()) ? value : format(date, 'MMM d, yyyy');
+	return formatUTCShortDate(value, value);
 }
 
 function termLabel(key: CommonLicenseKey): string {

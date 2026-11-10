@@ -201,7 +201,12 @@ const TicketAttachmentsList = () => {
 		),
 		dateCreated: (
 			<div className="text-neutral-10">
-				{new Date(attachment.dateCreated).toLocaleDateString()}
+				{new Date(attachment.dateCreated).toLocaleDateString(
+					undefined,
+					{
+						timeZone: 'UTC',
+					}
+				)}
 			</div>
 		),
 		fileName: (

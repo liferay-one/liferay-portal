@@ -11,6 +11,7 @@ const SHORT_DATE_PATTERN = 'MMM d, yyyy';
 const dateOptions: Intl.DateTimeFormatOptions = {
 	day: 'numeric',
 	month: 'short',
+	timeZone: 'UTC',
 	year: 'numeric',
 };
 
@@ -57,7 +58,12 @@ export function formatDateTime(
 	try {
 		return new Intl.DateTimeFormat(
 			Liferay.ThemeDisplay.getBCP47LanguageId(),
-			{...dateOptions, hour: 'numeric', minute: 'numeric'}
+			{
+				...dateOptions,
+				hour: 'numeric',
+				minute: 'numeric',
+				timeZoneName: 'short',
+			}
 		).format(normalize(date));
 	}
 	catch {
@@ -90,6 +96,14 @@ export function formatUTCMonthYear(date: Date): string {
 
 export function formatShortDate(date: Date): string {
 	return format(date, SHORT_DATE_PATTERN);
+}
+
+export function formatUTCShortDate(value?: string, fallback = ''): string {
+	if (!value || Number.isNaN(new Date(value).getTime())) {
+		return fallback;
+	}
+
+	return formatShortDate(toUTCCalendarDate(value));
 }
 
 export function getLastDayOfMonth(month: number, year: number) {

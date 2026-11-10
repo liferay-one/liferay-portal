@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {differenceInDays, format} from 'date-fns';
+import {differenceInDays} from 'date-fns';
 import {useMemo} from 'react';
 import {useProject} from '~/context/ProjectContext';
 import {
@@ -20,6 +20,7 @@ import {
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
+import {formatUTCShortDate, toUTCDateString} from '~/utils/dateUtils';
 import escapeODataString from '~/utils/escapeODataString';
 
 export type ProjectActivationKey = {
@@ -158,11 +159,11 @@ function getStatus(node: ActivationKeyNode): Word {
 }
 
 function formatDate(value?: string): string {
-	return value ? format(new Date(value), 'MMM d, yyyy') : '';
+	return formatUTCShortDate(value);
 }
 
 function getDateValue(value?: string): string {
-	return value ? format(new Date(value), 'yyyy-MM-dd') : '';
+	return value ? toUTCDateString(new Date(value)) : '';
 }
 
 function getUnaggregatedProductName(node: LicenseKeyNode): string {

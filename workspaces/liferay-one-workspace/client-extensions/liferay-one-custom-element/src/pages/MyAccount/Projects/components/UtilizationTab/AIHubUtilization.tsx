@@ -10,6 +10,7 @@ import {useAITokenBlockSizes} from '~/hooks/useAITokenBlockSizes';
 import i18n from '~/i18n';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
+import {formatUTCShortDate} from '~/utils/dateUtils';
 
 import type {PlacedOrder} from '~/types/orders';
 
@@ -47,15 +48,8 @@ const AIHubUtilization = () => {
 						{
 							id: 'createDate',
 							name: i18n.translate('date'),
-							render: (createDate) => {
-								const date = new Date(createDate as string);
-
-								return date.toLocaleDateString('en-US', {
-									day: 'numeric',
-									month: 'short',
-									year: 'numeric',
-								});
-							},
+							render: (createDate) =>
+								formatUTCShortDate(createDate as string),
 						},
 						{
 							id: 'placedOrderItems',
