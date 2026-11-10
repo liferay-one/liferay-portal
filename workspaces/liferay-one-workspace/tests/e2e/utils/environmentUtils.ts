@@ -35,7 +35,10 @@ export const SPRING_BOOT_BASE_URL = value(
 	'http://localhost:58081'
 ).replace(/\/$/, '');
 
-export const SSA_ACCOUNT_ERC = value('ONE_SSA_ACCOUNT_ERC', 'SSA-ACCOUNT');
+export const SSA_ACCOUNT_ERC = value(
+	'ONE_SSA_ACCOUNT_ERC',
+	'marketplace-account-30323926'
+);
 
 export const SSA_TRIAL_PRODUCT_ERC = value(
 	'ONE_SSA_TRIAL_PRODUCT_ERC',
