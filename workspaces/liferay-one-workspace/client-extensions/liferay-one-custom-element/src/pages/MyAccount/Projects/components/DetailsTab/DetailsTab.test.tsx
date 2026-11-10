@@ -69,9 +69,20 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DetailsTab', () => {
 		} as unknown as ReturnType<typeof useProjectContacts>);
 	});
 
-	it('shows the create date while the order date loads', () => {
+	it('does not show the create date while the order date loads', () => {
 		vi.mocked(useOrderDate).mockReturnValue({
 			loading: true,
+			orderDate: undefined,
+		});
+
+		renderDetailsTab();
+
+		expect(screen.queryByText('Oct 22, 2026')).toBeNull();
+	});
+
+	it('shows the create date when the order date cannot be read', () => {
+		vi.mocked(useOrderDate).mockReturnValue({
+			loading: false,
 			orderDate: undefined,
 		});
 
