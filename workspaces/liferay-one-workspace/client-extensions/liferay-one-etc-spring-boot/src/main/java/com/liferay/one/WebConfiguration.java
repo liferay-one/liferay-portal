@@ -19,9 +19,13 @@ public class WebConfiguration implements WebMvcConfigurer {
 	@Override
 	public void addInterceptors(InterceptorRegistry interceptorRegistry) {
 		interceptorRegistry.addInterceptor(_externalDXPPathInterceptor);
+		interceptorRegistry.addInterceptor(_releaseTeamPathInterceptor);
 	}
 
 	@Autowired
 	private ExternalDXPPathInterceptor _externalDXPPathInterceptor;
+
+	@Autowired
+	private ReleaseTeamPathInterceptor _releaseTeamPathInterceptor;
 
 }
