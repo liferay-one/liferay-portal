@@ -929,6 +929,57 @@ def _check_unique(report, scope):
 				"SKU %r is defined %d times" % (erc, count),
 			)
 
+	# Entitlement generation makes one entitlement for each linked definition,
+	# and the usage dashboard adds their quantities. Two definitions with one
+	# name on a SKU therefore double the limit, unless their product options
+	# select between them.
+
+	definitions_by_erc = {
+		definition["externalReferenceCode"]: definition
+		for definition in scope["definitions"]
+	}
+
+	definition_ercs_by_key = defaultdict(list)
+
+	for definition_sku in scope["definition_skus"]:
+		definition_erc = definition_sku.get(
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC"
+		)
+
+		definition = definitions_by_erc.get(definition_erc)
+
+		if definition is None:
+			continue
+
+		key = (
+			definition_sku.get("skuExternalReferenceCode"),
+			definition.get("name"),
+			definition.get("productOptions"),
+		)
+
+		definition_ercs_by_key[key].append(definition_erc)
+
+	for key, definition_ercs in sorted(
+		definition_ercs_by_key.items(), key=lambda item: str(item[0])
+	):
+		if len(definition_ercs) < 2:
+			continue
+
+		sku_erc, name, _ = key
+
+		report.error(
+			"Duplicate entitlement definition",
+			"SKU %r links %d definitions named %r (%s), so each order item "
+			"gets the limit %d times"
+			% (
+				sku_erc,
+				len(definition_ercs),
+				name,
+				", ".join(sorted(definition_ercs)),
+				len(definition_ercs),
+			),
+		)
+
 
 def items(name):
 	return load(os.path.join(DATA, name)).get("items", [])

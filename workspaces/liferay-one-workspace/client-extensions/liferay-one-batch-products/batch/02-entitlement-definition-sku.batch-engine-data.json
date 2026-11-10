@@ -2247,11 +2247,6 @@
 			"skuExternalReferenceCode": "01tVO00000UlE1RYAV"
 		},
 		{
-			"externalReferenceCode": "apv_1000000_01t4u00000f7jQnAAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "apv_1000000",
-			"skuExternalReferenceCode": "01t4u00000f7jQnAAI"
-		},
-		{
 			"externalReferenceCode": "apv_100000_01t4u00000f7jQiAAI",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "apv_100000",
 			"skuExternalReferenceCode": "01t4u00000f7jQiAAI"
@@ -2365,11 +2360,6 @@
 			"externalReferenceCode": "cloud-native_01tVO00000QYrl0YAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "cloud-native",
 			"skuExternalReferenceCode": "01tVO00000QYrl0YAD"
-		},
-		{
-			"externalReferenceCode": "cloud-native_01tVO00000QYrl1YAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "cloud-native",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
 		},
 		{
 			"externalReferenceCode": "cloud-native_01tVO00000QYrl2YAD",
@@ -3402,11 +3392,6 @@
 			"skuExternalReferenceCode": "01t4u00000dIUsXAAW"
 		},
 		{
-			"externalReferenceCode": "document-library-size_100_01t4u00000dZBxHAAW",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "document-library-size_100",
-			"skuExternalReferenceCode": "01t4u00000dZBxHAAW"
-		},
-		{
 			"externalReferenceCode": "document-library-size_100_01t4u00000dcJNHAA2",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "document-library-size_100",
 			"skuExternalReferenceCode": "01t4u00000dcJNHAA2"
@@ -3502,11 +3487,6 @@
 			"skuExternalReferenceCode": "01t4u00000dkoqbAAA"
 		},
 		{
-			"externalReferenceCode": "document-library-size_100_01t4u00000f7jP1AAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "document-library-size_100",
-			"skuExternalReferenceCode": "01t4u00000f7jP1AAI"
-		},
-		{
 			"externalReferenceCode": "document-library-size_100_01t4u00000f7jPBAAY",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "document-library-size_100",
 			"skuExternalReferenceCode": "01t4u00000f7jPBAAY"
@@ -3520,16 +3500,6 @@
 			"externalReferenceCode": "document-library-size_100_01tVO00000PL9rWYAT",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "document-library-size_100",
 			"skuExternalReferenceCode": "01tVO00000PL9rWYAT"
-		},
-		{
-			"externalReferenceCode": "document-library-size_300_01t4u00000f7jP6AAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "document-library-size_300",
-			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
-		},
-		{
-			"externalReferenceCode": "document-library-size_50_01t4u00000f7jOwAAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "document-library-size_50",
-			"skuExternalReferenceCode": "01t4u00000f7jOwAAI"
 		},
 		{
 			"externalReferenceCode": "domains_01t4u00000f7jOwAAI",
@@ -6707,29 +6677,14 @@
 			"skuExternalReferenceCode": "01t7000000Hw4VHAAZ"
 		},
 		{
-			"externalReferenceCode": "liferay-saas-business_01t4u00000f7jP1AAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-saas-business",
-			"skuExternalReferenceCode": "01t4u00000f7jP1AAI"
-		},
-		{
 			"externalReferenceCode": "liferay-saas-disaster-recovery_01tVO00000F8DYvYAN",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-saas-disaster-recovery",
 			"skuExternalReferenceCode": "01tVO00000F8DYvYAN"
 		},
 		{
-			"externalReferenceCode": "liferay-saas-enterprise_01t4u00000f7jP6AAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-saas-enterprise",
-			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
-		},
-		{
 			"externalReferenceCode": "liferay-saas-flexibility_01tVO00000F8BLpYAN",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-saas-flexibility",
 			"skuExternalReferenceCode": "01tVO00000F8BLpYAN"
-		},
-		{
-			"externalReferenceCode": "liferay-saas-pro_01t4u00000f7jOwAAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "liferay-saas-pro",
-			"skuExternalReferenceCode": "01t4u00000f7jOwAAI"
 		},
 		{
 			"externalReferenceCode": "liferay-saas_01t4u00000dZBxAAAW",
@@ -8547,11 +8502,6 @@
 			"skuExternalReferenceCode": "01t4u00000f7jPzAAI"
 		},
 		{
-			"externalReferenceCode": "malu_5000_01t4u00000f7jPfAAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "malu_5000",
-			"skuExternalReferenceCode": "01t4u00000f7jPfAAI"
-		},
-		{
 			"externalReferenceCode": "malu_55000_01t4u00000f7jQ4AAI",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "malu_55000",
 			"skuExternalReferenceCode": "01t4u00000f7jQ4AAI"
@@ -8645,11 +8595,6 @@
 			"externalReferenceCode": "non-production-environments_01tVO00000QYrl0YAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "non-production-environments",
 			"skuExternalReferenceCode": "01tVO00000QYrl0YAD"
-		},
-		{
-			"externalReferenceCode": "non-production-environments_01tVO00000QYrl1YAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "non-production-environments",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
 		},
 		{
 			"externalReferenceCode": "non-production-environments_01tVO00000QYrl2YAD",
@@ -9367,11 +9312,6 @@
 			"skuExternalReferenceCode": "01tVO00000QYrl0YAD"
 		},
 		{
-			"externalReferenceCode": "production-environments_01tVO00000QYrl1YAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "production-environments",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
-		},
-		{
 			"externalReferenceCode": "production-environments_01tVO00000QYrl2YAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "production-environments",
 			"skuExternalReferenceCode": "01tVO00000QYrl2YAD"
@@ -9390,11 +9330,6 @@
 			"externalReferenceCode": "production-pods_3_01tVO00000QYrkvYAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "production-pods_3",
 			"skuExternalReferenceCode": "01tVO00000QYrkvYAD"
-		},
-		{
-			"externalReferenceCode": "production-pods_5_01tVO00000QYrkwYAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "production-pods_5",
-			"skuExternalReferenceCode": "01tVO00000QYrkwYAD"
 		},
 		{
 			"externalReferenceCode": "production-pods_7_01tVO00000QYrkxYAD",
@@ -9430,11 +9365,6 @@
 			"externalReferenceCode": "ram_0.5_01tVO00000AtEHVYA3",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "ram_0.5",
 			"skuExternalReferenceCode": "01tVO00000AtEHVYA3"
-		},
-		{
-			"externalReferenceCode": "ram_01t4u00000f7jOwAAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "ram",
-			"skuExternalReferenceCode": "01t4u00000f7jOwAAI"
 		},
 		{
 			"externalReferenceCode": "ram_01tVO00000At8VSYAZ",
@@ -9487,11 +9417,6 @@
 			"skuExternalReferenceCode": "01tVO00000AtBRlYAN"
 		},
 		{
-			"externalReferenceCode": "ram_4_01t4u00000f7jP1AAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "ram_4",
-			"skuExternalReferenceCode": "01t4u00000f7jP1AAI"
-		},
-		{
 			"externalReferenceCode": "ram_4_01tVO00000At4RpYAJ",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "ram_4",
 			"skuExternalReferenceCode": "01tVO00000At4RpYAJ"
@@ -9517,11 +9442,6 @@
 			"skuExternalReferenceCode": "01tVO00000AtE7pYAF"
 		},
 		{
-			"externalReferenceCode": "ram_6_01t4u00000f7jP6AAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "ram_6",
-			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
-		},
-		{
 			"externalReferenceCode": "saas-experience_01tVO00000QYrkoYAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "saas-experience",
 			"skuExternalReferenceCode": "01tVO00000QYrkoYAD"
@@ -9540,21 +9460,6 @@
 			"externalReferenceCode": "self-service-support_01tVO00000TxejvYAB",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "self-service-support",
 			"skuExternalReferenceCode": "01tVO00000TxejvYAB"
-		},
-		{
-			"externalReferenceCode": "sites_01t4u00000f7jP6AAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "sites",
-			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
-		},
-		{
-			"externalReferenceCode": "sites_15_01t4u00000f7jP1AAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "sites_15",
-			"skuExternalReferenceCode": "01t4u00000f7jP1AAI"
-		},
-		{
-			"externalReferenceCode": "sites_2_01t4u00000f7jOwAAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "sites_2",
-			"skuExternalReferenceCode": "01t4u00000f7jOwAAI"
 		},
 		{
 			"externalReferenceCode": "standard-8-5-support_01tVO00000QYrkjYAD",
@@ -9687,11 +9592,6 @@
 			"skuExternalReferenceCode": "01tVO00000QYrl0YAD"
 		},
 		{
-			"externalReferenceCode": "uat-environments_01tVO00000QYrl1YAD",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "uat-environments",
-			"skuExternalReferenceCode": "01tVO00000QYrl1YAD"
-		},
-		{
 			"externalReferenceCode": "uat-environments_01tVO00000QYrl2YAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "uat-environments",
 			"skuExternalReferenceCode": "01tVO00000QYrl2YAD"
@@ -9700,11 +9600,6 @@
 			"externalReferenceCode": "uat-environments_01tVO00000QYrl3YAD",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "uat-environments",
 			"skuExternalReferenceCode": "01tVO00000QYrl3YAD"
-		},
-		{
-			"externalReferenceCode": "vcpu_01t4u00000f7jOwAAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "vcpu",
-			"skuExternalReferenceCode": "01t4u00000f7jOwAAI"
 		},
 		{
 			"externalReferenceCode": "vcpu_01tVO00000At4MzYAJ",
@@ -9735,11 +9630,6 @@
 			"externalReferenceCode": "vcpu_12_01t0g00000UvVq0AAF",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "vcpu_12",
 			"skuExternalReferenceCode": "01t0g00000UvVq0AAF"
-		},
-		{
-			"externalReferenceCode": "vcpu_12_01t4u00000f7jP6AAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "vcpu_12",
-			"skuExternalReferenceCode": "01t4u00000f7jP6AAI"
 		},
 		{
 			"externalReferenceCode": "vcpu_16_01t0g00000UvVpbAAF",
@@ -9785,11 +9675,6 @@
 			"externalReferenceCode": "vcpu_8_01t0g00000UvVpvAAF",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "vcpu_8",
 			"skuExternalReferenceCode": "01t0g00000UvVpvAAF"
-		},
-		{
-			"externalReferenceCode": "vcpu_8_01t4u00000f7jP1AAI",
-			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "vcpu_8",
-			"skuExternalReferenceCode": "01t4u00000f7jP1AAI"
 		},
 		{
 			"externalReferenceCode": "vcpu_8_01tVO00000AtBRlYAN",
