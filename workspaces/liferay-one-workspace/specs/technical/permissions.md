@@ -247,7 +247,7 @@ The 64 scope 3 grants go to 42 site role grants, 20 account role grants, and 2 o
 | --- | --- | --- | --- |
 | Account Administrator | account | `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment | L973, L1018 |
 | Account Buyer | account | `VIEW` on the account | L294 |
-| Account Member | account | `VIEW`, `VIEW_USERS` on the account. `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization. | L303, L982 |
+| Account Member | account | `VIEW`, `VIEW_USERS` on the account. `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization. | L442, L711, L1228 |
 | Article Administrator | site | Web content and folders, and Site Administration | L629 to L1209 (6 grants) |
 | Documentation Administrator | site | Web content, categories, pages, page templates, and SEO | L446 to L1251 (14 grants) |
 | Organization User | organization | `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment | L991, L1027 |
