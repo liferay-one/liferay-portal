@@ -784,11 +784,12 @@ public class LicenseKeyService extends OneBaseService {
 
 		Map<Long, Integer> counts = new HashMap<>();
 
-		// A complimentary key counts against the entitlement that granted it,
-		// which allows one. It keeps counting once it expires, since expiring
-		// does not hand the grant back, and stops only when the key is
-		// deactivated. Inactive keys are dropped by the query and again by the
-		// loop, so the tally stays right whatever the query returns. Only the
+		// A complimentary key counts against nothing. That covers a key that
+		// Liferay gave for free in provisioning, such as a temporary or an
+		// upgrade key, and a key of the complimentary key type, which
+		// _checkComplimentary limits to one activation key per project.
+		// Inactive keys are dropped by the query and again by the loop, so
+		// the tally stays right whatever the query returns. Only the
 		// fields the tally reads are projected, since a project can hold
 		// thousands of keys and each one otherwise serializes thirty five
 		// fields plus its action envelope. A key linked to an entitlement
@@ -807,7 +808,7 @@ public class LicenseKeyService extends OneBaseService {
 					"(active eq true) and (" + filterString + ")",
 					LicenseKey::new)) {
 
-			if (!licenseKey.isActive() ||
+			if (!licenseKey.isActive() || licenseKey.isComplimentary() ||
 				excludedActivationKeyIds.contains(
 					licenseKey.getActivationKeyId())) {
 
@@ -946,8 +947,8 @@ public class LicenseKeyService extends OneBaseService {
 	}
 
 	private static final String _FIELDS_ACTIVE_LICENSE_KEY_COUNT =
-		"active,customExpirationDate,entitlementDefinitionId,entitlementId," +
-			"id,licenseType,maxClusterNodes," +
+		"active,complimentary,customExpirationDate,entitlementDefinitionId," +
+			"entitlementId,id,licenseType,maxClusterNodes," +
 				"r_activationKeyToLicenseKey_c_activationKeyId,startDate";
 
 	private static final String _FREE_TIER_DOMAIN_LOCALHOST = "localhost";
