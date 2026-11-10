@@ -303,6 +303,38 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testGetActiveLicenseKeyCountsCountsKeyOfAnEndedEntitlementOnlyAgainstThatEntitlement()
+		throws Exception {
+
+		_whenGetAllProjectedItems(
+			_createPermanentLicenseKey(1L, true, 5L, 7L, 1L));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				Arrays.asList(_createEntitlement(5L, "2027-12-31", 20L, 2D)),
+				Collections.emptyList(), "PRJCT-1");
+
+		Assertions.assertEquals(1, counts.get(7L));
+		Assertions.assertNull(counts.get(20L));
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsCountsKeyOfAnUnstartedEntitlementOnlyAgainstThatEntitlement()
+		throws Exception {
+
+		_whenGetAllProjectedItems(
+			_createTermLicenseKey(5L, 8L, "2028-12-31", 1L, "2027-12-01"));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				Arrays.asList(_createEntitlement(5L, "2027-12-31", 20L, 2D)),
+				Collections.emptyList(), "PRJCT-1");
+
+		Assertions.assertEquals(1, counts.get(8L));
+		Assertions.assertNull(counts.get(20L));
+	}
+
+	@Test
 	public void testGetActiveLicenseKeyCountsCountsPermanentKeyAgainstItsActiveEntitlement()
 		throws Exception {
 
@@ -334,22 +366,6 @@ public class LicenseKeyServiceTest {
 				Collections.emptyList(), "PRJCT-1");
 
 		Assertions.assertEquals(2, counts.get(10L));
-	}
-
-	@Test
-	public void testGetActiveLicenseKeyCountsCountsPermanentKeyOfAnEndedEntitlementAgainstItsDefinition()
-		throws Exception {
-
-		_whenGetAllProjectedItems(
-			_createPermanentLicenseKey(1L, true, 5L, 7L, 1L));
-
-		Map<Long, Integer> counts =
-			_licenseKeyService.getActiveLicenseKeyCounts(
-				Arrays.asList(_createEntitlement(5L, "2027-12-31", 20L, 2D)),
-				Collections.emptyList(), "PRJCT-1");
-
-		Assertions.assertNull(counts.get(7L));
-		Assertions.assertEquals(1, counts.get(20L));
 	}
 
 	@Test
@@ -393,6 +409,47 @@ public class LicenseKeyServiceTest {
 
 		Assertions.assertEquals(1, counts.get(10L));
 		Assertions.assertEquals(2, counts.get(20L));
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsCountsTermKeyAgainstTheEntitlementThatCoversItsStartDate()
+		throws Exception {
+
+		_whenGetAllProjectedItems(
+			_createTermLicenseKey(5L, 0L, "2099-01-01", 1L, "2026-01-01"));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				Arrays.asList(
+					_createEntitlement(5L, "2026-12-31", 10L, 2D, "2025-01-01"),
+					_createEntitlement(
+						5L, "2029-12-31", 20L, 2D, "2027-01-01")),
+				Collections.emptyList(), "PRJCT-1");
+
+		Assertions.assertEquals(1, counts.get(10L));
+		Assertions.assertNull(counts.get(20L));
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsCountsTermKeyAgainstTheLatestEndingEntitlementWhenNoneCoversItsStartDate()
+		throws Exception {
+
+		// A key from an earlier term that the subscription carries over
+		// counts against the current term.
+
+		_whenGetAllProjectedItems(
+			_createTermLicenseKey(5L, 0L, "2099-01-01", 1L, "2020-01-01"));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				Arrays.asList(
+					_createEntitlement(5L, "2026-12-31", 10L, 2D, "2025-01-01"),
+					_createEntitlement(
+						5L, "2029-12-31", 20L, 2D, "2027-01-01")),
+				Collections.emptyList(), "PRJCT-1");
+
+		Assertions.assertNull(counts.get(10L));
+		Assertions.assertEquals(1, counts.get(20L));
 	}
 
 	@Test
@@ -478,6 +535,21 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testGetActiveLicenseKeyCountsSkipsExpiredTermKeysWithoutAnEntitlement()
+		throws Exception {
+
+		_whenGetAllProjectedItems(
+			_createTermLicenseKey(5L, 0L, "2021-01-01", 1L, "2020-01-01"));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				Arrays.asList(_createEntitlement(5L, "2027-12-31", 10L, 3D)),
+				Collections.emptyList(), "PRJCT-1");
+
+		Assertions.assertTrue(counts.isEmpty());
+	}
+
+	@Test
 	public void testGetActiveLicenseKeyCountsSkipsInactiveAndRenewedPermanentKeys()
 		throws Exception {
 
@@ -530,27 +602,34 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
-	public void testGetActiveLicenseKeyCountsSkipsTermKeysWithoutAnEntitlement()
+	public void testGetActiveLicenseKeyCountsSkipsTermKeysOfADefinitionWithoutAnEntitlement()
 		throws Exception {
 
 		_whenGetAllProjectedItems(
-			new LicenseKey(
-				new JSONObject(
-				).put(
-					"active", true
-				).put(
-					"customExpirationDate", "2027-01-01T00:00:00Z"
-				).put(
-					"entitlementDefinitionId", 5L
-				).put(
-					"id", 1L
-				).put(
-					"startDate", "2026-01-01T00:00:00Z"
-				)));
+			_createTermLicenseKey(6L, 0L, "2099-01-01", 1L, "2026-01-01"));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
-				Arrays.asList(_createEntitlement(5L, "2027-12-31", 10L, 3D)),
+				Arrays.asList(
+					_createEntitlement(
+						5L, "2027-12-31", 10L, 3D, "2025-01-01")),
+				Collections.emptyList(), "PRJCT-1");
+
+		Assertions.assertTrue(counts.isEmpty());
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsSkipsTermKeysOutsideTheDatesOfTheEntitlements()
+		throws Exception {
+
+		_whenGetAllProjectedItems(
+			_createTermLicenseKey(5L, 0L, "2099-01-01", 1L, "2028-01-01"));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				Arrays.asList(
+					_createEntitlement(
+						5L, "2027-12-31", 10L, 3D, "2025-01-01")),
 				Collections.emptyList(), "PRJCT-1");
 
 		Assertions.assertTrue(counts.isEmpty());
@@ -745,6 +824,27 @@ public class LicenseKeyServiceTest {
 			));
 	}
 
+	private Entitlement _createEntitlement(
+		long entitlementDefinitionId, String endDate, long entitlementId,
+		double maxQuantity, String startDate) {
+
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"endDate", endDate + "T00:00:00Z"
+			).put(
+				"id", entitlementId
+			).put(
+				"maxQuantity", maxQuantity
+			).put(
+				"r_entitlementDefinitionToEntitlement_c_" +
+					"entitlementDefinitionId",
+				entitlementDefinitionId
+			).put(
+				"startDate", startDate + "T00:00:00Z"
+			));
+	}
+
 	private LicenseKey _createLicenseKey(
 		long activationKeyId, boolean active, boolean complimentary,
 		long entitlementId, long licenseKeyId) {
@@ -788,6 +888,29 @@ public class LicenseKeyServiceTest {
 				"r_activationKeyToLicenseKey_c_activationKeyId", activationKeyId
 			).put(
 				"startDate", "2020-01-01T00:00:00Z"
+			));
+	}
+
+	private LicenseKey _createTermLicenseKey(
+		long entitlementDefinitionId, long entitlementId, String expirationDate,
+		long licenseKeyId, String startDate) {
+
+		return new LicenseKey(
+			new JSONObject(
+			).put(
+				"active", true
+			).put(
+				"customExpirationDate", expirationDate + "T00:00:00Z"
+			).put(
+				"entitlementDefinitionId", entitlementDefinitionId
+			).put(
+				"entitlementId", entitlementId
+			).put(
+				"id", licenseKeyId
+			).put(
+				"r_activationKeyToLicenseKey_c_activationKeyId", licenseKeyId
+			).put(
+				"startDate", startDate + "T00:00:00Z"
 			));
 	}
 
