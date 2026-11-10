@@ -23,16 +23,16 @@ import com.liferay.portal.kernel.util.Validator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import java.time.Instant;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 
 import org.json.JSONArray;
@@ -301,24 +301,15 @@ public class LicenseKeyService extends OneBaseService {
 			String projectExternalReferenceCode)
 		throws Exception {
 
-		Set<Long> entitlementIds = new HashSet<>();
-
-		for (Entitlement entitlement : entitlements) {
-			entitlementIds.add(entitlement.getEntitlementId());
-		}
-
-		Map<Long, Integer> permanentLicenseKeyCounts = new HashMap<>();
+		List<LicenseKey> unlinkedLicenseKeys = new ArrayList<>();
 
 		Map<Long, Integer> counts = _getActiveLicenseKeyCounts(
-			entitlementIds, excludedActivationKeyIds,
+			excludedActivationKeyIds,
 			_getProjectFilterString(projectExternalReferenceCode),
-			permanentLicenseKeyCounts);
+			unlinkedLicenseKeys);
 
-		for (Map.Entry<Long, Integer> entry :
-				permanentLicenseKeyCounts.entrySet()) {
-
-			_addPermanentLicenseKeyCount(
-				counts, entitlements, entry.getKey(), entry.getValue());
+		for (LicenseKey licenseKey : unlinkedLicenseKeys) {
+			_addUnlinkedLicenseKeyCount(counts, entitlements, licenseKey);
 		}
 
 		return counts;
@@ -329,7 +320,7 @@ public class LicenseKeyService extends OneBaseService {
 		throws Exception {
 
 		return _getActiveLicenseKeyCounts(
-			Collections.emptySet(), Collections.emptyList(),
+			Collections.emptyList(),
 			_getProjectFilterString(projectExternalReferenceCode), null);
 	}
 
@@ -338,7 +329,7 @@ public class LicenseKeyService extends OneBaseService {
 		throws Exception {
 
 		return _getActiveLicenseKeyCounts(
-			Collections.emptySet(), excludedActivationKeyIds,
+			excludedActivationKeyIds,
 			StringBundler.concat(
 				"(r_accountEntryToLicenseKey_accountEntryId eq '",
 				accountEntryId,
@@ -630,15 +621,28 @@ public class LicenseKeyService extends OneBaseService {
 		return new LicenseKey(new JSONObject(response));
 	}
 
-	private void _addPermanentLicenseKeyCount(
+	private void _addUnlinkedLicenseKeyCount(
 		Map<Long, Integer> counts, List<Entitlement> entitlements,
-		long entitlementDefinitionId, int permanentLicenseKeyCount) {
+		LicenseKey licenseKey) {
+
+		// The key counts against an entitlement of its definition whose dates
+		// overlap the dates of the key. The entitlement whose dates include
+		// the start date of the key comes first, because that entitlement
+		// granted the key. The other entitlements follow from the latest end
+		// date, so a key that a renewed subscription carries over counts
+		// against the current term.
+
+		Instant expirationDateInstant =
+			licenseKey.getCustomExpirationDateInstant();
+		Instant startDateInstant = licenseKey.getStartDateInstant();
 
 		List<Entitlement> definitionEntitlements = new ArrayList<>();
 
 		for (Entitlement entitlement : entitlements) {
-			if (entitlement.getEntitlementDefinitionId() !=
-					entitlementDefinitionId) {
+			if ((entitlement.getEntitlementDefinitionId() !=
+					licenseKey.getEntitlementDefinitionId()) ||
+				!_overlaps(
+					entitlement, expirationDateInstant, startDateInstant)) {
 
 				continue;
 			}
@@ -652,10 +656,15 @@ public class LicenseKeyService extends OneBaseService {
 
 		definitionEntitlements.sort(
 			Comparator.comparing(
+				(Entitlement entitlement) -> !_coversStartDate(
+					entitlement, startDateInstant)
+			).thenComparing(
 				Entitlement::getEndDateInstant,
-				Comparator.nullsFirst(Comparator.reverseOrder())));
+				Comparator.nullsFirst(Comparator.reverseOrder())
+			));
 
-		int remainingCount = permanentLicenseKeyCount;
+		int remainingCount = LicenseKeyGenerationConstants.getActivationCount(
+			licenseKey.getLicenseType(), licenseKey.getMaxClusterNodes());
 
 		for (Entitlement entitlement : definitionEntitlements) {
 			long entitlementId = entitlement.getEntitlementId();
@@ -677,10 +686,10 @@ public class LicenseKeyService extends OneBaseService {
 			}
 		}
 
-		Entitlement latestEntitlement = definitionEntitlements.get(0);
+		Entitlement firstEntitlement = definitionEntitlements.get(0);
 
 		counts.merge(
-			latestEntitlement.getEntitlementId(), remainingCount, Integer::sum);
+			firstEntitlement.getEntitlementId(), remainingCount, Integer::sum);
 	}
 
 	private String _buildSearchFilter(
@@ -746,9 +755,31 @@ public class LicenseKeyService extends OneBaseService {
 		return String.join(" and ", conditions);
 	}
 
+	private boolean _coversStartDate(
+		Entitlement entitlement, Instant startDateInstant) {
+
+		if (startDateInstant == null) {
+			return false;
+		}
+
+		Instant entitlementEndDateInstant =
+			entitlement.getEffectiveEndDateInstant();
+		Instant entitlementStartDateInstant = entitlement.getStartDateInstant();
+
+		if (((entitlementStartDateInstant == null) ||
+			 !entitlementStartDateInstant.isAfter(startDateInstant)) &&
+			((entitlementEndDateInstant == null) ||
+			 !entitlementEndDateInstant.isBefore(startDateInstant))) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private Map<Long, Integer> _getActiveLicenseKeyCounts(
-			Set<Long> entitlementIds, Collection<Long> excludedActivationKeyIds,
-			String filterString, Map<Long, Integer> permanentLicenseKeyCounts)
+			Collection<Long> excludedActivationKeyIds, String filterString,
+			List<LicenseKey> unlinkedLicenseKeys)
 		throws Exception {
 
 		Map<Long, Integer> counts = new HashMap<>();
@@ -760,10 +791,15 @@ public class LicenseKeyService extends OneBaseService {
 		// loop, so the tally stays right whatever the query returns. Only the
 		// fields the tally reads are projected, since a project can hold
 		// thousands of keys and each one otherwise serializes thirty five
-		// fields plus its action envelope. When the caller asks, a permanent
-		// key is tallied by its definition instead if no active entitlement in
-		// the caller's list granted it. That covers a migrated key that no
-		// entitlement granted, and a generated key whose subscription ended.
+		// fields plus its action envelope. A key linked to an entitlement
+		// counts against that entitlement only, also when the entitlement
+		// ended or has not started. When the caller asks, a key without an
+		// entitlement is returned to the caller, which counts it against an
+		// entitlement of its definition whose dates overlap the dates of the
+		// key. That covers a migrated key that no entitlement granted. Such a
+		// key counts only until it expires.
+
+		Instant nowInstant = Instant.now();
 
 		for (LicenseKey licenseKey :
 				getAllProjectedItems(
@@ -782,17 +818,17 @@ public class LicenseKeyService extends OneBaseService {
 				licenseKey.getEntitlementDefinitionId();
 			long entitlementId = licenseKey.getEntitlementId();
 
-			if ((permanentLicenseKeyCounts != null) &&
-				(entitlementDefinitionId > 0) &&
-				!entitlementIds.contains(entitlementId) &&
-				licenseKey.isPermanent()) {
+			if ((unlinkedLicenseKeys != null) &&
+				(entitlementDefinitionId > 0) && (entitlementId <= 0)) {
 
-				permanentLicenseKeyCounts.merge(
-					entitlementDefinitionId,
-					LicenseKeyGenerationConstants.getActivationCount(
-						licenseKey.getLicenseType(),
-						licenseKey.getMaxClusterNodes()),
-					Integer::sum);
+				Instant expirationDateInstant =
+					licenseKey.getCustomExpirationDateInstant();
+
+				if ((expirationDateInstant == null) ||
+					!expirationDateInstant.isBefore(nowInstant)) {
+
+					unlinkedLicenseKeys.add(licenseKey);
+				}
 
 				continue;
 			}
@@ -845,6 +881,27 @@ public class LicenseKeyService extends OneBaseService {
 
 		return "r_projectToLicenseKey_c_projectERC eq '" +
 			escapeODataString(projectExternalReferenceCode) + "'";
+	}
+
+	private boolean _overlaps(
+		Entitlement entitlement, Instant expirationDateInstant,
+		Instant startDateInstant) {
+
+		Instant entitlementEndDateInstant =
+			entitlement.getEffectiveEndDateInstant();
+		Instant entitlementStartDateInstant = entitlement.getStartDateInstant();
+
+		if (((entitlementStartDateInstant == null) ||
+			 (expirationDateInstant == null) ||
+			 !entitlementStartDateInstant.isAfter(expirationDateInstant)) &&
+			((entitlementEndDateInstant == null) ||
+			 (startDateInstant == null) ||
+			 !entitlementEndDateInstant.isBefore(startDateInstant))) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private String _toFreeTierDomains(String domains) {
