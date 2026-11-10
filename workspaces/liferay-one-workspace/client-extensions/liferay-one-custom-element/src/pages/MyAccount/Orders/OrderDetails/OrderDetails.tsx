@@ -52,13 +52,15 @@ function OrderDetailsContent({order}: {order: PlacedOrder}) {
 
 	const projectName = getProjectName(order);
 
-	const {orderDates} = useOrderDates([order.id]);
+	const {loading: orderDatesLoading, orderDates} = useOrderDates([order.id]);
 
 	const detailsRows: DetailsRow[] = [
 		{label: i18n.translate('order-id'), value: order.id},
 		{
 			label: i18n.translate('order-date'),
-			value: formatOrderDate(orderDates.get(order.id), order.createDate),
+			value: orderDatesLoading
+				? '-'
+				: formatOrderDate(orderDates.get(order.id) ?? order.createDate),
 		},
 		{label: i18n.translate('project'), value: projectName || '-'},
 		{

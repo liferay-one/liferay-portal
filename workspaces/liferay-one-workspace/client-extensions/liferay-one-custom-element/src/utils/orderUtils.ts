@@ -313,12 +313,8 @@ export function getContractProductOrders(
 	return contractOrders.length ? contractOrders : productOrders;
 }
 
-export function formatOrderDate(orderDate?: string, createDate?: string) {
-	if (orderDate) {
-		return format(toUTCCalendarDate(orderDate), 'MMM d, yyyy');
-	}
-
-	return createDate ? format(new Date(createDate), 'MMM d, yyyy') : '-';
+export function formatOrderDate(date?: string) {
+	return date ? format(toUTCCalendarDate(date), 'MMM d, yyyy') : '-';
 }
 
 export function getOrderStatusToken(order: PlacedOrder): string {
