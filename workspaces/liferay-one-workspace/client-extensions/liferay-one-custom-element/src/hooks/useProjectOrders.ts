@@ -90,7 +90,7 @@ const RESTRICTED_ORDER_FIELDS = [
 ].join(',');
 
 export type ProjectOrder = {
-	date: string;
+	createDate?: string;
 	id: string;
 	orderId: string;
 	status: string;
@@ -262,7 +262,7 @@ export function useProjectOrders(project?: OrderProject, productId?: number) {
 	const orders = useMemo<ProjectOrder[]>(
 		() =>
 			placedOrders.map((order) => ({
-				date: formatDate(order.createDate),
+				createDate: order.createDate,
 				id: String(order.id),
 				orderId: String(order.id),
 				status: getOrderStatusToken(order),
