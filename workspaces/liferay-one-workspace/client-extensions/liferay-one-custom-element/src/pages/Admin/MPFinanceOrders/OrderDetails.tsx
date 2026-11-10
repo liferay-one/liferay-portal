@@ -155,7 +155,9 @@ const OrderDetails = () => {
 							{
 								title: i18n.translate('purchase-date'),
 								value: textWrapper(
-									formatDateTime(order?.createDate)
+									formatDateTime(
+										order?.orderDate ?? order?.createDate
+									)
 								),
 							},
 							{

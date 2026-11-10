@@ -4,7 +4,7 @@
  */
 
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
-import {formatShortDate} from '~/utils/dateUtils';
+import {formatShortDate, toUTCCalendarDate} from '~/utils/dateUtils';
 import {
 	getContractProductOrders,
 	getPlacedOrderItemDate,
@@ -32,8 +32,21 @@ export function toProductsByProductId(products: DeliveryProduct[]) {
 	return new Map(products.map((product) => [product.productId, product]));
 }
 
+function hasStartDate(placedOrderItems: PlacedOrderItems[]): boolean {
+	return placedOrderItems.some((placedOrderItem) =>
+		Boolean(getPlacedOrderItemDate(placedOrderItem, 'startDate'))
+	);
+}
+
+export function getOrderIdsWithoutStartDate(orders: PlacedOrder[]): number[] {
+	return orders
+		.filter((order) => !hasStartDate(order.placedOrderItems ?? []))
+		.map((order) => order.id);
+}
+
 function formatStartDate(
 	order: PlacedOrder,
+	orderDates: Map<number, string>,
 	placedOrderItems: PlacedOrderItems[]
 ): string {
 	const [startDate] = placedOrderItems
@@ -47,12 +60,19 @@ function formatStartDate(
 		return formatShortDate(startDate);
 	}
 
+	const orderDate = orderDates.get(order.id);
+
+	if (orderDate) {
+		return formatShortDate(toUTCCalendarDate(orderDate));
+	}
+
 	return order.createDate ? formatShortDate(new Date(order.createDate)) : '';
 }
 
 function toProjectProduct(
 	itemType: ProjectItemType,
 	order: PlacedOrder,
+	orderDates: Map<number, string>,
 	placedOrderItems: PlacedOrderItems[],
 	product: DeliveryProduct
 ): ProjectProduct {
@@ -63,7 +83,7 @@ function toProjectProduct(
 		publisher: getProductPublisherName(product),
 		saleType: getProductSpecificationValue('price-model', product),
 		specifications: product.productSpecifications ?? [],
-		startDate: formatStartDate(order, placedOrderItems),
+		startDate: formatStartDate(order, orderDates, placedOrderItems),
 		status: getProjectItemStatusToken(itemType, order, placedOrderItems),
 		type:
 			getProductSpecificationValues(
@@ -76,7 +96,8 @@ function toProjectProduct(
 export function toProjectItemsByType(
 	orders: PlacedOrder[],
 	productsByProductId: ReturnType<typeof toProductsByProductId>,
-	contractId?: number
+	contractId?: number,
+	orderDates: Map<number, string> = new Map()
 ): ProjectItemsByType {
 	const itemsByProjectItemType: ProjectItemsByType = {
 		application: new Map(),
@@ -129,6 +150,7 @@ export function toProjectItemsByType(
 			toProjectProduct(
 				projectItemType,
 				contractOrders[0],
+				orderDates,
 				contractOrders.flatMap((order) =>
 					(order.placedOrderItems ?? []).filter(
 						(placedOrderItem) =>
