@@ -32,7 +32,7 @@ ROLE_ASSIGNMENTS=(
 	"ACCNT-021=test@liferay.com=Account Administrator"
 	"ACCNT-028=admin@customer.com=Account Administrator"
 	"ACCNT-028=member@customer.com=Buyer"
-	"SSA-ACCOUNT=ssa@liferay.com=SSA User"
+	"marketplace-account-30323926=ssa@liferay.com=SSA User"
 )
 
 declare -A ACCOUNT_ROLE_IDS

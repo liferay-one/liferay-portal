@@ -26,7 +26,7 @@ liferay-one-custom-element:
         kpiQuartelyReleaseApps: 20
         marketoFormIdDefault: 3738
         marketoFormIdLiferayProduct: 6253
-        ssaAccountExternalReferenceCode: SSA-ACCOUNT
+        ssaAccountExternalReferenceCode: marketplace-account-30323926
     type: customElement
     urls:
         -   index.*.js

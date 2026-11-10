@@ -13,14 +13,14 @@
 			"maxQuantity": 1,
 			"name": "ssa-saas-trial",
 			"quantity": 1,
-			"r_accountEntryToEntitlement_accountEntryERC": "SSA-ACCOUNT",
+			"r_accountEntryToEntitlement_accountEntryERC": "marketplace-account-30323926",
 			"r_commerceOrderItemToEntitlement_commerceOrderItemERC": "C_ORDER_ITEM_SSA_TRIAL_COMPLETED",
 			"r_entitlementDefinitionToEntitlement_c_entitlementDefinitionERC": "C_ENT_DEF_SSA_TRIAL",
 			"startDate": "2026-06-01T00:00:00Z"
 		}
 	],
 	"order": {
-		"accountExternalReferenceCode": "SSA-ACCOUNT",
+		"accountExternalReferenceCode": "marketplace-account-30323926",
 		"channelExternalReferenceCode": "LIFERAY_ONE_CHANNEL",
 		"currencyCode": "USD",
 		"externalReferenceCode": "C_ORDER_SSA_TRIAL_COMPLETED",
