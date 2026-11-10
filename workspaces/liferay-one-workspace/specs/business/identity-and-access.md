@@ -39,6 +39,8 @@ Terms used in this file:
 | REQ-ACCESS-016 | The pages call the Spring Boot service with the access token of the signed in user. When the service refuses a call, the page receives the status and the problem detail of the refusal. | P0 | — | `CLIENT-SPRING-BOOT-OAUTH2CLIENT` |
 | REQ-ACCESS-017 | A user reads the environments and the usage events of their own accounts only. The objects are account restricted, so a direct read through the object API returns no entry of another account. | P0 | LPD-88277 | `AUTH-ACCOUNT-RESTRICTED-READS` |
 | REQ-ACCESS-018 | A token that the portal issued to the external DXP application reaches only the `/dxp` endpoints, which the DXP Marketplace calls. The service refuses it on every other endpoint with status 403. | P0 | LPD-88277 | `CLS-EXTERNALDXPPATHINTERCEPTOR` |
+| REQ-ACCESS-128 | A token that the portal issued to the Release Team application reaches only the `/trial-license-keys` endpoints. The service refuses it on every other endpoint with status 403. The application authenticates as `default-service-account`, which is an administrator, so without this limit the token passes the administrator check of every endpoint. | P0 | LPD-114806 | `CLS-RELEASETEAMPATHINTERCEPTOR` |
+| REQ-ACCESS-129 | Only the Release Team application, `liferay-one-instance-settings-release-team-oahs`, an Administrator, or a Provisioning Administrator can get a trial license key. The service finds the client ID of the Release Team application by its external reference code and compares it with the client ID of the token. While the application does not exist, the service looks for it again at most once every 5 minutes. | P0 | LPD-114806 | `PERM-TRIALLICENSEKEYPERMISSION` |
 
 ## DXP Connection Authorization
 

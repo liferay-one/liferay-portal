@@ -416,7 +416,7 @@ erDiagram
 | Cloud Native environment public key | The `publicKey` claim of the first activation JWT. The server stores it on the environment and uses it for every later manifest and download call. |
 | License key digest algorithm | Java source in `liferay-release-tool-ee/ext/shared/ext-impl`, cloned at build time and ignored by git. No configuration key holds key material. The same source has an `Encryptor` class with key material in source; this workspace does not call it. |
 | OAuth2 headless server client secret | `liferay-one-etc-spring-boot-oahs.oauth2.headless.server.client.secret`, from the environment variable `LIFERAY_ONE_ETC_SPRING_BOOT_OAHS_CLIENT_SECRET`. The property has a literal fallback value when the variable is missing (`application-default.properties:95`). |
-| OAuth2 applications accepted as callers | `liferay.oauth.application.external.reference.codes`: `external-ai-hub`, `external-dxp`, `external-ssa`, `external-trial`, `liferay-one-etc-spring-boot-oahs`, `liferay-one-etc-spring-boot-oaua` (`application-default.properties:97`) |
+| OAuth2 applications accepted as callers | `liferay.oauth.application.external.reference.codes`: `external-ai-hub`, `external-dxp`, `external-ssa`, `external-trial`, `liferay-one-etc-spring-boot-oahs`, `liferay-one-etc-spring-boot-oaua`, `liferay-one-instance-settings-release-team-oahs` (`application-default.properties:112`) |
 | Paths that need no OAuth token | `liferay.oauth.urls.excludes`: Cloud Native activation, manifest, and add on download, plus `/error`, `/invitations/accept`, `/ready` (`application-default.properties:105`) |
 
 ### Who Can Call Each Endpoint

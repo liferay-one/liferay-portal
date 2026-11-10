@@ -128,6 +128,14 @@ Terms used in this file:
 | REQ-LICENSING-113 | An environment that cannot reach the activation service can activate from an offline bundle, with the same rules as an online request. | P1 | — | `REST-POST-CLOUD-ENVIRONMENTS-OFFLINE-ACTIVATION`, `REST-POST-CLOUD-ENVIRONMENTS-ENVIRONMENTID-OFFLINE-ACTIVATION-BUNDLE` |
 | REQ-LICENSING-114 | An environment can check its offline activation token before it activates. The check succeeds only when the token names an environment ID and has a valid signature. A token that the system cannot read, that names no environment ID, or that has a signature that is not valid gets status 400. An expired token gets status 410. The check ignores white space in the token. | P1 | LPD-103753 | `REST-POST-CLOUD-ENVIRONMENTS-OFFLINE-ACTIVATION-TOKEN-VALIDATION` |
 
+## Trial License Keys
+
+| ID | Requirement | Priority | Tickets | Verified By |
+| --- | --- | --- | --- | --- |
+| REQ-LICENSING-130 | The release team gets a trial license key for each Liferay DXP Docker image and each Liferay CMS Docker image. The request gives the license lifetime in milliseconds, the start date in milliseconds since the epoch, and the owner. These are the parameters of the generate-we-deploy-license-key web service of customer.liferay.com, which this endpoint replaces. The response is the license XML. The system does not store the key. | P0 | LPD-114806 | `REST-GET-TRIAL-LICENSE-KEYS-CMS`, `REST-GET-TRIAL-LICENSE-KEYS-DXP` |
+| REQ-LICENSING-131 | A trial license key is a developer key for the product ID Portal, with license version 6 and 5 HTTP sessions. The account name is Liferay Docker, and the description is Trial Activation Key. A DXP key uses DXP Development as the product name and the license name, as a DXP developer key of a project does. A CMS key uses CMS Developer. The product version is the quarterly release of the start date, for example 2026.Q4. The dates drop their milliseconds, because the license file shows them to the second. | P0 | LPD-114806 | `SVC-TRIALLICENSEKEYSERVICE` |
+| REQ-LICENSING-132 | The system refuses a trial license key request with status 400 when the license lifetime is 0 or less, when it is more than 365 days, or when the owner is blank. | P1 | LPD-114806 | `REST-GET-TRIAL-LICENSE-KEYS-DXP` |
+
 ## Not Yet Built
 
 | ID | Requirement | Priority | Tickets | Verified By |
