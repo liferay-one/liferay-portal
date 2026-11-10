@@ -9,9 +9,11 @@ import {Link, useNavigate, useParams} from 'react-router';
 import {PageRenderer} from '~/components/Page/Page';
 import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import {useProject} from '~/context/ProjectContext';
+import {useOrderDates} from '~/hooks/useOrderDates';
 import {ProjectOrder, useProjectOrders} from '~/hooks/useProjectOrders';
 import {Word, translate} from '~/i18n';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
+import {formatOrderDate} from '~/utils/orderUtils';
 
 import FilterableListCard, {
 	ListColumn,
@@ -31,7 +33,26 @@ export default function OrdersTab({productId}: OrdersTabProps) {
 	const {accountERC} = useParams();
 	const navigate = useNavigate();
 
-	const {error, loading, orders} = useProjectOrders(project, productId);
+	const {
+		error,
+		loading,
+		orders: loadedOrders,
+	} = useProjectOrders(project, productId);
+
+	const {loading: orderDatesLoading, orderDates} = useOrderDates(
+		loadedOrders.map((order) => Number(order.id))
+	);
+
+	const orders = useMemo(() => {
+		const getOrderTime = (order: ProjectOrder) =>
+			new Date(
+				orderDates.get(Number(order.id)) ?? order.createDate ?? ''
+			).getTime() || 0;
+
+		return [...loadedOrders].sort(
+			(order1, order2) => getOrderTime(order2) - getOrderTime(order1)
+		);
+	}, [loadedOrders, orderDates]);
 
 	const filters = useMemo<ListFilter<ProjectOrder>[]>(() => {
 		const statuses = Array.from(
@@ -63,7 +84,12 @@ export default function OrdersTab({productId}: OrdersTabProps) {
 			heading: 'date',
 			key: 'date',
 			noWrap: true,
-			render: (order) => order.date,
+			render: (order) =>
+				orderDatesLoading
+					? '-'
+					: formatOrderDate(
+							orderDates.get(Number(order.id)) ?? order.createDate
+						),
 			width: '1%',
 		},
 		{

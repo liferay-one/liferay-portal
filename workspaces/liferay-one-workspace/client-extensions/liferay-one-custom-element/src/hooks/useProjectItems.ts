@@ -6,6 +6,7 @@
 import {useMemo} from 'react';
 import {useParams} from 'react-router';
 import {useProject} from '~/context/ProjectContext';
+import {useOrderDates} from '~/hooks/useOrderDates';
 import {
 	toProductsByEntitledExternalReferenceCode,
 	useProjectCommerce,
@@ -16,6 +17,7 @@ import {hasProject, useProjectOrders} from '~/hooks/useProjectOrders';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {
+	getOrderIdsWithoutStartDate,
 	toProductsByProductId,
 	toProjectItemsByType,
 } from '~/pages/MyAccount/Projects/utils/projectItemsUtils';
@@ -56,18 +58,23 @@ export function useProjectItems(contractId?: number) {
 		[projectProducts]
 	);
 
+	const {loading: orderDatesLoading, orderDates} = useOrderDates(
+		getOrderIdsWithoutStartDate(scopedOrders)
+	);
+
 	const {applications, products} = useMemo(() => {
 		const itemsByProjectItemType = toProjectItemsByType(
 			scopedOrders,
 			productsByProductId,
-			contractId
+			contractId,
+			orderDates
 		);
 
 		return {
 			applications: [...itemsByProjectItemType.application.values()],
 			products: [...itemsByProjectItemType.product.values()],
 		};
-	}, [contractId, productsByProductId, scopedOrders]);
+	}, [contractId, orderDates, productsByProductId, scopedOrders]);
 
 	const orderByProductExternalReferenceCode = useMemo(() => {
 		const orders = new Map<string, PlacedOrder>();
@@ -93,7 +100,11 @@ export function useProjectItems(contractId?: number) {
 	return {
 		applications,
 		error: productsError ?? ordersError,
-		loading: ordersLoading || productsLoading || projectLoading,
+		loading:
+			orderDatesLoading ||
+			ordersLoading ||
+			productsLoading ||
+			projectLoading,
 		orderByProductExternalReferenceCode,
 		orders: scopedOrders,
 		products,
