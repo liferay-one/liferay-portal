@@ -192,7 +192,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		);
 	});
 
-	it('maps every order when no project name is given, with the total falling back to $0.00', () => {
+	it('maps every order when no project name is given, without the order total', () => {
 		mockPlacedOrders([alphaOrder, betaOrder]);
 
 		const {result} = renderHook(() => useProjectOrders());
@@ -203,14 +203,12 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 				id: '1',
 				orderId: '1',
 				status: getOrderStatusToken(alphaOrder),
-				total: '$10.00',
 			},
 			{
 				createDate: '2026-04-02T12:00:00Z',
 				id: '2',
 				orderId: '2',
 				status: getOrderStatusToken(betaOrder),
-				total: '$0.00',
 			},
 		]);
 	});

@@ -25,7 +25,6 @@ function toProjectOrder(id: string, createDate: string) {
 		id,
 		orderId: id,
 		status: 'completed',
-		total: '$10.00',
 	};
 }
 
@@ -178,5 +177,19 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] OrdersTab', () => {
 
 		expect(screen.getByText('1001')).toBeInTheDocument();
 		expect(screen.queryByText('Oct 22, 2026')).not.toBeInTheDocument();
+	});
+
+	it('does not show the order total', () => {
+		vi.mocked(useProjectOrders).mockReturnValue({
+			error: undefined,
+			loading: false,
+			orders: [toProjectOrder('1001', '2026-03-15T12:00:00Z')],
+			placedOrders: [],
+		});
+
+		renderOrdersTab();
+
+		expect(screen.getByText('1001')).toBeInTheDocument();
+		expect(screen.queryByText('Total')).not.toBeInTheDocument();
 	});
 });

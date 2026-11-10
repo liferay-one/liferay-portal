@@ -137,4 +137,16 @@ describe('[ROUTE-MY-ACCOUNT-ORDERS] Orders', () => {
 		expect(screen.getByText('1001')).toBeInTheDocument();
 		expect(screen.queryByText('Mar 15, 2026')).toBeNull();
 	});
+
+	it('does not show the order total', () => {
+		render(
+			<MemoryRouter>
+				<Orders />
+			</MemoryRouter>
+		);
+
+		expect(screen.getByText('1001')).toBeInTheDocument();
+		expect(screen.queryByText('Total')).not.toBeInTheDocument();
+		expect(screen.queryByText('$10.00')).not.toBeInTheDocument();
+	});
 });
