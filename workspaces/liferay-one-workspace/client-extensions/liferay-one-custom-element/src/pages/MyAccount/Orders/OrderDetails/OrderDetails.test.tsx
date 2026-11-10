@@ -70,6 +70,19 @@ describe('[ROUTE-MY-ACCOUNT-ORDERID] OrderDetails', () => {
 		expect(useOrderDates).toHaveBeenCalledWith([57942]);
 	});
 
+	it('shows no date while the order date loads', () => {
+		mockPlacedOrder([]);
+
+		vi.mocked(useOrderDates).mockReturnValue({
+			loading: true,
+			orderDates: new Map(),
+		});
+
+		renderOrderDetails();
+
+		expect(screen.queryByText('Oct 22, 2026')).toBeNull();
+	});
+
 	it('shows the create date when the order date cannot be read', () => {
 		mockPlacedOrder([]);
 
