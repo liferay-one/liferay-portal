@@ -5,40 +5,38 @@
 
 import {useMemo} from 'react';
 import useSWR from 'swr';
-import SearchBuilder from '~/services/fetcher/SearchBuilder';
-import HeadlessCommerceAdminOrder from '~/services/headless/HeadlessCommerceAdminOrder';
+import {useCurrentAccount} from '~/hooks/useAccounts';
+import Accounts from '~/services/spring-boot/Accounts';
 
-export function useOrderDates(orderIds: number[]): {
+export function useOrderDates(): {
 	loading: boolean;
 	orderDates: Map<number, string>;
 } {
-	const orderIdsKey = [...orderIds].sort((id1, id2) => id1 - id2).join(',');
+	const {data: account, isLoading: accountLoading} = useCurrentAccount();
+
+	const accountExternalReferenceCode = account?.externalReferenceCode;
 
 	const {data, isLoading} = useSWR(
-		orderIdsKey ? ['/admin-orders/order-dates', orderIdsKey] : null,
-		([, key]) => {
-			const ids = key.split(',').map(Number);
-
-			return HeadlessCommerceAdminOrder.getOrders(
-				new URLSearchParams({
-					fields: 'id,orderDate',
-					filter: SearchBuilder.in('orderId', ids),
-					pageSize: String(ids.length),
-				})
-			);
-		},
+		accountExternalReferenceCode
+			? [
+					'/accounts/commerce-orders/order-dates',
+					accountExternalReferenceCode,
+				]
+			: null,
+		([, externalReferenceCode]) =>
+			Accounts.getCommerceOrdersOrderDates(externalReferenceCode),
 		{shouldRetryOnError: false}
 	);
 
 	const orderDates = useMemo(
 		() =>
 			new Map(
-				(data?.items ?? [])
-					.filter((order) => order.orderDate)
-					.map((order) => [order.id, order.orderDate as string])
+				Object.entries(data ?? {})
+					.filter(([, orderDate]) => typeof orderDate === 'string')
+					.map(([orderId, orderDate]) => [Number(orderId), orderDate])
 			),
 		[data]
 	);
 
-	return {loading: isLoading, orderDates};
+	return {loading: accountLoading || isLoading, orderDates};
 }

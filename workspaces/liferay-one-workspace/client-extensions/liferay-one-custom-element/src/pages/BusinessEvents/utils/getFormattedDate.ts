@@ -21,7 +21,7 @@ const FORMAT_DATE_TYPES = {
 export function getFormattedDate(
 	date: string | undefined,
 	formatType: keyof typeof FORMAT_DATE_TYPES,
-	timeZone?: string
+	timeZone = 'UTC'
 ): string {
 	if (!date) {
 		return '';
@@ -38,9 +38,7 @@ export function getFormattedDate(
 			...FORMAT_DATE_TYPES[formatType],
 		};
 
-		if (timeZone) {
-			options.timeZone = timeZone;
-		}
+		options.timeZone = timeZone;
 
 		return parsedDate.toLocaleDateString(
 			Liferay.ThemeDisplay.getBCP47LanguageId(),

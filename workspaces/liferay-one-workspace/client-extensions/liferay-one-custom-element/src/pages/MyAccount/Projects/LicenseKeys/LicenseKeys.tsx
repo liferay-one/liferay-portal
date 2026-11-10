@@ -5,7 +5,6 @@
 
 import ClayDropDown from '@clayui/drop-down';
 import {ClayTooltipProvider} from '@clayui/tooltip';
-import {format} from 'date-fns';
 import {MouseEvent, useEffect, useMemo, useRef} from 'react';
 import {useNavigate, useSearchParams} from 'react-router';
 import Button from '~/components/Button/Button';
@@ -43,6 +42,8 @@ import {useActivationKeySummary} from './hooks/useActivationKeySummary';
 
 import './LicenseKeys.css';
 
+import {formatUTCShortDate, toUTCDateString} from '~/utils/dateUtils';
+
 import type {ProjectEnvironment} from '~/hooks/useProjectEnvironments';
 import type {ActivationKeySummaryKeyType} from '~/services/spring-boot/ActivationKeys';
 
@@ -61,11 +62,11 @@ function getCloudNativeKeyType(
 }
 
 function toActivationKeyDate(value?: string): string {
-	return value ? format(new Date(value), 'MMM d, yyyy') : '';
+	return formatUTCShortDate(value);
 }
 
 function toActivationKeyDateValue(value?: string): string {
-	return value ? format(new Date(value), 'yyyy-MM-dd') : '';
+	return value ? toUTCDateString(new Date(value)) : '';
 }
 
 function toCloudNativeActivationKey(
@@ -124,10 +125,7 @@ function formatDateBound(value: string): string {
 	const bound = value.split(':')[0];
 	const date = value.slice(bound.length + 1);
 
-	return `${translate(bound === 'after' ? 'after' : 'before')} ${format(
-		new Date(date),
-		'MMM d, yyyy'
-	)}`;
+	return `${translate(bound === 'after' ? 'after' : 'before')} ${formatUTCShortDate(date)}`;
 }
 
 function matchesDateBound(dateValue: string, values: string[]): boolean {

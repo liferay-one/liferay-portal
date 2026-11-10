@@ -4,7 +4,11 @@
  */
 
 import {ProjectProduct} from '~/hooks/useProjectCommerce';
-import {formatShortDate, toUTCCalendarDate} from '~/utils/dateUtils';
+import {
+	formatShortDate,
+	formatUTCShortDate,
+	toUTCCalendarDate,
+} from '~/utils/dateUtils';
 import {
 	getContractProductOrders,
 	getPlacedOrderItemDate,
@@ -32,18 +36,6 @@ export function toProductsByProductId(products: DeliveryProduct[]) {
 	return new Map(products.map((product) => [product.productId, product]));
 }
 
-function hasStartDate(placedOrderItems: PlacedOrderItems[]): boolean {
-	return placedOrderItems.some((placedOrderItem) =>
-		Boolean(getPlacedOrderItemDate(placedOrderItem, 'startDate'))
-	);
-}
-
-export function getOrderIdsWithoutStartDate(orders: PlacedOrder[]): number[] {
-	return orders
-		.filter((order) => !hasStartDate(order.placedOrderItems ?? []))
-		.map((order) => order.id);
-}
-
 function formatStartDate(
 	order: PlacedOrder,
 	orderDates: Map<number, string>,
@@ -66,7 +58,7 @@ function formatStartDate(
 		return formatShortDate(toUTCCalendarDate(orderDate));
 	}
 
-	return order.createDate ? formatShortDate(new Date(order.createDate)) : '';
+	return formatUTCShortDate(order.createDate);
 }
 
 function toProjectProduct(

@@ -174,9 +174,7 @@ export default function Orders() {
 
 	const loadedOrders = useMemo(() => data?.items ?? [], [data]);
 
-	const {loading: orderDatesLoading, orderDates} = useOrderDates(
-		loadedOrders.map((order) => order.id)
-	);
+	const {loading: orderDatesLoading, orderDates} = useOrderDates();
 
 	const orders = useMemo(() => {
 		const getOrderTime = (order: PlacedOrder) =>

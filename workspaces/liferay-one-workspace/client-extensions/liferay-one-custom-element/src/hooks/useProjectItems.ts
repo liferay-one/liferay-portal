@@ -17,7 +17,6 @@ import {hasProject, useProjectOrders} from '~/hooks/useProjectOrders';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {
-	getOrderIdsWithoutStartDate,
 	toProductsByProductId,
 	toProjectItemsByType,
 } from '~/pages/MyAccount/Projects/utils/projectItemsUtils';
@@ -58,9 +57,7 @@ export function useProjectItems(contractId?: number) {
 		[projectProducts]
 	);
 
-	const {loading: orderDatesLoading, orderDates} = useOrderDates(
-		getOrderIdsWithoutStartDate(scopedOrders)
-	);
+	const {loading: orderDatesLoading, orderDates} = useOrderDates();
 
 	const {applications, products} = useMemo(() => {
 		const itemsByProjectItemType = toProjectItemsByType(

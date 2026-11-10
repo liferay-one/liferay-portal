@@ -3,11 +3,11 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {format} from 'date-fns';
 import {useMemo} from 'react';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
 import {OrderTypes} from '~/types/orders';
+import {formatUTCShortDate} from '~/utils/dateUtils';
 import {
 	getOptionValueNames,
 	getProductOptionValueName,
@@ -207,10 +207,6 @@ function getTierName(placedOrderItem: PlacedOrderItems): string {
 	);
 }
 
-function formatDate(value?: string): string {
-	return value ? format(new Date(value), 'MMM d, yyyy') : '';
-}
-
 function toProjectOrdersProps(accountId?: number | string | null) {
 	return {
 		accountId: accountId ?? -1,
@@ -371,7 +367,7 @@ export function getProductOrderInfo(
 			projectName: customFields[OrderCustomFields.PROJECT_NAME] ?? '',
 		},
 		itemName: [...new Set(placedOrderItems.map(getTierName))].join(', '),
-		orderDate: formatDate(order.createDate),
+		orderDate: formatUTCShortDate(order.createDate),
 		orderId: String(order.id),
 		orderType: order.orderTypeExternalReferenceCode ?? '',
 		purchaseNumber: order.purchaseOrderNumber ?? '',

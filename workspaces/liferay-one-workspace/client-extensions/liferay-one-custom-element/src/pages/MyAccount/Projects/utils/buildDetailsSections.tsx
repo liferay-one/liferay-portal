@@ -3,11 +3,15 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {format, startOfToday} from 'date-fns';
+import {startOfToday} from 'date-fns';
 import {Fragment} from 'react';
 import {ENVIRONMENTS} from '~/hooks/useProductEnvironmentEntitlements';
 import i18n, {Word} from '~/i18n';
-import {toLastTermDay, toUTCCalendarDate} from '~/utils/dateUtils';
+import {
+	formatUTCShortDate,
+	toLastTermDay,
+	toUTCCalendarDate,
+} from '~/utils/dateUtils';
 
 import {DetailsRow} from '../components/DetailsCard/DetailsCard';
 import {DetailsSection} from '../components/SectionedDetailsCard/SectionedDetailsCard';
@@ -59,7 +63,7 @@ type EnvironmentSummary = {
 };
 
 function formatDate(value?: string): string {
-	return value ? format(toUTCCalendarDate(value), 'MMM d, yyyy') : '';
+	return formatUTCShortDate(value);
 }
 
 function getStatus({

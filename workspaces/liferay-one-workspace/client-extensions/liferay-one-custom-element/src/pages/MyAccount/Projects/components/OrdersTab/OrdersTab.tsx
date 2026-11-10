@@ -39,9 +39,7 @@ export default function OrdersTab({productId}: OrdersTabProps) {
 		orders: loadedOrders,
 	} = useProjectOrders(project, productId);
 
-	const {loading: orderDatesLoading, orderDates} = useOrderDates(
-		loadedOrders.map((order) => Number(order.id))
-	);
+	const {loading: orderDatesLoading, orderDates} = useOrderDates();
 
 	const orders = useMemo(() => {
 		const getOrderTime = (order: ProjectOrder) =>
