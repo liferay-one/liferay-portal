@@ -10,6 +10,7 @@ import com.liferay.one.license.LicenseEntryService;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 
 import java.net.URI;
@@ -279,30 +280,6 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
-	public void testGetActiveLicenseKeyCountsCountsComplimentaryKeys()
-		throws Exception {
-
-		// A complimentary key spends the single activation its entitlement
-		// grants, so it has to be counted like any other.
-
-		Mockito.doReturn(
-			Arrays.asList(
-				_createLicenseKey(1L, true, true, 10L, 1L),
-				_createLicenseKey(2L, true, false, 10L, 2L))
-		).when(
-			_licenseKeyService
-		).getAllProjectedItems(
-			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any(),
-			Mockito.any()
-		);
-
-		Map<Long, Integer> counts =
-			_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
-
-		Assertions.assertEquals(2, counts.get(10L));
-	}
-
-	@Test
 	public void testGetActiveLicenseKeyCountsCountsKeyOfAnEndedEntitlementOnlyAgainstThatEntitlement()
 		throws Exception {
 
@@ -323,7 +300,8 @@ public class LicenseKeyServiceTest {
 		throws Exception {
 
 		_whenGetAllProjectedItems(
-			_createTermLicenseKey(5L, 8L, "2028-12-31", 1L, "2027-12-01"));
+			_createTermLicenseKey(
+				false, 5L, 8L, "2028-12-31", 1L, "2027-12-01"));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -416,7 +394,8 @@ public class LicenseKeyServiceTest {
 		throws Exception {
 
 		_whenGetAllProjectedItems(
-			_createTermLicenseKey(5L, 0L, "2099-01-01", 1L, "2026-01-01"));
+			_createTermLicenseKey(
+				false, 5L, 0L, "2099-01-01", 1L, "2026-01-01"));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -438,7 +417,8 @@ public class LicenseKeyServiceTest {
 		// counts against the current term.
 
 		_whenGetAllProjectedItems(
-			_createTermLicenseKey(5L, 0L, "2099-01-01", 1L, "2020-01-01"));
+			_createTermLicenseKey(
+				false, 5L, 0L, "2099-01-01", 1L, "2020-01-01"));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -495,16 +475,18 @@ public class LicenseKeyServiceTest {
 	public void testGetActiveLicenseKeyCountsProjectsOnlyTalliedFields()
 		throws Exception {
 
-		// The tally reads four fields off a license key. Projecting them keeps
-		// a project holding thousands of keys from serializing every field and
-		// action envelope on each one.
+		// The tally reads only these fields off a license key. Projecting
+		// them keeps a project holding thousands of keys from serializing
+		// every field and action envelope on each one.
 
 		_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
 
 		Assertions.assertEquals(
-			"active,customExpirationDate,entitlementDefinitionId," +
-				"entitlementId,id,licenseType,maxClusterNodes," +
-					"r_activationKeyToLicenseKey_c_activationKeyId,startDate",
+			StringBundler.concat(
+				"active,complimentary,customExpirationDate,",
+				"entitlementDefinitionId,entitlementId,id,licenseType,",
+				"maxClusterNodes,",
+				"r_activationKeyToLicenseKey_c_activationKeyId,startDate"),
 			_fieldsCaptor.getValue());
 		Assertions.assertEquals(
 			"(active eq true) and (r_projectToLicenseKey_c_projectERC eq " +
@@ -513,23 +495,31 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
-	public void testGetActiveLicenseKeyCountsSkipsDeactivatedComplimentaryKeys()
+	public void testGetActiveLicenseKeyCountsSkipsComplimentaryKeys()
 		throws Exception {
 
-		// Deactivating is what hands the grant back, so another can be
-		// generated. An expired key is still active and still counts.
-
-		Mockito.doReturn(
-			Arrays.asList(_createLicenseKey(1L, false, true, 10L, 1L))
-		).when(
-			_licenseKeyService
-		).getAllProjectedItems(
-			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any(),
-			Mockito.any()
-		);
+		_whenGetAllProjectedItems(
+			_createLicenseKey(1L, true, true, 10L, 1L),
+			_createLicenseKey(2L, true, false, 10L, 2L));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts("PRJCT-1");
+
+		Assertions.assertEquals(1, counts.get(10L));
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsSkipsComplimentaryTermKeysWithoutAnEntitlement()
+		throws Exception {
+
+		_whenGetAllProjectedItems(
+			_createTermLicenseKey(
+				true, 5L, 0L, "2099-01-01", 1L, "2026-01-01"));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				Arrays.asList(_createEntitlement(5L, "2027-12-31", 10L, 2D)),
+				Collections.emptyList(), "PRJCT-1");
 
 		Assertions.assertNull(counts.get(10L));
 	}
@@ -539,7 +529,8 @@ public class LicenseKeyServiceTest {
 		throws Exception {
 
 		_whenGetAllProjectedItems(
-			_createTermLicenseKey(5L, 0L, "2021-01-01", 1L, "2020-01-01"));
+			_createTermLicenseKey(
+				false, 5L, 0L, "2021-01-01", 1L, "2020-01-01"));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -606,7 +597,8 @@ public class LicenseKeyServiceTest {
 		throws Exception {
 
 		_whenGetAllProjectedItems(
-			_createTermLicenseKey(6L, 0L, "2099-01-01", 1L, "2026-01-01"));
+			_createTermLicenseKey(
+				false, 6L, 0L, "2099-01-01", 1L, "2026-01-01"));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -623,7 +615,8 @@ public class LicenseKeyServiceTest {
 		throws Exception {
 
 		_whenGetAllProjectedItems(
-			_createTermLicenseKey(5L, 0L, "2099-01-01", 1L, "2028-01-01"));
+			_createTermLicenseKey(
+				false, 5L, 0L, "2099-01-01", 1L, "2028-01-01"));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -892,13 +885,15 @@ public class LicenseKeyServiceTest {
 	}
 
 	private LicenseKey _createTermLicenseKey(
-		long entitlementDefinitionId, long entitlementId, String expirationDate,
-		long licenseKeyId, String startDate) {
+		boolean complimentary, long entitlementDefinitionId, long entitlementId,
+		String expirationDate, long licenseKeyId, String startDate) {
 
 		return new LicenseKey(
 			new JSONObject(
 			).put(
 				"active", true
+			).put(
+				"complimentary", complimentary
 			).put(
 				"customExpirationDate", expirationDate + "T00:00:00Z"
 			).put(
