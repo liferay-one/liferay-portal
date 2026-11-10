@@ -7,6 +7,7 @@ import {render, screen} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useFetch} from '~/hooks/useFetch';
+import {useOrderDates} from '~/hooks/useOrderDates';
 import {Liferay} from '~/services/liferay/liferay';
 
 import Orders from './Orders';
@@ -18,6 +19,18 @@ vi.mock('~/context/OneContextProvider', () => ({
 vi.mock('~/hooks/useFetch', () => ({
 	useFetch: vi.fn(),
 }));
+
+vi.mock('~/hooks/useOrderDates', () => ({
+	useOrderDates: vi.fn(),
+}));
+
+function renderOrders() {
+	return render(
+		<MemoryRouter>
+			<Orders />
+		</MemoryRouter>
+	);
+}
 
 describe('[ROUTE-MY-ACCOUNT-ORDERS] Orders', () => {
 	beforeEach(() => {
@@ -38,6 +51,11 @@ describe('[ROUTE-MY-ACCOUNT-ORDERS] Orders', () => {
 			error: undefined,
 			isLoading: false,
 		} as ReturnType<typeof useFetch>);
+
+		vi.mocked(useOrderDates).mockReturnValue({
+			loading: false,
+			orderDates: new Map(),
+		});
 	});
 
 	afterEach(() => {
@@ -59,5 +77,64 @@ describe('[ROUTE-MY-ACCOUNT-ORDERS] Orders', () => {
 		);
 		expect(screen.getByText('1001')).toBeInTheDocument();
 		expect(screen.getByText('Alpha')).toBeInTheDocument();
+	});
+
+	it('lists the orders by order date, newest first', () => {
+		vi.mocked(useFetch).mockReturnValue({
+			data: {
+				items: [
+					{
+						createDate: '2026-10-22T18:00:00Z',
+						id: 1001,
+						summary: {totalFormatted: '$10.00'},
+					},
+					{
+						createDate: '2026-10-22T18:00:00Z',
+						id: 1002,
+						summary: {totalFormatted: '$20.00'},
+					},
+					{
+						createDate: '2026-10-22T18:00:00Z',
+						id: 1003,
+						summary: {totalFormatted: '$30.00'},
+					},
+				],
+			},
+			error: undefined,
+			isLoading: false,
+		} as ReturnType<typeof useFetch>);
+
+		vi.mocked(useOrderDates).mockReturnValue({
+			loading: false,
+			orderDates: new Map([
+				[1001, '2022-03-02T00:00:00Z'],
+				[1002, '2024-01-15T00:00:00Z'],
+			]),
+		});
+
+		renderOrders();
+
+		expect(useOrderDates).toHaveBeenCalledWith([1001, 1002, 1003]);
+
+		const rows = screen.getAllByRole('row').slice(1);
+
+		expect(rows.map((row) => row.textContent)).toEqual([
+			expect.stringContaining('Oct 22, 2026'),
+			expect.stringContaining('Jan 15, 2024'),
+			expect.stringContaining('Mar 2, 2022'),
+		]);
+		expect(rows[1].textContent).toContain('1002');
+	});
+
+	it('shows no dates while the order dates load', () => {
+		vi.mocked(useOrderDates).mockReturnValue({
+			loading: true,
+			orderDates: new Map(),
+		});
+
+		renderOrders();
+
+		expect(screen.getByText('1001')).toBeInTheDocument();
+		expect(screen.queryByText('Mar 15, 2026')).toBeNull();
 	});
 });
