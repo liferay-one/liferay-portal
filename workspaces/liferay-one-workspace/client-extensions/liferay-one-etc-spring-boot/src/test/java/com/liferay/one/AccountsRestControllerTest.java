@@ -355,6 +355,61 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testGetCommerceOrdersOrderDatesChecksViewPermission()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.getCommerceOrdersOrderDates(
+				null, _EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verifyNoInteractions(_commerceOrderService);
+	}
+
+	@Test
+	public void testGetCommerceOrdersOrderDatesReturnsTheAccountOrderDates()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createAccount()
+		);
+
+		Map<Long, String> orderDates = Map.of(
+			1L, "2023-09-30T00:00:00Z", 2L, "2024-01-15T00:00:00Z");
+
+		Mockito.when(
+			_commerceOrderService.getAccountOrderDates(_ACCOUNT_ID)
+		).thenReturn(
+			orderDates
+		);
+
+		Assertions.assertSame(
+			orderDates,
+			accountsRestController.getCommerceOrdersOrderDates(
+				null, _EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verify(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null
+		);
+	}
+
+	@Test
 	public void testGetInvitationsOmitsTokenAndResolvesRoleNames()
 		throws Exception {
 
