@@ -114,8 +114,6 @@ describe('[ROUTE-MY-ACCOUNT-ORDERS] Orders', () => {
 
 		renderOrders();
 
-		expect(useOrderDates).toHaveBeenCalledWith([1001, 1002, 1003]);
-
 		const rows = screen.getAllByRole('row').slice(1);
 
 		expect(rows.map((row) => row.textContent)).toEqual([

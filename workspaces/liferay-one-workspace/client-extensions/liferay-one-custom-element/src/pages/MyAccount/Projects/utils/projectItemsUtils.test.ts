@@ -5,11 +5,7 @@
 
 import {describe, expect, it} from 'vitest';
 
-import {
-	getOrderIdsWithoutStartDate,
-	toProductsByProductId,
-	toProjectItemsByType,
-} from './projectItemsUtils';
+import {toProductsByProductId, toProjectItemsByType} from './projectItemsUtils';
 
 import type {PlacedOrder} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
@@ -300,6 +296,15 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 		expect(toStartDate(['1970-01-01T00:00:00Z'])).toBe('Oct 22, 2026');
 	});
 
+	it('starts a product without an order date at the UTC day of its create date', () => {
+		expect(
+			toProjectItemsByType(
+				[toOrder({createDate: '2026-03-15T02:00:00Z'}, [2])],
+				productsByProductId
+			).product.get('PRDCT-DXP')?.startDate
+		).toBe('Mar 15, 2026');
+	});
+
 	it('starts a product without term dates at the order date, not the create date', () => {
 		const order = {
 			createDate: '2026-10-22T23:37:27Z',
@@ -322,24 +327,6 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 				new Map([[7, '2023-09-30T00:00:00Z']])
 			).product.get('PRDCT-DXP')?.startDate
 		).toBe('Sep 30, 2023');
-	});
-
-	it('lists the orders whose items have no term start date', () => {
-		const toIdOrder = (id: number, startDate?: string) =>
-			({
-				id,
-				placedOrderItems: [
-					{customFields: startDate ? {startDate} : {}, productId: 2},
-				],
-			}) as unknown as PlacedOrder;
-
-		expect(
-			getOrderIdsWithoutStartDate([
-				toIdOrder(1, '2024-08-23T00:00:00Z'),
-				toIdOrder(2, '1970-01-01T00:00:00Z'),
-				toIdOrder(3),
-			])
-		).toEqual([2, 3]);
 	});
 
 	it('reads the status and start date from the orders of the selected contract', () => {

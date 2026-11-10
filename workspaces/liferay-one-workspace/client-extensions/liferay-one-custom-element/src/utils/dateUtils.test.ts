@@ -12,6 +12,7 @@ import {
 	formatTermRange,
 	formatUTCMonthShort,
 	formatUTCMonthYear,
+	formatUTCShortDate,
 	getLastDayOfMonth,
 	getUTCDayBounds,
 	getUTCMonthBounds,
@@ -45,10 +46,27 @@ describe('[MOD-DATEUTILS] dateUtils', () => {
 		expect(formatDateTime('not a date', '-')).toBe('-');
 	});
 
-	it('formatDateTime includes the hour and the minute', () => {
-		expect(formatDateTime(new Date(2026, 2, 15, 14, 5))).toBe(
-			'Mar 15, 2026, 2:05 PM'
+	it('formatDateTime includes the hour and the minute in UTC', () => {
+		expect(formatDateTime('2026-03-15T14:05:00Z')).toBe(
+			'Mar 15, 2026, 2:05 PM UTC'
 		);
+	});
+
+	it('formatDate shows the UTC day of a timestamp in every time zone', () => {
+		expect(formatDate('2026-03-15T02:00:00Z')).toBe('Mar 15, 2026');
+		expect(formatDate('2026-03-15T23:30:00Z')).toBe('Mar 15, 2026');
+	});
+
+	it('formatUTCShortDate shows the UTC day of a timestamp', () => {
+		expect(formatUTCShortDate('2026-03-15T02:00:00Z')).toBe('Mar 15, 2026');
+		expect(formatUTCShortDate('2026-03-15T23:30:00Z')).toBe('Mar 15, 2026');
+		expect(formatUTCShortDate('2026-03-15')).toBe('Mar 15, 2026');
+	});
+
+	it('formatUTCShortDate returns the fallback for missing or invalid input', () => {
+		expect(formatUTCShortDate(undefined)).toBe('');
+		expect(formatUTCShortDate('', '-')).toBe('-');
+		expect(formatUTCShortDate('not a date', '-')).toBe('-');
 	});
 
 	it('formatTermRange gives an MM.DD.YYYY range or a dash', () => {

@@ -68,7 +68,6 @@ describe('[ROUTE-MY-ACCOUNT-ORDERID] OrderDetails', () => {
 
 		expect(screen.getByText('Sep 30, 2023')).toBeTruthy();
 		expect(screen.queryByText('Oct 22, 2026')).toBeNull();
-		expect(useOrderDates).toHaveBeenCalledWith([57942]);
 	});
 
 	it('shows no date while the order date loads', () => {
