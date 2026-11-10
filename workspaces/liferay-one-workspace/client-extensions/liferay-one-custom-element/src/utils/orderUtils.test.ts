@@ -679,14 +679,11 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 	});
 
 	describe('formatOrderDate', () => {
-		it('shows the calendar day of the order date', () => {
-			expect(
-				formatOrderDate('2023-09-30T00:00:00Z', '2026-10-22T18:00:00Z')
-			).toBe('Sep 30, 2023');
-		});
-
-		it('shows the create date when the order date is missing', () => {
-			expect(formatOrderDate(undefined, '2026-10-22T18:00:00Z')).toBe(
+		it('shows the UTC calendar day of the date', () => {
+			expect(formatOrderDate('2023-09-30T00:00:00Z')).toBe(
+				'Sep 30, 2023'
+			);
+			expect(formatOrderDate('2026-10-22T02:00:00Z')).toBe(
 				'Oct 22, 2026'
 			);
 		});
