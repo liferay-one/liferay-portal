@@ -45,15 +45,6 @@ function getProjectKey(order: PlacedOrder): string {
 	return getProjectExternalReferenceCode(order) || getProjectName(order);
 }
 
-export function getOrderTotal(order: PlacedOrder): string {
-	const {summary, totalFormatted} = order as PlacedOrder & {
-		summary?: {totalFormatted?: string};
-		totalFormatted?: string;
-	};
-
-	return summary?.totalFormatted ?? totalFormatted ?? '$0.00';
-}
-
 type FilterSubPanelProps = {
 	hasExclude?: boolean;
 	onApply: (values: (number | string)[], exclude: boolean) => void;
@@ -484,10 +475,6 @@ export default function Orders() {
 									</ClayTable.Cell>
 
 									<ClayTable.Cell headingCell>
-										{translate('total')}
-									</ClayTable.Cell>
-
-									<ClayTable.Cell headingCell>
 										{translate('project')}
 									</ClayTable.Cell>
 
@@ -518,10 +505,6 @@ export default function Orders() {
 															) ??
 																order.createDate
 														)}
-											</ClayTable.Cell>
-
-											<ClayTable.Cell>
-												{getOrderTotal(order)}
 											</ClayTable.Cell>
 
 											<ClayTable.Cell>

@@ -94,7 +94,6 @@ export type ProjectOrder = {
 	id: string;
 	orderId: string;
 	status: string;
-	total: string;
 };
 
 export type ProductOrderInfo = {
@@ -189,15 +188,6 @@ export function isProjectOrder(
 	return getProjectName(order) === project.name;
 }
 
-function getOrderTotal(order: PlacedOrder): string {
-	const {summary, totalFormatted} = order as PlacedOrder & {
-		summary?: {totalFormatted?: string};
-		totalFormatted?: string;
-	};
-
-	return summary?.totalFormatted ?? totalFormatted ?? '$0.00';
-}
-
 function getSKUOptions(placedOrderItem: PlacedOrderItems) {
 	const options = safeJSONParse<
 		{key?: string; skuOptionValueNames?: string[]}[]
@@ -266,7 +256,6 @@ export function useProjectOrders(project?: OrderProject, productId?: number) {
 				id: String(order.id),
 				orderId: String(order.id),
 				status: getOrderStatusToken(order),
-				total: getOrderTotal(order),
 			})),
 		[placedOrders]
 	);

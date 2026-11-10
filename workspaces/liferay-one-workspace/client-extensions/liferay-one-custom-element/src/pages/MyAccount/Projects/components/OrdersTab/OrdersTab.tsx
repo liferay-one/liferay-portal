@@ -93,13 +93,6 @@ export default function OrdersTab({productId}: OrdersTabProps) {
 			width: '1%',
 		},
 		{
-			heading: 'total',
-			key: 'total',
-			noWrap: true,
-			render: (order) => order.total,
-			width: '1%',
-		},
-		{
 			heading: 'status',
 			key: 'status',
 			render: (order) => (
