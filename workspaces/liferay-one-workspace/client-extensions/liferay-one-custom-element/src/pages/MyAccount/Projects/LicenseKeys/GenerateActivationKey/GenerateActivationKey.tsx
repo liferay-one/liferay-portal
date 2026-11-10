@@ -4,7 +4,6 @@
  */
 
 import ClayAlert from '@clayui/alert';
-import {format} from 'date-fns';
 import {useEffect, useMemo, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {Navigate, useNavigate, useSearchParams} from 'react-router';
@@ -24,7 +23,7 @@ import ActivationKeys from '~/services/spring-boot/ActivationKeys';
 import Cloud from '~/services/spring-boot/Cloud';
 import LicenseKeys from '~/services/spring-boot/LicenseKeys';
 import {scrollToTop} from '~/utils/browserUtils';
-import {toISODate} from '~/utils/dateUtils';
+import {toISODate, toUTCDateString} from '~/utils/dateUtils';
 
 import {useHasLicenseKeyPermission} from '../../hooks/useHasActivationPermission';
 import {useActivationKeyScope} from '../hooks/useActivationKeyScope';
@@ -121,7 +120,7 @@ export default function GenerateActivationKey() {
 			purposeDescription: '',
 			serverField: 'hostName',
 			servers: [buildEmptyServer()],
-			startDate: format(new Date(), 'yyyy-MM-dd'),
+			startDate: toUTCDateString(new Date()),
 			subscriptionEntitlementId: 0,
 			version: '',
 			virtualCluster: false,
@@ -570,8 +569,7 @@ export default function GenerateActivationKey() {
 
 		let activationKeyId;
 
-		const startsToday =
-			values.startDate === format(new Date(), 'yyyy-MM-dd');
+		const startsToday = values.startDate === toUTCDateString(new Date());
 
 		try {
 			({activationKeyId} = await ActivationKeys.generateActivationKey({

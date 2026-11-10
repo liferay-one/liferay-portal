@@ -5,7 +5,7 @@
 
 export function getFormattedTime(
 	date: string | undefined,
-	timeZone?: string
+	timeZone = 'UTC'
 ): string {
 	if (!date) {
 		return '';
@@ -20,9 +20,7 @@ export function getFormattedTime(
 			timeZoneName: 'short',
 		};
 
-		if (timeZone) {
-			options.timeZone = timeZone;
-		}
+		options.timeZone = timeZone;
 
 		return parsedDate.toLocaleString('en-US', options);
 	}

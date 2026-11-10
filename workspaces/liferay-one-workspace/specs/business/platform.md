@@ -33,6 +33,7 @@ Terms used in this file:
 | REQ-PLATFORM-031 | A missing or invalid date shows a fallback value, not an error. A typed date that does not exist on the calendar is refused. | P1 | — | `MOD-DATEUTILS` |
 | REQ-PLATFORM-032 | An address shows the street, the city, the region, the postal code, and the country name in the language of the user. An empty address shows a dash. | P2 | — | `MOD-FORMATADDRESS` |
 | REQ-PLATFORM-033 | A marketing form reports success or failure within 8 seconds. | P2 | — | `HOOK-USEMARKETOFORM` |
+| REQ-PLATFORM-034 | The custom element shows every date as its calendar day in UTC, and every time in UTC with the time zone named, so a date reads the same in every time zone and on every page. A new activation key starts on the current day in UTC by default. | P1 | LPD-112772 | `MOD-DATEUTILS` |
 
 ## Lists and Navigation
 

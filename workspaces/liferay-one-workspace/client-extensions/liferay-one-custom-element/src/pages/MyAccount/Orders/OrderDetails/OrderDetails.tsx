@@ -50,7 +50,7 @@ function OrderDetailsContent({order}: {order: PlacedOrder}) {
 
 	const projectName = getProjectName(order);
 
-	const {loading: orderDatesLoading, orderDates} = useOrderDates([order.id]);
+	const {loading: orderDatesLoading, orderDates} = useOrderDates();
 
 	const detailsRows: DetailsRow[] = [
 		{label: i18n.translate('order-id'), value: order.id},

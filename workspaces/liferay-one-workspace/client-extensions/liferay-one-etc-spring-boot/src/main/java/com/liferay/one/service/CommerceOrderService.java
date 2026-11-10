@@ -63,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -448,6 +449,50 @@ public class CommerceOrderService extends OneBaseService {
 
 			throw problemException;
 		}
+	}
+
+	public Map<Long, String> getAccountOrderDates(long accountId)
+		throws Exception {
+
+		Map<Long, String> orderDates = new TreeMap<>();
+
+		OrderResource orderResource = OrderResource.builder(
+		).endpoint(
+			getDXPEndpointAddress(), lxcDXPServerProtocol
+		).header(
+			HttpHeaders.AUTHORIZATION, getAuthorization()
+		).parameters(
+			"fields", _FIELDS_ORDER_DATES
+		).build();
+
+		int page = 1;
+
+		while (true) {
+			Page<Order> ordersPage = orderResource.getOrdersPage(
+				null, "accountId/any(x:x eq " + accountId + ")",
+				Pagination.of(page, _PAGE_SIZE), null);
+
+			for (Order order : ordersPage.getItems()) {
+				Date orderDate = order.getOrderDate();
+
+				if (orderDate == null) {
+					continue;
+				}
+
+				orderDates.put(
+					order.getId(),
+					DateTimeFormatter.ISO_INSTANT.format(
+						orderDate.toInstant()));
+			}
+
+			if (page >= ordersPage.getLastPage()) {
+				break;
+			}
+
+			page++;
+		}
+
+		return orderDates;
 	}
 
 	public List<OrderItem> getAccountOrderItems(long accountId)
@@ -2563,6 +2608,8 @@ public class CommerceOrderService extends OneBaseService {
 	private static final int _ACCOUNT_TYPE_BUSINESS = 2;
 
 	private static final int _ACCOUNT_TYPE_PERSON = 1;
+
+	private static final String _FIELDS_ORDER_DATES = "id,orderDate";
 
 	private static final String _FIELDS_ORDER_ITEMS =
 		"id,orderItems.productId,orderItems.skuExternalReferenceCode";
