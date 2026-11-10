@@ -576,6 +576,15 @@
 		],
 		"primKey": "0",
 		"resourceName": "com.liferay.account.model.AccountRole",
+		"roleName": "Account Member",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountRole",
 		"roleName": "Partner Account Admin",
 		"scope": "3"
 	},
