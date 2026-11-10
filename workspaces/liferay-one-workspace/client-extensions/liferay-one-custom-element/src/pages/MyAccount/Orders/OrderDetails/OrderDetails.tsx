@@ -86,7 +86,6 @@ function OrderDetailsContent({order}: {order: PlacedOrder}) {
 			label: i18n.translate('purchase-number'),
 			value: order.purchaseOrderNumber || '-',
 		},
-		{label: i18n.translate('purchased-by'), value: order.author || '-'},
 		{
 			label: i18n.translate('customer-account'),
 			value: order.account || '-',
