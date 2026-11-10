@@ -181,7 +181,21 @@ export default function Orders() {
 		}
 	);
 
-	const orders = useMemo(() => data?.items ?? [], [data]);
+	const loadedOrders = useMemo(() => data?.items ?? [], [data]);
+
+	const {loading: orderDatesLoading, orderDates} = useOrderDates(
+		loadedOrders.map((order) => order.id)
+	);
+
+	const orders = useMemo(() => {
+		const getOrderTime = (order: PlacedOrder) =>
+			new Date(orderDates.get(order.id) ?? order.createDate).getTime() ||
+			0;
+
+		return [...loadedOrders].sort(
+			(order1, order2) => getOrderTime(order2) - getOrderTime(order1)
+		);
+	}, [loadedOrders, orderDates]);
 
 	const projectLabels = useMemo(() => {
 		const labels = new Map<string, string>();
@@ -267,10 +281,6 @@ export default function Orders() {
 
 		return filteredOrders.slice(start, start + pageSize);
 	}, [filteredOrders, page, pageSize]);
-
-	const {orderDates} = useOrderDates(
-		paginatedOrders.map((order) => order.id)
-	);
 
 	const activeFilters = useMemo(() => {
 		const filters: {
@@ -500,10 +510,14 @@ export default function Orders() {
 											</ClayTable.Cell>
 
 											<ClayTable.Cell>
-												{formatOrderDate(
-													orderDates.get(order.id),
-													order.createDate
-												)}
+												{orderDatesLoading
+													? '-'
+													: formatOrderDate(
+															orderDates.get(
+																order.id
+															) ??
+																order.createDate
+														)}
 											</ClayTable.Cell>
 
 											<ClayTable.Cell>
