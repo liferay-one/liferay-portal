@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {startOfToday} from 'date-fns';
+import {format, startOfToday} from 'date-fns';
 import {toUTCCalendarDate} from '~/utils/dateUtils';
 import {formatCurrency} from '~/utils/formatCurrency';
 import {safeJSONParse} from '~/utils/safeJSONParse';
@@ -311,6 +311,14 @@ export function getContractProductOrders(
 	});
 
 	return contractOrders.length ? contractOrders : productOrders;
+}
+
+export function formatOrderDate(orderDate?: string, createDate?: string) {
+	if (orderDate) {
+		return format(toUTCCalendarDate(orderDate), 'MMM d, yyyy');
+	}
+
+	return createDate ? format(new Date(createDate), 'MMM d, yyyy') : '-';
 }
 
 export function getOrderStatusToken(order: PlacedOrder): string {

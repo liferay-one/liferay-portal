@@ -25,7 +25,7 @@ export default class HeadlessCommerceAdminOrder {
 	}
 
 	static getOrders(searchParams = new URLSearchParams()) {
-		return fetcher<APIResponse>(
+		return fetcher<APIResponse<Order>>(
 			`o/headless-commerce-admin-order/v1.0/orders?${searchParams.toString()}`
 		);
 	}
