@@ -24,8 +24,6 @@ import {
 	paymentStatusLabels,
 } from '~/utils/orderUtils';
 
-import {getOrderTotal} from '../Orders';
-
 import '../Orders.css';
 
 import type {PlacedOrder} from '~/types/orders';
@@ -84,7 +82,6 @@ function OrderDetailsContent({order}: {order: PlacedOrder}) {
 			label: i18n.translate('payment-status'),
 			value: paymentStatusLabel ? translate(paymentStatusLabel) : '-',
 		},
-		{label: i18n.translate('total'), value: getOrderTotal(order)},
 		{
 			label: i18n.translate('purchase-number'),
 			value: order.purchaseOrderNumber || '-',
