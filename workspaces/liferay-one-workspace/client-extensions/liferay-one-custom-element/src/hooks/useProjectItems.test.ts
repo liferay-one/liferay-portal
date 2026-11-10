@@ -31,6 +31,10 @@ vi.mock('~/hooks/useProjectCommerce', async (importOriginal) => ({
 	useProjectProducts: vi.fn(),
 }));
 
+vi.mock('~/hooks/useOrderDates', () => ({
+	useOrderDates: () => ({loading: false, orderDates: new Map()}),
+}));
+
 vi.mock('~/hooks/useProjectOrders', async (importOriginal) => ({
 	...(await importOriginal<typeof import('~/hooks/useProjectOrders')>()),
 	useProjectOrders: vi.fn(),

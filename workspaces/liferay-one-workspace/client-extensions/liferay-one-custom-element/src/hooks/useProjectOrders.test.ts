@@ -199,14 +199,14 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 
 		expect(result.current.orders).toEqual([
 			{
-				date: 'Mar 15, 2026',
+				createDate: '2026-03-15T12:00:00Z',
 				id: '1',
 				orderId: '1',
 				status: getOrderStatusToken(alphaOrder),
 				total: '$10.00',
 			},
 			{
-				date: 'Apr 2, 2026',
+				createDate: '2026-04-02T12:00:00Z',
 				id: '2',
 				orderId: '2',
 				status: getOrderStatusToken(betaOrder),
