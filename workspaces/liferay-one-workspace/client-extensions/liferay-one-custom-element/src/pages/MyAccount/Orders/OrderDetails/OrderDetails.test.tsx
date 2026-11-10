@@ -6,15 +6,18 @@
 import {render, screen} from '@testing-library/react';
 import {MemoryRouter, Route, Routes} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {useOrderDates} from '~/hooks/useOrderDates';
 import {usePlacedOrder} from '~/hooks/usePlacedOrder';
 
 import OrderDetails from './OrderDetails';
 
+vi.mock('~/hooks/useOrderDates', () => ({useOrderDates: vi.fn()}));
 vi.mock('~/hooks/usePlacedOrder', () => ({usePlacedOrder: vi.fn()}));
 
 function mockPlacedOrder(options: object[]) {
 	vi.mocked(usePlacedOrder).mockReturnValue({
 		data: {
+			createDate: '2026-10-22T18:00:00Z',
 			id: 57942,
 			placedOrderItems: [
 				{
@@ -45,6 +48,34 @@ function renderOrderDetails() {
 describe('[ROUTE-MY-ACCOUNT-ORDERID] OrderDetails', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+
+		vi.mocked(useOrderDates).mockReturnValue({
+			loading: false,
+			orderDates: new Map(),
+		});
+	});
+
+	it('shows the order date of the order, not its create date', () => {
+		mockPlacedOrder([]);
+
+		vi.mocked(useOrderDates).mockReturnValue({
+			loading: false,
+			orderDates: new Map([[57942, '2023-09-30T00:00:00Z']]),
+		});
+
+		renderOrderDetails();
+
+		expect(screen.getByText('Sep 30, 2023')).toBeTruthy();
+		expect(screen.queryByText('Oct 22, 2026')).toBeNull();
+		expect(useOrderDates).toHaveBeenCalledWith([57942]);
+	});
+
+	it('shows the create date when the order date cannot be read', () => {
+		mockPlacedOrder([]);
+
+		renderOrderDetails();
+
+		expect(screen.getByText('Oct 22, 2026')).toBeTruthy();
 	});
 
 	it('shows the Salesforce product name of an order item', () => {

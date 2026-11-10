@@ -6,6 +6,7 @@
 import {afterEach, describe, expect, it, vi} from 'vitest';
 
 import {
+	formatOrderDate,
 	getContractProductOrders,
 	getOrderStatusLabel,
 	getOrderStatusToken,
@@ -674,6 +675,24 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			expect(
 				getContractProductOrders([legacyOrder, aiHubOrder], 7, 88)
 			).toEqual([aiHubOrder]);
+		});
+	});
+
+	describe('formatOrderDate', () => {
+		it('shows the calendar day of the order date', () => {
+			expect(
+				formatOrderDate('2023-09-30T00:00:00Z', '2026-10-22T18:00:00Z')
+			).toBe('Sep 30, 2023');
+		});
+
+		it('shows the create date when the order date is missing', () => {
+			expect(formatOrderDate(undefined, '2026-10-22T18:00:00Z')).toBe(
+				'Oct 22, 2026'
+			);
+		});
+
+		it('shows a dash without a date', () => {
+			expect(formatOrderDate()).toBe('-');
 		});
 	});
 });
