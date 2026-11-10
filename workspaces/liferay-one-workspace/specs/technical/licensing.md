@@ -350,7 +350,7 @@ These are the checks that the server applies before it issues a key. "Project pa
 | Each entitlement is active: the start date is empty or past, and the end date is empty or future. `terminationStatus` is not read. | Both paths | `sb/service/EntitlementService.java:608` |
 | Each entitlement is in the project (project path) or in the account outside a project (app path) | Both paths | `sb/service/LicenseKeyGenerationService.java:515`, `sb/service/AppLicenseKeyGenerationService.java:262` |
 | Each selected entitlement has activations left for every server. Activations are `maxQuantity` (app path falls back to `quantity`) minus the active keys. | Both paths | `sb/service/LicenseKeyGenerationService.java:395`, `sb/service/AppLicenseKeyGenerationService.java:136` |
-| A permanent key with no active granting entitlement uses an activation of the latest entitlement with the same definition | Project path | `sb/service/LicenseKeyService.java:633` |
+| A linked key counts against its own entitlement only. A key with no entitlement that has not expired uses an activation of an entitlement with the same definition whose dates overlap the key, first the one that includes the start date of the key, then the latest | Project path | `sb/service/LicenseKeyService.java:624` |
 | A license entry exists for the key type, the family, and the version | Project path | `sb/service/LicenseKeyGenerationService.java:847` |
 | Name and owner are 75 characters or fewer, description is 255 characters or fewer, product version is set | Every stored key | `sb/license/LicenseKeyValidator.java:55` |
 | The expiration date is not before the start date | Every stored key | `sb/license/LicenseKeyValidator.java:43` |
