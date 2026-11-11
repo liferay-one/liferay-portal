@@ -53,6 +53,12 @@ public class BaseServiceTest {
 
 				_remotePorts.add(inetSocketAddress.getPort());
 
+				_userAgents.add(
+					httpExchange.getRequestHeaders(
+					).getFirst(
+						"User-Agent"
+					));
+
 				URI requestURI = httpExchange.getRequestURI();
 
 				int statusCode = 200;
@@ -119,6 +125,16 @@ public class BaseServiceTest {
 	}
 
 	@Test
+	public void testDoGetSendsUserAgent() {
+		TestService testService = new TestService();
+
+		testService.doGet(URI.create(_uri));
+
+		Assertions.assertEquals(
+			Set.of("liferay-one-etc-spring-boot (TestService)"), _userAgents);
+	}
+
+	@Test
 	public void testDoGetWithResponseBody() {
 		TestService testService = new TestService();
 
@@ -139,6 +155,7 @@ public class BaseServiceTest {
 	private HttpServer _httpServer;
 	private final Set<Integer> _remotePorts = ConcurrentHashMap.newKeySet();
 	private String _uri;
+	private final Set<String> _userAgents = ConcurrentHashMap.newKeySet();
 
 	private static class TestService extends BaseService {
 
