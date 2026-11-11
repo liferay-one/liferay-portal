@@ -2841,6 +2841,14 @@
 		},
 		{
 			"active": true,
+			"defaultQuantity": 150000,
+			"displayName": "MALU",
+			"externalReferenceCode": "malu_150000",
+			"maxQuantity": 150000,
+			"name": "malu"
+		},
+		{
+			"active": true,
 			"defaultQuantity": 175000,
 			"displayName": "MALU",
 			"externalReferenceCode": "malu_175000",
