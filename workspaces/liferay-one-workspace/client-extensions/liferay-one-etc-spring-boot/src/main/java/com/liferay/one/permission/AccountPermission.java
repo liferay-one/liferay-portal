@@ -47,9 +47,11 @@ public class AccountPermission {
 			String accountExternalReferenceCode, Jwt jwt, String roleName)
 		throws Exception {
 
-		if (!containsAccountRole(
-				accountExternalReferenceCode, roleName,
-				_userAccountService.getMyUserAccount(jwt))) {
+		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
+
+		if (!_canAssignAllAccountMembers(userAccount) &&
+			!containsAccountRole(
+				accountExternalReferenceCode, roleName, userAccount)) {
 
 			throw new PrincipalException();
 		}
