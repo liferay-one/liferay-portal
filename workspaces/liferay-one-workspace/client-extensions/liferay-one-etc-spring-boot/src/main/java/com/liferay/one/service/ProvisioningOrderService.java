@@ -15,10 +15,13 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -162,6 +165,73 @@ public class ProvisioningOrderService {
 
 			_commerceOrderItemService.patchOrderItemCustomFields(
 				customFieldValuesMap, order);
+		}
+	}
+
+	public void trimRemovedOrderItems(
+			Order order,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems)
+		throws Exception {
+
+		Set<String> salesforceOpportunityLineItemIds = new HashSet<>();
+
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
+			salesforceOpportunityLineItemIds.add(
+				salesforceOpportunityLineItem.getId());
+		}
+
+		Instant effectiveEndDateInstant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.SECONDS
+		);
+
+		List<OrderItem> removedOrderItems = new ArrayList<>();
+		Map<Long, Map<String, Object>> customFieldValuesMap = new HashMap<>();
+
+		for (OrderItem orderItem : order.getOrderItems()) {
+			if (salesforceOpportunityLineItemIds.contains(
+					orderItem.getExternalReferenceCode())) {
+
+				continue;
+			}
+
+			Instant orderItemEffectiveEndDateInstant =
+				CommerceOrderItemUtil.getEffectiveEndDateInstant(orderItem);
+
+			if ((orderItemEffectiveEndDateInstant != null) &&
+				!orderItemEffectiveEndDateInstant.isAfter(
+					effectiveEndDateInstant)) {
+
+				continue;
+			}
+
+			removedOrderItems.add(orderItem);
+
+			customFieldValuesMap.put(
+				orderItem.getId(),
+				Map.of("effectiveEndDate", effectiveEndDateInstant.toString()));
+		}
+
+		if (customFieldValuesMap.isEmpty()) {
+			return;
+		}
+
+		_commerceOrderItemService.patchOrderItemCustomFields(
+			customFieldValuesMap, order);
+
+		if (_log.isInfoEnabled()) {
+			for (OrderItem removedOrderItem : removedOrderItems) {
+				_log.info(
+					StringBundler.concat(
+						"Ended order item ",
+						removedOrderItem.getExternalReferenceCode(),
+						" for SKU ",
+						removedOrderItem.getSkuExternalReferenceCode(),
+						" of opportunity ", order.getExternalReferenceCode(),
+						" because the message no longer has its line item"));
+			}
 		}
 	}
 
