@@ -12,13 +12,16 @@ import {useOneContext} from '~/context/OneContextProvider';
 import {useProject} from '~/context/ProjectContext';
 import {useProperties} from '~/context/PropertiesContext';
 import {sub, translate} from '~/i18n';
+import getActivationKeyTerms, {
+	ActivationKeyTerm,
+} from '~/pages/MyAccount/Projects/utils/getActivationKeyTerms';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
 import CommonLicenseKeys, {
 	CommonLicenseKey,
 	ProductGroup,
 } from '~/services/spring-boot/CommonLicenseKeys';
-import {formatUTCShortDate} from '~/utils/dateUtils';
+import {formatUTCShortDate, startOfUTCDay} from '~/utils/dateUtils';
 import {getFileNameExtension} from '~/utils/downloadFileUtils';
 import getKebabCase from '~/utils/getKebabCase';
 import {toAlphanumericLowerCase} from '~/utils/stringUtils';
@@ -40,8 +43,17 @@ function formatDate(value?: string): string {
 	return formatUTCShortDate(value, value);
 }
 
-function termLabel(key: CommonLicenseKey): string {
-	return `${formatDate(key.startDate)} - ${formatDate(key.endDate)}`;
+function termLabel(term: ActivationKeyTerm): string {
+	return `${formatDate(term.startDate)} - ${formatDate(term.endDate)}`;
+}
+
+function isCurrentTerm(term: ActivationKeyTerm): boolean {
+	const today = startOfUTCDay(new Date().toISOString());
+
+	return (
+		startOfUTCDay(term.startDate) <= today &&
+		today <= startOfUTCDay(term.endDate)
+	);
 }
 
 export default function ActivationKeyDownload({
@@ -102,16 +114,21 @@ export default function ActivationKeyDownload({
 
 	const terms = useMemo(
 		() =>
-			keys.filter(
-				(key) => key.productEnvironment === selectedSubscription
+			getActivationKeyTerms(
+				contract,
+				keys.filter(
+					(key) => key.productEnvironment === selectedSubscription
+				)
 			),
-		[keys, selectedSubscription]
+		[contract, keys, selectedSubscription]
 	);
 
 	const [termId, setTermId] = useState('');
 
 	const selectedTerm =
-		terms.find((key) => String(key.id) === termId) ?? terms[0];
+		terms.find((term) => term.id === termId) ??
+		terms.find(isCurrentTerm) ??
+		terms[0];
 
 	const [hasDownloadError, setHasDownloadError] = useState(false);
 
@@ -124,14 +141,20 @@ export default function ActivationKeyDownload({
 			return;
 		}
 
+		if (!selectedTerm.key) {
+			setHasDownloadError(true);
+
+			return;
+		}
+
 		try {
 			await CommonLicenseKeys.downloadCommonLicenseKey(
 				`activation-key-${[productTitle, selectedSubscription]
 					.map(toAlphanumericLowerCase)
 					.join('')}-${toAlphanumericLowerCase(
 					project?.name ?? ''
-				)}${getFileNameExtension(selectedTerm.name)}`,
-				selectedTerm.id
+				)}${getFileNameExtension(selectedTerm.key.name)}`,
+				selectedTerm.key.id
 			);
 		}
 		catch {
@@ -206,15 +229,13 @@ export default function ActivationKeyDownload({
 								onChange={(event) =>
 									setTermId(event.target.value)
 								}
-								value={
-									selectedTerm ? String(selectedTerm.id) : ''
-								}
+								value={selectedTerm?.id ?? ''}
 							>
-								{terms.map((key) => (
+								{terms.map((term) => (
 									<ClaySelect.Option
-										key={key.id}
-										label={termLabel(key)}
-										value={String(key.id)}
+										key={term.id}
+										label={termLabel(term)}
+										value={term.id}
 									/>
 								))}
 							</ClaySelect>
