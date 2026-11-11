@@ -50,6 +50,7 @@ import {
 	getBundleProducts,
 	getComplimentaryPurpose,
 	getDefaultBundleEntitlementIds,
+	getGenerateBundleEntitlementIds,
 	getStepAfterSubscription,
 	getStepBeforeEnvironment,
 	hasAvailableKeyType,
@@ -574,7 +575,19 @@ export default function GenerateActivationKey() {
 			({activationKeyId} = await ActivationKeys.generateActivationKey({
 				bundleEntitlementIds: appLicense
 					? [values.subscriptionEntitlementId]
-					: values.bundleEntitlementIds,
+					: getGenerateBundleEntitlementIds(
+							values.bundleEntitlementIds,
+							generateForm
+								? getBundleProducts(
+										developer,
+										generateForm,
+										values.productExternalReferenceCode,
+										serverless
+									)
+								: [],
+							values.productExternalReferenceCode,
+							values.subscriptionEntitlementId
+						),
 				description: values.description || undefined,
 				domains: free ? values.domain.trim() : undefined,
 				environmentName: values.environmentName,
