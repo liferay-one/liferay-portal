@@ -1,0 +1,24 @@
+{
+	"description": "[%COMMERCEORDER_AUTHOR_EMAIL_ADDRESS%]",
+	"editorType": "richText",
+	"externalReferenceCode": "TRIAL-PROCESSING-ORDER",
+	"name": "Trial | Processing Order",
+	"recipientType": "email",
+	"recipients": [
+		{
+			"bcc": "",
+			"cc": "",
+			"from": "do-not-reply@liferay.com",
+			"fromName": {
+				"en-US": "One Liferay"
+			},
+			"to": {
+				"en-US": "[%COMMERCEORDER_AUTHOR_EMAIL_ADDRESS%]"
+			}
+		}
+	],
+	"subject": {
+		"en_US": "One Liferay - Your trial is almost ready to use!"
+	},
+	"type": "email"
+}

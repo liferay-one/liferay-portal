@@ -1,0 +1,24 @@
+{
+	"description": "Notification sent to a publisher when their new app is approved and published",
+	"editorType": "richText",
+	"externalReferenceCode": "MARKETPLACE-NEW-APP-APPROVED-AND-PUBLISHED",
+	"name": "New App Approved and Published",
+	"recipientType": "email",
+	"recipients": [
+		{
+			"bcc": "",
+			"cc": "",
+			"from": "do-not-reply@liferay.com",
+			"fromName": {
+				"en-US": "One Liferay"
+			},
+			"to": {
+				"en-US": "[%GETAPPINFORMATION_AUTHOR_EMAIL_ADDRESS%]"
+			}
+		}
+	],
+	"subject": {
+		"en_US": "One Liferay - New App Approved and Published"
+	},
+	"type": "email"
+}

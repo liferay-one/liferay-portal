@@ -3,9 +3,19 @@
 	"hidden": true,
 	"name": "Admin",
 	"name_i18n": {
-		"en_US": "Admin"
+		"en_US": "Admin",
+		"es_ES": "Administración",
+		"ja_JP": "管理",
+		"pt_BR": "Administração"
 	},
 	"permissions": [
+		{
+			"actionIds": [
+				"VIEW"
+			],
+			"roleName": "Finance Administrator",
+			"scope": 4
+		},
 		{
 			"actionIds": [
 			],
@@ -16,7 +26,7 @@
 			"actionIds": [
 				"VIEW"
 			],
-			"roleName": "Liferay Staff",
+			"roleName": "Provisioning Administrator",
 			"scope": 4
 		},
 		{
