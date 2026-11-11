@@ -39,9 +39,14 @@ import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.petra.string.StringBundler;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -1149,6 +1154,153 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveProvisionsEachRepeatedLineItemAsItsOwnOrderItem()
+		throws Exception {
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_ID)
+		).thenReturn(
+			new Project(new JSONObject())
+		);
+
+		Mockito.when(
+			_commerceSkuService.fetchSku(_PRODUCT2_ID_RESELLER_DISCOUNT)
+		).thenReturn(
+			null
+		);
+
+		_receiveOpportunityMessage(_createRepeatedLineItemsRecordJSONObject());
+
+		ArgumentCaptor<List<SalesforceOpportunityLineItem>>
+			salesforceOpportunityLineItemsArgumentCaptor =
+				ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).upsertOrderItems(
+			Mockito.any(), Mockito.any(),
+			salesforceOpportunityLineItemsArgumentCaptor.capture(),
+			Mockito.any(), Mockito.anyBoolean()
+		);
+
+		List<String> lineItemIds = new ArrayList<>();
+		Map<String, List<Double>> quantities = new HashMap<>();
+		Map<String, Double> totalPrices = new HashMap<>();
+
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItemsArgumentCaptor.getValue()) {
+
+			lineItemIds.add(salesforceOpportunityLineItem.getId());
+
+			List<Double> productQuantities = quantities.computeIfAbsent(
+				salesforceOpportunityLineItem.getProduct2Id(),
+				product2Id -> new ArrayList<>());
+
+			productQuantities.add(salesforceOpportunityLineItem.getQuantity());
+
+			totalPrices.put(
+				salesforceOpportunityLineItem.getId(),
+				salesforceOpportunityLineItem.getTotalPrice());
+		}
+
+		Assertions.assertEquals(
+			Arrays.asList(
+				"LPD105056-Ta5", "LPD105056-Ta6", "LPD105056-Ta7",
+				"LPD105056-Ta8", "LPD105056-Ta9", "LPD105056-TaA",
+				"LPD105056-TaB", "LPD105056-TaC", "LPD105056-TaD",
+				"LPD105056-TaE", "LPD105056-TaF", "LPD105056-TaG"),
+			lineItemIds);
+
+		Assertions.assertEquals(
+			12,
+			new HashSet<>(
+				lineItemIds
+			).size());
+
+		Assertions.assertEquals(
+			Arrays.asList(2.0, 3.0),
+			quantities.get(_PRODUCT2_ID_PLATINUM_PROD));
+		Assertions.assertEquals(
+			Arrays.asList(3.0, 2.0),
+			quantities.get(_PRODUCT2_ID_PLATINUM_NONPROD));
+		Assertions.assertEquals(
+			Arrays.asList(2.0, 1.0),
+			quantities.get(_PRODUCT2_ID_PLATINUM_BACKUP));
+		Assertions.assertEquals(
+			Arrays.asList(3.0, 2.0), quantities.get(_PRODUCT2_ID_SEARCH_PROD));
+		Assertions.assertEquals(
+			Arrays.asList(4.0), quantities.get(_PRODUCT2_ID_SEARCH_NONPROD));
+		Assertions.assertEquals(
+			Arrays.asList(3.0), quantities.get(_PRODUCT2_ID_SEARCH_BACKUP));
+
+		Assertions.assertEquals(
+			5.0, _sum(quantities, _PRODUCT2_ID_PLATINUM_PROD));
+		Assertions.assertEquals(
+			5.0, _sum(quantities, _PRODUCT2_ID_PLATINUM_NONPROD));
+		Assertions.assertEquals(
+			3.0, _sum(quantities, _PRODUCT2_ID_PLATINUM_BACKUP));
+		Assertions.assertEquals(
+			5.0, _sum(quantities, _PRODUCT2_ID_SEARCH_PROD));
+
+		Assertions.assertEquals(0.0, totalPrices.get("LPD105056-Ta6"));
+		Assertions.assertEquals(0.0, totalPrices.get("LPD105056-Ta8"));
+		Assertions.assertEquals(0.0, totalPrices.get("LPD105056-Ta9"));
+
+		ArgumentCaptor<List<SalesforceOpportunityLineItem>>
+			upsertedLineItemsArgumentCaptor = ArgumentCaptor.forClass(
+				List.class);
+
+		Mockito.verify(
+			_commerceOrderService
+		).upsertOrder(
+			Mockito.any(), Mockito.any(), Mockito.any(),
+			upsertedLineItemsArgumentCaptor.capture(), Mockito.any()
+		);
+
+		List<SalesforceOpportunityLineItem> upsertedLineItems =
+			upsertedLineItemsArgumentCaptor.getValue();
+
+		Assertions.assertEquals(13, upsertedLineItems.size());
+
+		SalesforceOpportunityLineItem discountSalesforceOpportunityLineItem =
+			upsertedLineItems.get(12);
+
+		Assertions.assertEquals(
+			_PRODUCT2_ID_RESELLER_DISCOUNT,
+			discountSalesforceOpportunityLineItem.getProduct2Id());
+		Assertions.assertEquals(
+			-59914.81, discountSalesforceOpportunityLineItem.getTotalPrice());
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		List<String> warningMessages = warningMessagesArgumentCaptor.getValue();
+
+		Assertions.assertEquals(
+			1,
+			Collections.frequency(
+				warningMessages,
+				"Unable to find SKU for Salesforce product " +
+					_PRODUCT2_ID_RESELLER_DISCOUNT));
+		Assertions.assertFalse(
+			_containsSubstring("Unable to provision line", warningMessages));
+
+		Mockito.verify(
+			_commerceOrderService
+		).completeOrder(
+			_NEW_ORDER_ID,
+			CommerceOrderConstants.ORDER_PAYMENT_STATUS_NOT_REQUIRED
+		);
+	}
+
+	@Test
 	public void testReceiveProvisionsExistingBusinessOpportunity()
 		throws Exception {
 
@@ -1550,6 +1702,134 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_OPPORTUNITY_ID,
 			salesforceOpportunityArgumentCaptor.getValue(
 			).getId());
+	}
+
+	@Test
+	public void testReceiveReprocessesRepeatedLineItemsWithoutDuplicating()
+		throws Exception {
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_ID)
+		).thenReturn(
+			new Project(new JSONObject())
+		);
+
+		Mockito.when(
+			_commerceSkuService.fetchSku(_PRODUCT2_ID_RESELLER_DISCOUNT)
+		).thenReturn(
+			null
+		);
+
+		JSONObject recordJSONObject =
+			_createRepeatedLineItemsRecordJSONObject();
+
+		JSONArray opportunityLineItemsJSONArray = recordJSONObject.getJSONArray(
+			"opportunityLineItems");
+
+		Map<String, OrderItem> existingOrderItems = new HashMap<>();
+		Map<String, Double> expectedQuantities = new HashMap<>();
+
+		for (int i = 0; i < opportunityLineItemsJSONArray.length(); i++) {
+			JSONObject lineItemJSONObject =
+				opportunityLineItemsJSONArray.getJSONObject(i);
+
+			String product2Id = lineItemJSONObject.getString("Product2Id");
+
+			if (product2Id.equals(_PRODUCT2_ID_RESELLER_DISCOUNT)) {
+				continue;
+			}
+
+			String lineItemId = lineItemJSONObject.getString("Id");
+
+			existingOrderItems.put(
+				lineItemId,
+				SalesforceModelTestUtil.createOrderItem(
+					null, null, null, lineItemId, _EXISTING_ORDER_ITEM_ID + i,
+					product2Id, null));
+			expectedQuantities.put(
+				lineItemId, lineItemJSONObject.getDouble("Quantity"));
+		}
+
+		Order existingOrder = new Order();
+
+		existingOrder.setExternalReferenceCode(_OPPORTUNITY_ID);
+		existingOrder.setId(_NEW_ORDER_ID);
+		existingOrder.setOrderItems(
+			existingOrderItems.values(
+			).toArray(
+				new OrderItem[0]
+			));
+		existingOrder.setOrderStatus(
+			CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_OPPORTUNITY_ID)
+		).thenReturn(
+			existingOrder
+		);
+
+		Mockito.when(
+			_commerceOrderService.upsertOrder(
+				Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+				Mockito.any())
+		).thenReturn(
+			existingOrder
+		);
+
+		_receiveOpportunityMessage(recordJSONObject);
+
+		ArgumentCaptor<List<SalesforceOpportunityLineItem>>
+			salesforceOpportunityLineItemsArgumentCaptor =
+				ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).upsertOrderItems(
+			Mockito.any(), Mockito.eq(existingOrder),
+			salesforceOpportunityLineItemsArgumentCaptor.capture(),
+			Mockito.any(), Mockito.anyBoolean()
+		);
+
+		Set<Long> resolvedOrderItemIds = new HashSet<>();
+
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItemsArgumentCaptor.getValue()) {
+
+			OrderItem resolvedOrderItem = CommerceOrderItemUtil.fetchOrderItem(
+				salesforceOpportunityLineItem.getId(), existingOrder);
+
+			Assertions.assertSame(
+				existingOrderItems.get(salesforceOpportunityLineItem.getId()),
+				resolvedOrderItem);
+
+			resolvedOrderItemIds.add(resolvedOrderItem.getId());
+
+			Assertions.assertEquals(
+				expectedQuantities.get(salesforceOpportunityLineItem.getId()),
+				salesforceOpportunityLineItem.getQuantity());
+		}
+
+		Assertions.assertEquals(12, resolvedOrderItemIds.size());
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).completeOrder(
+			Mockito.anyLong(), Mockito.anyInt()
+		);
+
+		Mockito.verify(
+			_provisioningIssueService, Mockito.never()
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
+		);
+
+		Mockito.verify(
+			_provisioningEmailService
+		).sendAssignedWelcomeEmails(
+			Mockito.eq(_account), Mockito.anyList()
+		);
 	}
 
 	@Test
@@ -3399,6 +3679,93 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			opportunityJSONObject, new JSONArray(), new JSONArray(), null);
 	}
 
+	private JSONObject _createRepeatedLineItemJSONObject(
+		String id, String product2Id, String productName, double quantity,
+		double totalPrice) {
+
+		return SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+			"USD", "2027-03-20", id, product2Id, productName, "Renewal",
+			quantity, "2026-03-21", totalPrice);
+	}
+
+	private JSONObject _createRepeatedLineItemsRecordJSONObject() {
+		JSONObject opportunityJSONObject =
+			SalesforceModelTestUtil.createOpportunityJSONObject(
+				_ACCOUNT_ID_SF, "", true, _OPPORTUNITY_ID, "", "S", _PROJECT_ID,
+				"Liferay US", "Closed Won",
+				OpportunityConstants.TYPE_EXISTING_BUSINESS);
+
+		return SalesforceModelTestUtil.createOpportunityRecordJSONObject(
+			SalesforceModelTestUtil.createAccountJSONObject(
+				_ACCOUNT_ID_SF, "Test Salesforce Account"),
+			opportunityJSONObject,
+			new JSONArray(
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-Ta5", "01t4u00000f7p5RAAQ",
+					"Liferay Self-Hosted - Enterprise Plan", 1, 165670.6)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-Ta6", _PRODUCT2_ID_PLATINUM_PROD,
+					"Liferay Self-Hosted Subscription - Platinum Prod Sizing 1",
+					2, 0)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-Ta7", _PRODUCT2_ID_SEARCH_PROD,
+					"Liferay Enterprise Search - Production", 3, 0)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-Ta8", _PRODUCT2_ID_PLATINUM_NONPROD,
+					"Liferay Self-Hosted Subscription - Platinum Non-Prod " +
+						"Sizing 1",
+					3, 0)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-Ta9", _PRODUCT2_ID_PLATINUM_BACKUP,
+					"Liferay Self-Hosted Subscription - Platinum Backup " +
+						"Sizing 1",
+					2, 0)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-TaA", _PRODUCT2_ID_SEARCH_NONPROD,
+					"Liferay Enterprise Search - Non-Production", 4, 0)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-TaB", _PRODUCT2_ID_SEARCH_BACKUP,
+					"Liferay Enterprise Search - Backup", 3, 0)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-TaC", _PRODUCT2_ID_PLATINUM_PROD,
+					"Liferay Self-Hosted Subscription - Platinum Prod Sizing 1",
+					3, 113481.320001)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-TaD", _PRODUCT2_ID_PLATINUM_NONPROD,
+					"Liferay Self-Hosted Subscription - Platinum Non-Prod " +
+						"Sizing 1",
+					2, 18812.41)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-TaE", _PRODUCT2_ID_PLATINUM_BACKUP,
+					"Liferay Self-Hosted Subscription - Platinum Backup " +
+						"Sizing 1",
+					1, 18912.55)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-TaF", _PRODUCT2_ID_SEARCH_PROD,
+					"Liferay Enterprise Search - Production", 2, 14561.34)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-TaG", "01tVO000008HvenYAC",
+					"Technical Account Management Services", 1, 68000)
+			).put(
+				_createRepeatedLineItemJSONObject(
+					"LPD105056-TaH", _PRODUCT2_ID_RESELLER_DISCOUNT,
+					"Reseller Discount", 1, -59914.81)
+			),
+			new JSONArray(), null);
+	}
+
 	private boolean _hasLineItemIds(
 		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 		String... lineItemIds) {
@@ -3440,6 +3807,18 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		).thenReturn(
 			newOrder
 		);
+	}
+
+	private double _sum(
+		Map<String, List<Double>> quantities, String product2Id) {
+
+		double sum = 0;
+
+		for (Double quantity : quantities.get(product2Id)) {
+			sum += quantity;
+		}
+
+		return sum;
 	}
 
 	private void _verifyContractIds(long... contractIds) throws Exception {
@@ -3497,6 +3876,26 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	private static final String _OPPORTUNITY_ID = "OPP-1";
 
 	private static final String _PARENT_OPPORTUNITY_ID = "OPP-PARENT";
+
+	private static final String _PRODUCT2_ID_PLATINUM_BACKUP =
+		"01t70000004cXzqAAE";
+
+	private static final String _PRODUCT2_ID_PLATINUM_NONPROD =
+		"01t70000004cXzlAAE";
+
+	private static final String _PRODUCT2_ID_PLATINUM_PROD =
+		"01t70000004cXzbAAE";
+
+	private static final String _PRODUCT2_ID_RESELLER_DISCOUNT =
+		"PROD-RESELLER-DISCOUNT";
+
+	private static final String _PRODUCT2_ID_SEARCH_BACKUP =
+		"01t7000000UuEnnAAF";
+
+	private static final String _PRODUCT2_ID_SEARCH_NONPROD =
+		"01t7000000GdbICAAZ";
+
+	private static final String _PRODUCT2_ID_SEARCH_PROD = "01t7000000GdbI2AAJ";
 
 	private static final String _PROJECT_ID = "PROJECT-1";
 
