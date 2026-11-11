@@ -27,6 +27,8 @@ public class HTTPTimeoutUtil {
 
 	public static final Duration CONNECT_TIMEOUT = Duration.ofSeconds(10);
 
+	public static final Duration KEEP_ALIVE_TIMEOUT = Duration.ofSeconds(60);
+
 	public static final Duration READ_TIMEOUT = Duration.ofMinutes(5);
 
 	public static ExchangeFilterFunction getExchangeFilterFunction() {
@@ -62,6 +64,11 @@ public class HTTPTimeoutUtil {
 		System.setProperty(
 			"sun.net.client.defaultReadTimeout",
 			String.valueOf(READ_TIMEOUT.toMillis()));
+
+		System.setProperty(
+			"http.keepAlive.time.server",
+			String.valueOf(KEEP_ALIVE_TIMEOUT.toSeconds()));
+		System.setProperty("http.maxConnections", "20");
 	}
 
 }

@@ -45,10 +45,11 @@ import reactor.netty.resources.ConnectionProvider;
 /**
  * Copy of BaseService from com.liferay.client.extension.util.spring.boot3
  * 1.0.8 with the LPD-113140 fix: one shared connection pool and one cached
- * WebClient instead of a new, never disposed pool on every request. Spring Boot
- * loads BOOT-INF/classes before BOOT-INF/lib, so this class replaces the one
- * in the 1.0.8 jar, which build.gradle pins. Delete it and unpin the version
- * once a release contains LPD-113140 (LPD-114833).
+ * WebClient instead of a new, never disposed pool on every request, and a
+ * User-Agent that names the service. Spring Boot loads BOOT-INF/classes before
+ * BOOT-INF/lib, so this class replaces the one in the 1.0.8 jar, which
+ * build.gradle pins. Delete it and unpin the version once a release contains
+ * LPD-113140 (LPD-114833).
  *
  * @author Nilton Vieira
  */
@@ -395,6 +396,10 @@ public abstract class BaseService {
 				HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE
 			).defaultHeader(
 				HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE
+			).defaultHeader(
+				HttpHeaders.USER_AGENT,
+				"liferay-one-etc-spring-boot (" + getClass().getSimpleName() +
+					")"
 			).exchangeStrategies(
 				ExchangeStrategies.builder(
 				).codecs(
