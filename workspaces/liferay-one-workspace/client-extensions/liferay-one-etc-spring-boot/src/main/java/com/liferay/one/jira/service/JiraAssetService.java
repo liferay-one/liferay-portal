@@ -11,6 +11,7 @@ import com.liferay.one.jira.model.JiraAssetObject;
 import com.liferay.one.jira.util.AQLUtil;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -435,6 +436,34 @@ public class JiraAssetService {
 		BiPredicate<JiraAssetObject, JiraAssetObject>
 			shouldSkipUpdateBiPredicate) {
 
+		upsert(converter, jiraAssetObject, null, shouldSkipUpdateBiPredicate);
+	}
+
+	/**
+	 * Creates or updates the asset object that has the same external key. When
+	 * no asset object has the external key, one asset object that matches the
+	 * criteria of the match consumer is updated instead, so that an asset
+	 * object that another source created is reused and not duplicated. The
+	 * update writes the external key to the reused asset object.
+	 *
+	 * @param converter the converter describing the asset object type and its
+	 *        external key attribute
+	 * @param jiraAssetObject the asset object to write
+	 * @param matchConsumer the consumer that appends the criteria that find
+	 *        an equivalent asset object, or <code>null</code> to match by the
+	 *        external key only. Of the equivalent asset objects, the most
+	 *        recently updated one that is not soft deleted is reused, so the
+	 *        converter must support soft deletion. When all of them are soft
+	 *        deleted, the most recently updated one is reused.
+	 * @param shouldSkipUpdateBiPredicate the predicate that skips the update
+	 *        of an existing asset object, or <code>null</code>
+	 */
+	public void upsert(
+		BaseJiraAssetObjectConverter converter, JiraAssetObject jiraAssetObject,
+		Consumer<AQLUtil.Builder> matchConsumer,
+		BiPredicate<JiraAssetObject, JiraAssetObject>
+			shouldSkipUpdateBiPredicate) {
+
 		String externalKeyAttributeName =
 			converter.getExternalKeyAttributeName();
 
@@ -460,7 +489,7 @@ public class JiraAssetService {
 		_keyedLock.withLock(
 			_getLockKey(converter, externalKey),
 			() -> _upsert(
-				converter, externalKey, jiraAssetObject,
+				converter, externalKey, jiraAssetObject, matchConsumer,
 				shouldSkipUpdateBiPredicate));
 	}
 
@@ -749,18 +778,58 @@ public class JiraAssetService {
 			existingJiraAssetObject.getObjectId(), patchJiraAssetObject);
 	}
 
-	private void _upsert(
+	private JiraAssetObject _getMatchingJiraAssetObject(
 		BaseJiraAssetObjectConverter converter, String externalKey,
-		JiraAssetObject jiraAssetObject,
-		BiPredicate<JiraAssetObject, JiraAssetObject>
-			shouldSkipUpdateBiPredicate) {
+		Consumer<AQLUtil.Builder> matchConsumer) {
 
 		List<JiraAssetObject> jiraAssetObjects = getJiraAssetObjects(
 			converter,
 			aqlBuilder -> aqlBuilder.andEquals(
 				externalKey, converter.getExternalKeyAttributeName()));
 
+		if (!jiraAssetObjects.isEmpty()) {
+			return jiraAssetObjects.get(0);
+		}
+
+		if (matchConsumer == null) {
+			return null;
+		}
+
+		jiraAssetObjects = getJiraAssetObjects(
+			converter,
+			aqlBuilder -> {
+				matchConsumer.accept(aqlBuilder);
+
+				aqlBuilder.orderByDescending("Updated");
+			});
+
 		if (jiraAssetObjects.isEmpty()) {
+			return null;
+		}
+
+		for (JiraAssetObject jiraAssetObject : jiraAssetObjects) {
+			if (!GetterUtil.getBoolean(
+					jiraAssetObject.getAttributeValue(
+						converter.getDeletedAttributeName()))) {
+
+				return jiraAssetObject;
+			}
+		}
+
+		return jiraAssetObjects.get(0);
+	}
+
+	private void _upsert(
+		BaseJiraAssetObjectConverter converter, String externalKey,
+		JiraAssetObject jiraAssetObject,
+		Consumer<AQLUtil.Builder> matchConsumer,
+		BiPredicate<JiraAssetObject, JiraAssetObject>
+			shouldSkipUpdateBiPredicate) {
+
+		JiraAssetObject existingJiraAssetObject = _getMatchingJiraAssetObject(
+			converter, externalKey, matchConsumer);
+
+		if (existingJiraAssetObject == null) {
 			if (_log.isInfoEnabled()) {
 				_log.info(
 					StringBundler.concat(
@@ -773,8 +842,6 @@ public class JiraAssetService {
 
 			return;
 		}
-
-		JiraAssetObject existingJiraAssetObject = jiraAssetObjects.get(0);
 
 		if ((shouldSkipUpdateBiPredicate != null) &&
 			shouldSkipUpdateBiPredicate.test(

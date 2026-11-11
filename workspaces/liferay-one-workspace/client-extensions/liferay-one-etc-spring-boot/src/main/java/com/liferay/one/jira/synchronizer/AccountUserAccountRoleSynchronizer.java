@@ -336,21 +336,36 @@ public class AccountUserAccountRoleSynchronizer {
 				contactRoleExternalKey, userAccountExternalKey,
 				accountExternalKey, deleted, new Date());
 
-		jiraAssetObject.setAttributeValue(
-			AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_CONTACT_ROLE,
-			_jiraAssetService.getReferenceObjectId(
-				_contactRoleConverter, contactRoleExternalKey));
-		jiraAssetObject.setAttributeValue(
-			AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_CONTACT,
-			_jiraAssetService.getReferenceObjectId(
-				_contactConverter, userAccountExternalKey));
+		String accountObjectId = _jiraAssetService.getReferenceObjectId(
+			_accountConverter, accountExternalKey);
+		String contactObjectId = _jiraAssetService.getReferenceObjectId(
+			_contactConverter, userAccountExternalKey);
+		String contactRoleObjectId = _jiraAssetService.getReferenceObjectId(
+			_contactRoleConverter, contactRoleExternalKey);
+
 		jiraAssetObject.setAttributeValue(
 			AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_ACCOUNT,
-			_jiraAssetService.getReferenceObjectId(
-				_accountConverter, accountExternalKey));
+			accountObjectId);
+		jiraAssetObject.setAttributeValue(
+			AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_CONTACT,
+			contactObjectId);
+		jiraAssetObject.setAttributeValue(
+			AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_CONTACT_ROLE,
+			contactRoleObjectId);
 
 		_jiraAssetService.upsert(
 			_accountContactRoleAssignmentConverter, jiraAssetObject,
+			aqlBuilder -> aqlBuilder.andEqualsObject(
+				accountObjectId,
+				AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_ACCOUNT
+			).andEqualsObject(
+				contactObjectId,
+				AccountContactRoleAssignmentConstants.ATTRIBUTE_NAME_CONTACT
+			).andEqualsObject(
+				contactRoleObjectId,
+				AccountContactRoleAssignmentConstants.
+					ATTRIBUTE_NAME_CONTACT_ROLE
+			),
 			shouldSkipUpdateBiPredicate);
 	}
 
