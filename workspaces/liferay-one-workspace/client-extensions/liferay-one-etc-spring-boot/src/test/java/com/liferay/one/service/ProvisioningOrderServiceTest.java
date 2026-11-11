@@ -10,15 +10,20 @@ import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
 import com.liferay.one.salesforce.model.SalesforceModelTestUtil;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import org.springframework.test.util.ReflectionTestUtils;
@@ -302,6 +307,135 @@ public class ProvisioningOrderServiceTest {
 	}
 
 	@Test
+	public void testTrimRemovedOrderItemsEndsAnOrderItemThatTheMessageNoLongerHas()
+		throws Exception {
+
+		Order order = _createRemovalOrder(
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", null, "2027-01-01T00:00:00Z", "LINE-1", 5001L,
+				_PRODUCT_2_ID, "2026-01-01T00:00:00Z"),
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", null, "2027-01-01T00:00:00Z", "LINE-2", 5002L,
+				_PRODUCT_2_ID, "2026-01-01T00:00:00Z"));
+
+		Instant beforeInstant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.SECONDS
+		);
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			order, List.of(_createLineItem("LINE-1", "2026-01-01")));
+
+		ArgumentCaptor<Map<Long, Map<String, Object>>> argumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			argumentCaptor.capture(), Mockito.eq(order)
+		);
+
+		Map<Long, Map<String, Object>> customFieldValuesMap =
+			argumentCaptor.getValue();
+
+		Assertions.assertEquals(Set.of(5002L), customFieldValuesMap.keySet());
+
+		String effectiveEndDate = String.valueOf(
+			customFieldValuesMap.get(
+				5002L
+			).get(
+				"effectiveEndDate"
+			));
+
+		Assertions.assertTrue(
+			effectiveEndDate.matches(
+				"\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z"),
+			"The effective end date must carry no fractional seconds");
+
+		Instant effectiveEndDateInstant = Instant.parse(effectiveEndDate);
+
+		Assertions.assertFalse(effectiveEndDateInstant.isBefore(beforeInstant));
+		Assertions.assertTrue(
+			effectiveEndDateInstant.isBefore(beforeInstant.plusSeconds(60)));
+	}
+
+	@Test
+	public void testTrimRemovedOrderItemsIsIdempotentForAnEndedOrderItem()
+		throws Exception {
+
+		Order order = _createRemovalOrder(
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", "2020-01-01T00:00:00Z", "2027-01-01T00:00:00Z",
+				"LINE-2", 5002L, _PRODUCT_2_ID, "2019-01-01T00:00:00Z"));
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			order, List.of(_createLineItem("LINE-1", "2026-01-01")));
+
+		Mockito.verifyNoInteractions(_commerceOrderItemService);
+	}
+
+	@Test
+	public void testTrimRemovedOrderItemsKeepsTheOrderItemsThatTheMessageHas()
+		throws Exception {
+
+		Order order = _createRemovalOrder(
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", null, "2027-01-01T00:00:00Z", "LINE-1", 5001L,
+				_PRODUCT_2_ID, "2026-01-01T00:00:00Z"),
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", null, "2027-01-01T00:00:00Z", "LINE-2", 5002L,
+				_PRODUCT_2_ID, "2026-01-01T00:00:00Z"));
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			order,
+			List.of(
+				_createLineItem("LINE-1", "2026-01-01"),
+				_createLineItem("LINE-2", "2026-01-01")));
+
+		Mockito.verifyNoInteractions(_commerceOrderItemService);
+	}
+
+	@Test
+	public void testTrimRemovedOrderItemsReplacesAFutureEffectiveEndDate()
+		throws Exception {
+
+		Order order = _createRemovalOrder(
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", "2099-01-01T00:00:00Z", "2099-01-01T00:00:00Z",
+				"LINE-2", 5002L, _PRODUCT_2_ID, "2026-01-01T00:00:00Z"));
+
+		Instant beforeInstant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.SECONDS
+		);
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			order, List.of(_createLineItem("LINE-1", "2026-01-01")));
+
+		ArgumentCaptor<Map<Long, Map<String, Object>>> argumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			argumentCaptor.capture(), Mockito.eq(order)
+		);
+
+		Instant effectiveEndDateInstant = Instant.parse(
+			String.valueOf(
+				argumentCaptor.getValue(
+				).get(
+					5002L
+				).get(
+					"effectiveEndDate"
+				)));
+
+		Assertions.assertFalse(effectiveEndDateInstant.isBefore(beforeInstant));
+		Assertions.assertTrue(
+			effectiveEndDateInstant.isBefore(beforeInstant.plusSeconds(60)));
+	}
+
+	@Test
 	public void testTrimRenewedOrderItemsExcludesTheCurrentOrder()
 		throws Exception {
 
@@ -554,6 +688,15 @@ public class ProvisioningOrderServiceTest {
 			));
 	}
 
+	private SalesforceOpportunityLineItem _createLineItem(
+		String id, String serviceDate) {
+
+		return new SalesforceOpportunityLineItem(
+			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
+				"USD", null, id, _PRODUCT_2_ID, "Widget", "Subscription", 5,
+				serviceDate));
+	}
+
 	private SalesforceOpportunityLineItem _createRealignmentLineItem(
 		String endDate) {
 
@@ -561,6 +704,15 @@ public class ProvisioningOrderServiceTest {
 			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
 				"USD", endDate, "LINE-1", _PRODUCT_2_ID, "Widget",
 				"Subscription", 0, "2024-06-01"));
+	}
+
+	private Order _createRemovalOrder(OrderItem... orderItems) {
+		Order order = new Order();
+
+		order.setExternalReferenceCode(_OPPORTUNITY_ID);
+		order.setOrderItems(orderItems);
+
+		return order;
 	}
 
 	private SalesforceOpportunityLineItem _createRenewalLineItem(
