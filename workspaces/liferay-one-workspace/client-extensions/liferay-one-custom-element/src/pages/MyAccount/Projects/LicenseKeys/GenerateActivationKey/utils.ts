@@ -156,6 +156,23 @@ export function getComplimentaryPurpose(
 		: purpose;
 }
 
+export function getDefaultBundleEntitlementIds(
+	bundleProducts: GenerateFormBundleProduct[],
+	developer: boolean,
+	productExternalReferenceCode: string
+): number[] {
+	return bundleProducts
+		.filter(
+			(bundleProduct) =>
+				bundleProduct.licensable &&
+				(developer ||
+					bundleProduct.availableCount > 0 ||
+					bundleProduct.externalReferenceCode ===
+						productExternalReferenceCode)
+		)
+		.map((bundleProduct) => bundleProduct.entitlementId);
+}
+
 export function getStepAfterSubscription({
 	appLicense,
 	cloudNative,

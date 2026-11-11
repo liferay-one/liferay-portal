@@ -49,6 +49,7 @@ import {
 	findMatchingVersion,
 	getBundleProducts,
 	getComplimentaryPurpose,
+	getDefaultBundleEntitlementIds,
 	getStepAfterSubscription,
 	getStepBeforeEnvironment,
 	hasAvailableKeyType,
@@ -187,18 +188,16 @@ export default function GenerateActivationKey() {
 
 		setValue(
 			'bundleEntitlementIds',
-			getBundleProducts(
+			getDefaultBundleEntitlementIds(
+				getBundleProducts(
+					developer,
+					generateForm,
+					productExternalReferenceCode,
+					serverless
+				),
 				developer,
-				generateForm,
-				productExternalReferenceCode,
-				serverless
+				productExternalReferenceCode
 			)
-				.filter(
-					(bundleProduct) =>
-						bundleProduct.licensable &&
-						(developer || bundleProduct.availableCount > 0)
-				)
-				.map((bundleProduct) => bundleProduct.entitlementId)
 		);
 	}, [
 		complimentary,
