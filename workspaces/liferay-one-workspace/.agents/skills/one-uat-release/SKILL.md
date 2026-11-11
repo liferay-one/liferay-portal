@@ -26,6 +26,8 @@ The user gave permission for this skill to create and push the release branch, t
 | `<scratchpad>` | The session scratchpad directory |
 | `<date>` | The release date that the user gives in Step 0, as `yyyy-MM-dd` |
 | `<release>` | `one-release-<date>` |
+| `<portal>` | The main `liferay-portal` checkout, `$(git rev-parse --show-toplevel)` |
+| `<clone>` | `<portal>/../liferay-one-release-deploy`, the clone that Step 4 builds and deploys from |
 | `<previous>` | The newest `one-release-*` branch on `liferay-one` before `<release>` |
 | Upstream remote | The remote whose URL contains `liferay-one/liferay-portal`, usually `liferay-one` |
 | LCP project | `exte5a2oneliferay-extuat` |
@@ -40,7 +42,6 @@ Every Jira call is a `curl` call with `--user "${JIRA_API_USER}:${JIRA_API_TOKEN
 
 ## Prerequisites
 
-- No tracked file in the checkout has changes: `git status --porcelain --untracked-files=no` prints nothing. When it prints a file, stop and ask the user to commit or stash. Do not stash or discard their work.
 - `lcp auth token` prints a token. When it does not, ask the user to run `! lcp login`.
 - `JIRA_API_USER` and `JIRA_API_TOKEN` are set.
 - The `liferay-one-etc-spring-boot` build clones `liferay/liferay-release-tool-ee` over SSH, so the SSH key must have access to it.
@@ -77,18 +78,20 @@ When `master-temp` does not contain it, the previous release has commits that `m
 
 ### Step 2. Cut and Push the Release Branch
 
-```bash
-git switch --create <release> --no-track liferay-one/master-temp
+Push the release branch straight from the remote ref. Do not check it out in `<portal>`, because other sessions can switch the branch of that checkout at any time:
 
-git push liferay-one <release>
+```bash
+git -C <portal> push liferay-one liferay-one/master-temp:refs/heads/<release>
+
+git -C <portal> fetch --quiet liferay-one <release>
 ```
 
-Use `--no-track`, so the branch does not track `master-temp`. A push to a `one-release-*` branch does not start a GitHub workflow. Only a push to `one-uat` deploys, through `.github/workflows/ci-deploy-liferay-one-uat.yaml`.
+To add commits to a release that exists, push the new `master-temp` the same way after you confirm that `git merge-base --is-ancestor liferay-one/<release> liferay-one/master-temp` succeeds. A push to a `one-release-*` branch does not start a GitHub workflow. Only a push to `one-uat` deploys, through `.github/workflows/ci-deploy-liferay-one-uat.yaml`.
 
 ### Step 3. List the Commits and the Tickets
 
 ```bash
-git log --reverse --format='%h %an %s' liferay-one/<previous>..<release>
+git log --reverse --format='%h %an %s' liferay-one/<previous>..liferay-one/<release>
 ```
 
 A commit title starts with one or more ticket IDs, for example `LPD-12345 LPD-67890 Summary`. Collect every ID at the start of each title. Then record, for each ticket, its commits and the client extensions that they change:
@@ -128,7 +131,7 @@ do
 	if [ -z "${commit}" ] || [ "${commit}" == "-" ] || ! git cat-file -e "${commit}^{commit}" 2> /dev/null
 	then
 		echo "${cx} deploy, no deployed commit"
-	elif ! git diff --quiet "${commit}" <release> -- "client-extensions/${cx}"
+	elif ! git diff --quiet "${commit}" liferay-one/<release> -- "client-extensions/${cx}"
 	then
 		echo "${cx} deploy, changed since ${commit:0:8}"
 	else
@@ -142,15 +145,31 @@ When `git cat-file` fails for a commit, run `git fetch liferay-one` and check ag
 The check looks only at the folder of each client extension. Also list the changes to the shared build inputs in `scripts/deploy.sh`, such as `build.gradle`, `gradle.properties`, `package.json`, and `yarn.lock`:
 
 ```bash
-git diff --stat liferay-one/<previous> <release> -- .yarnrc build.gradle gradle gradle-local.properties gradle.properties gradlew package.json settings.gradle tools yarn.lock
+git diff --stat liferay-one/<previous> liferay-one/<release> -- .yarnrc build.gradle gradle gradle-local.properties gradle.properties gradlew package.json settings.gradle tools yarn.lock
 ```
 
 When one of these changes the build of a client extension that is not in `<deploy>`, show the change to the user and ask whether to deploy that client extension too. A change in `tools/visuals` does not change a build.
 
-When `<deploy>` is empty, tell the user that nothing changed, do not deploy, and continue with Step 5. Otherwise, run the deploy from the release branch checkout. `lcp deploy` records the branch and the last commit of the checkout on the LCP build, and `<test-ticket>/scripts/deployed_commits.sh` reads them back.
+When `<deploy>` is empty, tell the user that nothing changed, do not deploy, and continue with Step 5. Otherwise, build and deploy from `<clone>`, a fresh local clone that has `<release>` checked out. `lcp deploy` records the branch and the last commit of the checkout on the LCP build, and `<test-ticket>/scripts/deployed_commits.sh` reads them back. Do not deploy from a git worktree: `lcp deploy` then fails with `NotFoundError: Could not find HEAD`, because the git library that it uses does not read the `.git` file of a worktree. Do not deploy from `<portal>`, because another session can switch its branch during the build.
+
+`--local` makes hard links to the objects of `<portal>`, so the clone takes seconds and almost no disk space. The sparse checkout holds only the workspace:
 
 ```bash
-cd <workspace>
+rm -rf <clone>
+
+git clone --local --no-checkout --quiet <portal> <clone>
+
+cd <clone>
+
+git remote add liferay-one "$(git -C <portal> remote get-url liferay-one)"
+
+git fetch --quiet liferay-one <release>
+
+git sparse-checkout set workspaces/liferay-one-workspace
+
+git switch --create <release> --no-track --quiet liferay-one/<release>
+
+cd workspaces/liferay-one-workspace
 
 scripts/deploy_uat.sh <deploy>
 ```
@@ -173,7 +192,7 @@ A ticket has a manual step when the release does not apply all of its change. Lo
 - **Changes that this release does not deploy.** Check each one, also when the ticket text says nothing about it. A ticket often does not mention a change to a client extension that is not deployed. List these changes:
 
 	```bash
-	git diff --stat liferay-one/<previous> <release> -- \
+	git diff --stat liferay-one/<previous> liferay-one/<release> -- \
 		$(printf 'workspaces/liferay-one-workspace/client-extensions/%s ' liferay-one-batch liferay-one-batch-products liferay-one-global-css liferay-one-site-initializer)
 	```
 
@@ -266,9 +285,9 @@ Tell the user:
 ## Patterns and Gotchas
 
 - **The `one-uat` branch does not show what is deployed.** Builds come from `master-temp` and from release branches, and several people deploy. Always read the deployed commit from LCP.
-- **A dirty checkout deploys code that is not on the branch.** `lcp deploy` records the branch and the commit, but builds the files in the checkout. This is why the Prerequisites stop on a tracked change.
-- **The build changes `package.json`.** The build moves `tests` to the end of the yarn workspaces list. The change has no effect, but the next Prerequisites check stops on it. Restore it with `git checkout -- package.json` after each deploy.
-- **A ticket can merge while the release deploys.** Before the report, compare the release branch with `git ls-remote liferay-one refs/heads/master-temp`. When `master-temp` has new commits, tell the user, and add them only when the user asks. Fast-forward with `git merge --ff-only`, push, and deploy only the client extensions that the new commits change.
+- **A dirty checkout deploys code that is not on the branch.** `lcp deploy` records the branch and the commit, but builds the files in the checkout. This is why Step 4 builds from a fresh clone.
+- **The build changes `package.json`.** The build moves `tests` to the end of the yarn workspaces list. The change has no effect, and `<clone>` is recreated for each deploy, so leave it.
+- **A ticket can merge while the release deploys.** Before the report, compare the release branch with `git ls-remote liferay-one refs/heads/master-temp`. When `master-temp` has new commits, tell the user, and add them only when the user asks. Push the new `master-temp` to `<release>` as Step 2 shows, then repeat Step 4. Step 4 deploys only the client extensions that the new commits change.
 - **The deploy does not wait for batch imports.** When a release also deploys `liferay-one-batch`, deploy it alone first and wait for its import, because the other client extensions can depend on its objects. See `specs/technical/provisioning.md`.
 - **A Jira comment is public to everyone with access to the ticket.** Do not put a client secret, a password, or a token in it.
 
