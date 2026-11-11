@@ -6,6 +6,8 @@
 import {describe, expect, it} from 'vitest';
 
 import {
+	addUTCDays,
+	addUTCYears,
 	formatDate,
 	formatDateTime,
 	formatShortDate,
@@ -22,6 +24,7 @@ import {
 	parseUTCDateString,
 	shiftUTCDays,
 	shiftUTCMonths,
+	startOfUTCDay,
 	toISODate,
 	toLastTermDay,
 	toSlashDateUTC,
@@ -30,6 +33,36 @@ import {
 } from './dateUtils';
 
 describe('[MOD-DATEUTILS] dateUtils', () => {
+	it('addUTCDays crosses month and year ends in UTC', () => {
+		expect(
+			addUTCDays(new Date('2026-12-31T00:00:00.000Z'), 1).toISOString()
+		).toBe('2027-01-01T00:00:00.000Z');
+		expect(
+			addUTCDays(new Date('2026-03-01T00:00:00.000Z'), -1).toISOString()
+		).toBe('2026-02-28T00:00:00.000Z');
+	});
+
+	it('addUTCYears keeps the day and ends February 29 on February 28 in a year without it', () => {
+		expect(
+			addUTCYears(new Date('2026-08-23T00:00:00.000Z'), 1).toISOString()
+		).toBe('2027-08-23T00:00:00.000Z');
+		expect(
+			addUTCYears(new Date('2024-02-29T00:00:00.000Z'), 1).toISOString()
+		).toBe('2025-02-28T00:00:00.000Z');
+		expect(
+			addUTCYears(new Date('2024-02-29T00:00:00.000Z'), 4).toISOString()
+		).toBe('2028-02-29T00:00:00.000Z');
+	});
+
+	it('startOfUTCDay returns the UTC midnight of the UTC day of a timestamp', () => {
+		expect(startOfUTCDay('2026-08-23T23:59:59.000Z').toISOString()).toBe(
+			'2026-08-23T00:00:00.000Z'
+		);
+		expect(startOfUTCDay('2026-08-23T01:00:00-07:00').toISOString()).toBe(
+			'2026-08-23T00:00:00.000Z'
+		);
+	});
+
 	it('formatDate returns the fallback for missing or invalid input', () => {
 		expect(formatDate(undefined)).toBe('N/A');
 		expect(formatDate('', '-')).toBe('-');
