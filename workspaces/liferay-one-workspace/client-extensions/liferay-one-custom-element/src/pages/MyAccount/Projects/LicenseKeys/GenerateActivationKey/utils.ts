@@ -173,6 +173,35 @@ export function getDefaultBundleEntitlementIds(
 		.map((bundleProduct) => bundleProduct.entitlementId);
 }
 
+export function getGenerateBundleEntitlementIds(
+	bundleEntitlementIds: number[],
+	bundleProducts: GenerateFormBundleProduct[],
+	productExternalReferenceCode: string,
+	subscriptionEntitlementId: number
+): number[] {
+	if (!subscriptionEntitlementId) {
+		return bundleEntitlementIds;
+	}
+
+	const productEntitlementIds = bundleProducts
+		.filter(
+			(bundleProduct) =>
+				bundleProduct.externalReferenceCode ===
+				productExternalReferenceCode
+		)
+		.map((bundleProduct) => bundleProduct.entitlementId);
+
+	return [
+		...new Set(
+			bundleEntitlementIds.map((entitlementId) =>
+				productEntitlementIds.includes(entitlementId)
+					? subscriptionEntitlementId
+					: entitlementId
+			)
+		),
+	];
+}
+
 export function getStepAfterSubscription({
 	appLicense,
 	cloudNative,
