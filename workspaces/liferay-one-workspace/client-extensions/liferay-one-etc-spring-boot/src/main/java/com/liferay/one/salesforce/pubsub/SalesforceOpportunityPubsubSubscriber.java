@@ -597,6 +597,22 @@ public class SalesforceOpportunityPubsubSubscriber
 				provisionableSalesforceOpportunityLineItems, warningMessages);
 		}
 
+		if (_isProvisioned(order) &&
+			!salesforceOpportunityLineItems.isEmpty()) {
+
+			try {
+				_provisioningOrderService.trimRemovedOrderItems(
+					order, salesforceOpportunityLineItems);
+			}
+			catch (Exception exception) {
+				_addWarning(
+					warningMessages,
+					"Unable to end the line items that opportunity " +
+						salesforceOpportunity.getId() + " no longer has",
+					exception);
+			}
+		}
+
 		String currencyCode = _getCurrencyCode(
 			salesforceOpportunity, provisionableSalesforceOpportunityLineItems,
 			warningMessages);
