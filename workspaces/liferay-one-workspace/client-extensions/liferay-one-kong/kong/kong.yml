@@ -34,4 +34,4 @@ services:
                             replace:
                                 uri: /cloud/environments/$(uri_captures["environment_id"])/manifest
                         name: request-transformer
-        url: http://liferayoneetcspringboot:58081
+        url: __SPRING_BOOT_URL__
