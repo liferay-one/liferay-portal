@@ -239,6 +239,15 @@
 			"VIEW"
 		],
 		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ProjectMembership$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
 		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Property$]",
 		"roleName": "Provisioning Administrator",
 		"scope": "1"
@@ -563,7 +572,9 @@
 		"actionIds": [
 			"UPDATE",
 			"VIEW",
-			"VIEW_ADDRESSES"
+			"VIEW_ACCOUNT_ROLES",
+			"VIEW_ADDRESSES",
+			"VIEW_USERS"
 		],
 		"primKey": "0",
 		"resourceName": "com.liferay.account.model.AccountEntry",
@@ -604,6 +615,15 @@
 		"primKey": "0",
 		"resourceName": "com.liferay.account.model.AccountRole",
 		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountRole",
+		"roleName": "Provisioning Worker",
 		"scope": "1"
 	},
 	{

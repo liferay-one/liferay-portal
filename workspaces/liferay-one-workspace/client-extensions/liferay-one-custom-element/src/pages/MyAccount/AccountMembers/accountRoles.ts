@@ -137,6 +137,15 @@ export function canEditAccountDetails(
 	return isAccountManager(userAccountModel);
 }
 
+export function canManageAccountMembers(
+	userAccountModel?: UserAccountModel | null
+) {
+	return Boolean(
+		isAccountManager(userAccountModel) ||
+			userAccountModel?.canManageAllAccountMembers
+	);
+}
+
 export function canAccessAccountMembers(
 	userAccountModel?: UserAccountModel | null
 ) {

@@ -61,6 +61,8 @@ public class AccountPermission {
 		throws Exception {
 
 		if (_isPortalManager(userAccount) ||
+			(actionId.equals(ActionKeys.ASSIGN_MEMBERS) &&
+			 _canAssignAllAccountMembers(userAccount)) ||
 			(actionId.equals(ActionKeys.VIEW) &&
 			 _canViewAllAccounts(userAccount))) {
 
@@ -154,6 +156,19 @@ public class AccountPermission {
 				if (Objects.equals(roleBrief.getName(), roleName)) {
 					return true;
 				}
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _canAssignAllAccountMembers(UserAccount userAccount) {
+		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
+			if (Objects.equals(
+					roleBrief.getName(),
+					RoleConstants.NAME_PROVISIONING_WORKER)) {
+
+				return true;
 			}
 		}
 

@@ -14,7 +14,7 @@ import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/Rest
 import {useOneContext} from '~/context/OneContextProvider';
 import {useFetch} from '~/hooks/useFetch';
 import i18n, {translate} from '~/i18n';
-import {isAccountManager} from '~/pages/MyAccount/AccountMembers/accountRoles';
+import {canManageAccountMembers} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import {useProjectMemberActions} from '~/pages/MyAccount/ProjectMembers/hooks/useProjectMemberActions';
 import {useProjectMembers} from '~/pages/MyAccount/ProjectMembers/hooks/useProjectMembers';
 import {
@@ -51,7 +51,7 @@ export default function ProjectMembers() {
 		new Set()
 	);
 
-	const isAccountAdmin = isAccountManager(userAccountModel);
+	const canManageAllProjects = canManageAccountMembers(userAccountModel);
 
 	const {openEditProjectPermissions, openInviteProjectMember} =
 		useProjectMemberActions({
@@ -65,7 +65,7 @@ export default function ProjectMembers() {
 	);
 
 	const canManageProject = (project: ProjectMembersRow) =>
-		isAccountAdmin ||
+		canManageAllProjects ||
 		project.members.some(
 			(member) =>
 				String(member.userId) === currentUserId &&

@@ -516,7 +516,7 @@ public class AccountsRestController extends OneBaseRestController {
 
 		if (Validator.isNotNull(projectExternalReferenceCode)) {
 			_projectPermission.check(
-				ActionKeys.UPDATE, jwt, projectExternalReferenceCode);
+				ActionKeys.ASSIGN_MEMBERS, jwt, projectExternalReferenceCode);
 
 			project = _projectService.fetchProject(
 				projectExternalReferenceCode);
@@ -527,7 +527,7 @@ public class AccountsRestController extends OneBaseRestController {
 		}
 		else {
 			_accountPermission.check(
-				externalReferenceCode, ActionKeys.UPDATE, jwt);
+				externalReferenceCode, ActionKeys.ASSIGN_MEMBERS, jwt);
 
 			_validateAccountInvitation(account, userAccount);
 		}
@@ -890,11 +890,11 @@ public class AccountsRestController extends OneBaseRestController {
 
 		if (Validator.isNull(projectExternalReferenceCode)) {
 			_accountPermission.check(
-				externalReferenceCode, ActionKeys.UPDATE, jwt);
+				externalReferenceCode, ActionKeys.ASSIGN_MEMBERS, jwt);
 		}
 		else {
 			_projectPermission.check(
-				ActionKeys.UPDATE, jwt, projectExternalReferenceCode);
+				ActionKeys.ASSIGN_MEMBERS, jwt, projectExternalReferenceCode);
 		}
 
 		return accountInvitation;
