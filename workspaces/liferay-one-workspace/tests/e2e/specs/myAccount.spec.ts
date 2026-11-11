@@ -335,7 +335,7 @@ test.describe('[FLOW-MY-ACCOUNT-OVERVIEW] account access', () => {
 });
 
 test.describe('[FLOW-MY-ACCOUNT-OVERVIEW] account details', () => {
-	test('[FLOW-MY-ACCOUNT-OVERVIEW] [ROUTE-MY-ACCOUNT-ACCOUNT-DETAILS] shows the account and hides Sync to JSM from an account admin', async ({
+	test('[FLOW-MY-ACCOUNT-OVERVIEW] [ROUTE-MY-ACCOUNT-ACCOUNT-DETAILS] shows the account without a Security card and hides Sync to JSM from an account admin', async ({
 		adminAPI,
 		page,
 		signIn,
@@ -355,11 +355,17 @@ test.describe('[FLOW-MY-ACCOUNT-OVERVIEW] account details', () => {
 			'Company Name',
 			'Account ID',
 			'Primary Contact',
+		]) {
+			await expect(page.getByText(label, {exact: true})).toBeVisible();
+		}
+
+		for (const label of [
+			'Security',
 			'Password Policy',
 			'Okta SSO',
 			'Two-Factor Authentication',
 		]) {
-			await expect(page.getByText(label, {exact: true})).toBeVisible();
+			await expect(page.getByText(label, {exact: true})).toHaveCount(0);
 		}
 
 		await expect(page.getByText(ACCOUNT_ERC, {exact: true})).toBeVisible();
