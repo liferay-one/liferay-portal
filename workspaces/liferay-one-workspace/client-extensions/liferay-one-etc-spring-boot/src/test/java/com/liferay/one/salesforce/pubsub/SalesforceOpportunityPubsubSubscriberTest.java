@@ -676,6 +676,39 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveDoesNotTrimRemovedOrderItemsOnFirstDelivery()
+		throws Exception {
+
+		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
+
+		Mockito.verify(
+			_provisioningOrderService, Mockito.never()
+		).trimRemovedOrderItems(
+			Mockito.any(), Mockito.anyList()
+		);
+	}
+
+	@Test
+	public void testReceiveDoesNotTrimRemovedOrderItemsWithoutOpportunityLineItems()
+		throws Exception {
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_OPPORTUNITY_ID)
+		).thenReturn(
+			_createExistingOrder()
+		);
+
+		_receiveOpportunityMessage(_createProjectEntitlementRecordJSONObject());
+
+		Mockito.verify(
+			_provisioningOrderService, Mockito.never()
+		).trimRemovedOrderItems(
+			Mockito.any(), Mockito.anyList()
+		);
+	}
+
+	@Test
 	public void testReceiveDoesNotWarnWhenAIHubFormExists() throws Exception {
 		_setUpAIHubOrder();
 
@@ -2407,6 +2440,39 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveTrimsRemovedOrderItemsOnReprocess()
+		throws Exception {
+
+		Order existingOrder = _createExistingOrder();
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_OPPORTUNITY_ID)
+		).thenReturn(
+			existingOrder
+		);
+
+		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
+
+		InOrder inOrder = Mockito.inOrder(
+			_commerceOrderService, _provisioningOrderService);
+
+		inOrder.verify(
+			_provisioningOrderService
+		).trimRemovedOrderItems(
+			Mockito.eq(existingOrder),
+			Mockito.argThat(items -> _hasLineItemIds(items, "LINE-1"))
+		);
+
+		inOrder.verify(
+			_commerceOrderService
+		).upsertOrder(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
+		);
+	}
+
+	@Test
 	public void testReceiveTrimsRenewedOrderItemsWhenHasRenewalFlagSet()
 		throws Exception {
 
@@ -2969,6 +3035,37 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			Mockito.argThat(
 				salesforceContract -> Objects.equals(
 					salesforceContract.getId(), "C2"))
+		);
+	}
+
+	@Test
+	public void testReceiveWarnsAndContinuesWhenTheTrimFails()
+		throws Exception {
+
+		Order existingOrder = _createExistingOrder();
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_OPPORTUNITY_ID)
+		).thenReturn(
+			existingOrder
+		);
+
+		Mockito.doThrow(
+			new Exception("Unable to end")
+		).when(
+			_provisioningOrderService
+		).trimRemovedOrderItems(
+			Mockito.any(), Mockito.anyList()
+		);
+
+		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).upsertOrderItems(
+			Mockito.any(), Mockito.any(), Mockito.anyList(), Mockito.any(),
+			Mockito.anyBoolean()
 		);
 	}
 
@@ -3621,6 +3718,22 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		recordJSONObject.put("contracts", contractsJSONArray);
 
 		return recordJSONObject;
+	}
+
+	private Order _createExistingOrder() {
+		Order existingOrder = new Order();
+
+		existingOrder.setExternalReferenceCode(_OPPORTUNITY_ID);
+		existingOrder.setOrderItems(
+			new OrderItem[] {
+				SalesforceModelTestUtil.createOrderItem(
+					null, null, null, "LINE-1", _EXISTING_ORDER_ITEM_ID,
+					"PROD-1", null)
+			});
+		existingOrder.setOrderStatus(
+			CommerceOrderConstants.ORDER_STATUS_COMPLETED);
+
+		return existingOrder;
 	}
 
 	private JSONObject _createNewBusinessRecordJSONObject() {
