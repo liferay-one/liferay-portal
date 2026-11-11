@@ -311,6 +311,118 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyChargesTheSelectedSubscriptionOfTheSameProduct()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(
+				1L, 2.0, "PRDCT-DXP", 0, "2027-08-09T00:00:00Z", "backup"),
+			_toEntitlement(
+				2L, 3.0, "PRDCT-DXP", 0, "2027-08-09T00:00:00Z", "backup"));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toGenerateRequest(Arrays.asList(1L), 2L, 3));
+
+		ArgumentCaptor<Long> entitlementIdArgumentCaptor =
+			ArgumentCaptor.forClass(Long.class);
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.atLeastOnce()
+		).addLicenseKey(
+			Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyBoolean(),
+			Mockito.any(), Mockito.any(), Mockito.anyLong(),
+			entitlementIdArgumentCaptor.capture(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
+			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		Assertions.assertEquals(
+			Arrays.asList(2L, 2L, 2L),
+			entitlementIdArgumentCaptor.getAllValues());
+	}
+
+	@Test
+	public void testGenerateActivationKeyChargesTheSelectedSubscriptionOfTheSameProductForAVirtualCluster()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(
+				1L, 2.0, "PRDCT-DXP", 0, "2027-08-09T00:00:00Z", "production"),
+			_toEntitlement(
+				2L, 3.0, "PRDCT-DXP", 0, "2027-08-09T00:00:00Z", "production"));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toVirtualClusterGenerateRequest(
+				Arrays.asList(1L), "production", 3, 2L));
+
+		ArgumentCaptor<Long> entitlementIdArgumentCaptor =
+			ArgumentCaptor.forClass(Long.class);
+
+		Mockito.verify(
+			_licenseKeyService, Mockito.atLeastOnce()
+		).addLicenseKey(
+			Mockito.anyLong(), Mockito.any(), Mockito.anyLong(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyBoolean(),
+			Mockito.any(), Mockito.any(), Mockito.anyLong(),
+			entitlementIdArgumentCaptor.capture(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.anyInt(),
+			Mockito.anyLong(), Mockito.anyInt(), Mockito.anyInt(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any()
+		);
+
+		Assertions.assertEquals(
+			Collections.singletonList(2L),
+			entitlementIdArgumentCaptor.getAllValues());
+	}
+
+	@Test
+	public void testGenerateActivationKeyChecksTheActivationsOfTheSelectedSubscriptionOfTheSameProduct()
+		throws Exception {
+
+		_stubEntitlements(
+			_toEntitlement(
+				1L, 2.0, "PRDCT-DXP", 0, "2027-08-09T00:00:00Z", "backup"),
+			_toEntitlement(
+				2L, 3.0, "PRDCT-DXP", 0, "2027-08-09T00:00:00Z", "backup"));
+
+		_stubLicensedProducts();
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toGenerateRequest(Arrays.asList(2L), 1L, 3)));
+
+		Assertions.assertTrue(
+			licenseKeyEntitlementException.getMessage(
+			).endsWith(
+				"has 2 activations left, but 3 were requested"
+			));
+
+		_verifyNoActivationKeyAdded();
+	}
+
+	@Test
 	public void testGenerateActivationKeyComplimentaryBundlesNothingElse()
 		throws Exception {
 

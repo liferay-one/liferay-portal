@@ -103,6 +103,16 @@ public class SalesforceModelTestUtil {
 		String productName, String productType, double quantity,
 		String serviceDate) {
 
+		return createOpportunityLineItemJSONObject(
+			currencyIsoCode, endDate, id, product2Id, productName, productType,
+			quantity, serviceDate, null);
+	}
+
+	public static JSONObject createOpportunityLineItemJSONObject(
+		String currencyIsoCode, String endDate, String id, String product2Id,
+		String productName, String productType, double quantity,
+		String serviceDate, Double totalPrice) {
+
 		JSONObject jsonObject = new JSONObject(
 		).put(
 			"CurrencyIsoCode", currencyIsoCode
@@ -124,6 +134,10 @@ public class SalesforceModelTestUtil {
 
 		if (serviceDate != null) {
 			jsonObject.put("ServiceDate", serviceDate);
+		}
+
+		if (totalPrice != null) {
+			jsonObject.put("TotalPrice", totalPrice);
 		}
 
 		return jsonObject;
