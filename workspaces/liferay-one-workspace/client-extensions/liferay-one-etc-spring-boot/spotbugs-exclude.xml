@@ -11,6 +11,9 @@
 		<Bug pattern="EI_EXPOSE_REP2" />
 	</Match>
 	<Match>
+		<Class name="~com\.liferay\..*\.client\.http\.HttpInvoker.*" />
+	</Match>
+	<Match>
 		<Bug pattern="NP_BOOLEAN_RETURN_NULL" />
 		<Class name="~com\.liferay\.one\.jira\.synchronizer\..*SyncModel" />
 	</Match>
