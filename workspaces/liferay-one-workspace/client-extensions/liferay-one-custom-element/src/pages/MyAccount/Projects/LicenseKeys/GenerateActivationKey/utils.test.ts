@@ -17,6 +17,7 @@ import {
 	getComplimentaryPurpose,
 	getDefaultBundleEntitlementIds,
 	getEnvironmentTypeRank,
+	getGenerateBundleEntitlementIds,
 	getGenerateButtonLabel,
 	getLicenseKeyFamilyLabel,
 	getLicenseKeyFamilyRank,
@@ -392,6 +393,56 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 					'PRDCT-DXP'
 				)
 			).toEqual([1, 2, 3]);
+		});
+	});
+
+	describe('getGenerateBundleEntitlementIds', () => {
+		const bundleProducts = [
+			{
+				availableCount: 0,
+				entitlementId: 1,
+				externalReferenceCode: 'PRDCT-ANALYTICS',
+				licensable: true,
+			},
+			{
+				availableCount: 1,
+				entitlementId: 2,
+				externalReferenceCode: 'PRDCT-COMMERCE',
+				licensable: true,
+			},
+		] as GenerateFormBundleProduct[];
+
+		it('uses the selected subscription for the product of the key', () => {
+			expect(
+				getGenerateBundleEntitlementIds(
+					[1, 2],
+					bundleProducts,
+					'PRDCT-ANALYTICS',
+					5
+				)
+			).toEqual([5, 2]);
+		});
+
+		it('does not repeat the selected subscription', () => {
+			expect(
+				getGenerateBundleEntitlementIds(
+					[1, 2],
+					bundleProducts,
+					'PRDCT-COMMERCE',
+					2
+				)
+			).toEqual([1, 2]);
+		});
+
+		it('keeps the selection when no subscription is selected', () => {
+			expect(
+				getGenerateBundleEntitlementIds(
+					[1, 2],
+					bundleProducts,
+					'PRDCT-ANALYTICS',
+					0
+				)
+			).toEqual([1, 2]);
 		});
 	});
 
