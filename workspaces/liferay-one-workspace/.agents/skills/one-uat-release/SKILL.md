@@ -1,7 +1,7 @@
 ---
 
 argument-hint: [<yyyy-MM-dd>]
-description: Cut a Liferay One release to one-uat. Ask for the release date, create the one-release-<yyyy-MM-dd> branch for that date from the latest liferay-one master-temp and push it, list the commits and Jira tickets since the previous release branch, build and deploy the custom element, Spring Boot, and instance settings client extensions to one-uat, do the manual steps of each ticket, comment on each ticket that it is on one-uat, set the Release Date of each ticket, and test each ticket that can be tested. Use when the user asks to cut, push, or deploy a release to UAT or one-uat, or invokes /one-uat-release.
+description: Cut a Liferay One release to one-uat. Ask for the release date, create the one-release-<yyyy-MM-dd> branch for that date from the latest liferay-one master-temp and push it, list the commits and Jira tickets since the previous release branch, build and deploy the custom element, Spring Boot, instance settings, and Kong client extensions that changed to one-uat, do the manual steps of each ticket, comment on each ticket that it is on one-uat, set the Release Date of each ticket, and test each ticket that can be tested. Use when the user asks to cut, push, or deploy a release to UAT or one-uat, or invokes /one-uat-release.
 name: one-uat-release
 
 ---
@@ -29,7 +29,8 @@ The user gave permission for this skill to create and push the release branch, t
 | `<previous>` | The newest `one-release-*` branch on `liferay-one` before `<release>` |
 | Upstream remote | The remote whose URL contains `liferay-one/liferay-portal`, usually `liferay-one` |
 | LCP project | `exte5a2oneliferay-extuat` |
-| Deployed client extensions | `liferay-one-custom-element`, `liferay-one-etc-spring-boot`, `liferay-one-instance-settings` |
+| Release client extensions | `liferay-one-custom-element`, `liferay-one-etc-spring-boot`, `liferay-one-instance-settings`, `liferay-one-kong` |
+| `<deploy>` | The release client extensions that changed since their last deploy, from Step 4 |
 
 The date in the branch name is year, month, day, as in `one-release-2026-11-10`.
 
@@ -113,15 +114,48 @@ Show the user a table of the tickets with their commits, client extensions, stat
 
 ### Step 4. Build and Deploy
 
-Run the deploy from the release branch checkout. `lcp deploy` records the branch and the last commit of the checkout on the LCP build, and `<test-ticket>/scripts/deployed_commits.sh` reads them back.
+Deploy only the release client extensions that changed. Compare the commit of the last deploy of each service with the release. The previous release branch is not the correct base, because a service can deploy from `master-temp` between two releases. The service ID is the client extension name without hyphens.
 
 ```bash
 cd <workspace>
 
-scripts/deploy_uat.sh liferay-one-custom-element liferay-one-etc-spring-boot liferay-one-instance-settings
+DEPLOYED=$(bash <test-ticket>/scripts/deployed_commits.sh)
+
+for cx in liferay-one-custom-element liferay-one-etc-spring-boot liferay-one-instance-settings liferay-one-kong
+do
+	commit=$(echo "${DEPLOYED}" | awk -F '\t' -v service="${cx//-/}" '$1 == service {print $5}')
+
+	if [ -z "${commit}" ] || [ "${commit}" == "-" ] || ! git cat-file -e "${commit}^{commit}" 2> /dev/null
+	then
+		echo "${cx} deploy, no deployed commit"
+	elif ! git diff --quiet "${commit}" <release> -- "client-extensions/${cx}"
+	then
+		echo "${cx} deploy, changed since ${commit:0:8}"
+	else
+		echo "${cx} skip, unchanged since ${commit:0:8}"
+	fi
+done
 ```
 
-The script runs `./gradlew clean`, then `build` on each client extension, which also runs the tests of each one, then one `lcp deploy` with the three services in one LCP build. The build takes several minutes, so run it in the background and wait for it to exit. When the build fails, stop and show the user the failure. Do not deploy a failed build.
+When `git cat-file` fails for a commit, run `git fetch liferay-one` and check again before you deploy because of it. The client extensions with `deploy` are `<deploy>`.
+
+The check looks only at the folder of each client extension. Also list the changes to the shared build inputs in `scripts/deploy.sh`, such as `build.gradle`, `gradle.properties`, `package.json`, and `yarn.lock`:
+
+```bash
+git diff --stat liferay-one/<previous> <release> -- .yarnrc build.gradle gradle gradle-local.properties gradle.properties gradlew package.json settings.gradle tools yarn.lock
+```
+
+When one of these changes the build of a client extension that is not in `<deploy>`, show the change to the user and ask whether to deploy that client extension too. A change in `tools/visuals` does not change a build.
+
+When `<deploy>` is empty, tell the user that nothing changed, do not deploy, and continue with Step 5. Otherwise, run the deploy from the release branch checkout. `lcp deploy` records the branch and the last commit of the checkout on the LCP build, and `<test-ticket>/scripts/deployed_commits.sh` reads them back.
+
+```bash
+cd <workspace>
+
+scripts/deploy_uat.sh <deploy>
+```
+
+The script runs `./gradlew clean`, then `build` on each client extension, which also runs the tests of each one, then one `lcp deploy` with the services in one LCP build. The build takes several minutes, so run it in the background and wait for it to exit. When the build fails, stop and show the user the failure. Do not deploy a failed build.
 
 Then confirm that each service deployed the release:
 
@@ -129,7 +163,7 @@ Then confirm that each service deployed the release:
 bash <test-ticket>/scripts/deployed_commits.sh
 ```
 
-The rows of `liferayonecustomelement`, `liferayoneetcspringboot`, and `liferayoneinstancesettings` must show the same new build, the branch `<release>`, and the commit `git rev-parse HEAD`. A row that still shows the previous build did not deploy. Read its log with `lcp log -p exte5a2oneliferay-extuat -s <service>` and tell the user.
+The row of each service in `<deploy>` must show the same new build, the branch `<release>`, and the commit `git rev-parse HEAD`. The rows of the other services keep their previous build. A row that still shows the previous build did not deploy. Read its log with `lcp log -p exte5a2oneliferay-extuat -s <service>` and tell the user.
 
 ### Step 5. Find the Manual Steps
 
@@ -140,7 +174,7 @@ A ticket has a manual step when the release does not apply all of its change. Lo
 
 	```bash
 	git diff --stat liferay-one/<previous> <release> -- \
-		$(printf 'workspaces/liferay-one-workspace/client-extensions/%s ' liferay-one-batch liferay-one-batch-products liferay-one-global-css liferay-one-kong liferay-one-site-initializer)
+		$(printf 'workspaces/liferay-one-workspace/client-extensions/%s ' liferay-one-batch liferay-one-batch-products liferay-one-global-css liferay-one-site-initializer)
 	```
 
 	Read the diff of each commit, item by item. For each item that the diff adds, changes, or removes, query one-uat and record whether one-uat has the new state. An item that one-uat does not have is a manual step. Use the table to find how one-uat gets the change and how to check it:
@@ -150,7 +184,7 @@ A ticket has a manual step when the release does not apply all of its change. Lo
 | `liferay-one-batch` | A deploy of the batch. Deploy it alone, before any other client extension, with `scripts/deploy_uat.sh liferay-one-batch`. A batch redeploy removes the relationship values of system objects, so ask the user first | Query the object definition, field, or picklist over the headless APIs |
 | `liferay-one-batch-products` | No deploy to Liferay Cloud, because its product import fails there. Create or delete each changed item over `/o/c/entitlementdefinitions`, `/o/c/entitlementdefinitionskus`, or the commerce APIs, with the values from the batch file. A new entitlement definition link gives no entitlement to the existing order items. Call `POST /entitlements/generate?commerceOrderItemId=<id>` on etc-spring-boot for each order item of the SKU. Find them with `GET /o/headless-commerce-admin-order/v1.0/orderItems?filter=sku eq '<sku ERC>'`. The call skips an order that is not completed, so a pending order gets no entitlement until it completes | `GET /o/c/<plural>/by-external-reference-code/<ERC>` for each added or removed item. A removed item returns 404 |
 | `liferay-one-site-initializer` | A deploy to the existing site does not apply the change. Apply a grant in `resource-permissions.json` with `PATCH /o/headless-admin-user/v1.0/roles/{roleId}` and `rolePermissions`. The call adds grants and does not remove them. Send every action of the resource, not only the new ones. For scope `1`, set `primaryKey` to the company ID | Read the role permissions with `GET /o/headless-admin-user/v1.0/roles/{roleId}`. The count must be the old count plus the new resources |
-| `liferay-one-global-css`, `liferay-one-kong` | A deploy of that client extension with `scripts/deploy_uat.sh <client extension>` | `deployed_commits.sh` shows a commit that contains the fix commit |
+| `liferay-one-global-css` | A deploy of that client extension with `scripts/deploy_uat.sh <client extension>` | `deployed_commits.sh` shows a commit that contains the fix commit |
 
 - **A new OAuth application in `liferay-one-instance-settings`.** The deploy creates the application. Its client ID and secret go to the person who asked for them, through a private channel. Never put a secret in a Jira comment.
 
@@ -163,7 +197,7 @@ Show the user one list: each ticket, each manual step, the commands or calls tha
 Add one comment to each ticket from Step 3, also a closed ticket. Write it in Simplified Technical English, as `rules/simplified-technical-english.md` says:
 
 ```text
-Deployed to one-uat on <date> in `<release>`, LCP build <build>, commit `<short sha>`. The build deployed `liferay-one-custom-element`, `liferay-one-etc-spring-boot`, and `liferay-one-instance-settings`.
+Deployed to one-uat on <date> in `<release>`, LCP build <build>, commit `<short sha>`. The build deployed <each client extension in `<deploy>`>.
 
 The release contains these commits for this ticket:
 - `<short sha>` <title>
@@ -240,7 +274,7 @@ Tell the user:
 
 ## Success Signal
 
-`deployed_commits.sh` shows the three services on `<release>` at the release commit, and each ticket from Step 3 has a deploy comment and the Release Date `<date>`. Each tested ticket also has a test comment with its steps and a passed or failed result.
+`deployed_commits.sh` shows each service in `<deploy>` on `<release>` at the release commit, and each other release service at a commit with no change to its folder, and each ticket from Step 3 has a deploy comment and the Release Date `<date>`. Each tested ticket also has a test comment with its steps and a passed or failed result.
 
 ## See Also
 
