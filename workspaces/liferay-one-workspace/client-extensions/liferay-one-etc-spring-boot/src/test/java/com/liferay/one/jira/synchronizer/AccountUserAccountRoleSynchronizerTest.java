@@ -168,8 +168,59 @@ public class AccountUserAccountRoleSynchronizerTest {
 			_jiraAssetService
 		).upsert(
 			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
-			Mockito.isNull()
+			Mockito.any(), Mockito.isNull()
 		);
+	}
+
+	@Test
+	public void testSyncAssignRoleMatchesAssignmentByContactRoleContactAndAccount()
+		throws Exception {
+
+		Mockito.when(
+			_jiraAssetService.getReferenceObjectId(
+				Mockito.isA(AccountConverter.class), Mockito.any())
+		).thenReturn(
+			"3"
+		);
+
+		Mockito.when(
+			_jiraAssetService.getReferenceObjectId(
+				Mockito.isA(ContactConverter.class), Mockito.any())
+		).thenReturn(
+			"2"
+		);
+
+		Mockito.when(
+			_jiraAssetService.getReferenceObjectId(
+				Mockito.isA(ContactRoleConverter.class), Mockito.any())
+		).thenReturn(
+			"1"
+		);
+
+		_accountUserAccountRoleSynchronizer.syncAssignRole(
+			_ROLE_EXTERNAL_KEY, _USER_ACCOUNT_EXTERNAL_KEY,
+			_ACCOUNT_EXTERNAL_KEY);
+
+		ArgumentCaptor<Consumer<AQLUtil.Builder>> consumerArgumentCaptor =
+			ArgumentCaptor.forClass(Consumer.class);
+
+		Mockito.verify(
+			_jiraAssetService
+		).upsert(
+			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
+			consumerArgumentCaptor.capture(), Mockito.isNull()
+		);
+
+		AQLUtil.Builder aqlBuilder = AQLUtil.builder("base");
+
+		Consumer<AQLUtil.Builder> consumer = consumerArgumentCaptor.getValue();
+
+		consumer.accept(aqlBuilder);
+
+		Assertions.assertEquals(
+			"base AND \"Account\" = 3 AND \"Contact\" = 2 AND \"Contact " +
+				"Role\" = 1",
+			aqlBuilder.build());
 	}
 
 	@Test
@@ -320,7 +371,7 @@ public class AccountUserAccountRoleSynchronizerTest {
 			_jiraAssetService
 		).upsert(
 			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
-			Mockito.isNull()
+			Mockito.any(), Mockito.isNull()
 		);
 	}
 
@@ -423,7 +474,7 @@ public class AccountUserAccountRoleSynchronizerTest {
 		Mockito.verify(
 			_jiraAssetService, Mockito.never()
 		).upsert(
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -487,7 +538,7 @@ public class AccountUserAccountRoleSynchronizerTest {
 		Mockito.verify(
 			_jiraAssetService, Mockito.never()
 		).upsert(
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -558,7 +609,7 @@ public class AccountUserAccountRoleSynchronizerTest {
 			_jiraAssetService
 		).upsert(
 			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
-			Mockito.any()
+			Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -604,7 +655,7 @@ public class AccountUserAccountRoleSynchronizerTest {
 		Mockito.verify(
 			_jiraAssetService, Mockito.never()
 		).upsert(
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -634,7 +685,7 @@ public class AccountUserAccountRoleSynchronizerTest {
 		Mockito.verify(
 			_jiraAssetService, Mockito.never()
 		).upsert(
-			Mockito.any(), Mockito.any(), Mockito.any()
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -695,7 +746,7 @@ public class AccountUserAccountRoleSynchronizerTest {
 			_jiraAssetService
 		).upsert(
 			Mockito.eq(_accountContactRoleAssignmentConverter), Mockito.any(),
-			biPredicateArgumentCaptor.capture()
+			Mockito.any(), biPredicateArgumentCaptor.capture()
 		);
 
 		return biPredicateArgumentCaptor.getValue();

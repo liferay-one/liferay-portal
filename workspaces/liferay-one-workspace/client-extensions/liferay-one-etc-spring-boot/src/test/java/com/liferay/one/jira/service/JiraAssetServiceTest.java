@@ -868,6 +868,139 @@ public class JiraAssetServiceTest {
 	}
 
 	@Test
+	public void testUpsertCreatesObjectWhenNoObjectMatches() throws Exception {
+		_mockAQL();
+
+		JiraAssetObject jiraAssetObject = _mockUpsertJiraAssetObject();
+
+		Mockito.when(
+			_jiraAssetPersistence.searchObjects(
+				Mockito.anyString(), Mockito.any())
+		).thenReturn(
+			Collections.emptyList()
+		);
+
+		_jiraAssetService.upsert(
+			_converter, jiraAssetObject, _MATCH_CONSUMER, null);
+
+		Mockito.verify(
+			_jiraAssetPersistence
+		).searchObjects(
+			Mockito.eq(_MATCH_AQL), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetPersistence
+		).createObject(
+			"objectTypeId", jiraAssetObject
+		);
+	}
+
+	@Test
+	public void testUpsertReusesMatchingObject() throws Exception {
+		_mockAQL();
+
+		JiraAssetObject jiraAssetObject = _mockUpsertJiraAssetObject();
+
+		_whenSearchObjects(_EXTERNAL_KEY_AQL);
+		_whenSearchObjects(_MATCH_AQL, _existingJiraAssetObject);
+
+		_jiraAssetService.upsert(
+			_converter, jiraAssetObject, _MATCH_CONSUMER, null);
+
+		Mockito.verify(
+			_jiraAssetPersistence
+		).updateObject(
+			_OBJECT_ID, jiraAssetObject
+		);
+
+		Mockito.verify(
+			_jiraAssetPersistence, Mockito.never()
+		).createObject(
+			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testUpsertReusesMatchingObjectThatIsNotDeleted()
+		throws Exception {
+
+		_mockAQL();
+
+		Mockito.when(
+			_converter.getDeletedAttributeName()
+		).thenReturn(
+			"Deleted"
+		);
+
+		JiraAssetObject deletedJiraAssetObject = Mockito.mock(
+			JiraAssetObject.class);
+
+		Mockito.when(
+			deletedJiraAssetObject.getAttributeValue("Deleted")
+		).thenReturn(
+			"true"
+		);
+
+		Mockito.when(
+			deletedJiraAssetObject.getObjectId()
+		).thenReturn(
+			"deleted-object-id"
+		);
+
+		Mockito.when(
+			_existingJiraAssetObject.getAttributeValue("Deleted")
+		).thenReturn(
+			"false"
+		);
+
+		JiraAssetObject jiraAssetObject = _mockUpsertJiraAssetObject();
+
+		_whenSearchObjects(_EXTERNAL_KEY_AQL);
+		_whenSearchObjects(
+			_MATCH_AQL, deletedJiraAssetObject, _existingJiraAssetObject);
+
+		_jiraAssetService.upsert(
+			_converter, jiraAssetObject, _MATCH_CONSUMER, null);
+
+		Mockito.verify(
+			_jiraAssetPersistence
+		).updateObject(
+			_OBJECT_ID, jiraAssetObject
+		);
+
+		Mockito.verify(
+			_jiraAssetPersistence, Mockito.never()
+		).updateObject(
+			Mockito.eq("deleted-object-id"), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testUpsertSkipsMatchWhenExternalKeyMatches() throws Exception {
+		_mockAQL();
+
+		JiraAssetObject jiraAssetObject = _mockUpsertJiraAssetObject();
+
+		_whenSearchObjects(_EXTERNAL_KEY_AQL, _existingJiraAssetObject);
+
+		_jiraAssetService.upsert(
+			_converter, jiraAssetObject, _MATCH_CONSUMER, null);
+
+		Mockito.verify(
+			_jiraAssetPersistence, Mockito.never()
+		).searchObjects(
+			Mockito.eq(_MATCH_AQL), Mockito.any()
+		);
+
+		Mockito.verify(
+			_jiraAssetPersistence
+		).updateObject(
+			_OBJECT_ID, jiraAssetObject
+		);
+	}
+
+	@Test
 	public void testUpsertSkipsMissingExternalKey() throws Exception {
 		_jiraAssetService.upsert(
 			_converter, Mockito.mock(JiraAssetObject.class));
@@ -921,6 +1054,22 @@ public class JiraAssetServiceTest {
 			_jiraAssetPersistence
 		).updateObject(
 			_OBJECT_ID, jiraAssetObject
+		);
+	}
+
+	private void _mockAQL() {
+		Mockito.when(
+			_converter.getAQLWithBuilder(Mockito.any())
+		).thenAnswer(
+			invocation -> {
+				AQLUtil.Builder aqlBuilder = AQLUtil.builder("aql");
+
+				Consumer<AQLUtil.Builder> consumer = invocation.getArgument(0);
+
+				consumer.accept(aqlBuilder);
+
+				return aqlBuilder.build();
+			}
 		);
 	}
 
@@ -989,6 +1138,16 @@ public class JiraAssetServiceTest {
 		return jiraAssetObject;
 	}
 
+	private void _whenSearchObjects(
+		String aql, JiraAssetObject... jiraAssetObjects) {
+
+		Mockito.when(
+			_jiraAssetPersistence.searchObjects(Mockito.eq(aql), Mockito.any())
+		).thenReturn(
+			Arrays.asList(jiraAssetObjects)
+		);
+	}
+
 	private void _whenSyncDisabled() {
 		Mockito.when(
 			_converter.isSyncEnabled()
@@ -998,6 +1157,15 @@ public class JiraAssetServiceTest {
 	}
 
 	private static final String _EXTERNAL_KEY = "test-external-key";
+
+	private static final String _EXTERNAL_KEY_AQL =
+		"aql AND \"External Key\" = \"test-external-key\"";
+
+	private static final String _MATCH_AQL =
+		"aql AND \"Contact\" = 1 ORDER BY Updated DESC";
+
+	private static final Consumer<AQLUtil.Builder> _MATCH_CONSUMER =
+		aqlBuilder -> aqlBuilder.andEqualsObject("1", "Contact");
 
 	private static final String _OBJECT_ID = "test-object-id";
 
