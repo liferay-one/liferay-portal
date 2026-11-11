@@ -1052,7 +1052,6 @@ export default {
 	'offline-payment': 'オフライン決済',
 	'offline-payments-using-the-invoice': '請求書を使用したオフライン決済',
 	'ok': 'OK',
-	'okta-sso': 'Okta SSO',
 	'on-hold': '申請済み',
 	'on-premise': 'オンプレミス',
 	'once-canceled-no-further-edits-can-be-made-to-this-event':
@@ -1105,7 +1104,6 @@ export default {
 	'paid-by': '支払者',
 	'paid-date': '支払日',
 	'partner-roles': 'パートナーロール',
-	'password-policy': 'パスワードポリシー',
 	'paste-your-activation-token-here':
 		'ここにアクティベーション トークンを貼り付けてください',
 	'pay-with-bank-transfer': '銀行振込で支払う',
@@ -1732,7 +1730,6 @@ export default {
 	'try-again': 'もう一度やり直してください',
 	'try-again-later': '後でもう一度試してください。',
 	'try-beta': 'ベータ版を試す',
-	'two-factor-authentication': '2要素認証',
 	'type': 'タイプ',
 	'uat': 'UAT',
 	'unable-to-accept-the-invitation': '招待を承諾できませんでした。',

@@ -187,48 +187,6 @@ export default function AccountDetails() {
 							/>
 						)}
 					</DetailedCard>
-
-					<DetailedCard
-						cardIconAltText={i18n.translate('security')}
-						cardTitle={i18n.translate('security')}
-						clayIcon="lock"
-					>
-						<p className="account-details-subheading mt-3">
-							{i18n.translate('settings')}
-						</p>
-
-						<DetailTable
-							items={[
-								{
-									title: i18n.translate('password-policy'),
-									value: textWrapper(
-										getCustomFieldValue(
-											account,
-											'passwordPolicy'
-										)
-									),
-								},
-								{
-									title: i18n.translate('okta-sso'),
-									value: textWrapper(
-										getCustomFieldValue(account, 'oktaSSO')
-									),
-								},
-								{
-									title: i18n.translate(
-										'two-factor-authentication'
-									),
-									value: textWrapper(
-										getCustomFieldValue(
-											account,
-											'twoFactorAuthentication'
-										)
-									),
-								},
-							]}
-							orientation={Orientation.VERTICAL}
-						/>
-					</DetailedCard>
 				</div>
 			</div>
 		</Page>
