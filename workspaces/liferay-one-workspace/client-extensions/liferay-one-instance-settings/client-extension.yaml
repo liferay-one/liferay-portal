@@ -61,3 +61,16 @@ liferay-one-instance-settings-release-team-oahs:
         -   c_property.everything.read
     type: oAuthApplicationHeadlessServer
     userAccountScreenName: default-service-account
+liferay-one-instance-settings-srs-oahs:
+    .serviceAddress: localhost:8080
+    .serviceScheme: http
+    name: Liferay One Instance Settings SRS OAuth Application Headless Server
+    scopes:
+        -   Liferay.Headless.Admin.User.everything.read
+        -   Liferay.Headless.Commerce.Admin.Catalog.everything.read
+        -   Liferay.Headless.Commerce.Admin.Order.everything.read
+        -   c_entitlement.everything.read
+        -   c_entitlementdefinition.everything.read
+        -   c_project.everything.read
+    type: oAuthApplicationHeadlessServer
+    userAccountScreenName: default-service-account
