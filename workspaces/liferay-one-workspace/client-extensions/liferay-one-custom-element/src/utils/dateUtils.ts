@@ -31,6 +31,32 @@ function normalize(date: Date | string) {
 	return typeof date === 'string' ? new Date(date) : date;
 }
 
+export function addUTCDays(date: Date, days: number): Date {
+	return new Date(
+		Date.UTC(
+			date.getUTCFullYear(),
+			date.getUTCMonth(),
+			date.getUTCDate() + days
+		)
+	);
+}
+
+export function addUTCYears(date: Date, years: number): Date {
+	const month = date.getUTCMonth();
+	const year = date.getUTCFullYear() + years;
+
+	return new Date(
+		Date.UTC(
+			year,
+			month,
+			Math.min(
+				date.getUTCDate(),
+				new Date(Date.UTC(year, month + 1, 0)).getUTCDate()
+			)
+		)
+	);
+}
+
 export function formatDate(date: Date | string | undefined, fallback = 'N/A') {
 	if (!date) {
 		return fallback;
@@ -246,6 +272,14 @@ export function shiftUTCMonths(
 		new Date(
 			Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + months, 1)
 		)
+	);
+}
+
+export function startOfUTCDay(value: string): Date {
+	const date = new Date(value);
+
+	return new Date(
+		Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
 	);
 }
 
