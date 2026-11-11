@@ -8472,6 +8472,11 @@
 			"skuExternalReferenceCode": "01t4u00000f7jQOAAY"
 		},
 		{
+			"externalReferenceCode": "malu_150000_01t4u00000f7jPbAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "malu_150000",
+			"skuExternalReferenceCode": "01t4u00000f7jPbAAI"
+		},
+		{
 			"externalReferenceCode": "malu_15000_01t4u00000f7jPlAAI",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "malu_15000",
 			"skuExternalReferenceCode": "01t4u00000f7jPlAAI"
