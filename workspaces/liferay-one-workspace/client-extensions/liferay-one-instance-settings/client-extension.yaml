@@ -10,6 +10,11 @@ liferay-one-instance-settings-cloud-infra-oahs:
     name: Liferay One Instance Settings Cloud Infra OAuth Application Headless Server
     scopes:
         -   Liferay.Headless.Admin.User.everything.read
+        -   Liferay.Headless.Commerce.Admin.Catalog.everything.read
+        -   Liferay.Headless.Commerce.Admin.Channel.everything.read
+        -   Liferay.Headless.Commerce.Admin.Order.everything
+        -   Liferay.Headless.Commerce.Delivery.Catalog.everything.read
+        -   Liferay.Headless.Commerce.Delivery.Order.everything.read
         -   c_property.everything.read
     type: oAuthApplicationHeadlessServer
     userAccountScreenName: default-service-account
