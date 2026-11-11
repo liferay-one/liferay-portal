@@ -113,7 +113,7 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_accountPermission
 		).check(
-			_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null
 		);
 
 		Mockito.verify(
@@ -1423,6 +1423,25 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testPostInvitationsChecksAssignMembersPermission()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		_mockAccount();
+
+		_denyAssignMembersPermission();
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.postInvitations(
+				null, _EXTERNAL_REFERENCE_CODE, _createInvitationBodyJSON()));
+
+		Mockito.verifyNoInteractions(
+			_accountInvitationEmailService, _accountInvitationService);
+	}
+
+	@Test
 	public void testPostInvitationsCreatesProjectInvitation() throws Exception {
 		AccountsRestController accountsRestController = _createController();
 
@@ -1462,7 +1481,7 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_projectPermission
 		).check(
-			ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE
+			ActionKeys.ASSIGN_MEMBERS, null, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
 
 		Mockito.verifyNoInteractions(_accountPermission);
@@ -1754,7 +1773,7 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_projectPermission
 		).check(
-			ActionKeys.UPDATE, null, _PROJECT_EXTERNAL_REFERENCE_CODE
+			ActionKeys.ASSIGN_MEMBERS, null, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
 
 		Mockito.verifyNoInteractions(_accountPermission);
@@ -1842,7 +1861,7 @@ public class AccountsRestControllerTest {
 		Mockito.verify(
 			_accountPermission
 		).check(
-			_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null
 		);
 
 		InOrder inOrder = Mockito.inOrder(

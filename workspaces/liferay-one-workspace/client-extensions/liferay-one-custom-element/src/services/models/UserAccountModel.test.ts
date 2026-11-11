@@ -46,6 +46,23 @@ describe('[CLIENT-MODELS-USERACCOUNTMODEL] UserAccountModel', () => {
 		['Finance Administrator', false],
 		['Liferay Staff', false],
 		['Provisioning Administrator', true],
+		['Provisioning Worker', true],
+		['User', false],
+	] as const)(
+		'reads whether the %s regular role manages the members of all accounts',
+		(roleName, canManageAllAccountMembers) => {
+			expect(
+				createModel({roleBriefs: [{name: roleName}]})
+					.canManageAllAccountMembers
+			).toBe(canManageAllAccountMembers);
+		}
+	);
+
+	it.each([
+		['Administrator', true],
+		['Finance Administrator', false],
+		['Liferay Staff', false],
+		['Provisioning Administrator', true],
 		['Provisioning Worker', false],
 		['User', false],
 	] as const)(

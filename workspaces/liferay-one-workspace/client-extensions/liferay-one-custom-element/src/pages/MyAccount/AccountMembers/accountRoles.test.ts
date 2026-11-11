@@ -9,6 +9,7 @@ import {
 	canAccessAccountMembers,
 	canAccessOrders,
 	canEditAccountDetails,
+	canManageAccountMembers,
 	canViewAllAccountProjects,
 	getMembershipRoleNames,
 	getRoleExternalReferenceCodes,
@@ -26,9 +27,11 @@ import type {RoleBrief} from '~/types/accounts';
 function toUserAccountModel(
 	roleNames: string[],
 	canManageAllAccounts = false,
-	canViewAllAccounts = canManageAllAccounts
+	canViewAllAccounts = canManageAllAccounts,
+	canManageAllAccountMembers = canManageAllAccounts
 ) {
 	return {
+		canManageAllAccountMembers,
 		canManageAllAccounts,
 		canViewAllAccounts,
 		hasAccountRoleName: (roleName: string) => roleNames.includes(roleName),
@@ -175,6 +178,37 @@ describe('[MOD-MYACCOUNT-ACCOUNTMEMBERS-ACCOUNTROLES] accountRoles', () => {
 			expect(
 				canAccessAccountMembers(toUserAccountModel(['Partner Member']))
 			).toBe(true);
+		});
+	});
+
+	describe('canManageAccountMembers', () => {
+		it('allows an account manager', () => {
+			expect(
+				canManageAccountMembers(
+					toUserAccountModel(['Account Administrator'])
+				)
+			).toBe(true);
+		});
+
+		it('allows a user who manages the members of all accounts', () => {
+			expect(
+				canManageAccountMembers(
+					toUserAccountModel([], false, true, true)
+				)
+			).toBe(true);
+		});
+
+		it('denies a user who only views all accounts', () => {
+			expect(
+				canManageAccountMembers(toUserAccountModel([], false, true))
+			).toBe(false);
+		});
+
+		it('denies an account member and a missing user', () => {
+			expect(
+				canManageAccountMembers(toUserAccountModel(['Account Member']))
+			).toBe(false);
+			expect(canManageAccountMembers(null)).toBe(false);
 		});
 	});
 

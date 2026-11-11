@@ -254,6 +254,23 @@ public class AccountPermissionTest {
 	}
 
 	@Test
+	public void testContainsAllowsProvisioningWorkerToAssignMembers()
+		throws Exception {
+
+		UserAccount userAccount = _createUserAccount(null, null);
+
+		userAccount.setRoleBriefs(
+			new RoleBrief[] {
+				_createRoleBrief(RoleConstants.NAME_PROVISIONING_WORKER)
+			});
+
+		Assertions.assertTrue(
+			_accountPermission.contains(
+				_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null,
+				userAccount));
+	}
+
+	@Test
 	public void testContainsAllowsProvisioningWorkerToView() throws Exception {
 		UserAccount userAccount = _createUserAccount(null, null);
 
@@ -386,7 +403,7 @@ public class AccountPermissionTest {
 	}
 
 	@Test
-	public void testContainsRejectsProvisioningWorkerToAssignMembers()
+	public void testContainsRejectsProvisioningWorkerToUpdate()
 		throws Exception {
 
 		UserAccount userAccount = _createUserAccount(null, null);
@@ -396,9 +413,11 @@ public class AccountPermissionTest {
 				_createRoleBrief(RoleConstants.NAME_PROVISIONING_WORKER)
 			});
 
+		_mockAccount();
+
 		Assertions.assertFalse(
 			_accountPermission.contains(
-				_EXTERNAL_REFERENCE_CODE, ActionKeys.ASSIGN_MEMBERS, null,
+				_EXTERNAL_REFERENCE_CODE, ActionKeys.UPDATE, null,
 				userAccount));
 	}
 
