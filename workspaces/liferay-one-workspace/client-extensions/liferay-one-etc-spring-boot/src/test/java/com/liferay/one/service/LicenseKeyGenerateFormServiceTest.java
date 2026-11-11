@@ -941,6 +941,93 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetKeyTypesListsEachEntitlementOfEveryKeyType() {
+		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
+			LicenseKeyTypeService.class);
+
+		Mockito.when(
+			licenseKeyTypeService.getLicenseKeyTypes()
+		).thenReturn(
+			Arrays.asList(
+				LicenseKeyType.PRODUCTION, LicenseKeyType.NON_PRODUCTION,
+				LicenseKeyType.BACKUP)
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyTypeService",
+			licenseKeyTypeService);
+
+		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
+			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
+			false, false, false, false, Collections.emptyMap(), "DXP",
+			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
+				"DXP",
+				(Map<String, List<Entitlement>>)HashMapBuilder.put(
+					"backup",
+					Arrays.asList(
+						_toEntitlement(
+							5L, 2.0, "liferay-self-hosted-backup-sizing-1"),
+						_toEntitlement(
+							6L, 1.0, "liferay-self-hosted-backup-sizing-1"))
+				).put(
+					"non-production",
+					Arrays.asList(
+						_toEntitlement(
+							3L, 3.0, "liferay-self-hosted-non-prod-sizing-1"),
+						_toEntitlement(
+							4L, 2.0, "liferay-self-hosted-non-prod-sizing-1"))
+				).put(
+					"production",
+					Arrays.asList(
+						_toEntitlement(
+							1L, 2.0, "liferay-self-hosted-prod-sizing-1"),
+						_toEntitlement(
+							2L, 3.0, "liferay-self-hosted-prod-sizing-1"))
+				).build()
+			).build(),
+			Collections.emptyList(), true, false);
+
+		Assertions.assertEquals(3, jsonArray.length());
+
+		Map<String, Integer> expectedTotalCounts = HashMapBuilder.put(
+			"backup", 3
+		).put(
+			"non-production", 5
+		).put(
+			"production", 5
+		).build();
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject keyTypeJSONObject = jsonArray.getJSONObject(i);
+
+			JSONArray subscriptionsJSONArray = keyTypeJSONObject.getJSONArray(
+				"subscriptions");
+
+			Assertions.assertEquals(2, subscriptionsJSONArray.length());
+
+			int totalCount = 0;
+
+			for (int j = 0; j < subscriptionsJSONArray.length(); j++) {
+				JSONObject subscriptionJSONObject =
+					subscriptionsJSONArray.getJSONObject(j);
+
+				Assertions.assertEquals(
+					subscriptionJSONObject.getInt("totalCount"),
+					subscriptionJSONObject.getInt("availableCount"));
+
+				totalCount += subscriptionJSONObject.getInt("totalCount");
+			}
+
+			Assertions.assertEquals(
+				expectedTotalCounts.get(keyTypeJSONObject.getString("key")),
+				totalCount);
+		}
+	}
+
+	@Test
 	public void testGetKeyTypesListsEachEntitlementOfTheKeyType() {
 		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
 			LicenseKeyTypeService.class);
@@ -2182,6 +2269,20 @@ public class LicenseKeyGenerateFormServiceTest {
 		}
 
 		return new Entitlement(jsonObject);
+	}
+
+	private Entitlement _toEntitlement(
+		long entitlementId, Double maxQuantity, String name) {
+
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"id", entitlementId
+			).put(
+				"maxQuantity", maxQuantity
+			).put(
+				"name", name
+			));
 	}
 
 	private Entitlement _toEntitlement(long entitlementId, String name) {

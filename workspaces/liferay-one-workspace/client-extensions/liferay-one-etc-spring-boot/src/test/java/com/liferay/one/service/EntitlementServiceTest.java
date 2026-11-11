@@ -996,6 +996,96 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testGenerateOrderEntitlementsGeneratesEachOrderItemOfTheSameSku()
+		throws Exception {
+
+		OrderItem orderItem1 = _createOrderItem();
+
+		OrderItem orderItem2 = _createOrderItem();
+
+		orderItem2.setId(_ORDER_ITEM_ID + 1);
+		orderItem2.setQuantity(BigDecimal.valueOf(3));
+
+		Mockito.when(
+			_commerceOrderItemService.getCommerceOrderItems(_ORDER_ID)
+		).thenReturn(
+			List.of(orderItem1, orderItem2)
+		);
+
+		EntitlementDefinition entitlementDefinition = new EntitlementDefinition(
+			new JSONObject(
+			).put(
+				"defaultQuantity", 1.0
+			).put(
+				"grantType", "fixed"
+			).put(
+				"id", 1L
+			).put(
+				"licenseKeyFamily", "DXP"
+			).put(
+				"licenseKeyType", "production"
+			).put(
+				"maxQuantity", 1.0
+			).put(
+				"name", "liferay-self-hosted-prod-sizing-1"
+			));
+
+		Mockito.when(
+			_entitlementDefinitionService.getEntitlementDefinitions(
+				Mockito.anyMap(), Mockito.anyString())
+		).thenReturn(
+			List.of(entitlementDefinition)
+		);
+
+		Mockito.doReturn(
+			_createEntitlement(1, "liferay-self-hosted-prod-sizing-1")
+		).when(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
+		);
+
+		_entitlementService.generateOrderEntitlements(_ORDER_ID);
+
+		Mockito.verify(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.eq(_ORDER_ITEM_ID), Mockito.anyLong(),
+			Mockito.eq(1L), Mockito.any(), Mockito.any(), Mockito.anyBoolean(),
+			Mockito.any(), Mockito.anyInt(), Mockito.any(), Mockito.any(),
+			Mockito.eq(2.0), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.eq(2.0), Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_entitlementService
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.eq(_ORDER_ITEM_ID + 1),
+			Mockito.anyLong(), Mockito.eq(1L), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.eq(3.0), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(3.0),
+			Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.times(2)
+		).addEntitlement(
+			Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong(),
+			Mockito.anyLong(), Mockito.any(), Mockito.any(),
+			Mockito.anyBoolean(), Mockito.any(), Mockito.anyInt(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testGenerateOrderEntitlementsSkipsProcessingOrder()
 		throws Exception {
 

@@ -15,6 +15,7 @@ import {
 	getComplimentaryDurationDays,
 	getComplimentaryExpiration,
 	getComplimentaryPurpose,
+	getDefaultBundleEntitlementIds,
 	getEnvironmentTypeRank,
 	getGenerateButtonLabel,
 	getLicenseKeyFamilyLabel,
@@ -332,6 +333,65 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(getComplimentaryPurpose('evaluation', 'ignored')).toBe(
 				'evaluation'
 			);
+		});
+	});
+
+	describe('getDefaultBundleEntitlementIds', () => {
+		const bundleProducts = [
+			{
+				availableCount: 0,
+				entitlementId: 1,
+				externalReferenceCode: 'PRDCT-DXP',
+				licensable: true,
+			},
+			{
+				availableCount: 0,
+				entitlementId: 2,
+				externalReferenceCode: 'PRDCT-SEARCH',
+				licensable: true,
+			},
+			{
+				availableCount: 1,
+				entitlementId: 3,
+				externalReferenceCode: 'PRDCT-COMMERCE',
+				licensable: true,
+			},
+			{
+				availableCount: 1,
+				entitlementId: 4,
+				externalReferenceCode: 'PRDCT-SUPPORT',
+				licensable: false,
+			},
+		] as GenerateFormBundleProduct[];
+
+		it('keeps the product of the key when it has no activations left', () => {
+			expect(
+				getDefaultBundleEntitlementIds(
+					bundleProducts,
+					false,
+					'PRDCT-DXP'
+				)
+			).toEqual([1, 3]);
+		});
+
+		it('leaves out an add on that has no activations left', () => {
+			expect(
+				getDefaultBundleEntitlementIds(
+					bundleProducts,
+					false,
+					'PRDCT-COMMERCE'
+				)
+			).toEqual([3]);
+		});
+
+		it('keeps every licensable product of a developer key', () => {
+			expect(
+				getDefaultBundleEntitlementIds(
+					bundleProducts,
+					true,
+					'PRDCT-DXP'
+				)
+			).toEqual([1, 2, 3]);
 		});
 	});
 

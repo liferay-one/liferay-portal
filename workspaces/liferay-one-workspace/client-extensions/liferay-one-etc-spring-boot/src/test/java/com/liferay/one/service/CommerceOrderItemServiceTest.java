@@ -111,6 +111,54 @@ public class CommerceOrderItemServiceTest {
 	}
 
 	@Test
+	public void testUpsertOrderItemsAddsAnOrderItemForEachLineItemOfTheSameSku()
+		throws Exception {
+
+		Order order = _createOrder();
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			order
+		);
+
+		_upsertOrderItems(
+			order,
+			_createLineItemJSON(
+				_ERC_A, 2, null
+			).put(
+				"TotalPrice", 0
+			).put(
+				"UnitPrice", 0
+			),
+			_createLineItemJSON(_ERC_B, 3, null));
+
+		OrderItem[] patchedOrderItems = _getPatchedOrderItems();
+
+		Assertions.assertEquals(2, patchedOrderItems.length);
+
+		Assertions.assertEquals(
+			_ERC_A, patchedOrderItems[0].getExternalReferenceCode());
+		Assertions.assertEquals(
+			BigDecimal.valueOf(0.0), patchedOrderItems[0].getFinalPrice());
+		Assertions.assertEquals(
+			BigDecimal.valueOf(2.0), patchedOrderItems[0].getQuantity());
+		Assertions.assertEquals(
+			"01t4u00000dkhimAAA",
+			patchedOrderItems[0].getSkuExternalReferenceCode());
+		Assertions.assertEquals(
+			_ERC_B, patchedOrderItems[1].getExternalReferenceCode());
+		Assertions.assertEquals(
+			BigDecimal.valueOf(3000.0), patchedOrderItems[1].getFinalPrice());
+		Assertions.assertEquals(
+			BigDecimal.valueOf(3.0), patchedOrderItems[1].getQuantity());
+		Assertions.assertEquals(
+			"01t4u00000dkhimAAA",
+			patchedOrderItems[1].getSkuExternalReferenceCode());
+	}
+
+	@Test
 	public void testUpsertOrderItemsKeepsCanceledStatus() throws Exception {
 		OrderItem existingOrderItem = _createOrderItem(
 			11L, _ERC_A, "customStatus",
