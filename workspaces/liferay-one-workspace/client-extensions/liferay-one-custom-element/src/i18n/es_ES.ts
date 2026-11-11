@@ -1076,7 +1076,6 @@ export default {
 	'offline-payment': 'Pago sin conexión',
 	'offline-payments-using-the-invoice': 'Pagos sin conexión mediante factura',
 	'ok': 'Aceptar',
-	'okta-sso': 'Okta SSO',
 	'on-hold': 'En espera',
 	'on-premise': 'On-premise',
 	'once-canceled-no-further-edits-can-be-made-to-this-event':
@@ -1129,7 +1128,6 @@ export default {
 	'paid-by': 'Pagado por',
 	'paid-date': 'Fecha de pago',
 	'partner-roles': 'Roles de socio',
-	'password-policy': 'Política de contraseñas',
 	'paste-your-activation-token-here': 'Pega tu token de activación aquí',
 	'pay-with-bank-transfer': 'Pagar con transferencia bancaria',
 	'pay-with-card': 'Pagar con tarjeta',
@@ -1760,7 +1758,6 @@ export default {
 	'try-again': 'Vuelva a intentarlo',
 	'try-again-later': 'Inténtalo de nuevo más tarde.',
 	'try-beta': 'Probar versión beta',
-	'two-factor-authentication': 'Autenticación en dos pasos',
 	'type': 'Tipo',
 	'uat': 'UAT',
 	'unable-to-accept-the-invitation': 'No se pudo aceptar la invitación.',
