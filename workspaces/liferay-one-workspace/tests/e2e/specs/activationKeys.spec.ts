@@ -20,6 +20,81 @@ const LICENSE_KEY_ENVIRONMENT =
 	process.env.ONE_LICENSE_KEY_ENVIRONMENT?.trim() ||
 	'Omni Standalone Production';
 
+const OPEN_TERM_ENTITLEMENT_ID = 1002;
+
+const USED_UP_TERM_ENTITLEMENT_ID = 1001;
+
+const GENERATE_FORM = {
+	bundleProducts: [
+		{
+			app: false,
+			availableCount: 1,
+			entitlementId: 1003,
+			externalReferenceCode: 'e2e-digital-sales-room',
+			licensable: true,
+			licenseKeyFamily: 'DSR',
+			licensedVersions: [],
+			name: 'Digital Sales Room',
+		},
+		{
+			app: false,
+			availableCount: 0,
+			entitlementId: USED_UP_TERM_ENTITLEMENT_ID,
+			externalReferenceCode: 'e2e-liferay-dxp',
+			licensable: true,
+			licenseKeyFamily: 'DXP',
+			licensedVersions: ['2026.Q3'],
+			name: 'Liferay DXP',
+		},
+	],
+	products: [
+		{
+			appLicense: false,
+			developerVersions: ['2026.Q3'],
+			entitlementId: USED_UP_TERM_ENTITLEMENT_ID,
+			externalReferenceCode: 'e2e-liferay-dxp',
+			keyTypes: [
+				{
+					entitlementId: USED_UP_TERM_ENTITLEMENT_ID,
+					key: 'production',
+					licenseEntryType: 'production',
+					productKey: 'E2E-PRODUCTION',
+					subscriptions: [
+						{
+							availableCount: 0,
+							endDate: '2026-12-31T00:00:00Z',
+							entitlementId: USED_UP_TERM_ENTITLEMENT_ID,
+							instanceSize: 1,
+							licenseKeyDurationDays: 0,
+							startDate: '2024-07-01T00:00:00Z',
+							totalCount: 5,
+						},
+						{
+							availableCount: 5,
+							endDate: '2027-06-30T00:00:00Z',
+							entitlementId: OPEN_TERM_ENTITLEMENT_ID,
+							instanceSize: 1,
+							licenseKeyDurationDays: 0,
+							startDate: '2025-07-01T00:00:00Z',
+							totalCount: 5,
+						},
+					],
+					virtualCluster: false,
+				},
+			],
+			licenseKeyFamily: 'DXP',
+			name: 'Liferay DXP',
+			versions: ['2026.Q3'],
+		},
+	],
+};
+
+const GENERATE_SUMMARY = {
+	cloudNativeKeyTypes: [],
+	generatable: true,
+	provisionable: false,
+};
+
 async function openRowActions(page: Page, environmentName: string) {
 	await tableRow(page, environmentName).getByRole('button').last().click();
 }
@@ -337,5 +412,97 @@ test.describe('[FLOW-ACTIVATION-KEYS] activation keys', () => {
 		await page.getByRole('button', {name: 'Cancel'}).click();
 
 		await expect(page).toHaveURL(new RegExp(`#/${ACTIVATION_PATH}$`));
+	});
+
+	test('[FLOW-ACTIVATION-KEYS] [ROUTE-MY-ACCOUNT-GENERATE] [MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] keeps the product selected when one of its contract terms is used up', async ({
+		page,
+		signIn,
+		springBoot,
+	}) => {
+		test.skip(
+			!springBoot.enabled,
+			'The generate form needs a product whose bundle entitlement has no activations left'
+		);
+
+		await springBoot.on('GET', '/activation-keys/summary', {
+			body: GENERATE_SUMMARY,
+			contentType: 'application/json',
+		});
+		await springBoot.on('GET', '/activation-keys/generate-form', {
+			body: GENERATE_FORM,
+			contentType: 'application/json',
+		});
+		await springBoot.on('POST', '/activation-keys/generate', {
+			body: {
+				activationKeyId: 1,
+				externalReferenceCode: 'E2E_ACTIVATION_KEY',
+			},
+			contentType: 'application/json',
+		});
+		await springBoot.on('PUT', '/activation-keys/subscriptions', {
+			status: 200,
+		});
+		await springBoot.on(
+			'GET',
+			'/activation-keys/:activationKeyId/download',
+			{
+				body: '<license />',
+				contentType: 'application/xml',
+			}
+		);
+
+		await signIn('ACCOUNT_ADMIN');
+
+		await gotoMyAccount(page, `${ACTIVATION_PATH}/generate`);
+
+		await expectSettled(page);
+
+		await expect(
+			page.getByText('Key activations available: 0 of 5.')
+		).toBeVisible();
+
+		await page.locator('input[type="radio"]').last().check();
+
+		await page.getByRole('button', {exact: true, name: 'Next'}).click();
+
+		await expect(
+			page.getByText(
+				'Select the items you would like to include in the activation key.'
+			)
+		).toBeVisible();
+
+		await expect(
+			page.getByRole('checkbox', {name: 'Liferay DXP'})
+		).toBeChecked();
+
+		await page.getByRole('button', {exact: true, name: 'Next'}).click();
+
+		await page
+			.getByRole('textbox', {name: 'Environment Name'})
+			.fill('Repeated Term');
+		await page
+			.getByRole('textbox', {name: 'Host Name'})
+			.fill('repeated-term.example.com');
+
+		const generateRequest = page.waitForRequest(
+			(request) =>
+				request.method() === 'POST' &&
+				new URL(request.url()).pathname === '/activation-keys/generate'
+		);
+
+		await page.getByRole('button', {name: 'Generate Key'}).click();
+
+		const body = (await generateRequest).postDataJSON() as {
+			bundleEntitlementIds: number[];
+			subscriptionEntitlementId: number;
+		};
+
+		expect(body.subscriptionEntitlementId).toBe(OPEN_TERM_ENTITLEMENT_ID);
+		expect(body.bundleEntitlementIds).toEqual(
+			expect.arrayContaining([OPEN_TERM_ENTITLEMENT_ID])
+		);
+		expect(body.bundleEntitlementIds).not.toContain(
+			USED_UP_TERM_ENTITLEMENT_ID
+		);
 	});
 });
