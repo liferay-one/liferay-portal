@@ -44,6 +44,33 @@ public class AccountPermissionTest {
 	}
 
 	@Test
+	public void testCheckAccountRoleAllowsProvisioningWorker()
+		throws Exception {
+
+		UserAccount userAccount = _createUserAccount(null, null);
+
+		userAccount.setRoleBriefs(
+			new RoleBrief[] {
+				_createRoleBrief(RoleConstants.NAME_PROVISIONING_WORKER)
+			});
+
+		Mockito.when(
+			_userAccountService.getMyUserAccount(null)
+		).thenReturn(
+			userAccount
+		);
+
+		Assertions.assertDoesNotThrow(
+			() -> _accountPermission.checkAccountRole(
+				_EXTERNAL_REFERENCE_CODE, null,
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR));
+		Assertions.assertFalse(
+			_accountPermission.containsAccountRole(
+				_EXTERNAL_REFERENCE_CODE,
+				RoleConstants.NAME_ACCOUNT_ADMINISTRATOR, userAccount));
+	}
+
+	@Test
 	public void testCheckAccountRoleRejectsPartnerAccountAdmin()
 		throws Exception {
 
