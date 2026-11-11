@@ -56,6 +56,8 @@ Run from `workspaces/liferay-one-workspace/`.
 - **Pre-commit:** Run format and build first; do not deploy a failing build.
 - **Rebase:** Run the `/one-rebase` skill.
 - PR: Run the `/one-pr` skill.
+- Release to UAT: Run the `/one-uat-release` skill.
+- Verify a ticket on UAT: Run the `/one-uat-test-ticket` skill.
 - Visuals: Run the `/one-viz` skill to rebuild and publish the interactive pages in `tools/visuals/`. Run `yarn viz:check` to find drift.
 
 ## Rules
