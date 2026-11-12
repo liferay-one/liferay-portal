@@ -48,10 +48,12 @@ public class JiraIssueServiceTest {
 			_testJiraIssueService, "_jiraIssueSupportHCFieldRequestType",
 			"customfield_200");
 		ReflectionTestUtils.setField(
-			_testJiraIssueService, "_jiraProjectSupportFLS", "FLS");
+			_testJiraIssueService, "_jiraProjectSupportFLS", "LRFLS");
 		ReflectionTestUtils.setField(
 			_testJiraIssueService, "_jiraProjectSupportFLSURL",
 			"https://fls.example.com");
+		ReflectionTestUtils.setField(
+			_testJiraIssueService, "_jiraProjectSupportHC", "LRHC");
 		ReflectionTestUtils.setField(
 			_testJiraIssueService, "_jiraProjectSupportHCURL",
 			"https://hc.example.com");
@@ -292,17 +294,36 @@ public class JiraIssueServiceTest {
 	}
 
 	@Test
+	public void testIsJiraSupportIssueKey() {
+		Assertions.assertTrue(
+			_testJiraIssueService.isJiraSupportIssueKey("LRFLS-1"));
+		Assertions.assertTrue(
+			_testJiraIssueService.isJiraSupportIssueKey("LRHC-162200"));
+	}
+
+	@Test
+	public void testIsJiraSupportIssueKeyWithoutProjectKey() {
+		for (String issueKey :
+				new String[] {"1705175", "", "ABC-1", "lrfls-1", "lrhc-1"}) {
+
+			Assertions.assertFalse(
+				_testJiraIssueService.isJiraSupportIssueKey(issueKey),
+				issueKey);
+		}
+	}
+
+	@Test
 	public void testSearchRoutesTicketURLByPrefix() throws Exception {
 		_testJiraIssueService.getResponses.add(
 			_createSearchResponse(
-				null, _createIssueJSONObject("FLS-1"),
+				null, _createIssueJSONObject("LRFLS-1"),
 				_createIssueJSONObject("LRHC-1")));
 
 		List<JiraSupportIssue> jiraSupportIssues = _testJiraIssueService.search(
 			"jql", new String[] {"key"});
 
 		Assertions.assertEquals(
-			"https://fls.example.com/FLS-1",
+			"https://fls.example.com/LRFLS-1",
 			jiraSupportIssues.get(
 				0
 			).getTicketURL());

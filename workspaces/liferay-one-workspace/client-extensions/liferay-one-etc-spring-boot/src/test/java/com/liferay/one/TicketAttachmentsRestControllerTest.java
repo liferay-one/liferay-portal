@@ -114,6 +114,12 @@ public class TicketAttachmentsRestControllerTest {
 				))
 		);
 
+		Mockito.when(
+			_jiraIssueService.isJiraSupportIssueKey(_TICKET_ID)
+		).thenReturn(
+			true
+		);
+
 		_mockRoleNames();
 		_mockTicketStatus("Open");
 	}
@@ -489,6 +495,34 @@ public class TicketAttachmentsRestControllerTest {
 		Assertions.assertEquals(
 			HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
 		Assertions.assertEquals("TICKET_IS_CLOSED", responseEntity.getBody());
+
+		Mockito.verifyNoInteractions(
+			_projectPermission, _ticketAttachmentService);
+	}
+
+	@Test
+	public void testPostInitiateUploadReturnsNotFoundWhenTicketIDIsNotJiraSupportIssueKey()
+		throws Exception {
+
+		ResponseEntity<String> responseEntity =
+			_ticketAttachmentsRestController.postInitiateUpload(
+				_jwt,
+				_createJSONObject(
+				).put(
+					"ticketId", "1705175"
+				).toString(),
+				_ORIGIN);
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+		Assertions.assertEquals(
+			"INVALID_TICKET_NUMBER", responseEntity.getBody());
+
+		Mockito.verify(
+			_jiraIssueService, Mockito.never()
+		).getJiraSupportIssue(
+			Mockito.anyString()
+		);
 
 		Mockito.verifyNoInteractions(
 			_projectPermission, _ticketAttachmentService);

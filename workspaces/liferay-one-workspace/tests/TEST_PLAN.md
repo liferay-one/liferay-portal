@@ -80,12 +80,12 @@ Controller request and response shaping (routing, status codes, validation, body
 | `DELETE …/business-events/{id}` | Unit | P1 | Deletes; unknown id → 404; idempotent redelete. |
 | `GET /jira/accounts/{erc}/tickets?ticketIds=` | Unit + Integration | P1 | Returns tickets; filters by id list when provided. |
 | `GET /jira/business-events/fields/{field}/options` | Unit | P2 | Returns enumerated options for the asset field. |
-| `POST /ticket-attachments/initiate-upload` | Unit | **P0** | Valid → Draft row + resumable session URL; file > 50 MB → 400; closed ticket → 400; disallowed MIME → 400; missing body fields → 400. |
+| `POST /ticket-attachments/initiate-upload` | Unit | **P0** | Valid → Draft row + resumable session URL; file > 50 MB → 400; closed ticket → 400; ticket ID without a support project key prefix → 404; disallowed MIME → 400; missing body fields → 400. |
 | `POST /ticket-attachments/{id}/complete-upload` | Unit | **P0** | MD5 matches GCS → state Approved + Jira comment posted; MD5 mismatch → object deleted + error; already Approved → 409; Jira post fails → draft comment stored for retry. |
 | `GET /ticket-attachments/by-id/{id}/download` | Unit + Integration | **P0** | Member → signed URL (≤15 min expiry); nonmember → 403; missing → 404. |
 | `GET /ticket-attachments/by-external-reference-code/{erc}/download` | Unit | P1 | Same as the by ID endpoint, but it resolves the attachment through the ERC. |
 | `DELETE /ticket-attachments/{id}` | Unit | P1 | Flips to Trashed; GCS delete deferred to cron; returns 200. |
-| `GET /tickets/{id}/ticket-attachments/upload-access-check` | Unit | P1 | Open + member → 200; closed → 400; nonmember → 403; missing ticket → 404. |
+| `GET /tickets/{id}/ticket-attachments/upload-access-check` | Unit | P1 | Open + member → 200; closed → 400; nonmember → 403; missing ticket → 404; ticket ID without a support project key prefix → 404. |
 | `GET /tickets/{id}/ticket-attachments/download-access-check` | Unit | P1 | Member → 200 (closed allowed); nonmember → 403; missing → 404. |
 | `POST /entitlements/generate?commerceOrderItemId=` | Unit + Integration | **P0** | Creates one Entitlement per EntitlementDefinition for the product; **idempotent** on rerun; unknown order item → 400. |
 
