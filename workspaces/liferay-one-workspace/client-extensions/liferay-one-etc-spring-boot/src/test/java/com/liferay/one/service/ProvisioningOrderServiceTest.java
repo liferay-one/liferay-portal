@@ -343,7 +343,8 @@ public class ProvisioningOrderServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
 			warningMessages);
 
 		Assertions.assertEquals(1, warningMessages.size());
@@ -351,8 +352,53 @@ public class ProvisioningOrderServiceTest {
 		Mockito.verify(
 			_licenseKeyService, Mockito.never()
 		).getActiveLicenseKeyCounts(
-			Mockito.anyString()
+			Mockito.anyList(), Mockito.anyCollection(), Mockito.anyString()
 		);
+	}
+
+	@Test
+	public void testTrimRemovedOrderItemsCountsTheUnlinkedLicenseKeysAgainstTheProjectEntitlements()
+		throws Exception {
+
+		_createRemovalOrder(_createOrderItem("LINE-2", 5002L, 3));
+
+		Entitlement entitlement = _createEntitlement(5002L, 9001L);
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(5002L))
+		).thenReturn(
+			List.of(entitlement)
+		);
+
+		Entitlement projectEntitlement = _createEntitlement(5003L, 9002L);
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(_PROJECT_ID)
+		).thenReturn(
+			List.of(entitlement, projectEntitlement)
+		);
+
+		Mockito.when(
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				List.of(entitlement, projectEntitlement), List.of(),
+				_PROJECT_ID)
+		).thenReturn(
+			Map.of(9001L, 3)
+		);
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
+			warningMessages);
+
+		Assertions.assertEquals(
+			List.of(
+				"Entitlement liferay-dxp for SKU PROD-1 of opportunity OPP-1 " +
+					"uses 3 activations, but its new quantity allows 0. " +
+						"Support must contact the customer."),
+			warningMessages);
 	}
 
 	@Test
@@ -366,12 +412,13 @@ public class ProvisioningOrderServiceTest {
 
 		_stubLicenseKeyCounts(new Entitlement(entitlementJSONObject), 3);
 
-		Order order = _createRemovalOrder(_createOrderItem("LINE-1", 5001L, 3));
+		_createRemovalOrder(_createOrderItem("LINE-1", 5001L, 3));
 
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 2, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 2, "2026-01-01")),
 			warningMessages);
 
 		Assertions.assertTrue(warningMessages.isEmpty());
@@ -394,12 +441,13 @@ public class ProvisioningOrderServiceTest {
 
 		_stubLicenseKeyCounts(new Entitlement(entitlementJSONObject), 3);
 
-		Order order = _createRemovalOrder(_createOrderItem("LINE-1", 5001L, 3));
+		_createRemovalOrder(_createOrderItem("LINE-1", 5001L, 3));
 
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 2, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 2, "2026-01-01")),
 			warningMessages);
 
 		Assertions.assertTrue(warningMessages.isEmpty());
@@ -411,14 +459,15 @@ public class ProvisioningOrderServiceTest {
 	public void testTrimRemovedOrderItemsDoesNotWarnWhenTheReducedQuantityCoversTheLicenseKeys()
 		throws Exception {
 
-		Order order = _createRemovalOrder(_createOrderItem("LINE-1", 5001L, 3));
+		_createRemovalOrder(_createOrderItem("LINE-1", 5001L, 3));
 
 		_stubLicenseKeyCounts(5001L, 9001L, 2);
 
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 2, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 2, "2026-01-01")),
 			warningMessages);
 
 		Assertions.assertTrue(warningMessages.isEmpty());
@@ -437,7 +486,8 @@ public class ProvisioningOrderServiceTest {
 		);
 
 		Mockito.when(
-			_licenseKeyService.getActiveLicenseKeyCounts(_PROJECT_ID)
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				List.of(), List.of(), _PROJECT_ID)
 		).thenReturn(
 			Map.of()
 		);
@@ -445,7 +495,8 @@ public class ProvisioningOrderServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
 			warningMessages);
 
 		Assertions.assertTrue(warningMessages.isEmpty());
@@ -461,7 +512,7 @@ public class ProvisioningOrderServiceTest {
 	public void testTrimRemovedOrderItemsDoesNotWarnWithoutLineItemsWhenEveryOrderItemEnded()
 		throws Exception {
 
-		Order order = _createRemovalOrder(
+		_createRemovalOrder(
 			SalesforceModelTestUtil.createOrderItem(
 				"Approved", "2020-01-01T00:00:00Z", "2099-01-01T00:00:00Z",
 				"LINE-1", 5001L, _PRODUCT_2_ID, "2019-01-01T00:00:00Z"),
@@ -472,7 +523,27 @@ public class ProvisioningOrderServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, new ArrayList<>(), warningMessages);
+			_OPPORTUNITY_ID, new ArrayList<>(), warningMessages);
+
+		Assertions.assertTrue(warningMessages.isEmpty());
+
+		Mockito.verifyNoInteractions(
+			_commerceOrderItemService, _entitlementService, _licenseKeyService);
+	}
+
+	@Test
+	public void testTrimRemovedOrderItemsDoesNotWarnWithoutLineItemsWhenTheActiveOrderItemIsCanceled()
+		throws Exception {
+
+		_createRemovalOrder(
+			SalesforceModelTestUtil.createOrderItem(
+				"Canceled", null, "2099-01-01T00:00:00Z", "LINE-1", 5001L,
+				_PRODUCT_2_ID, "2026-01-01T00:00:00Z"));
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			_OPPORTUNITY_ID, new ArrayList<>(), warningMessages);
 
 		Assertions.assertTrue(warningMessages.isEmpty());
 
@@ -498,7 +569,8 @@ public class ProvisioningOrderServiceTest {
 		);
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
 			new ArrayList<>());
 
 		ArgumentCaptor<Map<Long, Map<String, Object>>> argumentCaptor =
@@ -547,7 +619,8 @@ public class ProvisioningOrderServiceTest {
 		);
 
 		Mockito.when(
-			_licenseKeyService.getActiveLicenseKeyCounts(_PROJECT_ID)
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				List.of(), List.of(), _PROJECT_ID)
 		).thenThrow(
 			new Exception("Unable to count")
 		);
@@ -555,7 +628,8 @@ public class ProvisioningOrderServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
 			warningMessages);
 
 		Assertions.assertEquals(
@@ -573,13 +647,32 @@ public class ProvisioningOrderServiceTest {
 	public void testTrimRemovedOrderItemsIsIdempotentForAnEndedOrderItem()
 		throws Exception {
 
-		Order order = _createRemovalOrder(
+		_createRemovalOrder(
 			SalesforceModelTestUtil.createOrderItem(
 				"Approved", "2020-01-01T00:00:00Z", "2027-01-01T00:00:00Z",
 				"LINE-2", 5002L, _PRODUCT_2_ID, "2019-01-01T00:00:00Z"));
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
+			new ArrayList<>());
+
+		Mockito.verifyNoInteractions(
+			_commerceOrderItemService, _entitlementService, _licenseKeyService);
+	}
+
+	@Test
+	public void testTrimRemovedOrderItemsIsIdempotentForAnExpiredOrderItem()
+		throws Exception {
+
+		_createRemovalOrder(
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", null, "2020-01-01T00:00:00Z", "LINE-2", 5002L,
+				_PRODUCT_2_ID, "2019-01-01T00:00:00Z"));
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
 			new ArrayList<>());
 
 		Mockito.verifyNoInteractions(
@@ -590,7 +683,7 @@ public class ProvisioningOrderServiceTest {
 	public void testTrimRemovedOrderItemsKeepsTheOrderItemsThatTheMessageHas()
 		throws Exception {
 
-		Order order = _createRemovalOrder(
+		_createRemovalOrder(
 			SalesforceModelTestUtil.createOrderItem(
 				"Approved", null, "2027-01-01T00:00:00Z", "LINE-1", 5001L,
 				_PRODUCT_2_ID, "2026-01-01T00:00:00Z"),
@@ -599,7 +692,7 @@ public class ProvisioningOrderServiceTest {
 				_PRODUCT_2_ID, "2026-01-01T00:00:00Z"));
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order,
+			_OPPORTUNITY_ID,
 			List.of(
 				_createLineItem("LINE-1", 5, "2026-01-01"),
 				_createLineItem("LINE-2", 5, "2026-01-01")),
@@ -612,10 +705,24 @@ public class ProvisioningOrderServiceTest {
 	public void testTrimRemovedOrderItemsReadsNothingWhenNothingChanged()
 		throws Exception {
 
-		Order order = _createRemovalOrder(_createOrderItem("LINE-1", 5001L, 3));
+		_createRemovalOrder(_createOrderItem("LINE-1", 5001L, 3));
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 3, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 3, "2026-01-01")),
+			new ArrayList<>());
+
+		Mockito.verifyNoInteractions(
+			_commerceOrderItemService, _entitlementService, _licenseKeyService);
+	}
+
+	@Test
+	public void testTrimRemovedOrderItemsReadsNothingWithoutAnOrder()
+		throws Exception {
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
 			new ArrayList<>());
 
 		Mockito.verifyNoInteractions(
@@ -637,7 +744,8 @@ public class ProvisioningOrderServiceTest {
 		);
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
 			new ArrayList<>());
 
 		ArgumentCaptor<Map<Long, Map<String, Object>>> argumentCaptor =
@@ -667,14 +775,15 @@ public class ProvisioningOrderServiceTest {
 	public void testTrimRemovedOrderItemsWarnsWhenAReducedQuantityIsBelowTheLicenseKeys()
 		throws Exception {
 
-		Order order = _createRemovalOrder(_createOrderItem("LINE-1", 5001L, 3));
+		_createRemovalOrder(_createOrderItem("LINE-1", 5001L, 3));
 
 		_stubLicenseKeyCounts(5001L, 9001L, 3);
 
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 2, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 2, "2026-01-01")),
 			warningMessages);
 
 		Assertions.assertEquals(1, warningMessages.size());
@@ -682,7 +791,7 @@ public class ProvisioningOrderServiceTest {
 			warningMessages.get(
 				0
 			).contains(
-				"has 3 license keys, but its new quantity allows 2."
+				"uses 3 activations, but its new quantity allows 2."
 			));
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
@@ -699,13 +808,14 @@ public class ProvisioningOrderServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
 			warningMessages);
 
 		Assertions.assertEquals(
 			List.of(
 				"Entitlement liferay-dxp for SKU PROD-1 of opportunity OPP-1 " +
-					"has 3 license keys, but its new quantity allows 0. " +
+					"uses 3 activations, but its new quantity allows 0. " +
 						"Support must contact the customer."),
 			warningMessages);
 
@@ -720,7 +830,7 @@ public class ProvisioningOrderServiceTest {
 	public void testTrimRemovedOrderItemsWarnsWithoutLineItemsWhenAnOrderItemIsActive()
 		throws Exception {
 
-		Order order = _createRemovalOrder(
+		_createRemovalOrder(
 			SalesforceModelTestUtil.createOrderItem(
 				"Approved", null, "2099-01-01T00:00:00Z", "LINE-1", 5001L,
 				_PRODUCT_2_ID, "2026-01-01T00:00:00Z"),
@@ -731,7 +841,7 @@ public class ProvisioningOrderServiceTest {
 		List<String> warningMessages = new ArrayList<>();
 
 		_provisioningOrderService.trimRemovedOrderItems(
-			order, new ArrayList<>(), warningMessages);
+			_OPPORTUNITY_ID, new ArrayList<>(), warningMessages);
 
 		Assertions.assertEquals(
 			List.of(
@@ -1055,13 +1165,22 @@ public class ProvisioningOrderServiceTest {
 				"Subscription", 0, "2024-06-01"));
 	}
 
-	private Order _createRemovalOrder(OrderItem... orderItems) {
+	private Order _createRemovalOrder(OrderItem... orderItems)
+		throws Exception {
+
 		Order order = new Order();
 
 		order.setAccountId(_ACCOUNT_ID);
 		order.setCustomFields(Map.of("salesforceProjectId", _PROJECT_ID));
 		order.setExternalReferenceCode(_OPPORTUNITY_ID);
 		order.setOrderItems(orderItems);
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_OPPORTUNITY_ID)
+		).thenReturn(
+			order
+		);
 
 		return order;
 	}
@@ -1103,7 +1222,8 @@ public class ProvisioningOrderServiceTest {
 		);
 
 		Mockito.when(
-			_licenseKeyService.getActiveLicenseKeyCounts(_PROJECT_ID)
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				List.of(), List.of(), _PROJECT_ID)
 		).thenReturn(
 			Map.of(entitlement.getEntitlementId(), licenseKeyCount)
 		);
