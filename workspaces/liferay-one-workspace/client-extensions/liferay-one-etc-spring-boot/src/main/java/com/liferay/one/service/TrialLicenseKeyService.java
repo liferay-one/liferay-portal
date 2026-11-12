@@ -101,7 +101,7 @@ public class TrialLicenseKeyService {
 
 	private static final String _DESCRIPTION = "Trial Activation Key";
 
-	private static final String _PRODUCT_NAME_CMS = "CMS Developer";
+	private static final String _PRODUCT_NAME_CMS = "CMS Development";
 
 	private static final String _PRODUCT_NAME_DXP = "DXP Development";
 
