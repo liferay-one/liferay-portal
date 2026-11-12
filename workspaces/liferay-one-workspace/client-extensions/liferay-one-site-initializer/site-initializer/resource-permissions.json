@@ -1198,6 +1198,15 @@
 	},
 	{
 		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
 			"CREATE_TOKEN"
 		],
 		"resourceName": "com.liferay.oauth2.provider.model.OAuth2Application",
