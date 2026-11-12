@@ -12,6 +12,7 @@ import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -173,10 +174,17 @@ public class ProvisioningOrderService {
 	}
 
 	public void trimRemovedOrderItems(
-			Order order,
+			String opportunityId,
 			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
 			List<String> warningMessages)
 		throws Exception {
+
+		Order order = _commerceOrderService.fetchOrderByExternalReferenceCode(
+			opportunityId);
+
+		if ((order == null) || ArrayUtil.isEmpty(order.getOrderItems())) {
+			return;
+		}
 
 		Instant effectiveEndDateInstant = Instant.now(
 		).truncatedTo(
@@ -185,13 +193,8 @@ public class ProvisioningOrderService {
 
 		if (salesforceOpportunityLineItems.isEmpty()) {
 			for (OrderItem orderItem : order.getOrderItems()) {
-				Instant entitlementEndDateInstant =
-					CommerceOrderItemUtil.getEntitlementEndDateInstant(
-						orderItem);
-
-				if ((entitlementEndDateInstant == null) ||
-					entitlementEndDateInstant.isAfter(
-						effectiveEndDateInstant)) {
+				if (!CommerceOrderItemUtil.isCanceled(orderItem) &&
+					_isActive(effectiveEndDateInstant, orderItem)) {
 
 					_addWarning(
 						warningMessages,
@@ -241,13 +244,7 @@ public class ProvisioningOrderService {
 				continue;
 			}
 
-			Instant orderItemEffectiveEndDateInstant =
-				CommerceOrderItemUtil.getEffectiveEndDateInstant(orderItem);
-
-			if ((orderItemEffectiveEndDateInstant != null) &&
-				!orderItemEffectiveEndDateInstant.isAfter(
-					effectiveEndDateInstant)) {
-
+			if (!_isActive(effectiveEndDateInstant, orderItem)) {
 				continue;
 			}
 
@@ -411,7 +408,9 @@ public class ProvisioningOrderService {
 		}
 		else {
 			licenseKeyCounts = _licenseKeyService.getActiveLicenseKeyCounts(
-				projectExternalReferenceCode);
+				_entitlementService.getActiveEntitlements(
+					projectExternalReferenceCode),
+				Collections.emptyList(), projectExternalReferenceCode);
 		}
 
 		for (Entitlement entitlement : entitlements) {
@@ -450,8 +449,8 @@ public class ProvisioningOrderService {
 					"Entitlement ", entitlement.getName(), " for SKU ",
 					entitlement.getSkuExternalReferenceCode(),
 					" of opportunity ", order.getExternalReferenceCode(),
-					" has ", licenseKeyCount,
-					" license keys, but its new quantity allows ", maxQuantity,
+					" uses ", licenseKeyCount,
+					" activations, but its new quantity allows ", maxQuantity,
 					". Support must contact the customer."));
 		}
 	}
@@ -475,6 +474,19 @@ public class ProvisioningOrderService {
 		if (_log.isWarnEnabled()) {
 			_log.warn(warningMessage, exception);
 		}
+	}
+
+	private boolean _isActive(Instant nowInstant, OrderItem orderItem) {
+		Instant entitlementEndDateInstant =
+			CommerceOrderItemUtil.getEntitlementEndDateInstant(orderItem);
+
+		if ((entitlementEndDateInstant == null) ||
+			entitlementEndDateInstant.isAfter(nowInstant)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private boolean _isFamilyOrder(Order order, String parentOpportunityId) {
