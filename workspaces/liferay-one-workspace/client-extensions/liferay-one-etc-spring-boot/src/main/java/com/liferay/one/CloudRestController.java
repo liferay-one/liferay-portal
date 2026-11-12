@@ -819,6 +819,23 @@ public class CloudRestController extends OneBaseRestController {
 				environmentId);
 
 		if (activatedEnvironment != null) {
+			if (Objects.equals(
+					activationMode,
+					EnvironmentConstants.ACTIVATION_MODE_ONLINE) &&
+				_isActivatedOnline(
+					activationCode, activatedEnvironment, publicKey)) {
+
+				if (_log.isInfoEnabled()) {
+					_log.info(
+						StringBundler.concat(
+							"Environment ", environmentId,
+							" is already activated with the same activation ",
+							"code and public key"));
+				}
+
+				return;
+			}
+
 			throw new EnvironmentAlreadyActivatedException(environmentId);
 		}
 
@@ -1434,6 +1451,28 @@ public class CloudRestController extends OneBaseRestController {
 					"Environment ", environment.getExternalReferenceCode(),
 					" is not entitled to product ",
 					product.getExternalReferenceCode()));
+		}
+
+		return false;
+	}
+
+	private boolean _isActivatedOnline(
+		String activationCode, Environment environment, String publicKey) {
+
+		if (Validator.isNull(activationCode) || Validator.isNull(publicKey)) {
+			return false;
+		}
+
+		if (Objects.equals(environment.getActivationCode(), activationCode) &&
+			Objects.equals(
+				environment.getActivationMode(),
+				EnvironmentConstants.ACTIVATION_MODE_ONLINE) &&
+			Objects.equals(
+				environment.getActivationStatus(),
+				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE) &&
+			Objects.equals(environment.getPublicKey(), publicKey)) {
+
+			return true;
 		}
 
 		return false;
