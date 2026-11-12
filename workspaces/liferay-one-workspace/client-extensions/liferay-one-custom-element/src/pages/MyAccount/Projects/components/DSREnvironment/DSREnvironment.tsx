@@ -54,10 +54,6 @@ export default function DSREnvironment({environment}: DSREnvironmentProps) {
 			value: environment.workspaceName,
 		},
 		{
-			label: i18n.translate('workspace-owner-email'),
-			value: environment.ownerEmailAddress,
-		},
-		{
 			label: i18n.translate('data-center-location'),
 			value: environment.region,
 		},

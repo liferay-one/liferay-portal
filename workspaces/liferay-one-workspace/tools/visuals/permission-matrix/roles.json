@@ -76,10 +76,6 @@
 			"group": "marketplace",
 			"purpose": "The base role of every marketplace publisher. Liferay shows the catalog of a supplier account only to this role, and gives the regular role Supplier with it, which opens the Publisher Dashboard."
 		},
-		"Analytics Cloud Owner": {
-			"group": "unused",
-			"purpose": "No code reads it. Analytics Cloud provisioning finds its owner from the Salesforce contact role instead."
-		},
 		"Article Administrator": {
 			"group": "staff",
 			"purpose": "Edits the web content articles of the site."
