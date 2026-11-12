@@ -6,7 +6,7 @@
 import {ClayCheckbox} from '@clayui/form';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import classNames from 'classnames';
-import {useEffect, useRef} from 'react';
+import {useLayoutEffect, useRef} from 'react';
 import {UseFormReturn} from 'react-hook-form';
 import {translate} from '~/i18n';
 import {
@@ -74,21 +74,42 @@ export default function AddOnStep({
 		.filter((bundleProduct) => getUnavailableReason(bundleProduct))
 		.map((bundleProduct) => bundleProduct.entitlementId);
 
+	const requiredEntitlementIds = bundleProducts
+		.filter(
+			(bundleProduct) =>
+				isRequired(bundleProduct) &&
+				!unavailableEntitlementIds.includes(bundleProduct.entitlementId)
+		)
+		.map((bundleProduct) => bundleProduct.entitlementId);
+
+	const selectionKey = [
+		bundleEntitlementIds,
+		requiredEntitlementIds,
+		unavailableEntitlementIds,
+	]
+		.map((entitlementIds) => entitlementIds.join())
+		.join('|');
+
 	const deselectedEntitlementIdsRef = useRef<number[]>([]);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		const deselectedEntitlementIds = bundleEntitlementIds.filter(
 			(entitlementId) => unavailableEntitlementIds.includes(entitlementId)
+		);
+		const missingRequiredEntitlementIds = requiredEntitlementIds.filter(
+			(entitlementId) => !bundleEntitlementIds.includes(entitlementId)
 		);
 		const reselectedEntitlementIds =
 			deselectedEntitlementIdsRef.current.filter(
 				(entitlementId) =>
 					!unavailableEntitlementIds.includes(entitlementId) &&
-					!bundleEntitlementIds.includes(entitlementId)
+					!bundleEntitlementIds.includes(entitlementId) &&
+					!missingRequiredEntitlementIds.includes(entitlementId)
 			);
 
 		if (
 			!deselectedEntitlementIds.length &&
+			!missingRequiredEntitlementIds.length &&
 			!reselectedEntitlementIds.length
 		) {
 			return;
@@ -107,11 +128,12 @@ export default function AddOnStep({
 				(entitlementId) =>
 					!unavailableEntitlementIds.includes(entitlementId)
 			),
+			...missingRequiredEntitlementIds,
 			...reselectedEntitlementIds,
 		]);
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [bundleEntitlementIds.join(), unavailableEntitlementIds.join()]);
+	}, [selectionKey]);
 
 	function isRequired(bundleProduct: GenerateFormBundleProduct) {
 		return (
@@ -122,14 +144,6 @@ export default function AddOnStep({
 	const selectableEntitlementIds = bundleProducts
 		.filter(
 			(bundleProduct) =>
-				!unavailableEntitlementIds.includes(bundleProduct.entitlementId)
-		)
-		.map((bundleProduct) => bundleProduct.entitlementId);
-
-	const requiredEntitlementIds = bundleProducts
-		.filter(
-			(bundleProduct) =>
-				isRequired(bundleProduct) &&
 				!unavailableEntitlementIds.includes(bundleProduct.entitlementId)
 		)
 		.map((bundleProduct) => bundleProduct.entitlementId);
