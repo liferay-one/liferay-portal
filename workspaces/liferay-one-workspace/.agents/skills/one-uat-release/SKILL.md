@@ -1,7 +1,7 @@
 ---
 
 argument-hint: [<yyyy-MM-dd>]
-description: Cut a Liferay One release to one-uat. Ask for the release date, create the one-release-<yyyy-MM-dd> branch for that date from the latest liferay-one master-temp and push it, list the commits and Jira tickets since the previous release branch, build and deploy the custom element, Spring Boot, instance settings, and Kong client extensions that changed to one-uat, do the manual steps of each ticket, comment on each ticket that it is on one-uat, set the Release Date of each ticket, and test each ticket that can be tested. Use when the user asks to cut, push, or deploy a release to UAT or one-uat, or invokes /one-uat-release.
+description: Cut a Liferay One release to one-uat. Ask for the release date, create the one-release-<yyyy-MM-dd> branch for that date from the latest liferay-one master-temp and push it, list the commits and Jira tickets since the previous release branch, build and deploy the custom element, Spring Boot, instance settings, and Kong client extensions that the release changes to one-uat in one build, do the manual steps of each ticket, comment on each ticket that it is on one-uat, set the Release Date of each ticket, and test each ticket that can be tested. Use when the user asks to cut, push, or deploy a release to UAT or one-uat, or invokes /one-uat-release.
 name: one-uat-release
 
 ---
@@ -117,7 +117,9 @@ Show the user a table of the tickets with their commits, client extensions, stat
 
 ### Step 4. Build and Deploy
 
-Deploy only the release client extensions that changed. Compare the commit of the last deploy of each service with the release. The previous release branch is not the correct base, because a service can deploy from `master-temp` between two releases. The service ID is the client extension name without hyphens.
+A release is one LCP build. Deploy every release client extension that the release changes, in one build, also when you add tickets to a release that is already deployed. Then each service of the release shows the same build and the same commit. Do not deploy a release client extension that the release does not change.
+
+A client extension is in `<deploy>` when its folder changed between the previous release and this release, or when its folder changed since its last deploy. The second check finds a change that reached `master-temp` before the previous release but did not deploy. The service ID is the client extension name without hyphens.
 
 ```bash
 cd <workspace>
@@ -128,14 +130,17 @@ for cx in liferay-one-custom-element liferay-one-etc-spring-boot liferay-one-ins
 do
 	commit=$(echo "${DEPLOYED}" | awk -F '\t' -v service="${cx//-/}" '$1 == service {print $5}')
 
-	if [ -z "${commit}" ] || [ "${commit}" == "-" ] || ! git cat-file -e "${commit}^{commit}" 2> /dev/null
+	if ! git diff --quiet liferay-one/<previous> liferay-one/<release> -- "client-extensions/${cx}"
+	then
+		echo "${cx} deploy, changed in the release"
+	elif [ -z "${commit}" ] || [ "${commit}" == "-" ] || ! git cat-file -e "${commit}^{commit}" 2> /dev/null
 	then
 		echo "${cx} deploy, no deployed commit"
 	elif ! git diff --quiet "${commit}" liferay-one/<release> -- "client-extensions/${cx}"
 	then
 		echo "${cx} deploy, changed since ${commit:0:8}"
 	else
-		echo "${cx} skip, unchanged since ${commit:0:8}"
+		echo "${cx} skip, unchanged"
 	fi
 done
 ```
@@ -182,7 +187,7 @@ Then confirm that each service deployed the release:
 bash <test-ticket>/scripts/deployed_commits.sh
 ```
 
-The row of each service in `<deploy>` must show the same new build, the branch `<release>`, and the commit `git rev-parse HEAD`. The rows of the other services keep their previous build. A row that still shows the previous build did not deploy. Read its log with `lcp log -p exte5a2oneliferay-extuat -s <service>` and tell the user.
+The row of each service in `<deploy>` must show the same new build, the branch `<release>`, and the commit `git rev-parse HEAD`. The rows of the other services keep their previous build. When you add tickets to a release, the new build replaces the earlier build of the release for each service, so the deploy comments of the earlier tickets name an older build. Name the new build in the report. A row that still shows the previous build did not deploy. Read its log with `lcp log -p exte5a2oneliferay-extuat -s <service>` and tell the user.
 
 ### Step 5. Find the Manual Steps
 
@@ -287,7 +292,7 @@ Tell the user:
 - **The `one-uat` branch does not show what is deployed.** Builds come from `master-temp` and from release branches, and several people deploy. Always read the deployed commit from LCP.
 - **A dirty checkout deploys code that is not on the branch.** `lcp deploy` records the branch and the commit, but builds the files in the checkout. This is why Step 4 builds from a fresh clone.
 - **The build changes `package.json`.** The build moves `tests` to the end of the yarn workspaces list. The change has no effect, and `<clone>` is recreated for each deploy, so leave it.
-- **A ticket can merge while the release deploys.** Before the report, compare the release branch with `git ls-remote liferay-one refs/heads/master-temp`. When `master-temp` has new commits, tell the user, and add them only when the user asks. Push the new `master-temp` to `<release>` as Step 2 shows, then repeat Step 4. Step 4 deploys only the client extensions that the new commits change.
+- **A ticket can merge while the release deploys.** Before the report, compare the release branch with `git ls-remote liferay-one refs/heads/master-temp`. When `master-temp` has new commits, tell the user, and add them only when the user asks. Push the new `master-temp` to `<release>` as Step 2 shows, then repeat Step 4. Step 4 deploys every client extension that the release changes again, in one new build.
 - **The deploy does not wait for batch imports.** When a release also deploys `liferay-one-batch`, deploy it alone first and wait for its import, because the other client extensions can depend on its objects. See `specs/technical/provisioning.md`.
 - **A Jira comment is public to everyone with access to the ticket.** Do not put a client secret, a password, or a token in it.
 
