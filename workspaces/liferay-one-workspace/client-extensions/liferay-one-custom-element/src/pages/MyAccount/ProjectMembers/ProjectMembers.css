@@ -49,12 +49,14 @@
 	border-radius: 4px;
 	color: #1b2a3b;
 	font-size: 13px;
+	max-width: 100%;
+	overflow-wrap: anywhere;
 	padding: 4px 8px;
-	white-space: nowrap;
 }
 
 .project-members-chip-name {
 	font-weight: 600;
+	white-space: nowrap;
 }
 
 .project-members-chip-detail {
