@@ -5,15 +5,20 @@
 
 package com.liferay.one.exception;
 
+import com.liferay.petra.string.StringBundler;
+
 /**
  * @author Amos Fong
  */
 public class NoSuchActivationCodeException extends Exception {
 
-	public NoSuchActivationCodeException(String activationCode) {
+	public NoSuchActivationCodeException(
+		String activationCode, String environmentId) {
+
 		super(
-			"No cloud native environment exists for activation code " +
-				activationCode);
+			StringBundler.concat(
+				"No cloud native environment exists for activation code ",
+				activationCode, " requested by environment ", environmentId));
 	}
 
 }

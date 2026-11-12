@@ -97,6 +97,7 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -295,11 +296,12 @@ public class CloudRestController extends OneBaseRestController {
 	public ResponseEntity<?> handleException(
 		ActivationCodeAlreadyUsedException activationCodeAlreadyUsedException) {
 
-		if (_log.isDebugEnabled()) {
-			_log.debug(activationCodeAlreadyUsedException);
+		if (_log.isWarnEnabled()) {
+			_log.warn(activationCodeAlreadyUsedException);
 		}
 
-		return new ResponseEntity<>(HttpStatus.CONFLICT);
+		return _toResponseEntity(
+			HttpStatus.CONFLICT, "The activation code is already used");
 	}
 
 	@ExceptionHandler(AddOnsUnavailableException.class)
@@ -353,11 +355,13 @@ public class CloudRestController extends OneBaseRestController {
 		EnvironmentAlreadyActivatedException
 			environmentAlreadyActivatedException) {
 
-		if (_log.isDebugEnabled()) {
-			_log.debug(environmentAlreadyActivatedException);
+		if (_log.isWarnEnabled()) {
+			_log.warn(environmentAlreadyActivatedException);
 		}
 
-		return new ResponseEntity<>(HttpStatus.CONFLICT);
+		return _toResponseEntity(
+			HttpStatus.CONFLICT,
+			environmentAlreadyActivatedException.getMessage());
 	}
 
 	@ExceptionHandler(EnvironmentProfileEntitlementException.class)
@@ -399,20 +403,22 @@ public class CloudRestController extends OneBaseRestController {
 	public ResponseEntity<?> handleException(
 		NoSuchActivationCodeException noSuchActivationCodeException) {
 
-		if (_log.isDebugEnabled()) {
-			_log.debug(noSuchActivationCodeException);
+		if (_log.isWarnEnabled()) {
+			_log.warn(noSuchActivationCodeException);
 		}
 
-		return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		return _toResponseEntity(
+			HttpStatus.NOT_FOUND, noSuchActivationCodeException.getMessage());
 	}
 
 	@ExceptionHandler(ParseException.class)
 	public ResponseEntity<?> handleException(ParseException parseException) {
-		if (_log.isDebugEnabled()) {
-			_log.debug("Unable to parse the signed JWT", parseException);
+		if (_log.isWarnEnabled()) {
+			_log.warn("Unable to parse the signed JWT", parseException);
 		}
 
-		return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		return _toResponseEntity(
+			HttpStatus.BAD_REQUEST, "Unable to parse the signed JWT");
 	}
 
 	@PostMapping("/environments/{environmentId}/activation")
@@ -431,10 +437,6 @@ public class CloudRestController extends OneBaseRestController {
 			EnvironmentConstants.ACTIVATION_MODE_ONLINE, environmentId,
 			jwtClaimsSet.getStringClaim("environmentName"),
 			jwtClaimsSet.getStringClaim("publicKey"));
-
-		if (_log.isInfoEnabled()) {
-			_log.info("Activating environment " + environmentId);
-		}
 
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -571,13 +573,6 @@ public class CloudRestController extends OneBaseRestController {
 			activationCode, EnvironmentConstants.ACTIVATION_MODE_OFFLINE,
 			environmentId, jwtClaimsSet.getStringClaim("environmentName"),
 			jwtClaimsSet.getStringClaim("publicKey"));
-
-		if (_log.isInfoEnabled()) {
-			_log.info(
-				StringBundler.concat(
-					"Activated offline environment ", environmentId,
-					" for activation code ", activationCode));
-		}
 
 		JSONObject responseJSONObject = new JSONObject(
 		).put(
@@ -832,19 +827,31 @@ public class CloudRestController extends OneBaseRestController {
 				activationCode);
 
 		if (environment == null) {
-			throw new NoSuchActivationCodeException(activationCode);
+			throw new NoSuchActivationCodeException(
+				activationCode, environmentId);
 		}
 
 		if (Objects.equals(
 				environment.getActivationStatus(),
 				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE)) {
 
-			throw new ActivationCodeAlreadyUsedException(activationCode);
+			throw new ActivationCodeAlreadyUsedException(
+				environment.getExternalReferenceCode(), activationCode,
+				environmentId);
 		}
 
 		_environmentService.updateEnvironmentActivation(
 			activationMode, environmentId, environment.getId(), environmentName,
 			publicKey);
+
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Activated ", activationMode, " environment ",
+					environmentId, " with name ", environmentName,
+					" for project ",
+					environment.getProjectExternalReferenceCode()));
+		}
 	}
 
 	private void _checkEnvironmentActivationPermission(
@@ -1472,6 +1479,13 @@ public class CloudRestController extends OneBaseRestController {
 		}
 
 		return longs;
+	}
+
+	private ResponseEntity<ProblemDetail> _toResponseEntity(
+		HttpStatus httpStatus, String detail) {
+
+		return new ResponseEntity<>(
+			ProblemDetail.forStatusAndDetail(httpStatus, detail), httpStatus);
 	}
 
 	private HttpStatus _validateOfflineActivationToken(String token) {

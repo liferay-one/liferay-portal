@@ -5,13 +5,22 @@
 
 package com.liferay.one.exception;
 
+import com.liferay.petra.string.StringBundler;
+
 /**
  * @author Amos Fong
  */
 public class ActivationCodeAlreadyUsedException extends Exception {
 
-	public ActivationCodeAlreadyUsedException(String activationCode) {
-		super("Activation code " + activationCode + " has already been used");
+	public ActivationCodeAlreadyUsedException(
+		String activatedEnvironmentId, String activationCode,
+		String environmentId) {
+
+		super(
+			StringBundler.concat(
+				"Environment ", environmentId, " cannot use activation code ",
+				activationCode, " because environment ", activatedEnvironmentId,
+				" already uses it"));
 	}
 
 }
