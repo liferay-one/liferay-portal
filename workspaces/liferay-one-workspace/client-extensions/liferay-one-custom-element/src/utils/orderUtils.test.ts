@@ -8,6 +8,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import {
 	formatOrderDate,
 	getContractProductOrders,
+	getEarliestPlacedOrderItemStartDate,
 	getOrderStatusLabel,
 	getOrderStatusToken,
 	getPlacedOrderItemContractId,
@@ -289,6 +290,26 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 					'endDate'
 				)
 			).toBeUndefined();
+		});
+	});
+
+	describe('getEarliestPlacedOrderItemStartDate', () => {
+		it('returns the earliest start date of the order items', () => {
+			expect(
+				getEarliestPlacedOrderItemStartDate([
+					toPlacedOrderItem(undefined, '2026-01-01T00:00:00Z'),
+					toPlacedOrderItem(undefined, '2025-11-11T00:00:00Z'),
+				])
+			).toBe('2025-11-11T00:00:00Z');
+		});
+
+		it('ignores missing and 1970 start dates', () => {
+			expect(
+				getEarliestPlacedOrderItemStartDate([
+					toPlacedOrderItem(),
+					toPlacedOrderItem(undefined, '1970-01-01T00:00:00Z'),
+				])
+			).toBe('');
 		});
 	});
 
