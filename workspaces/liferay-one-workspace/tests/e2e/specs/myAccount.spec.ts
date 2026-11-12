@@ -791,9 +791,19 @@ test.describe('[FLOW-PROJECT-MEMBERSHIP] project permissions', () => {
 			})
 		).toBeVisible();
 
+		expect(
+			await page
+				.locator('.project-members-table')
+				.evaluate(
+					(table) =>
+						table.scrollWidth -
+						(table.parentElement?.clientWidth ?? 0)
+				)
+		).toBeLessThanOrEqual(0);
+
 		await expect(
 			row.getByRole('button', {name: 'Manage project options'})
-		).toBeVisible();
+		).toBeInViewport();
 	});
 
 	test('[FLOW-PROJECT-MEMBERSHIP] [ROUTE-MY-ACCOUNT-PROJECT-MEMBERS] offers project management to a project admin only', async ({
