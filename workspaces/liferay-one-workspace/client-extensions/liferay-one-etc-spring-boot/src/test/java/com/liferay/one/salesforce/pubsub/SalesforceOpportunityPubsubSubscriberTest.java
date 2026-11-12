@@ -2648,7 +2648,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		inOrder.verify(
 			_provisioningOrderService
 		).trimRemovedOrderItems(
-			Mockito.eq(existingOrder),
+			Mockito.eq(_OPPORTUNITY_ID),
 			Mockito.argThat(
 				salesforceOpportunityLineItems -> _hasLineItemIds(
 					salesforceOpportunityLineItems, "LINE-1")),
@@ -2681,7 +2681,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_provisioningOrderService
 		).trimRemovedOrderItems(
-			Mockito.eq(existingOrder), Mockito.argThat(List::isEmpty),
+			Mockito.eq(_OPPORTUNITY_ID), Mockito.argThat(List::isEmpty),
 			Mockito.anyList()
 		);
 	}
