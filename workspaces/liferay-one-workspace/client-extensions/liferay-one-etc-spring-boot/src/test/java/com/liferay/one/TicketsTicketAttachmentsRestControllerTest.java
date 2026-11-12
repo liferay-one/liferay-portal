@@ -50,6 +50,12 @@ public class TicketsTicketAttachmentsRestControllerTest {
 			_ticketsTicketAttachmentsRestController, "_userAccountService",
 			_userAccountService);
 
+		Mockito.when(
+			_jiraIssueService.isJiraSupportIssueKey(_TICKET_ID)
+		).thenReturn(
+			true
+		);
+
 		_mockRoleNames();
 		_mockTicketStatus("Open");
 	}
@@ -102,6 +108,29 @@ public class TicketsTicketAttachmentsRestControllerTest {
 	}
 
 	@Test
+	public void testGetDownloadAccessCheckSkipsJiraSupportIssueKeyCheck()
+		throws Exception {
+
+		Mockito.when(
+			_jiraIssueService.isJiraSupportIssueKey(_TICKET_ID)
+		).thenReturn(
+			false
+		);
+
+		ResponseEntity<String> responseEntity =
+			_ticketsTicketAttachmentsRestController.getDownloadAccessCheck(
+				_jwt, _TICKET_ID);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_jiraIssueService, Mockito.never()
+		).isJiraSupportIssueKey(
+			Mockito.anyString()
+		);
+	}
+
+	@Test
 	public void testGetDownloadAccessCheckThrowsForbiddenWithoutViewPermission()
 		throws Exception {
 
@@ -134,6 +163,28 @@ public class TicketsTicketAttachmentsRestControllerTest {
 		Assertions.assertEquals(
 			HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
 		Assertions.assertEquals("TICKET_IS_CLOSED", responseEntity.getBody());
+
+		Mockito.verifyNoInteractions(_projectPermission);
+	}
+
+	@Test
+	public void testGetUploadAccessCheckReturnsNotFoundWhenTicketIDIsNotJiraSupportIssueKey()
+		throws Exception {
+
+		ResponseEntity<String> responseEntity =
+			_ticketsTicketAttachmentsRestController.getUploadAccessCheck(
+				_jwt, "1705175");
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+		Assertions.assertEquals(
+			"INVALID_TICKET_NUMBER", responseEntity.getBody());
+
+		Mockito.verify(
+			_jiraIssueService, Mockito.never()
+		).getJiraSupportIssue(
+			Mockito.anyString()
+		);
 
 		Mockito.verifyNoInteractions(_projectPermission);
 	}
