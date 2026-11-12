@@ -19,6 +19,7 @@ import {DetailsSection} from '../components/SectionedDetailsCard/SectionedDetail
 import type {EnvironmentEntitlement} from '~/hooks/useProductEnvironmentEntitlements';
 import type {ProjectContract} from '~/hooks/useProjectCommerce';
 import type {ProjectContact} from '~/hooks/useProjectContacts';
+import type {ProductOrderInfo} from '~/hooks/useProjectOrders';
 
 import type {ProjectItemType} from '../types';
 import type {DetailsProfile} from './resolveDetailsProfile';
@@ -29,15 +30,18 @@ type DetailsContext = {
 	environmentEntitlements?: EnvironmentEntitlement[];
 	itemType: ProjectItemType;
 	orderDate?: string;
-	orderInfo: {
-		itemName: string;
-		orderDate: string;
-		orderId: string;
-		purchaseNumber: string;
-		purchasedBy: string;
-		quantity: string;
-		skuProductNames: string[];
-	};
+	orderInfo: Pick<
+		ProductOrderInfo,
+		| 'itemName'
+		| 'orderDate'
+		| 'orderId'
+		| 'purchaseNumber'
+		| 'purchasedBy'
+		| 'quantity'
+		| 'skuProductNames'
+		| 'startDate'
+		| 'status'
+	>;
 	productName: string;
 	securityIncidentContacts?: ProjectContact[];
 };
@@ -214,7 +218,7 @@ function environmentSections(
 				rows: [
 					...productRows(context, context.orderInfo.skuProductNames),
 					...orderRows(context),
-					...contractRows(context.contract),
+					...termRows(context),
 				],
 			},
 		];
@@ -282,11 +286,18 @@ function orderRows(context: DetailsContext): DetailsRow[] {
 	];
 }
 
-function contractRows(contract?: ProjectContract): DetailsRow[] {
+function termRows(context: DetailsContext): DetailsRow[] {
+	const {contract, itemType, orderInfo} = context;
+
+	const status =
+		itemType === 'product' && orderInfo.status
+			? orderInfo.status
+			: contract?.status;
+
 	return [
 		{
 			label: i18n.translate('start-date'),
-			value: formatDate(contract?.startDate),
+			value: formatDate(orderInfo.startDate || contract?.startDate),
 		},
 		{
 			label: i18n.translate('expiration-date'),
@@ -294,9 +305,7 @@ function contractRows(contract?: ProjectContract): DetailsRow[] {
 		},
 		{
 			label: i18n.translate('status'),
-			value: contract?.status
-				? i18n.translate(contract.status as Word)
-				: '',
+			value: status ? i18n.translate(status as Word) : '',
 		},
 	];
 }
@@ -357,7 +366,7 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 			rows: [
 				tierRow(context),
 				purchasedRow(context),
-				...contractRows(context.contract),
+				...termRows(context),
 			],
 		},
 	],
@@ -382,7 +391,7 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 		{
 			rows: [
 				...productRows(context, context.orderInfo.skuProductNames),
-				...contractRows(context.contract),
+				...termRows(context),
 			],
 		},
 	],
@@ -402,12 +411,8 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 			},
 			...environmentDateRows(environmentSummary),
 		]),
-	'paas': (context) => [
-		{rows: [tierRow(context), ...contractRows(context.contract)]},
-	],
-	'saas': (context) => [
-		{rows: [tierRow(context), ...contractRows(context.contract)]},
-	],
+	'paas': (context) => [{rows: [tierRow(context), ...termRows(context)]}],
+	'saas': (context) => [{rows: [tierRow(context), ...termRows(context)]}],
 };
 
 export function buildDetailsSections(
