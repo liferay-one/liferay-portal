@@ -28,12 +28,14 @@ function toUserAccountModel(
 	roleNames: string[],
 	canManageAllAccounts = false,
 	canViewAllAccounts = canManageAllAccounts,
-	canManageAllAccountMembers = canManageAllAccounts
+	canManageAllAccountMembers = canManageAllAccounts,
+	canViewAllOrders = canManageAllAccounts
 ) {
 	return {
 		canManageAllAccountMembers,
 		canManageAllAccounts,
 		canViewAllAccounts,
+		canViewAllOrders,
 		hasAccountRoleName: (roleName: string) => roleNames.includes(roleName),
 		isAccountMember: roleNames.includes('Account Member'),
 	} as unknown as UserAccountModel;
@@ -224,6 +226,20 @@ describe('[MOD-MYACCOUNT-ACCOUNTMEMBERS-ACCOUNTROLES] accountRoles', () => {
 			expect(
 				hasAnyAccountRole(toUserAccountModel(['Account Buyer']))
 			).toBe(true);
+		});
+
+		it('allows a Liferay employee who is not on the account', () => {
+			expect(
+				canAccessOrders(
+					toUserAccountModel([], false, true, false, true)
+				)
+			).toBe(true);
+		});
+
+		it('denies a user who views all accounts but not their orders', () => {
+			expect(canAccessOrders(toUserAccountModel([], false, true))).toBe(
+				false
+			);
 		});
 
 		it('denies a user without a manageable role', () => {
