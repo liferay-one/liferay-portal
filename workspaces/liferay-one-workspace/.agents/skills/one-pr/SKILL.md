@@ -24,7 +24,7 @@ Before creating the PR, verify these Brian-enforced requirements:
 
 **Commit messages:** Confirm every commit on the branch has a valid Jira ticket prefix (`LPD-`, `LRSD-`, `LCD-`, etc.). The CI bot auto-closes PRs missing a ticket reference.
 
-**Test commits:** Run the check in `rules/pr-hygiene.md` → "Tests Go in Their Own Commit". When a commit mixes test files and other files, abort and offer to split it. Do not open the PR until the code and the tests are in separate commits.
+**Commit kinds:** Run the check in `rules/pr-hygiene.md` → "Tests, Docs, and Agent Files Go in Their Own Commits". When a commit mixes code, test, doc, or agent files, abort and offer to split it. Do not open the PR until each kind is in its own commit.
 
 **Visuals:** Run `yarn viz:check`. When it fails, follow `rules/pr-hygiene.md` → "Keep the Visuals Current", commit the fix, and run the check again. Do not open the PR while it fails.
 
