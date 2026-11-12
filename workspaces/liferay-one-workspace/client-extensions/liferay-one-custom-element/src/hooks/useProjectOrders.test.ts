@@ -288,6 +288,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			purchasedBy: 'Jane Doe',
 			quantity: '3',
 			skuProductNames: [''],
+			startDate: '',
 			status: 'active',
 		});
 	});
@@ -306,6 +307,45 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			itemName: 'Analytics Cloud - Business',
 			quantity: '5',
 		});
+	});
+
+	it('reads the start date from the order items of the product in the contract', () => {
+		const order = placedOrder({
+			id: 14,
+			placedOrderItems: [
+				{
+					customFields: {
+						contractId: 101,
+						startDate: '2025-11-11T00:00:00Z',
+					},
+					productId: 7,
+				},
+				{
+					customFields: {
+						contractId: 102,
+						startDate: '2024-01-01T00:00:00Z',
+					},
+					productId: 7,
+				},
+				{
+					customFields: {
+						contractId: 101,
+						startDate: '2023-01-01T00:00:00Z',
+					},
+					productId: 9,
+				},
+			],
+		});
+
+		expect(getProductOrderInfo('product', [order], 7, 101).startDate).toBe(
+			'2025-11-11T00:00:00Z'
+		);
+		expect(getProductOrderInfo('product', [order], 7).startDate).toBe(
+			'2024-01-01T00:00:00Z'
+		);
+		expect(getProductOrderInfo('product', [order], 7, 103).startDate).toBe(
+			''
+		);
 	});
 
 	it('falls back to the workspace group ID when the LDP workspace has no friendly URL', () => {
@@ -503,6 +543,7 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			purchasedBy: '',
 			quantity: '',
 			skuProductNames: [],
+			startDate: '',
 			status: '',
 		});
 	});
