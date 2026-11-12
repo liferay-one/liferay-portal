@@ -7,21 +7,25 @@ package com.liferay.one.service;
 
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.OrderItem;
+import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.Validator;
+
+import java.math.BigDecimal;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -170,16 +174,19 @@ public class ProvisioningOrderService {
 
 	public void trimRemovedOrderItems(
 			Order order,
-			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems)
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
+			List<String> warningMessages)
 		throws Exception {
 
-		Set<String> salesforceOpportunityLineItemIds = new HashSet<>();
+		Map<String, SalesforceOpportunityLineItem>
+			salesforceOpportunityLineItemsMap = new HashMap<>();
 
 		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
 				salesforceOpportunityLineItems) {
 
-			salesforceOpportunityLineItemIds.add(
-				salesforceOpportunityLineItem.getId());
+			salesforceOpportunityLineItemsMap.put(
+				salesforceOpportunityLineItem.getId(),
+				salesforceOpportunityLineItem);
 		}
 
 		Instant effectiveEndDateInstant = Instant.now(
@@ -189,10 +196,23 @@ public class ProvisioningOrderService {
 
 		List<OrderItem> removedOrderItems = new ArrayList<>();
 		Map<Long, Map<String, Object>> customFieldValuesMap = new HashMap<>();
+		Map<Long, Double> newOrderItemQuantities = new HashMap<>();
 
 		for (OrderItem orderItem : order.getOrderItems()) {
-			if (salesforceOpportunityLineItemIds.contains(
-					orderItem.getExternalReferenceCode())) {
+			SalesforceOpportunityLineItem salesforceOpportunityLineItem =
+				salesforceOpportunityLineItemsMap.get(
+					orderItem.getExternalReferenceCode());
+
+			if (salesforceOpportunityLineItem != null) {
+				Double newQuantity =
+					salesforceOpportunityLineItem.getQuantity();
+				BigDecimal orderItemQuantity = orderItem.getQuantity();
+
+				if ((newQuantity != null) && (orderItemQuantity != null) &&
+					(newQuantity < orderItemQuantity.doubleValue())) {
+
+					newOrderItemQuantities.put(orderItem.getId(), newQuantity);
+				}
 
 				continue;
 			}
@@ -212,6 +232,24 @@ public class ProvisioningOrderService {
 			customFieldValuesMap.put(
 				orderItem.getId(),
 				Map.of("effectiveEndDate", effectiveEndDateInstant.toString()));
+
+			newOrderItemQuantities.put(orderItem.getId(), 0.0);
+		}
+
+		if (newOrderItemQuantities.isEmpty()) {
+			return;
+		}
+
+		try {
+			_addLicenseKeyWarnings(
+				order, newOrderItemQuantities, warningMessages);
+		}
+		catch (Exception exception) {
+			_addWarning(
+				warningMessages,
+				"Unable to count the license keys of opportunity " +
+					order.getExternalReferenceCode(),
+				exception);
 		}
 
 		if (customFieldValuesMap.isEmpty()) {
@@ -321,6 +359,79 @@ public class ProvisioningOrderService {
 		}
 	}
 
+	private void _addLicenseKeyWarnings(
+			Order order, Map<Long, Double> newOrderItemQuantities,
+			List<String> warningMessages)
+		throws Exception {
+
+		List<Entitlement> entitlements =
+			_entitlementService.getOrderItemEntitlements(
+				new ArrayList<>(newOrderItemQuantities.keySet()));
+
+		if (entitlements.isEmpty()) {
+			return;
+		}
+
+		Map<String, Object> customFields =
+			(Map<String, Object>)order.getCustomFields();
+
+		String projectExternalReferenceCode = GetterUtil.getString(
+			customFields.get("salesforceProjectId"));
+
+		Map<Long, Integer> licenseKeyCounts = null;
+
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			licenseKeyCounts =
+				_licenseKeyService.getActiveUnassignedLicenseKeyCounts(
+					order.getAccountId(), Collections.emptyList());
+		}
+		else {
+			licenseKeyCounts = _licenseKeyService.getActiveLicenseKeyCounts(
+				projectExternalReferenceCode);
+		}
+
+		for (Entitlement entitlement : entitlements) {
+			int licenseKeyCount = licenseKeyCounts.getOrDefault(
+				entitlement.getEntitlementId(), 0);
+
+			if (licenseKeyCount == 0) {
+				continue;
+			}
+
+			double newQuantity = newOrderItemQuantities.get(
+				entitlement.getCommerceOrderItemId());
+			int maxQuantity = 0;
+
+			if (newQuantity > 0) {
+				EntitlementDefinition entitlementDefinition =
+					entitlement.getEntitlementDefinition();
+
+				if ((entitlementDefinition == null) ||
+					(entitlementDefinition.getMaxQuantity() == null)) {
+
+					continue;
+				}
+
+				maxQuantity =
+					(int)(newQuantity * entitlementDefinition.getMaxQuantity());
+			}
+
+			if (licenseKeyCount <= maxQuantity) {
+				continue;
+			}
+
+			_addWarning(
+				warningMessages,
+				StringBundler.concat(
+					"Entitlement ", entitlement.getName(), " for SKU ",
+					entitlement.getSkuExternalReferenceCode(),
+					" of opportunity ", order.getExternalReferenceCode(),
+					" has ", licenseKeyCount,
+					" license keys, but its new quantity allows ", maxQuantity,
+					". Support must contact the customer."));
+		}
+	}
+
 	private void _addWarning(
 		List<String> warningMessages, String warningMessage) {
 
@@ -328,6 +439,17 @@ public class ProvisioningOrderService {
 
 		if (_log.isWarnEnabled()) {
 			_log.warn(warningMessage);
+		}
+	}
+
+	private void _addWarning(
+		List<String> warningMessages, String warningMessage,
+		Exception exception) {
+
+		warningMessages.add(warningMessage);
+
+		if (_log.isWarnEnabled()) {
+			_log.warn(warningMessage, exception);
 		}
 	}
 
@@ -373,5 +495,11 @@ public class ProvisioningOrderService {
 
 	@Autowired
 	private CommerceOrderService _commerceOrderService;
+
+	@Autowired
+	private EntitlementService _entitlementService;
+
+	@Autowired
+	private LicenseKeyService _licenseKeyService;
 
 }
