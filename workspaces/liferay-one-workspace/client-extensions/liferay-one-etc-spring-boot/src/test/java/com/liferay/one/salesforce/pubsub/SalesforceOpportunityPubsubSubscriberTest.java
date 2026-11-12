@@ -311,6 +311,40 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveAddsOpportunityInvoicedIssueWhenAProvisionedOpportunityHasNoLineItems()
+		throws Exception {
+
+		_stubExistingOrder();
+		_stubTrimRemovedOrderItemsWarning(_NO_LINE_ITEMS_WARNING);
+
+		_receiveOpportunityMessage(
+			_createOpportunityRecordJSONObjectWithoutLineItems("E"));
+
+		Mockito.verify(
+			_provisioningOrderService
+		).trimRemovedOrderItems(
+			Mockito.any(), Mockito.argThat(List::isEmpty), Mockito.anyList()
+		);
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.eq(_account), Mockito.any(), Mockito.any(),
+			Mockito.argThat(List::isEmpty),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertEquals(
+			List.of(_NO_LINE_ITEMS_WARNING),
+			warningMessagesArgumentCaptor.getValue());
+
+		_verifyNoRecordFlowWrites();
+	}
+
+	@Test
 	public void testReceiveAddsOpportunityInvoicedIssueWhenAReprocessWarnsAboutLicenseKeys()
 		throws Exception {
 
@@ -345,6 +379,31 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Assertions.assertTrue(
 			_containsSubstring(
 				_LICENSE_KEY_WARNING,
+				warningMessagesArgumentCaptor.getValue()));
+	}
+
+	@Test
+	public void testReceiveAddsOpportunityInvoicedIssueWhenOnlyProjectEntitlementLineItemsArriveForAProvisionedOrder()
+		throws Exception {
+
+		_stubExistingOrder();
+		_stubTrimRemovedOrderItemsWarning(_NO_LINE_ITEMS_WARNING);
+
+		_receiveOpportunityMessage(_createProjectEntitlementRecordJSONObject());
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertTrue(
+			_containsSubstring(
+				_NO_LINE_ITEMS_WARNING,
 				warningMessagesArgumentCaptor.getValue()));
 	}
 
@@ -750,26 +809,6 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		throws Exception {
 
 		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
-
-		Mockito.verify(
-			_provisioningOrderService, Mockito.never()
-		).trimRemovedOrderItems(
-			Mockito.any(), Mockito.anyList(), Mockito.anyList()
-		);
-	}
-
-	@Test
-	public void testReceiveDoesNotTrimRemovedOrderItemsWithoutOpportunityLineItems()
-		throws Exception {
-
-		Mockito.when(
-			_commerceOrderService.fetchOrderByExternalReferenceCode(
-				_OPPORTUNITY_ID)
-		).thenReturn(
-			_createExistingOrder()
-		);
-
-		_receiveOpportunityMessage(_createProjectEntitlementRecordJSONObject());
 
 		Mockito.verify(
 			_provisioningOrderService, Mockito.never()
@@ -2265,20 +2304,25 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 
 	@Test
 	public void testReceiveSkipsOpportunityWithoutLineItems() throws Exception {
-		JSONObject opportunityJSONObject =
-			SalesforceModelTestUtil.createOpportunityJSONObject(
-				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "", "",
-				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+		_receiveOpportunityMessage(
+			_createOpportunityRecordJSONObjectWithoutLineItems("E"));
 
-		JSONObject recordJSONObject =
-			SalesforceModelTestUtil.createOpportunityRecordJSONObject(
-				SalesforceModelTestUtil.createAccountJSONObject(
-					_ACCOUNT_ID_SF, "Test Salesforce Account"),
-				opportunityJSONObject, new JSONArray(), new JSONArray(), null);
+		Mockito.verify(
+			_commerceOrderService
+		).fetchOrderByExternalReferenceCode(
+			_OPPORTUNITY_ID
+		);
 
-		_receiveOpportunityMessage(recordJSONObject);
+		Mockito.verifyNoMoreInteractions(_commerceOrderService);
 
-		_verifyNoProvisioningInteractions();
+		Mockito.verifyNoInteractions(
+			_accountService, _commerceAccountCurrencyService,
+			_commerceOrderItemService, _commerceSkuService, _contractService,
+			_projectService, _provisioningAnalyticsCloudService,
+			_provisioningContactService, _provisioningEmailService,
+			_provisioningEnvironmentService, _provisioningIssueService,
+			_provisioningOrderService, _provisioningSubdomainService,
+			_userAccountService);
 	}
 
 	@Test
@@ -2326,6 +2370,47 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_contractService, Mockito.never()
 		).updateEntitlementContracts(
 			Mockito.any(), Mockito.anyList(), Mockito.anyBoolean()
+		);
+	}
+
+	@Test
+	public void testReceiveSkipsTheIssueForProductFamilyPWithoutLineItems()
+		throws Exception {
+
+		_stubExistingOrder();
+		_stubTrimRemovedOrderItemsWarning(_NO_LINE_ITEMS_WARNING);
+
+		_receiveOpportunityMessage(
+			_createOpportunityRecordJSONObjectWithoutLineItems("P"));
+
+		Mockito.verify(
+			_provisioningIssueService, Mockito.never()
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
+		);
+	}
+
+	@Test
+	public void testReceiveSkipsTheIssueWhenAProvisionedOpportunityWithoutLineItemsHasNoActiveItem()
+		throws Exception {
+
+		_stubExistingOrder();
+
+		_receiveOpportunityMessage(
+			_createOpportunityRecordJSONObjectWithoutLineItems("E"));
+
+		Mockito.verify(
+			_provisioningOrderService
+		).trimRemovedOrderItems(
+			Mockito.any(), Mockito.anyList(), Mockito.anyList()
+		);
+
+		Mockito.verify(
+			_provisioningIssueService, Mockito.never()
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 	}
 
@@ -2575,6 +2660,29 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		).upsertOrder(
 			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
 			Mockito.any()
+		);
+	}
+
+	@Test
+	public void testReceiveTrimsRemovedOrderItemsWithOnlyProjectEntitlementLineItems()
+		throws Exception {
+
+		Order existingOrder = _createExistingOrder();
+
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_OPPORTUNITY_ID)
+		).thenReturn(
+			existingOrder
+		);
+
+		_receiveOpportunityMessage(_createProjectEntitlementRecordJSONObject());
+
+		Mockito.verify(
+			_provisioningOrderService
+		).trimRemovedOrderItems(
+			Mockito.eq(existingOrder), Mockito.argThat(List::isEmpty),
+			Mockito.anyList()
 		);
 	}
 
@@ -3879,6 +3987,20 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			new JSONArray(), null);
 	}
 
+	private JSONObject _createOpportunityRecordJSONObjectWithoutLineItems(
+		String productFamily) {
+
+		JSONObject opportunityJSONObject =
+			SalesforceModelTestUtil.createOpportunityJSONObject(
+				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", productFamily,
+				"", "", "Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
+
+		return SalesforceModelTestUtil.createOpportunityRecordJSONObject(
+			SalesforceModelTestUtil.createAccountJSONObject(
+				_ACCOUNT_ID_SF, "Test Salesforce Account"),
+			opportunityJSONObject, new JSONArray(), new JSONArray(), null);
+	}
+
 	private JSONObject _createProjectEntitlementRecordJSONObject() {
 		Mockito.when(
 			_provisioningProjectEntitlementService.
@@ -4037,6 +4159,24 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		);
 	}
 
+	private void _stubTrimRemovedOrderItemsWarning(String warningMessage)
+		throws Exception {
+
+		Mockito.doAnswer(
+			invocation -> {
+				List<String> warningMessages = invocation.getArgument(2);
+
+				warningMessages.add(warningMessage);
+
+				return null;
+			}
+		).when(
+			_provisioningOrderService
+		).trimRemovedOrderItems(
+			Mockito.any(), Mockito.anyList(), Mockito.anyList()
+		);
+	}
+
 	private double _sum(
 		Map<String, List<Double>> quantities, String product2Id) {
 
@@ -4093,6 +4233,28 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_provisioningSubdomainService, _userAccountService);
 	}
 
+	private void _verifyNoRecordFlowWrites() throws Exception {
+		Mockito.verify(
+			_accountService, Mockito.never()
+		).upsertAccount(
+			Mockito.any(), Mockito.any()
+		);
+
+		Mockito.verify(
+			_commerceOrderService, Mockito.never()
+		).upsertOrder(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList(),
+			Mockito.any()
+		);
+
+		Mockito.verifyNoInteractions(
+			_commerceAccountCurrencyService, _commerceOrderItemService,
+			_contractService, _projectService,
+			_provisioningAnalyticsCloudService, _provisioningContactService,
+			_provisioningEmailService, _provisioningEnvironmentService,
+			_provisioningSubdomainService);
+	}
+
 	private static final long _ACCOUNT_ID = 1000L;
 
 	private static final String _ACCOUNT_ID_SF = "SF-ACCOUNT-1";
@@ -4105,6 +4267,10 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 				"contact the customer.";
 
 	private static final long _NEW_ORDER_ID = 4000L;
+
+	private static final String _NO_LINE_ITEMS_WARNING =
+		"Opportunity OPP-1 has no line items, but its order has active order " +
+			"items. The system did not end them.";
 
 	private static final String _OPPORTUNITY_ID = "OPP-1";
 
