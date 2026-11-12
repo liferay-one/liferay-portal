@@ -160,9 +160,10 @@ export function canAccessAccountMembers(
 }
 
 export function canAccessOrders(userAccountModel?: UserAccountModel | null) {
-	return (
+	return Boolean(
 		isAccountManager(userAccountModel) ||
-		hasAnyAccountRole(userAccountModel)
+			hasAnyAccountRole(userAccountModel) ||
+			userAccountModel?.canViewAllOrders
 	);
 }
 
