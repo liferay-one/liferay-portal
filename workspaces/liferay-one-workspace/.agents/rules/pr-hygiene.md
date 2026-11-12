@@ -32,9 +32,9 @@ Valid prefixes: `BLADE`, `CLDSVCS`, `COMMERCE`, `IDE`, `ISOPS`, `ISSD`, `ISSUP`,
 
 PRs should address a single Jira ticket. If your fix actually addresses a different problem from the stated ticket, use the correct ticket or create a new one.
 
-## Tests Go in Their Own Commit
+## Tests, Docs, and Agent Files Go in Their Own Commits
 
-A branch that changes behavior has at least two commits. The first commit holds the code. The next commit holds the tests for that code. Do not put a test file in the code commit, and do not put a source file in the test commit.
+A branch can hold four kinds of change: code, tests, docs, and agent files. Each commit holds one kind only. A branch that changes behavior has at least two commits. The first commit holds the code. The next commit holds the tests for that code. When the branch also changes docs or agent files, each of those kinds goes in a commit of its own after the tests.
 
 A test file is one of these:
 
@@ -42,25 +42,42 @@ A test file is one of these:
 - A JUnit file under `src/test/` in a client extension.
 - Any file under `tests/`, which includes the Playwright specs, their utilities, and the `tests/plan/*.md` rows.
 
-The `specs/` files are requirements, not tests. Put a `specs/` change in the code commit.
+A doc file is one of these:
 
-Title the test commit for the behavior that it proves, for example `LPD-12345 Test that a cloud contact designation stays on its own project`. A test commit has no body unless the title does not explain the change.
+- Any file under `specs/`. The `specs/` files are requirements, not tests, and they are not code.
+- Any other Markdown file, such as a `README.md`, that is not a test file or an agent file.
 
-Run this check before you send the PR. It prints each commit that mixes test files and other files:
+An agent file is any file under `.agents/` or `.claude/`. These include the rules, the skills and their scripts, `AGENTS.md`, and `liferay-rules.md`. A skill script is an agent file, not code, so it goes in the agent commit with its `SKILL.md`.
+
+Every other file is code.
+
+Title each commit for what it does. Title the test commit for the behavior that it proves, for example `LPD-12345 Test that a cloud contact designation stays on its own project`. Title the docs commit for the change to the docs, for example `LPD-12345 Document the cloud contact designation rule`. A test, docs, or agent commit has no body unless the title does not explain the change.
+
+Run this check before you send the PR. It prints each commit that mixes two or more kinds of change:
 
 ```bash
 for SHA in $(git rev-list liferay-one/master-temp..HEAD); do
-	FILES=$(git show --format= --name-only --relative "${SHA}")
-	TESTS=$(echo "${FILES}" | grep --count --extended-regexp '\.test\.tsx?$|/src/test/|^tests/')
-	TOTAL=$(echo "${FILES}" | grep --count .)
+	KINDS=$(
+		git show --format= --name-only --relative "${SHA}" | while read -r FILE; do
+			if [[ ${FILE} =~ ^(\.agents|\.claude)/ ]]; then
+				echo agent
+			elif [[ ${FILE} =~ \.test\.tsx?$|/src/test/|^tests/ ]]; then
+				echo test
+			elif [[ ${FILE} =~ ^specs/|\.md$ ]]; then
+				echo docs
+			else
+				echo code
+			fi
+		done | sort --unique | wc --lines
+	)
 
-	if [[ ${TESTS} -gt 0 && ${TESTS} -lt ${TOTAL} ]]; then
+	if [[ ${KINDS} -gt 1 ]]; then
 		git log --format='%h %s' -1 "${SHA}"
 	fi
 done
 ```
 
-To split a mixed commit, reset it with `git reset --soft HEAD~1`. Unstage the test files and commit the code with the original message. Then stage only the test files and commit them. Stage files by name, not with `git add -A`, because the working tree can hold edits that do not belong to either commit.
+To split a mixed commit, reset it with `git reset --soft HEAD~1`. Unstage every file that is not code, and commit the code with the original message. Then stage the test files and commit them. Do the same for the doc files, and then for the agent files. Stage files by name, not with `git add -A`, because the working tree can hold edits that do not belong to any of these commits.
 
 ## Keep the Visuals Current
 
