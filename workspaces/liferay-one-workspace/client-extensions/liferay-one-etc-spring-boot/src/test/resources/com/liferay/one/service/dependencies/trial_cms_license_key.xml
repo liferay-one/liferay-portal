@@ -3,13 +3,13 @@
 	<account-name>Liferay Docker</account-name>
 	<owner>docker@liferay.com</owner>
 	<description>Trial Activation Key</description>
-	<product-name>CMS Developer</product-name>
+	<product-name>CMS Development</product-name>
 	<product-version>2026.Q4</product-version>
-	<license-name>CMS Developer</license-name>
+	<license-name>CMS Development</license-name>
 	<license-type>developer</license-type>
 	<license-version>6</license-version>
 	<start-date>Tuesday, November 10, 2026 12:00:00 AM GMT</start-date>
 	<expiration-date>Monday, February 8, 2027 12:00:00 AM GMT</expiration-date>
 	<max-http-sessions>5</max-http-sessions>
-	<key>b8386973e9b73932a1b4d8bc0a7fc1302a463d125227d588c39c30f0295efb201c992c0f71669c032c5bb4b9a55c581c12856edf5000edb0ac24cd2353fb4fe19c5f4e8948224b0408d1c4ee0aa59c6d053a1e61ec12e4ecad479827d7bbc8384c41cc0353b642cdf962a0a791850356788e06cc95985836addd9274578e4e02f0e98f8d</key>
+	<key>b1386fc3e7973ab2a2e4d3ac066fc2f0226639225597d1d8c75c37402c6ef0c01c492d0f7286942327cbbc79afac5cdc11156baf5fe0e410a204cd435d8b4d91671ceb0464452fa1f73da9b2e4ff0e30c06d82c7ec12e4ecad479827d7bbc8384c41cc0353b642cdf962a0a791850356788e06cc95985836addd9274578e4e02f0e98f8d</key>
 </license>
