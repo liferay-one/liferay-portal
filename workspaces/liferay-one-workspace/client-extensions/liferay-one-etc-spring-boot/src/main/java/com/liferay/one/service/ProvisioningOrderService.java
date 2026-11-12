@@ -178,6 +178,35 @@ public class ProvisioningOrderService {
 			List<String> warningMessages)
 		throws Exception {
 
+		Instant effectiveEndDateInstant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.SECONDS
+		);
+
+		if (salesforceOpportunityLineItems.isEmpty()) {
+			for (OrderItem orderItem : order.getOrderItems()) {
+				Instant entitlementEndDateInstant =
+					CommerceOrderItemUtil.getEntitlementEndDateInstant(
+						orderItem);
+
+				if ((entitlementEndDateInstant == null) ||
+					entitlementEndDateInstant.isAfter(
+						effectiveEndDateInstant)) {
+
+					_addWarning(
+						warningMessages,
+						StringBundler.concat(
+							"Opportunity ", order.getExternalReferenceCode(),
+							" has no line items, but its order has active ",
+							"order items. The system did not end them."));
+
+					return;
+				}
+			}
+
+			return;
+		}
+
 		Map<String, SalesforceOpportunityLineItem>
 			salesforceOpportunityLineItemsMap = new HashMap<>();
 
@@ -188,11 +217,6 @@ public class ProvisioningOrderService {
 				salesforceOpportunityLineItem.getId(),
 				salesforceOpportunityLineItem);
 		}
-
-		Instant effectiveEndDateInstant = Instant.now(
-		).truncatedTo(
-			ChronoUnit.SECONDS
-		);
 
 		List<OrderItem> removedOrderItems = new ArrayList<>();
 		Map<Long, Map<String, Object>> customFieldValuesMap = new HashMap<>();
