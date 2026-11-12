@@ -150,7 +150,8 @@ export default function ProjectItemDetails({
 	const orderInfo = getProductOrderInfo(
 		itemType,
 		productOrders,
-		product.productId
+		product.productId,
+		resolvedContractId
 	);
 	const virtualItems = getProductVirtualItems(
 		productOrders,
