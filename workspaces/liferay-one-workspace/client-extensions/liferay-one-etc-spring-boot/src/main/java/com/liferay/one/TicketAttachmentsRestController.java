@@ -283,6 +283,11 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 
 		String ticketId = jsonObject.getString("ticketId");
 
+		if (!_jiraIssueService.isJiraSupportIssueKey(ticketId)) {
+			return new ResponseEntity<>(
+				"INVALID_TICKET_NUMBER", HttpStatus.NOT_FOUND);
+		}
+
 		JiraSupportIssue jiraSupportIssue =
 			_jiraIssueService.getJiraSupportIssue(ticketId);
 
