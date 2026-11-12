@@ -47,6 +47,14 @@ export class UserAccountModel {
 		);
 	}
 
+	get canViewAllOrders() {
+		return Boolean(
+			this.canManageAllAccounts ||
+				this.isFinanceAdministrator ||
+				this.isLiferayStaff
+		);
+	}
+
 	get isAccountAdministrator() {
 		return this.hasAccountRole('Account Administrator');
 	}
