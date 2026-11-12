@@ -597,12 +597,14 @@ public class SalesforceOpportunityPubsubSubscriber
 				provisionableSalesforceOpportunityLineItems, warningMessages);
 		}
 
+		int initialWarningMessagesCount = warningMessages.size();
+
 		if (_isProvisioned(order) &&
 			!salesforceOpportunityLineItems.isEmpty()) {
 
 			try {
 				_provisioningOrderService.trimRemovedOrderItems(
-					order, salesforceOpportunityLineItems);
+					order, salesforceOpportunityLineItems, warningMessages);
 			}
 			catch (Exception exception) {
 				_addWarning(
@@ -611,6 +613,12 @@ public class SalesforceOpportunityPubsubSubscriber
 						salesforceOpportunity.getId() + " no longer has",
 					exception);
 			}
+		}
+
+		boolean trimWarning = false;
+
+		if (warningMessages.size() > initialWarningMessagesCount) {
+			trimWarning = true;
 		}
 
 		String currencyCode = _getCurrencyCode(
@@ -791,7 +799,7 @@ public class SalesforceOpportunityPubsubSubscriber
 				account, salesforceOpportunity.getType(), userIds);
 		}
 
-		if (!reprocessing &&
+		if ((!reprocessing || trimWarning) &&
 			!Objects.equals(salesforceOpportunity.getProductFamily(), "P")) {
 
 			_provisioningIssueService.addOpportunityInvoicedIssue(
