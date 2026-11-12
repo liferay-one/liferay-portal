@@ -91,6 +91,22 @@ describe('[CLIENT-MODELS-USERACCOUNTMODEL] UserAccountModel', () => {
 		}
 	);
 
+	it.each([
+		['Administrator', true],
+		['Finance Administrator', true],
+		['Liferay Staff', true],
+		['Provisioning Administrator', true],
+		['Provisioning Worker', false],
+		['User', false],
+	] as const)(
+		'reads whether the %s regular role views all orders',
+		(roleName, canViewAllOrders) => {
+			expect(
+				createModel({roleBriefs: [{name: roleName}]}).canViewAllOrders
+			).toBe(canViewAllOrders);
+		}
+	);
+
 	it('scopes the account roles to the current commerce account', () => {
 		setCommerceAccountId(1);
 
