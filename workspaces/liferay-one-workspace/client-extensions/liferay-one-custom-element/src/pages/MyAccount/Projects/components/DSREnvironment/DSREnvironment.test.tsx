@@ -39,12 +39,16 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DSREnvironment', () => {
 
 		render(
 			<DSREnvironment
-				environment={toEnvironment({workspaceName: 'Acme Sales Room'})}
+				environment={toEnvironment({
+					ownerEmailAddress: 'owner@acme.com',
+					workspaceName: 'Acme Sales Room',
+				})}
 			/>
 		);
 
 		expect(await screen.findByDisplayValue('token-1')).toBeInTheDocument();
 		expect(screen.getByText('Acme Sales Room')).toBeInTheDocument();
+		expect(screen.queryByText('owner@acme.com')).not.toBeInTheDocument();
 		expect(
 			DigitalSalesRoom.getEnvironmentsDataSourceToken
 		).toHaveBeenCalledWith('DSR-PRJCT-1');
