@@ -188,7 +188,7 @@ The handler runs these steps for each record in `records`, in this order. A step
 
 1. Send the welcome emails. A reprocessing sends the "assigned" welcome email in place of the first one (`:646`).
 
-1. Open the "opportunity invoiced" Jira issue, with every warning of the run, unless the run is a reprocessing or the product family is exactly `P` (`:655`).
+1. Open the "opportunity invoiced" Jira issue, with every warning of the run, unless the product family is exactly `P` (`:655`). A reprocessing opens the issue only when the check of removed line items added a warning.
 
 ### Opportunity to CommerceOrder
 
@@ -448,13 +448,13 @@ The handlers do not compare record ages (TECH-SALESFORCE-043). Each message type
 
 ### Redelivery
 
-The opportunity subscriber acks every message, so Pub/Sub delivers an opportunity again only by its at least once rule. Salesforce can also publish the opportunity again. A second run is a reprocessing when the order has items. It then updates the order and the items by ERC, sends the "assigned" welcome email, and opens no "opportunity invoiced" issue. It does not change an order that is already completed, because it completes only an order that was not completed (`:601`). It also sets the contract of each order item again, and then moves the entitlements of the order items that the message carries to the contract of their item. A message without the `contracts` array unlinks each item that the amended contract does not match, and the entitlements of that item. A later message with the array links them again, to the same entitlements. A second run of the same message sends no entitlement PATCH. After an unlink, the scheduled contract reconcile fills the item again from any contract that still names the opportunity and matches the end date of the item.
+The opportunity subscriber acks every message, so Pub/Sub delivers an opportunity again only by its at least once rule. Salesforce can also publish the opportunity again. A second run is a reprocessing when the order has items. It then updates the order and the items by ERC, and sends the "assigned" welcome email. It ends each order item whose line item the message no longer has, and it opens the "opportunity invoiced" issue only when that check adds a warning. A message with no line items ends nothing. It opens the issue when the order still has an active order item that is not canceled. It does not change an order that is already completed, because it completes only an order that was not completed (`:601`). It also sets the contract of each order item again, and then moves the entitlements of the order items that the message carries to the contract of their item. A message without the `contracts` array unlinks each item that the amended contract does not match, and the entitlements of that item. A later message with the array links them again, to the same entitlements. A second run of the same message sends no entitlement PATCH. After an unlink, the scheduled contract reconcile fills the item again from any contract that still names the opportunity and matches the end date of the item.
 
 The object subscriber nacks a message when one record fails. Pub/Sub then delivers the whole message again, and every record runs again (TECH-SALESFORCE-041). The account, project, price, and product writes are upserts, so a second run gives the same result. The contract create path is not quite the same: it writes `contractType` and the project again on every run (finding 7).
 
 ### Partial Failure
 
-On the opportunity path, the steps after the order upsert have no retry. An exception in one of them ends the record. The handler opens a Jira error issue and acks the message (TECH-SALESFORCE-040). The order can then exist with some items, and with no contacts, no emails, and no invoiced issue. Some steps catch their own exceptions and add a warning, and the record goes on: the currency, each order item, the completion, each project entitlement, and each contact. The warnings reach Jira only through the "opportunity invoiced" issue, which a reprocessing and the `P` family do not open (finding 12).
+On the opportunity path, the steps after the order upsert have no retry. An exception in one of them ends the record. The handler opens a Jira error issue and acks the message (TECH-SALESFORCE-040). The order can then exist with some items, and with no contacts, no emails, and no invoiced issue. Some steps catch their own exceptions and add a warning, and the record goes on: the currency, each order item, the completion, each project entitlement, and each contact. The warnings reach Jira only through the "opportunity invoiced" issue. The `P` family never opens it, and a reprocessing opens it only when the check of removed line items adds a warning (finding 12).
 
 On the object path, a failed record makes Pub/Sub deliver the whole message again. A record that fails every time keeps its message in the subscription until the dead letter policy of the owner moves it. The dead letter subscriber then logs it and emails the recipient.
 
@@ -577,7 +577,7 @@ The audit checked the Salesforce path against this change. Salesforce contact ro
 
 1. **A price book entry with no `UnitPrice` reads as NaN.** `salesforce/model/SalesforcePricebookEntry.java:21` calls `optDouble` with no default. The price entry request then carries NaN, which is not a valid JSON number, so the record likely fails and the whole message is nacked again.
 
-1. **Warnings are lost when the run stops early or is a reprocessing.** `salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java:367` and `:413` return before the invoiced issue, and `:655` skips the issue for a reprocessing and for the `P` family. The warnings of those runs reach only the log.
+1. **Warnings are lost when the run stops early or is a reprocessing.** `salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java:367` and `:413` return before the invoiced issue, and `:655` skips the issue for the `P` family and for a reprocessing whose check of removed line items added no warning. The other warnings of those runs reach only the log.
 
 1. **An order with no items is not a reprocessing.** `salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java:251` counts an order as provisioned only when it has items. When the first run added the order but no item (for example, every SKU was missing), a second run sends the first welcome emails again and opens a second "opportunity invoiced" issue.
 
