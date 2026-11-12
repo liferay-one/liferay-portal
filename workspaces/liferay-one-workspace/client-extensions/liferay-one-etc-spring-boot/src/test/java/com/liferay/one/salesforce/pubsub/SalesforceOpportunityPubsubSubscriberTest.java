@@ -311,6 +311,76 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveAddsOpportunityInvoicedIssueWhenAReprocessWarnsAboutLicenseKeys()
+		throws Exception {
+
+		_stubExistingOrder();
+
+		Mockito.doAnswer(
+			invocation -> {
+				List<String> warningMessages = invocation.getArgument(2);
+
+				warningMessages.add(_LICENSE_KEY_WARNING);
+
+				return null;
+			}
+		).when(
+			_provisioningOrderService
+		).trimRemovedOrderItems(
+			Mockito.any(), Mockito.anyList(), Mockito.anyList()
+		);
+
+		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertTrue(
+			_containsSubstring(
+				_LICENSE_KEY_WARNING,
+				warningMessagesArgumentCaptor.getValue()));
+	}
+
+	@Test
+	public void testReceiveAddsOpportunityInvoicedIssueWhenTheTrimFailsOnReprocess()
+		throws Exception {
+
+		_stubExistingOrder();
+
+		Mockito.doThrow(
+			new Exception("Unable to end")
+		).when(
+			_provisioningOrderService
+		).trimRemovedOrderItems(
+			Mockito.any(), Mockito.anyList(), Mockito.anyList()
+		);
+
+		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
+
+		ArgumentCaptor<List<String>> warningMessagesArgumentCaptor =
+			ArgumentCaptor.forClass(List.class);
+
+		Mockito.verify(
+			_provisioningIssueService
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			warningMessagesArgumentCaptor.capture()
+		);
+
+		Assertions.assertTrue(
+			_containsSubstring(
+				"Unable to end the line items",
+				warningMessagesArgumentCaptor.getValue()));
+	}
+
+	@Test
 	public void testReceiveAttachesContractToAccountWhenContractHasNoAccount()
 		throws Exception {
 
@@ -684,7 +754,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_provisioningOrderService, Mockito.never()
 		).trimRemovedOrderItems(
-			Mockito.any(), Mockito.anyList()
+			Mockito.any(), Mockito.anyList(), Mockito.anyList()
 		);
 	}
 
@@ -704,7 +774,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_provisioningOrderService, Mockito.never()
 		).trimRemovedOrderItems(
-			Mockito.any(), Mockito.anyList()
+			Mockito.any(), Mockito.anyList(), Mockito.anyList()
 		);
 	}
 
@@ -2260,6 +2330,39 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
+	public void testReceiveSkipsTheReprocessIssueForProductFamilyP()
+		throws Exception {
+
+		_stubExistingOrder();
+
+		Mockito.doAnswer(
+			invocation -> {
+				List<String> warningMessages = invocation.getArgument(2);
+
+				warningMessages.add(_LICENSE_KEY_WARNING);
+
+				return null;
+			}
+		).when(
+			_provisioningOrderService
+		).trimRemovedOrderItems(
+			Mockito.any(), Mockito.anyList(), Mockito.anyList()
+		);
+
+		_receiveOpportunityMessage(
+			_createOpportunityRecordJSONObject(
+				_OPPORTUNITY_ID, "P", "", "Closed Won",
+				OpportunityConstants.TYPE_NEW_BUSINESS));
+
+		Mockito.verify(
+			_provisioningIssueService, Mockito.never()
+		).addOpportunityInvoicedIssue(
+			Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
+		);
+	}
+
+	@Test
 	public void testReceiveSkipsWhenAccountNotFoundAfterUpsert()
 		throws Exception {
 
@@ -2461,7 +2564,10 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 			_provisioningOrderService
 		).trimRemovedOrderItems(
 			Mockito.eq(existingOrder),
-			Mockito.argThat(items -> _hasLineItemIds(items, "LINE-1"))
+			Mockito.argThat(
+				salesforceOpportunityLineItems -> _hasLineItemIds(
+					salesforceOpportunityLineItems, "LINE-1")),
+			Mockito.anyList()
 		);
 
 		inOrder.verify(
@@ -3056,7 +3162,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		).when(
 			_provisioningOrderService
 		).trimRemovedOrderItems(
-			Mockito.any(), Mockito.anyList()
+			Mockito.any(), Mockito.anyList(), Mockito.anyList()
 		);
 
 		_receiveOpportunityMessage(_createNewBusinessRecordJSONObject());
@@ -3922,6 +4028,15 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		);
 	}
 
+	private void _stubExistingOrder() throws Exception {
+		Mockito.when(
+			_commerceOrderService.fetchOrderByExternalReferenceCode(
+				_OPPORTUNITY_ID)
+		).thenReturn(
+			_createExistingOrder()
+		);
+	}
+
 	private double _sum(
 		Map<String, List<Double>> quantities, String product2Id) {
 
@@ -3983,6 +4098,11 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	private static final String _ACCOUNT_ID_SF = "SF-ACCOUNT-1";
 
 	private static final long _EXISTING_ORDER_ITEM_ID = 555L;
+
+	private static final String _LICENSE_KEY_WARNING =
+		"Entitlement liferay-dxp for SKU PROD-1 of opportunity OPP-1 has 3 " +
+			"license keys, but its new quantity allows 0. Support must " +
+				"contact the customer.";
 
 	private static final long _NEW_ORDER_ID = 4000L;
 
