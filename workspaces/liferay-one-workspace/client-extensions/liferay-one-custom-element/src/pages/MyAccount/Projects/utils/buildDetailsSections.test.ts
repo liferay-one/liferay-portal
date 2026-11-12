@@ -27,6 +27,8 @@ const orderInfo = {
 	purchasedBy: 'Jane Doe',
 	quantity: '5',
 	skuProductNames: ['Liferay Analytics Cloud Subscription - Business'],
+	startDate: '',
+	status: '',
 };
 
 function getRows(
@@ -107,6 +109,37 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 
 		expect(getRows('paas')).toEqual(rows);
 		expect(getRows('saas')).toEqual(rows);
+	});
+
+	it('shows the order item start date with the contract expiration date', () => {
+		const rows = [
+			['Tier Name', 'Liferay Analytics Cloud Subscription - Business'],
+			['Start Date', 'Nov 11, 2026'],
+			['Expiration Date', 'Aug 9, 2027'],
+			['Status', 'Active'],
+		];
+
+		const startDateOrderInfo = {
+			...orderInfo,
+			startDate: '2026-11-11T00:00:00Z',
+		};
+
+		expect(getRows('paas', {orderInfo: startDateOrderInfo})).toEqual(rows);
+		expect(getRows('saas', {orderInfo: startDateOrderInfo})).toEqual(rows);
+	});
+
+	it('shows the order item status for a product', () => {
+		expect(
+			getRows('saas', {
+				itemType: 'product',
+				orderInfo: {...orderInfo, status: 'expired'},
+			}).at(-1)
+		).toEqual(['Status', 'Expired']);
+		expect(
+			getRows('saas', {
+				orderInfo: {...orderInfo, status: 'completed'},
+			}).at(-1)
+		).toEqual(['Status', 'Active']);
 	});
 
 	it('falls back to the product name for the tier without an order', () => {
