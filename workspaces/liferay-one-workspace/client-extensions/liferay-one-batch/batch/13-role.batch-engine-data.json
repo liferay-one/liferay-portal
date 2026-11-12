@@ -26,11 +26,6 @@
 			"roleType": "account"
 		},
 		{
-			"externalReferenceCode": "C_ANALYTICS_CLOUD_OWNER",
-			"name": "Analytics Cloud Owner",
-			"roleType": "account"
-		},
-		{
 			"externalReferenceCode": "C_ARTICLE_ADMIN",
 			"name": "Article Administrator",
 			"roleType": "site"

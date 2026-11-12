@@ -21,10 +21,6 @@ const ENVIRONMENT_FIELDS_BY_PROFILE: Partial<
 > = {
 	'analytics-cloud': [
 		{
-			label: 'owner-email',
-			value: (environment) => environment.ownerEmailAddress,
-		},
-		{
 			label: 'workspace-name',
 			value: (environment) => environment.workspaceName,
 		},

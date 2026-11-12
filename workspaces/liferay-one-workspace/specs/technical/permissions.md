@@ -18,7 +18,7 @@ In this file, `L<n>` means line `<n>` of `resource-permissions.json`, and a scop
 
 | Count | Item |
 | --- | --- |
-| 49 | Roles in the role batch: 33 account roles, 13 regular roles, and 3 site roles |
+| 43 | Roles in the role batch: 31 account roles, 9 regular roles, and 3 site roles |
 | 4 | Batch roles that are Liferay built in roles and keep their `L_` ERC |
 | 5 | Liferay built in roles that the trees use but do not define: Administrator, Guest, Organization User, Site Member, User |
 | 125 | Grants in `resource-permissions.json` |
@@ -78,50 +78,49 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 
 | Role | ERC | Type | Line | Assigned By |
 | --- | --- | --- | --- | --- |
-| Account Administrator | `L_ACCOUNT_ADMINISTRATOR` | account | 213 | The creator of an account (`AccountsRestController.java:311`). The first Salesforce contact of an account that has no designated administrator (`ProvisioningContactService.java:136`). An accepted invitation (`AccountInvitationAcceptanceService.java:93`). An account manager (`AccountsRestController.java:538`). |
+| Account Administrator | `L_ACCOUNT_ADMINISTRATOR` | account | 208 | The creator of an account (`AccountsRestController.java:311`). The first Salesforce contact of an account that has no designated administrator (`ProvisioningContactService.java:136`). An accepted invitation (`AccountInvitationAcceptanceService.java:93`). An account manager (`AccountsRestController.java:538`). |
 | Account App Publisher | `C_ACCOUNT_APP_PUBLISHER` | account | 13 | Manual. The Publisher Dashboard lets only this role start an app submission. |
 | Account Buyer | `C_ACCOUNT_BUYER` | account | 18 | An account manager or an invitation |
-| Account Member | `L_ACCOUNT_MEMBER` | account | 218 | An account manager or an invitation |
+| Account Member | `L_ACCOUNT_MEMBER` | account | 213 | An account manager or an invitation |
 | Account Solution Publisher | `C_ACCOUNT_SOLUTION_PUBLISHER` | account | 23 | Manual. The Publisher Dashboard lets only this role start a solution submission. |
-| Account Supplier | `L_ACCOUNT_SUPPLIER` | account | 223 | Manual. Liferay shows the catalog of a supplier account only to this role, and gives the regular role Supplier with it. |
-| Analytics Cloud Owner | `C_ANALYTICS_CLOUD_OWNER` | account | 28 | Manual |
-| Article Administrator | `C_ARTICLE_ADMIN` | site | 33 | Manual |
-| Cloud Native Contact | `C_CLOUD_NATIVE_CONTACT` | account | 38 | A project contact designation (`ProjectRestController.java:298`). Its holders get the Okta Cloud Native app (`UserAssignmentService.java:119`). |
-| Critical Incident Contact | `C_CRITICAL_INCIDENT_CONTACT` | account | 43 | A project contact designation (`ProjectRestController.java:298`) or an invitation |
-| Customer | `C_CUSTOMER` | regular | 48 | Membership in the Customers user group (`16-user-group.batch-engine-data.json:13`). No code adds users to the group. |
-| Customer Experience Manager | `C_CUSTOMER_EXPERIENCE_MANAGER` | account | 53 | A Salesforce contact role (`ProvisioningContactService.java:118`) |
-| Dashboard Viewer | `C_DASHBOARD_VIEWER` | regular | 58 | Manual. No code reads it. |
-| Data Breach Contact | `C_DATA_BREACH_CONTACT` | account | 63 | A project contact designation |
-| Documentation Administrator | `C_DOCUMENTATION_ADMIN` | site | 68 | Manual |
-| Finance Administrator | `C_FINANCE_ADMIN` | regular | 73 | Manual |
-| LDP Administrator | `C_LDP_ADMIN` | account | 78 | A project contact designation |
-| Liferay Sales | `C_LIFERAY_SALES` | account | 83 | A Salesforce contact role |
-| Liferay Staff | `C_LIFERAY_STAFF` | regular | 88 | Membership in the Employees organization (`organizations.json`), which holds the role (`roles-assignments.json`). The Okta group Employees fills the organization through its `oktaGroupId` link (`OktaUsersPubsubSubscriber`, `POST /organizations/{organizationId}/sync-from-okta`). |
-| Marketplace Account Administrator | `C_MARKETPLACE_ACCOUNT_ADMIN` | account | 93 | Manual. No code reads it. |
-| Marketplace Publisher | `C_MARKETPLACE_PUBLISHER` | regular | 98 | Manual |
-| PaaS User | `C_PAAS_USER` | account | 103 | A project contact designation |
-| Partner | `C_PARTNER` | regular | 108 | Membership in the Partners user group (`16-user-group.batch-engine-data.json:39`). No code adds users to the group. |
-| Partner Account Admin | `C_PARTNER_ACCOUNT_ADMIN` | account | 113 | An account manager or an invitation |
-| Partner Manager | `C_PARTNER_MANAGER` | account | 118 | An account manager or an invitation |
-| Partner Marketing User | `C_PARTNER_MARKETING_USER` | account | 123 | An account manager or an invitation |
-| Partner Member | `C_PARTNER_MEMBER` | account | 128 | An account manager or an invitation |
-| Partner Sales User | `C_PARTNER_SALES_USER` | account | 133 | An account manager or an invitation |
-| Partner Technical User | `C_PARTNER_TECHNICAL_USER` | account | 138 | An account manager or an invitation |
-| Primary Contact | `C_PRIMARY_CONTACT` | account | 143 | A Salesforce contact role |
-| Privacy Breach Contact | `C_PRIVACY_BREACH_CONTACT` | account | 148 | A project contact designation |
-| Project Admin | `C_PROJECT_ADMIN` | account | 153 | A project membership (`ProjectRestController.java:266`) or an invitation. The ERC is stored on the `ProjectMembership` entry. It is not assigned as a Liferay account role. |
-| Project Requester | `C_PROJECT_REQUESTER` | account | 158 | The same as Project Admin |
-| Project User | `C_PROJECT_USER` | account | 163 | The same as Project Admin. Every Salesforce project contact gets it (`ProvisioningContactService.java:197`). |
-| Provisioning Administrator | `C_PROVISIONING_ADMIN` | regular | 168 | Manual |
-| Provisioning Worker | `C_PROVISIONING_WORKER` | regular | 173 | Manual |
-| SSA | `C_SSA` | regular | 198 | Manual. No code reads it. |
-| SSA Administrator | `C_SSA_ADMIN` | account | 203 | The SSA dashboard, in the SSA account (`ManageUserRolesModal.tsx`) |
-| SSA User | `C_SSA_USER` | account | 208 | The SSA dashboard, in the SSA account |
-| Secondary Contact | `C_SECONDARY_CONTACT` | account | 178 | A Salesforce contact role |
-| Security Breach Contact | `C_SECURITY_BREACH_CONTACT` | account | 183 | A project contact designation |
-| Security Incident Contact | `C_SECURITY_INCIDENT_CONTACT` | account | 188 | A project contact designation, or the Salesforce contact role Security Incident Contact on the project of the record (`ProvisioningContactService.java:166`). It is never an account role. |
-| Site Content Reviewer | `L_SITE_CONTENT_REVIEWER` | site | 228 | Manual |
-| Solution Architect | `C_SOLUTION_ARCHITECT` | account | 193 | A Salesforce contact role |
+| Account Supplier | `L_ACCOUNT_SUPPLIER` | account | 218 | Manual. Liferay shows the catalog of a supplier account only to this role, and gives the regular role Supplier with it. |
+| Article Administrator | `C_ARTICLE_ADMIN` | site | 28 | Manual |
+| Cloud Native Contact | `C_CLOUD_NATIVE_CONTACT` | account | 33 | A project contact designation (`ProjectRestController.java:298`). Its holders get the Okta Cloud Native app (`UserAssignmentService.java:119`). |
+| Critical Incident Contact | `C_CRITICAL_INCIDENT_CONTACT` | account | 38 | A project contact designation (`ProjectRestController.java:298`) or an invitation |
+| Customer | `C_CUSTOMER` | regular | 43 | Membership in the Customers user group (`16-user-group.batch-engine-data.json:13`). No code adds users to the group. |
+| Customer Experience Manager | `C_CUSTOMER_EXPERIENCE_MANAGER` | account | 48 | A Salesforce contact role (`ProvisioningContactService.java:118`) |
+| Dashboard Viewer | `C_DASHBOARD_VIEWER` | regular | 53 | Manual. No code reads it. |
+| Data Breach Contact | `C_DATA_BREACH_CONTACT` | account | 58 | A project contact designation |
+| Documentation Administrator | `C_DOCUMENTATION_ADMIN` | site | 63 | Manual |
+| Finance Administrator | `C_FINANCE_ADMIN` | regular | 68 | Manual |
+| LDP Administrator | `C_LDP_ADMIN` | account | 73 | A project contact designation |
+| Liferay Sales | `C_LIFERAY_SALES` | account | 78 | A Salesforce contact role |
+| Liferay Staff | `C_LIFERAY_STAFF` | regular | 83 | Membership in the Employees organization (`organizations.json`), which holds the role (`roles-assignments.json`). The Okta group Employees fills the organization through its `oktaGroupId` link (`OktaUsersPubsubSubscriber`, `POST /organizations/{organizationId}/sync-from-okta`). |
+| Marketplace Account Administrator | `C_MARKETPLACE_ACCOUNT_ADMIN` | account | 88 | Manual. No code reads it. |
+| Marketplace Publisher | `C_MARKETPLACE_PUBLISHER` | regular | 93 | Manual |
+| PaaS User | `C_PAAS_USER` | account | 98 | A project contact designation |
+| Partner | `C_PARTNER` | regular | 103 | Membership in the Partners user group (`16-user-group.batch-engine-data.json:39`). No code adds users to the group. |
+| Partner Account Admin | `C_PARTNER_ACCOUNT_ADMIN` | account | 108 | An account manager or an invitation |
+| Partner Manager | `C_PARTNER_MANAGER` | account | 113 | An account manager or an invitation |
+| Partner Marketing User | `C_PARTNER_MARKETING_USER` | account | 118 | An account manager or an invitation |
+| Partner Member | `C_PARTNER_MEMBER` | account | 123 | An account manager or an invitation |
+| Partner Sales User | `C_PARTNER_SALES_USER` | account | 128 | An account manager or an invitation |
+| Partner Technical User | `C_PARTNER_TECHNICAL_USER` | account | 133 | An account manager or an invitation |
+| Primary Contact | `C_PRIMARY_CONTACT` | account | 138 | A Salesforce contact role |
+| Privacy Breach Contact | `C_PRIVACY_BREACH_CONTACT` | account | 143 | A project contact designation |
+| Project Admin | `C_PROJECT_ADMIN` | account | 148 | A project membership (`ProjectRestController.java:266`) or an invitation. The ERC is stored on the `ProjectMembership` entry. It is not assigned as a Liferay account role. |
+| Project Requester | `C_PROJECT_REQUESTER` | account | 153 | The same as Project Admin |
+| Project User | `C_PROJECT_USER` | account | 158 | The same as Project Admin. Every Salesforce project contact gets it (`ProvisioningContactService.java:197`). |
+| Provisioning Administrator | `C_PROVISIONING_ADMIN` | regular | 163 | Manual |
+| Provisioning Worker | `C_PROVISIONING_WORKER` | regular | 168 | Manual |
+| SSA | `C_SSA` | regular | 193 | Manual. No code reads it. |
+| SSA Administrator | `C_SSA_ADMIN` | account | 198 | The SSA dashboard, in the SSA account (`ManageUserRolesModal.tsx`) |
+| SSA User | `C_SSA_USER` | account | 203 | The SSA dashboard, in the SSA account |
+| Secondary Contact | `C_SECONDARY_CONTACT` | account | 173 | A Salesforce contact role |
+| Security Breach Contact | `C_SECURITY_BREACH_CONTACT` | account | 178 | A project contact designation |
+| Security Incident Contact | `C_SECURITY_INCIDENT_CONTACT` | account | 183 | A project contact designation, or the Salesforce contact role Security Incident Contact on the project of the record (`ProvisioningContactService.java:166`). It is never an account role. |
+| Site Content Reviewer | `L_SITE_CONTENT_REVIEWER` | site | 223 | Manual |
+| Solution Architect | `C_SOLUTION_ARCHITECT` | account | 188 | A Salesforce contact role |
 
 The Salesforce contact role is the `Contact_Role__c` value, matched to an account role by name (`ProvisioningContactService.java:114`). Security Incident Contact is the exception: it becomes a project membership, not an account role. The table lists the 5 roles that `EmployeeRoles.java:19` names as Liferay workers; Salesforce can send any account role name.
 
@@ -565,7 +564,7 @@ Each finding names the file and line. The findings are ordered by risk.
 
 1. Who assigns Marketplace Publisher, Account App Publisher, Account Solution Publisher, Account Supplier, Finance Administrator, Provisioning Administrator, and Provisioning Worker? Every publisher needs Account Supplier, which gives the regular role Supplier that the Publisher Dashboard page needs. An app publisher also needs Account App Publisher, and a solution publisher also needs Account Solution Publisher.
 
-1. Are the 4 roles that no code reads still needed: Dashboard Viewer, Marketplace Account Administrator, SSA, and Analytics Cloud Owner?
+1. Are the 3 roles that no code reads still needed: Dashboard Viewer, Marketplace Account Administrator, and SSA?
 
 1. Which caller is meant to use the trial and provisioning endpoints: the browser, a Liferay workflow, or an external application? The answer decides between an order check and an application allow list.
 
