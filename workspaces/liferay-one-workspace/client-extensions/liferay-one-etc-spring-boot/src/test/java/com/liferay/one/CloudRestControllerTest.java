@@ -902,6 +902,34 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
+	public void testPostEnvironmentsActivationAcceptsRepeatedActivation()
+		throws Exception {
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createActivatedEnvironment(
+				_ACTIVATION_CODE, EnvironmentConstants.ACTIVATION_MODE_ONLINE,
+				"public-key")
+		);
+
+		ResponseEntity<Void> responseEntity =
+			_cloudRestController.postEnvironmentsActivation(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _createActivationToken());
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_environmentService, Mockito.never()
+		).fetchCloudNativeEnvironmentByActivationCode(
+			Mockito.anyString()
+		);
+
+		_assertEnvironmentNotActivated();
+	}
+
+	@Test
 	public void testPostEnvironmentsActivationRejectsActivatedEnvironment()
 		throws Exception {
 
@@ -935,6 +963,36 @@ public class CloudRestControllerTest {
 		Assertions.assertEquals(
 			"Environment CNE-1 has already been activated",
 			problemDetail.getDetail());
+	}
+
+	@Test
+	public void testPostEnvironmentsActivationRejectsActivatedEnvironmentWithOtherActivationCode()
+		throws Exception {
+
+		_assertActivationRejected(
+			_createActivatedEnvironment(
+				"other-activation-code",
+				EnvironmentConstants.ACTIVATION_MODE_ONLINE, "public-key"));
+	}
+
+	@Test
+	public void testPostEnvironmentsActivationRejectsActivatedEnvironmentWithOtherActivationMode()
+		throws Exception {
+
+		_assertActivationRejected(
+			_createActivatedEnvironment(
+				_ACTIVATION_CODE, EnvironmentConstants.ACTIVATION_MODE_OFFLINE,
+				"public-key"));
+	}
+
+	@Test
+	public void testPostEnvironmentsActivationRejectsActivatedEnvironmentWithOtherPublicKey()
+		throws Exception {
+
+		_assertActivationRejected(
+			_createActivatedEnvironment(
+				_ACTIVATION_CODE, EnvironmentConstants.ACTIVATION_MODE_ONLINE,
+				"other-public-key"));
 	}
 
 	@Test
@@ -1980,6 +2038,25 @@ public class CloudRestControllerTest {
 		);
 	}
 
+	private void _assertActivationRejected(Environment activatedEnvironment)
+		throws Exception {
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			activatedEnvironment
+		);
+
+		Assertions.assertThrows(
+			EnvironmentAlreadyActivatedException.class,
+			() -> _cloudRestController.postEnvironmentsActivation(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+				_createActivationToken()));
+
+		_assertEnvironmentNotActivated();
+	}
+
 	private void _assertEnvironmentNotActivated() throws Exception {
 		Mockito.verify(
 			_environmentService, Mockito.never()
@@ -2023,6 +2100,32 @@ public class CloudRestControllerTest {
 		);
 
 		return jsonObject.toString();
+	}
+
+	private Environment _createActivatedEnvironment(
+		String activationCode, String activationMode, String publicKey) {
+
+		return new Environment(
+			new JSONObject(
+			).put(
+				"activationCode", activationCode
+			).put(
+				"activationMode", activationMode
+			).put(
+				"activationStatus",
+				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE
+			).put(
+				"externalReferenceCode", _ENVIRONMENT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"id", _ENVIRONMENT_ID
+			).put(
+				"offering", EnvironmentConstants.OFFERING_CLOUD_NATIVE
+			).put(
+				"publicKey", publicKey
+			).put(
+				"r_projectToEnvironment_c_projectERC",
+				_PROJECT_EXTERNAL_REFERENCE_CODE
+			));
 	}
 
 	private String _createActivationToken() throws Exception {
