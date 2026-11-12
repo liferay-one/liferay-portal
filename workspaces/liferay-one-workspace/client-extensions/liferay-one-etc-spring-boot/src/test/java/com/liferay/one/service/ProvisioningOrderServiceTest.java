@@ -458,6 +458,29 @@ public class ProvisioningOrderServiceTest {
 	}
 
 	@Test
+	public void testTrimRemovedOrderItemsDoesNotWarnWithoutLineItemsWhenEveryOrderItemEnded()
+		throws Exception {
+
+		Order order = _createRemovalOrder(
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", "2020-01-01T00:00:00Z", "2099-01-01T00:00:00Z",
+				"LINE-1", 5001L, _PRODUCT_2_ID, "2019-01-01T00:00:00Z"),
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", null, "2020-01-01T00:00:00Z", "LINE-2", 5002L,
+				_PRODUCT_2_ID, "2019-01-01T00:00:00Z"));
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			order, new ArrayList<>(), warningMessages);
+
+		Assertions.assertTrue(warningMessages.isEmpty());
+
+		Mockito.verifyNoInteractions(
+			_commerceOrderItemService, _entitlementService, _licenseKeyService);
+	}
+
+	@Test
 	public void testTrimRemovedOrderItemsEndsAnOrderItemThatTheMessageNoLongerHas()
 		throws Exception {
 
@@ -691,6 +714,33 @@ public class ProvisioningOrderServiceTest {
 		).patchOrderItemCustomFields(
 			Mockito.anyMap(), Mockito.eq(order)
 		);
+	}
+
+	@Test
+	public void testTrimRemovedOrderItemsWarnsWithoutLineItemsWhenAnOrderItemIsActive()
+		throws Exception {
+
+		Order order = _createRemovalOrder(
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", null, "2099-01-01T00:00:00Z", "LINE-1", 5001L,
+				_PRODUCT_2_ID, "2026-01-01T00:00:00Z"),
+			SalesforceModelTestUtil.createOrderItem(
+				"Approved", null, "2099-01-01T00:00:00Z", "LINE-2", 5002L,
+				_PRODUCT_2_ID, "2026-01-01T00:00:00Z"));
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			order, new ArrayList<>(), warningMessages);
+
+		Assertions.assertEquals(
+			List.of(
+				"Opportunity OPP-1 has no line items, but its order has " +
+					"active order items. The system did not end them."),
+			warningMessages);
+
+		Mockito.verifyNoInteractions(
+			_commerceOrderItemService, _entitlementService, _licenseKeyService);
 	}
 
 	@Test
