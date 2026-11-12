@@ -11,7 +11,7 @@ import {
 } from '~/utils/dateUtils';
 import {
 	getContractProductOrders,
-	getPlacedOrderItemDate,
+	getEarliestPlacedOrderItemStartDate,
 	getProjectItemStatusToken,
 } from '~/utils/orderUtils';
 import {
@@ -41,15 +41,10 @@ function formatStartDate(
 	orderDates: Map<number, string>,
 	placedOrderItems: PlacedOrderItems[]
 ): string {
-	const [startDate] = placedOrderItems
-		.map((placedOrderItem) =>
-			getPlacedOrderItemDate(placedOrderItem, 'startDate')
-		)
-		.filter((date): date is Date => date !== undefined)
-		.sort((date1, date2) => date1.getTime() - date2.getTime());
+	const startDate = getEarliestPlacedOrderItemStartDate(placedOrderItems);
 
 	if (startDate) {
-		return formatShortDate(startDate);
+		return formatUTCShortDate(startDate);
 	}
 
 	const orderDate = orderDates.get(order.id);

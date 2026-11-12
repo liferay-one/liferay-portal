@@ -338,6 +338,29 @@ export function getPlacedOrderItemDate(
 	return date.getFullYear() > MIGRATION_PLACEHOLDER_YEAR ? date : undefined;
 }
 
+export function getEarliestPlacedOrderItemStartDate(
+	placedOrderItems: PlacedOrderItems[]
+): string {
+	let earliestStartDate: Date | undefined;
+	let earliestStartDateValue = '';
+
+	for (const placedOrderItem of placedOrderItems) {
+		const startDate = getPlacedOrderItemDate(placedOrderItem, 'startDate');
+
+		if (
+			startDate &&
+			(!earliestStartDate || startDate < earliestStartDate)
+		) {
+			earliestStartDate = startDate;
+			earliestStartDateValue = String(
+				placedOrderItem.customFields?.startDate
+			);
+		}
+	}
+
+	return earliestStartDateValue;
+}
+
 export function isTermExpired(placedOrderItems: PlacedOrderItems[]): boolean {
 	const today = startOfToday();
 

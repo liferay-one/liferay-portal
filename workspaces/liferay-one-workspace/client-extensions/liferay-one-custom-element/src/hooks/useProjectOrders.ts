@@ -14,7 +14,9 @@ import {
 } from '~/utils/orderItemOptionUtils';
 import {
 	OrderCustomFields,
+	getEarliestPlacedOrderItemStartDate,
 	getOrderStatusToken,
+	getPlacedOrderItemContractId,
 	getProjectItemStatusToken,
 } from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
@@ -106,6 +108,7 @@ export type ProductOrderInfo = {
 	purchasedBy: string;
 	quantity: string;
 	skuProductNames: string[];
+	startDate: string;
 	status: string;
 };
 
@@ -289,6 +292,29 @@ function getProductOrderItems(
 		);
 }
 
+function getContractProductOrderItems(
+	contractId: number,
+	placedOrders: PlacedOrder[],
+	productId: number
+): PlacedOrderItems[] {
+	return placedOrders
+		.filter(
+			(placedOrder) =>
+				placedOrder.orderTypeExternalReferenceCode !==
+				OrderTypes.AI_HUB_TOKEN
+		)
+		.flatMap((placedOrder) =>
+			(placedOrder.placedOrderItems ?? []).filter(
+				(placedOrderItem) =>
+					placedOrderItem.productId === productId &&
+					getPlacedOrderItemContractId(
+						placedOrder,
+						placedOrderItem
+					) === contractId
+			)
+		);
+}
+
 export function getProductEnvironmentOrderItems(
 	placedOrders: PlacedOrder[],
 	productId: number
@@ -317,7 +343,8 @@ function getLDPWorkspacePath(
 export function getProductOrderInfo(
 	itemType: ProjectItemType,
 	placedOrders: PlacedOrder[],
-	productId: number
+	productId: number,
+	contractId?: number
 ): ProductOrderInfo {
 	const order = getProductOrder(placedOrders, productId);
 
@@ -337,6 +364,7 @@ export function getProductOrderInfo(
 			purchasedBy: '',
 			quantity: '',
 			skuProductNames: [],
+			startDate: '',
 			status: '',
 		};
 	}
@@ -351,6 +379,8 @@ export function getProductOrderInfo(
 		(total, item) => total + (item.quantity ?? 0),
 		0
 	);
+
+	const productOrderItems = getProductOrderItems(placedOrders, productId);
 
 	const ldpAnalyticsCloudProject = safeJSONParse<Partial<AnalyticsProject>>(
 		customFields[OrderCustomFields.LDP_ANALYTICS_CLOUD_PROJECT] ?? null,
@@ -377,11 +407,16 @@ export function getProductOrderInfo(
 				: order.author ?? '',
 		quantity: quantity ? String(quantity) : '',
 		skuProductNames: placedOrderItems.map(getProductOptionValueName),
-		status: getProjectItemStatusToken(
-			itemType,
-			order,
-			getProductOrderItems(placedOrders, productId)
+		startDate: getEarliestPlacedOrderItemStartDate(
+			contractId
+				? getContractProductOrderItems(
+						contractId,
+						placedOrders,
+						productId
+					)
+				: productOrderItems
 		),
+		status: getProjectItemStatusToken(itemType, order, productOrderItems),
 	};
 }
 
