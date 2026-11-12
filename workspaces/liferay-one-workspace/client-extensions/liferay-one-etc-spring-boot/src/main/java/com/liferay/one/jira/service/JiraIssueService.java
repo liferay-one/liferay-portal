@@ -190,6 +190,16 @@ public class JiraIssueService extends BaseJiraService {
 			sb.toString(), new String[] {"key", "labels", "status", "summary"});
 	}
 
+	public boolean isJiraSupportIssueKey(String issueKey) {
+		if (issueKey.startsWith(_jiraProjectSupportFLS) ||
+			issueKey.startsWith(_jiraProjectSupportHC)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	public List<JiraSupportIssue> search(String jql, String[] returnFields)
 		throws Exception {
 
@@ -321,6 +331,9 @@ public class JiraIssueService extends BaseJiraService {
 
 	@Value("${liferay.one.jira.project.support.fls.url}")
 	private String _jiraProjectSupportFLSURL;
+
+	@Value("${liferay.one.jira.project.support.hc}")
+	private String _jiraProjectSupportHC;
 
 	@Value("${liferay.one.jira.project.support.hc.url}")
 	private String _jiraProjectSupportHCURL;

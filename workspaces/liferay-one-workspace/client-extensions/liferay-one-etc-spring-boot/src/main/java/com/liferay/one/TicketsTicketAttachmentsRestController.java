@@ -57,6 +57,11 @@ public class TicketsTicketAttachmentsRestController
 			@PathVariable("ticketId") String ticketId)
 		throws Exception {
 
+		if (!_jiraIssueService.isJiraSupportIssueKey(ticketId)) {
+			return new ResponseEntity<>(
+				"INVALID_TICKET_NUMBER", HttpStatus.NOT_FOUND);
+		}
+
 		return _getResponseEntity(ActionKeys.UPDATE, false, jwt, ticketId);
 	}
 
