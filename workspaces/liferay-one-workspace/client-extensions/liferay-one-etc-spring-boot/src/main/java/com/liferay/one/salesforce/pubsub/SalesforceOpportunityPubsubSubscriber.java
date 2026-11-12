@@ -389,8 +389,35 @@ public class SalesforceOpportunityPubsubSubscriber
 			_provisioningProjectEntitlementService.
 				hasProjectEntitlementLineItems(recordJSONObject);
 
+		List<String> warningMessages = new ArrayList<>();
+
+		SalesforceAccount salesforceAccount = new SalesforceAccount(
+			recordJSONObject.optJSONObject("account", new JSONObject()),
+			recordJSONObject.getJSONObject("opportunity"));
+
+		Order order = _commerceOrderService.fetchOrderByExternalReferenceCode(
+			salesforceOpportunity.getId());
+
 		if (salesforceOpportunityLineItems.isEmpty() &&
 			!hasProjectEntitlementLineItems) {
+
+			if (_isProvisioned(order)) {
+				_provisioningOrderService.trimRemovedOrderItems(
+					order, salesforceOpportunityLineItems, warningMessages);
+			}
+
+			if (!warningMessages.isEmpty() &&
+				!Objects.equals(
+					salesforceOpportunity.getProductFamily(), "P")) {
+
+				Account account =
+					_accountService.fetchAccountByExternalReferenceCode(
+						salesforceAccount.getId());
+
+				_provisioningIssueService.addOpportunityInvoicedIssue(
+					account, salesforceAccount, salesforceOpportunity,
+					salesforceOpportunityLineItems, warningMessages);
+			}
 
 			if (_log.isInfoEnabled()) {
 				_log.info(
@@ -400,15 +427,6 @@ public class SalesforceOpportunityPubsubSubscriber
 
 			return;
 		}
-
-		List<String> warningMessages = new ArrayList<>();
-
-		SalesforceAccount salesforceAccount = new SalesforceAccount(
-			recordJSONObject.optJSONObject("account", new JSONObject()),
-			recordJSONObject.getJSONObject("opportunity"));
-
-		Order order = _commerceOrderService.fetchOrderByExternalReferenceCode(
-			salesforceOpportunity.getId());
 
 		boolean reprocessing = false;
 
@@ -599,9 +617,7 @@ public class SalesforceOpportunityPubsubSubscriber
 
 		int initialWarningMessagesCount = warningMessages.size();
 
-		if (_isProvisioned(order) &&
-			!salesforceOpportunityLineItems.isEmpty()) {
-
+		if (_isProvisioned(order)) {
 			try {
 				_provisioningOrderService.trimRemovedOrderItems(
 					order, salesforceOpportunityLineItems, warningMessages);
