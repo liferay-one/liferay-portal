@@ -120,6 +120,21 @@ public class SalesforceOpportunityPubsubSubscriber
 		return _subscription;
 	}
 
+	private void _addOpportunityInvoicedIssue(
+		Account account, SalesforceAccount salesforceAccount,
+		SalesforceOpportunity salesforceOpportunity,
+		List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems,
+		List<String> warningMessages) {
+
+		if (Objects.equals(salesforceOpportunity.getProductFamily(), "P")) {
+			return;
+		}
+
+		_provisioningIssueService.addOpportunityInvoicedIssue(
+			account, salesforceAccount, salesforceOpportunity,
+			salesforceOpportunityLineItems, warningMessages);
+	}
+
 	private void _addWarning(
 		List<String> warningMessages, String warningMessage,
 		Exception exception) {
@@ -403,18 +418,16 @@ public class SalesforceOpportunityPubsubSubscriber
 
 			if (_isProvisioned(order)) {
 				_provisioningOrderService.trimRemovedOrderItems(
-					order, salesforceOpportunityLineItems, warningMessages);
+					salesforceOpportunity.getId(),
+					salesforceOpportunityLineItems, warningMessages);
 			}
 
-			if (!warningMessages.isEmpty() &&
-				!Objects.equals(
-					salesforceOpportunity.getProductFamily(), "P")) {
-
+			if (!warningMessages.isEmpty()) {
 				Account account =
 					_accountService.fetchAccountByExternalReferenceCode(
 						salesforceAccount.getId());
 
-				_provisioningIssueService.addOpportunityInvoicedIssue(
+				_addOpportunityInvoicedIssue(
 					account, salesforceAccount, salesforceOpportunity,
 					salesforceOpportunityLineItems, warningMessages);
 			}
@@ -620,7 +633,8 @@ public class SalesforceOpportunityPubsubSubscriber
 		if (_isProvisioned(order)) {
 			try {
 				_provisioningOrderService.trimRemovedOrderItems(
-					order, salesforceOpportunityLineItems, warningMessages);
+					salesforceOpportunity.getId(),
+					salesforceOpportunityLineItems, warningMessages);
 			}
 			catch (Exception exception) {
 				_addWarning(
@@ -815,10 +829,8 @@ public class SalesforceOpportunityPubsubSubscriber
 				account, salesforceOpportunity.getType(), userIds);
 		}
 
-		if ((!reprocessing || trimWarning) &&
-			!Objects.equals(salesforceOpportunity.getProductFamily(), "P")) {
-
-			_provisioningIssueService.addOpportunityInvoicedIssue(
+		if (!reprocessing || trimWarning) {
+			_addOpportunityInvoicedIssue(
 				account, salesforceAccount, salesforceOpportunity,
 				provisionableSalesforceOpportunityLineItems, warningMessages);
 		}
