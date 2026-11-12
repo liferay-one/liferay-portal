@@ -78,6 +78,7 @@ import org.mockito.Mockito;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -921,6 +922,22 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
+	public void testPostEnvironmentsActivationRejectsActivatedEnvironmentWithDetail() {
+		ResponseEntity<?> responseEntity = _cloudRestController.handleException(
+			new EnvironmentAlreadyActivatedException(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE));
+
+		Assertions.assertEquals(
+			HttpStatus.CONFLICT, responseEntity.getStatusCode());
+
+		ProblemDetail problemDetail = (ProblemDetail)responseEntity.getBody();
+
+		Assertions.assertEquals(
+			"Environment CNE-1 has already been activated",
+			problemDetail.getDetail());
+	}
+
+	@Test
 	public void testPostEnvironmentsActivationRejectsInvalidSignature()
 		throws Exception {
 
@@ -958,11 +975,17 @@ public class CloudRestControllerTest {
 	public void testPostEnvironmentsActivationRejectsUnknownActivationCode()
 		throws Exception {
 
-		Assertions.assertThrows(
-			NoSuchActivationCodeException.class,
-			() -> _cloudRestController.postEnvironmentsActivation(
-				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
-				_createActivationToken()));
+		NoSuchActivationCodeException noSuchActivationCodeException =
+			Assertions.assertThrows(
+				NoSuchActivationCodeException.class,
+				() -> _cloudRestController.postEnvironmentsActivation(
+					_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+					_createActivationToken()));
+
+		Assertions.assertEquals(
+			"No cloud native environment exists for activation code " +
+				"e9e3f0ef8e4d4a2e requested by environment CNE-1",
+			noSuchActivationCodeException.getMessage());
 
 		_assertEnvironmentNotActivated();
 	}
@@ -980,13 +1003,35 @@ public class CloudRestControllerTest {
 				EnvironmentConstants.TYPE_PRODUCTION)
 		);
 
-		Assertions.assertThrows(
-			ActivationCodeAlreadyUsedException.class,
-			() -> _cloudRestController.postEnvironmentsActivation(
-				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
-				_createActivationToken()));
+		ActivationCodeAlreadyUsedException activationCodeAlreadyUsedException =
+			Assertions.assertThrows(
+				ActivationCodeAlreadyUsedException.class,
+				() -> _cloudRestController.postEnvironmentsActivation(
+					_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+					_createActivationToken()));
+
+		Assertions.assertEquals(
+			"Environment CNE-1 cannot use activation code e9e3f0ef8e4d4a2e " +
+				"because environment CNE-ACTIVE already uses it",
+			activationCodeAlreadyUsedException.getMessage());
 
 		_assertEnvironmentNotActivated();
+	}
+
+	@Test
+	public void testPostEnvironmentsActivationRejectsUsedActivationCodeWithDetail() {
+		ResponseEntity<?> responseEntity = _cloudRestController.handleException(
+			new ActivationCodeAlreadyUsedException(
+				"CNE-ACTIVE", _ACTIVATION_CODE,
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE));
+
+		Assertions.assertEquals(
+			HttpStatus.CONFLICT, responseEntity.getStatusCode());
+
+		ProblemDetail problemDetail = (ProblemDetail)responseEntity.getBody();
+
+		Assertions.assertEquals(
+			"The activation code is already used", problemDetail.getDetail());
 	}
 
 	@Test
