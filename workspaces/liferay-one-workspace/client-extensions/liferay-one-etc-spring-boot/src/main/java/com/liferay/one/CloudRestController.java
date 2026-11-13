@@ -1415,6 +1415,12 @@ public class CloudRestController extends OneBaseRestController {
 			licenseEntryName = "DXP Production (Virtual Cluster)";
 			productName = "DXP Production";
 		}
+		else if (Objects.equals(
+					environment.getType(), EnvironmentConstants.TYPE_UAT)) {
+
+			licenseEntryName = "DXP UAT (Virtual Cluster)";
+			productName = "DXP UAT";
+		}
 
 		return new JSONObject(
 		).put(
