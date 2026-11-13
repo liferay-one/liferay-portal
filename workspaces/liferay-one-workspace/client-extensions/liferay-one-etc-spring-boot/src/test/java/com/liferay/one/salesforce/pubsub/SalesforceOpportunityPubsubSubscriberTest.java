@@ -4262,8 +4262,8 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	private static final long _EXISTING_ORDER_ITEM_ID = 555L;
 
 	private static final String _LICENSE_KEY_WARNING =
-		"Entitlement liferay-dxp for SKU PROD-1 of opportunity OPP-1 has 3 " +
-			"license keys, but its new quantity allows 0. Support must " +
+		"Entitlement liferay-dxp for SKU PROD-1 of opportunity OPP-1 uses 3 " +
+			"activations, but its new quantity allows 0. Support must " +
 				"contact the customer.";
 
 	private static final long _NEW_ORDER_ID = 4000L;
