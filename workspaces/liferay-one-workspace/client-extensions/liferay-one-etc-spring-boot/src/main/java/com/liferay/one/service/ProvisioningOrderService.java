@@ -263,7 +263,7 @@ public class ProvisioningOrderService {
 
 		try {
 			_addLicenseKeyWarnings(
-				order, newOrderItemQuantities, warningMessages);
+				newOrderItemQuantities, order, warningMessages);
 		}
 		catch (Exception exception) {
 			_addWarning(
@@ -381,7 +381,7 @@ public class ProvisioningOrderService {
 	}
 
 	private void _addLicenseKeyWarnings(
-			Order order, Map<Long, Double> newOrderItemQuantities,
+			Map<Long, Double> newOrderItemQuantities, Order order,
 			List<String> warningMessages)
 		throws Exception {
 
