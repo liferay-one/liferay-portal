@@ -53,7 +53,7 @@ public class LicenseKeyTypeTest {
 		Map<String, Object> source = new HashMap<>();
 
 		for (String name : properties.stringPropertyNames()) {
-			if (!name.startsWith("liferay.one.license.key.types")) {
+			if (!name.startsWith("liferay.one.license.key.")) {
 				continue;
 			}
 
@@ -93,6 +93,13 @@ public class LicenseKeyTypeTest {
 
 		Assertions.assertTrue(keys.contains("developer"));
 		Assertions.assertEquals("production", keys.get(0));
+
+		Assertions.assertTrue(
+			licenseKeyTypeService.isAdminType(LicenseKeyType.ENTERPRISE));
+		Assertions.assertTrue(
+			licenseKeyTypeService.isAdminType(LicenseKeyType.OEM));
+		Assertions.assertFalse(
+			licenseKeyTypeService.isAdminType(LicenseKeyType.PRODUCTION));
 	}
 
 	@Test
