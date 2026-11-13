@@ -139,6 +139,26 @@ public class UserAccountUtil {
 		return false;
 	}
 
+	public static boolean hasRole(
+		UserAccount userAccount, String... roleNames) {
+
+		RoleBrief[] roleBriefs = userAccount.getRoleBriefs();
+
+		if (roleBriefs == null) {
+			return false;
+		}
+
+		for (RoleBrief roleBrief : roleBriefs) {
+			for (String roleName : roleNames) {
+				if (Objects.equals(roleBrief.getName(), roleName)) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
 	public static boolean isVerified(UserAccount userAccount) {
 		CustomField[] customFields = userAccount.getCustomFields();
 

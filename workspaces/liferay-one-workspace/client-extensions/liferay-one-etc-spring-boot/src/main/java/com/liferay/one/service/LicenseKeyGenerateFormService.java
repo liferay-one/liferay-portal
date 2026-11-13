@@ -314,8 +314,8 @@ public class LicenseKeyGenerateFormService {
 
 	/**
 	 * Offers the virtual cluster variant of a key type only when
-	 * virtualClusterAllowed is true. An admin can always generate a virtual
-	 * cluster key. A Provisioning Worker can only renew one.
+	 * virtualClusterAllowed is true. An admin or a Provisioning Worker can
+	 * generate a virtual cluster key. Other users cannot.
 	 */
 	public JSONObject getGenerateForm(
 			boolean admin, Project project, boolean provisionable,
@@ -340,7 +340,7 @@ public class LicenseKeyGenerateFormService {
 		throws Exception {
 
 		return _toSummaryJSONObject(
-			getGenerateForm(admin, account, true), provisionable);
+			admin, getGenerateForm(admin, account, true), provisionable);
 	}
 
 	public JSONObject getSummary(
@@ -348,7 +348,7 @@ public class LicenseKeyGenerateFormService {
 		throws Exception {
 
 		return _toSummaryJSONObject(
-			getGenerateForm(admin, project, true, null), provisionable);
+			admin, getGenerateForm(admin, project, true, null), provisionable);
 	}
 
 	public boolean grantsLicense(Entitlement entitlement) {
@@ -1107,6 +1107,22 @@ public class LicenseKeyGenerateFormService {
 		return resolvedProducts;
 	}
 
+	private JSONArray _getRestrictedKeyTypesJSONArray(boolean admin) {
+		JSONArray jsonArray = new JSONArray();
+
+		if (admin) {
+			return jsonArray;
+		}
+
+		for (LicenseKeyType licenseKeyType : LicenseKeyType.values()) {
+			if (_licenseKeyTypeService.isAdminType(licenseKeyType)) {
+				jsonArray.put(licenseKeyType.getKey());
+			}
+		}
+
+		return jsonArray;
+	}
+
 	private JSONArray _getSubscriptionsJSONArray(
 		boolean allowPermanentLicenses, List<Entitlement> entitlements,
 		String licenseEntryType, Map<Long, Integer> licenseKeyCounts) {
@@ -1394,7 +1410,8 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	private JSONObject _toSummaryJSONObject(
-		JSONObject generateFormJSONObject, boolean provisionable) {
+		boolean admin, JSONObject generateFormJSONObject,
+		boolean provisionable) {
 
 		return new JSONObject(
 		).put(
@@ -1404,6 +1421,8 @@ public class LicenseKeyGenerateFormService {
 			"generatable", _isGeneratable(generateFormJSONObject, provisionable)
 		).put(
 			"provisionable", provisionable
+		).put(
+			"restrictedKeyTypes", _getRestrictedKeyTypesJSONArray(admin)
 		);
 	}
 
