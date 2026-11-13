@@ -342,7 +342,7 @@ All paths in this table are in `client-extensions/liferay-one-custom-element/src
 | `ProjectMembers.canManageProject` (`pages/MyAccount/ProjectMembers/ProjectMembers.tsx:66`) | An account manager, or the project's Project Admin | `accountBriefs`, memberships |
 | `useHasActivationPermission` (`pages/MyAccount/Projects/hooks/useHasActivationPermission.ts:92`) | Account Administrator, `canManageAllAccounts`, Provisioning Worker, or the project's Project Admin | `accountBriefs`, `roleBriefs`, memberships |
 | `useHasLicenseKeyPermission` (`useHasActivationPermission.ts:107`) | The activation roles, Partner Manager, or a license key manager role for a key with no project | `accountBriefs`, `roleBriefs` |
-| `useHasAllEventsPermissions` (`pages/BusinessEvents/hooks/useHasAllEventsPermissions.ts:28`) | Administrator, Account Administrator, or a Project Admin or Project Requester membership | `roleBriefs`, `accountBriefs`, memberships |
+| `useHasAllEventsPermissions` (`pages/BusinessEvents/hooks/useHasAllEventsPermissions.ts:28`) | Administrator, Account Administrator, Liferay Staff, Provisioning Administrator, Provisioning Worker, or a Project Admin or Project Requester membership | `roleBriefs`, `accountBriefs`, memberships |
 | `useCanViewTickets` (`pages/BusinessEvents/hooks/useCanViewTickets.ts:16`) | The service returns a Jira object key for the project | `GET /projects/{erc}/jira/object-key` |
 | `TicketAttachmentsList.canManageAttachments` (`pages/TicketAttachments/TicketAttachmentsList/TicketAttachmentsList.tsx:69`) | Administrator or Account Administrator | `roleBriefs`, `accountBriefs` |
 | `ActivationKeyDownload.isAccountAdministrator` (`pages/MyAccount/Projects/components/ActivationKeyDownload/ActivationKeyDownload.tsx:134`) | Account Administrator | `accountBriefs` |
@@ -436,10 +436,10 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 | `GET /jira/business-events/fields/{fieldName}/options` | None. Reads Jira field options. | no | `BusinessEventsRestController.java:57` |
 | `GET /jira/product-versions` | None. Reads Jira product versions. | no | `BusinessEventsRestController.java:67` |
 | `GET /jira/projects/{externalReferenceCode}/business-events` | ProjectPermission (VIEW) | yes | `BusinessEventsRestController.java:74` |
-| `POST /jira/projects/{externalReferenceCode}/business-events` | ProjectPermission (UPDATE) | yes | `BusinessEventsRestController.java:121` |
-| `DELETE /jira/projects/{externalReferenceCode}/business-events/{id}` | ProjectPermission (UPDATE) | yes | `BusinessEventsRestController.java:43` |
+| `POST /jira/projects/{externalReferenceCode}/business-events` | Liferay Staff or Provisioning Worker, else ProjectPermission (UPDATE) | yes | `BusinessEventsRestController.java:121` |
+| `DELETE /jira/projects/{externalReferenceCode}/business-events/{id}` | Liferay Staff or Provisioning Worker, else ProjectPermission (UPDATE) | yes | `BusinessEventsRestController.java:43` |
 | `GET /jira/projects/{externalReferenceCode}/business-events/{id}` | ProjectPermission (VIEW) | yes | `BusinessEventsRestController.java:87` |
-| `PUT /jira/projects/{externalReferenceCode}/business-events/{id}` | ProjectPermission (UPDATE) | yes | `BusinessEventsRestController.java:141` |
+| `PUT /jira/projects/{externalReferenceCode}/business-events/{id}` | Liferay Staff or Provisioning Worker, else ProjectPermission (UPDATE) | yes | `BusinessEventsRestController.java:141` |
 | `GET /jira/projects/{externalReferenceCode}/business-events/{id}/versions` | ProjectPermission (VIEW) | yes | `BusinessEventsRestController.java:105` |
 | `GET /jira/projects/{externalReferenceCode}/tickets` | ProjectPermission (VIEW) | yes | `JiraRestController.java:31` |
 | `GET /license-keys/developer-download` | ProjectPermission (VIEW) | yes | `LicenseKeysRestController.java:82` |
