@@ -232,6 +232,8 @@ These are the grants at scope 1 and scope 4 that do not name a custom object.
 | `com.liferay.portal.kernel.model.Role` | Finance Administrator | `VIEW` on its own role | 4 | L1093 |
 | `com.liferay.portal.kernel.model.Role` | Liferay Staff | `VIEW` on its own role | 4 | L1102 |
 | `com.liferay.portal.kernel.model.Role` | Provisioning Administrator | `VIEW` on its own role | 4 | L1111 |
+| `com.liferay.portal.kernel.model.User` | Finance Administrator | `VIEW`, so that the account user search returns the members of an account the role does not belong to | 1 | L1426 |
+| `com.liferay.portal.kernel.model.User` | Liferay Staff | `VIEW`, so that the account user search returns the members of an account the role does not belong to | 1 | L1435 |
 | `com.liferay.portal.kernel.model.User` | Provisioning Administrator | `VIEW` | 1 | L1120 |
 | `com.liferay.portal.kernel.model.User` | Provisioning Worker | `VIEW` | 1 | L1129 |
 | `com_liferay_account_admin_web_internal_portlet_AccountEntriesAdminPortlet` | Provisioning Administrator | `ACCESS_IN_CONTROL_PANEL`, `VIEW` | 1 | L1138 |
