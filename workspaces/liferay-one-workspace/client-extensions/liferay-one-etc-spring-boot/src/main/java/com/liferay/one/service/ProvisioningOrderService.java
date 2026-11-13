@@ -226,6 +226,10 @@ public class ProvisioningOrderService {
 		Map<Long, Double> newOrderItemQuantities = new HashMap<>();
 
 		for (OrderItem orderItem : order.getOrderItems()) {
+			if (!_isActive(effectiveEndDateInstant, orderItem)) {
+				continue;
+			}
+
 			SalesforceOpportunityLineItem salesforceOpportunityLineItem =
 				salesforceOpportunityLineItemsMap.get(
 					orderItem.getExternalReferenceCode());
@@ -241,10 +245,6 @@ public class ProvisioningOrderService {
 					newOrderItemQuantities.put(orderItem.getId(), newQuantity);
 				}
 
-				continue;
-			}
-
-			if (!_isActive(effectiveEndDateInstant, orderItem)) {
 				continue;
 			}
 
@@ -393,11 +393,15 @@ public class ProvisioningOrderService {
 			return;
 		}
 
+		String projectExternalReferenceCode = null;
+
 		Map<String, Object> customFields =
 			(Map<String, Object>)order.getCustomFields();
 
-		String projectExternalReferenceCode = GetterUtil.getString(
-			customFields.get("salesforceProjectId"));
+		if (customFields != null) {
+			projectExternalReferenceCode = GetterUtil.getString(
+				customFields.get("salesforceProjectId"));
+		}
 
 		Map<Long, Integer> licenseKeyCounts = null;
 
@@ -477,11 +481,12 @@ public class ProvisioningOrderService {
 	}
 
 	private boolean _isActive(Instant nowInstant, OrderItem orderItem) {
-		Instant entitlementEndDateInstant =
-			CommerceOrderItemUtil.getEntitlementEndDateInstant(orderItem);
+		Instant entitlementEffectiveEndDateInstant =
+			CommerceOrderItemUtil.getEntitlementEffectiveEndDateInstant(
+				orderItem);
 
-		if ((entitlementEndDateInstant == null) ||
-			entitlementEndDateInstant.isAfter(nowInstant)) {
+		if ((entitlementEffectiveEndDateInstant == null) ||
+			entitlementEffectiveEndDateInstant.isAfter(nowInstant)) {
 
 			return true;
 		}
