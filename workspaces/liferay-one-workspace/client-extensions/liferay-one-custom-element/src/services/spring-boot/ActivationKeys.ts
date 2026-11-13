@@ -77,6 +77,7 @@ export type ActivationKeySummary = {
 	cloudNativeKeyTypes: ActivationKeySummaryKeyType[];
 	generatable: boolean;
 	provisionable: boolean;
+	restrictedKeyTypes: string[];
 };
 
 export type GenerateActivationKeyRequest = ActivationKeyScope & {

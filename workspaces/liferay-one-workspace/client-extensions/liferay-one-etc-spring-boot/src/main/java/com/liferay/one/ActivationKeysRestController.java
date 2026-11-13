@@ -6,7 +6,6 @@
 package com.liferay.one;
 
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
-import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.ClassNameConstants;
 import com.liferay.one.constants.RoleConstants;
@@ -34,6 +33,7 @@ import com.liferay.one.service.LicenseKeyGenerationService;
 import com.liferay.one.service.LicenseKeyService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.SubscriptionEntryService;
+import com.liferay.one.util.UserAccountUtil;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -184,7 +184,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		_checkRenewedActivationKey(
 			jwt, project, renewedActivationKeyExternalReferenceCode);
 
-		boolean admin = _adminPermission.contains(jwt);
+		UserAccount userAccount = getMyUserAccount(jwt);
+
+		boolean admin = _adminPermission.contains(userAccount);
 
 		return ResponseEntity.ok(
 		).contentType(
@@ -196,8 +198,8 @@ public class ActivationKeysRestController extends OneBaseRestController {
 					jwt, project),
 				renewedActivationKeyExternalReferenceCode,
 				admin ||
-				_isVirtualClusterRenewal(
-					jwt, renewedActivationKeyExternalReferenceCode)
+				UserAccountUtil.hasRole(
+					userAccount, RoleConstants.NAME_PROVISIONING_WORKER)
 			).toString()
 		);
 	}
@@ -338,7 +340,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			Account account = _getAccount(
 				jsonObject.optString("accountExternalReferenceCode"), jwt);
 
-			_checkKeyType(jsonObject, jwt, null);
+			_checkKeyType(jsonObject, jwt);
 
 			if (Objects.equals(
 					LicenseConstants.TYPE_FREE,
@@ -393,8 +395,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		String renewedActivationKeyExternalReferenceCode = jsonObject.optString(
 			"renewedActivationKeyExternalReferenceCode", null);
 
-		_checkKeyType(
-			jsonObject, jwt, renewedActivationKeyExternalReferenceCode);
+		_checkKeyType(jsonObject, jwt);
 
 		_checkRenewedActivationKey(
 			jwt, project, renewedActivationKeyExternalReferenceCode);
@@ -426,26 +427,24 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		}
 	}
 
-	private void _checkKeyType(
-			JSONObject jsonObject, Jwt jwt,
-			String renewedActivationKeyExternalReferenceCode)
+	private void _checkKeyType(JSONObject jsonObject, Jwt jwt)
 		throws Exception {
-
-		if (jsonObject.optBoolean("virtualCluster")) {
-			if (!_isVirtualClusterRenewal(
-					jwt, renewedActivationKeyExternalReferenceCode)) {
-
-				_adminPermission.check(jwt);
-			}
-
-			return;
-		}
 
 		LicenseKeyType licenseKeyType = LicenseKeyType.fetchLicenseKeyType(
 			jsonObject.optString("keyType"));
 
 		if ((licenseKeyType != null) &&
 			_licenseKeyTypeService.isAdminType(licenseKeyType)) {
+
+			_adminPermission.check(jwt);
+
+			return;
+		}
+
+		if (jsonObject.optBoolean("virtualCluster") &&
+			!UserAccountUtil.hasRole(
+				getMyUserAccount(jwt),
+				RoleConstants.NAME_PROVISIONING_WORKER)) {
 
 			_adminPermission.check(jwt);
 		}
@@ -663,45 +662,6 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			entitlement.isSelfServiceTrial()) {
 
 			return true;
-		}
-
-		return false;
-	}
-
-	private boolean _isVirtualClusterRenewal(
-			Jwt jwt, String renewedActivationKeyExternalReferenceCode)
-		throws Exception {
-
-		if (Validator.isNull(renewedActivationKeyExternalReferenceCode)) {
-			return false;
-		}
-
-		ActivationKey activationKey = _activationKeyService.fetchActivationKey(
-			renewedActivationKeyExternalReferenceCode);
-
-		if ((activationKey == null) ||
-			!Objects.equals(
-				LicenseConstants.TYPE_VIRTUAL_CLUSTER,
-				activationKey.getType())) {
-
-			return false;
-		}
-
-		UserAccount userAccount = getMyUserAccount(jwt);
-
-		RoleBrief[] roleBriefs = userAccount.getRoleBriefs();
-
-		if (roleBriefs == null) {
-			return false;
-		}
-
-		for (RoleBrief roleBrief : roleBriefs) {
-			if (Objects.equals(
-					RoleConstants.NAME_PROVISIONING_WORKER,
-					roleBrief.getName())) {
-
-				return true;
-			}
 		}
 
 		return false;

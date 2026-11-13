@@ -5,10 +5,10 @@
 
 package com.liferay.one.permission;
 
-import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.service.UserAccountService;
+import com.liferay.one.util.UserAccountUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,19 +28,13 @@ public class AdminPermission {
 	}
 
 	public boolean contains(Jwt jwt) throws Exception {
-		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
+		return contains(_userAccountService.getMyUserAccount(jwt));
+	}
 
-		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
-			String name = roleBrief.getName();
-
-			if (name.equals(RoleConstants.NAME_ADMINISTRATOR) ||
-				name.equals(RoleConstants.NAME_PROVISIONING_ADMINISTRATOR)) {
-
-				return true;
-			}
-		}
-
-		return false;
+	public boolean contains(UserAccount userAccount) {
+		return UserAccountUtil.hasRole(
+			userAccount, RoleConstants.NAME_ADMINISTRATOR,
+			RoleConstants.NAME_PROVISIONING_ADMINISTRATOR);
 	}
 
 	@Autowired

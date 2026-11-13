@@ -717,6 +717,16 @@
 			"status": "Active"
 		},
 		{
+			"alternateName": "worker",
+			"emailAddress": "worker@liferay.com",
+			"externalReferenceCode": "USER_PROVISIONING_WORKER",
+			"familyName": "Worker",
+			"givenName": "Provisioning",
+			"name": "Provisioning Worker",
+			"password": "test",
+			"status": "Active"
+		},
+		{
 			"accountBriefs": [
 				{
 					"externalReferenceCode": "ACCNT-021",

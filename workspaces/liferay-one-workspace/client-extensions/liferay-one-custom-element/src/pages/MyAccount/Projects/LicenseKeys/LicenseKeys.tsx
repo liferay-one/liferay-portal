@@ -20,7 +20,10 @@ import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filt
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isDownloadableKey} from '~/pages/MyAccount/Projects/utils/isDownloadableKey';
 import {isFreeAccountKey} from '~/pages/MyAccount/Projects/utils/isFreeAccountKey';
-import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
+import {
+	RenewableKeyOptions,
+	isRenewableKey,
+} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 
 import FilterableListCard, {
@@ -28,9 +31,9 @@ import FilterableListCard, {
 	ListColumn,
 	ListFilter,
 } from '../components/FilterableListCard/FilterableListCard';
-import {useCanRenewVirtualCluster} from '../hooks/useCanRenewVirtualCluster';
 import {useHasLicenseKeyPermission} from '../hooks/useHasActivationPermission';
 import {useHasAdminPermission} from '../hooks/useHasAdminPermission';
+import {useRenewableKeyOptions} from '../hooks/useRenewableKeyOptions';
 import {
 	ACTIVATION_STATUS_ACTIVE,
 	CLOUD_NATIVE_LICENSE_KEY_FAMILY,
@@ -164,26 +167,26 @@ function stopAnd(callback: () => void) {
 
 type KebabActionsProps = {
 	admin: boolean;
-	canRenewVirtualCluster: boolean;
 	hasActivationPermission: boolean;
 	onDeactivate: () => void;
 	onDownload: () => void;
 	onReactivate: () => void;
 	onRenew: () => void;
 	onView: () => void;
+	renewableKeyOptions: RenewableKeyOptions;
 	row: ProjectActivationKey;
 	unassigned: boolean;
 };
 
 function KebabActions({
 	admin,
-	canRenewVirtualCluster,
 	hasActivationPermission,
 	onDeactivate,
 	onDownload,
 	onReactivate,
 	onRenew,
 	onView,
+	renewableKeyOptions,
 	row,
 	unassigned,
 }: KebabActionsProps) {
@@ -216,7 +219,10 @@ function KebabActions({
 
 				{hasActivationPermission &&
 					!row.complimentary &&
-					isRenewableKey(row, canRenewVirtualCluster, unassigned) && (
+					isRenewableKey(row, {
+						...renewableKeyOptions,
+						unassigned,
+					}) && (
 						<ClayDropDown.Item onClick={stopAnd(onRenew)}>
 							{translate('renew')}
 						</ClayDropDown.Item>
@@ -293,7 +299,7 @@ export default function LicenseKeys() {
 	const {hasActivationPermission, hasGeneratePermission} =
 		useHasLicenseKeyPermission(projectId);
 	const admin = useHasAdminPermission();
-	const canRenewVirtualCluster = useCanRenewVirtualCluster();
+	const renewableKeyOptions = useRenewableKeyOptions(hasActivationPermission);
 	const scope = useActivationKeyScope();
 	const {
 		error: summaryError,
@@ -432,13 +438,13 @@ export default function LicenseKeys() {
 				return (
 					<KebabActions
 						admin={admin}
-						canRenewVirtualCluster={canRenewVirtualCluster}
 						hasActivationPermission={hasActivationPermission}
 						onDeactivate={() => handleDeactivate(row)}
 						onDownload={() => handleDownload(row)}
 						onReactivate={() => handleReactivate(row)}
 						onRenew={() => handleRenew(row)}
 						onView={() => navigate(row.id)}
+						renewableKeyOptions={renewableKeyOptions}
 						row={row}
 						unassigned={isUnassignedProject(projectId)}
 					/>

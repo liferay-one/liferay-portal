@@ -22,14 +22,17 @@ import {Word, translate} from '~/i18n';
 import DetailsCard, {
 	DetailsRow,
 } from '~/pages/MyAccount/Projects/components/DetailsCard/DetailsCard';
-import {useCanRenewVirtualCluster} from '~/pages/MyAccount/Projects/hooks/useCanRenewVirtualCluster';
 import {useHasLicenseKeyPermission} from '~/pages/MyAccount/Projects/hooks/useHasActivationPermission';
 import {useHasAdminPermission} from '~/pages/MyAccount/Projects/hooks/useHasAdminPermission';
+import {useRenewableKeyOptions} from '~/pages/MyAccount/Projects/hooks/useRenewableKeyOptions';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isDownloadableKey} from '~/pages/MyAccount/Projects/utils/isDownloadableKey';
 import {isFreeAccountKey} from '~/pages/MyAccount/Projects/utils/isFreeAccountKey';
 import {isPermanentKey} from '~/pages/MyAccount/Projects/utils/isPermanentKey';
-import {isRenewableKey} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
+import {
+	RenewableKeyOptions,
+	isRenewableKey,
+} from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 
 import useActivationKeyActions from '../hooks/useActivationKeyActions';
@@ -43,7 +46,7 @@ export default function LicenseKeyDetails() {
 	const {activationKeys, loading, revalidate} = useProjectActivationKeys();
 	const {hasActivationPermission} = useHasLicenseKeyPermission(projectId);
 	const admin = useHasAdminPermission();
-	const canRenewVirtualCluster = useCanRenewVirtualCluster();
+	const renewableKeyOptions = useRenewableKeyOptions(hasActivationPermission);
 
 	const {handleDeactivate, handleDownload, handleReactivate, handleRenew} =
 		useActivationKeyActions({generatePath: '../generate', revalidate});
@@ -70,7 +73,6 @@ export default function LicenseKeyDetails() {
 				<LicenseKeyDetailsContent
 					activationKey={activationKey}
 					admin={admin}
-					canRenewVirtualCluster={canRenewVirtualCluster}
 					hasActivationPermission={hasActivationPermission}
 					licenseKeys={
 						unaggregatedLicenseKey
@@ -81,6 +83,7 @@ export default function LicenseKeyDetails() {
 					onDownload={() => handleDownload(activationKey)}
 					onReactivate={() => handleReactivate(activationKey)}
 					onRenew={() => handleRenew(activationKey)}
+					renewableKeyOptions={renewableKeyOptions}
 					unassigned={isUnassignedProject(projectId)}
 				/>
 			) : (
@@ -95,26 +98,26 @@ export default function LicenseKeyDetails() {
 type LicenseKeyDetailsContentProps = {
 	activationKey: ProjectActivationKey;
 	admin: boolean;
-	canRenewVirtualCluster: boolean;
 	hasActivationPermission: boolean;
 	licenseKeys: ActivationKeyLicenseKey[];
 	onDeactivate: () => void;
 	onDownload: () => void;
 	onReactivate: () => void;
 	onRenew: () => void;
+	renewableKeyOptions: RenewableKeyOptions;
 	unassigned: boolean;
 };
 
 function LicenseKeyDetailsContent({
 	activationKey,
 	admin,
-	canRenewVirtualCluster,
 	hasActivationPermission,
 	licenseKeys,
 	onDeactivate,
 	onDownload,
 	onReactivate,
 	onRenew,
+	renewableKeyOptions,
 	unassigned,
 }: LicenseKeyDetailsContentProps) {
 	const activationChangeable = isFreeAccountKey(activationKey)
@@ -175,11 +178,10 @@ function LicenseKeyDetailsContent({
 
 						{hasActivationPermission &&
 							!activationKey.complimentary &&
-							isRenewableKey(
-								activationKey,
-								canRenewVirtualCluster,
-								unassigned
-							) && (
+							isRenewableKey(activationKey, {
+								...renewableKeyOptions,
+								unassigned,
+							}) && (
 								<ClayButton
 									displayType="secondary"
 									onClick={onRenew}
