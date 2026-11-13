@@ -1429,6 +1429,24 @@
 		],
 		"primKey": "0",
 		"resourceName": "com.liferay.portal.kernel.model.User",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.portal.kernel.model.User",
+		"roleName": "Liferay Staff",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.portal.kernel.model.User",
 		"roleName": "Provisioning Administrator",
 		"scope": "1"
 	},
