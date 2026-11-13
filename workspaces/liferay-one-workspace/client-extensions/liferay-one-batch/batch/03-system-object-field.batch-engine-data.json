@@ -278,7 +278,8 @@
 					"type": "oneToMany"
 				}
 			],
-			"system": true
+			"system": true,
+			"titleObjectFieldName": "id"
 		},
 		{
 			"externalReferenceCode": "L_COMMERCE_PRODUCT_DEFINITION",
@@ -407,7 +408,8 @@
 					"type": "oneToMany"
 				}
 			],
-			"system": true
+			"system": true,
+			"titleObjectFieldName": "name"
 		},
 		{
 			"externalReferenceCode": "L_ORGANIZATION",
@@ -477,7 +479,8 @@
 					"type": "oneToMany"
 				}
 			],
-			"system": true
+			"system": true,
+			"titleObjectFieldName": "name"
 		},
 		{
 			"externalReferenceCode": "L_USER",
@@ -560,7 +563,8 @@
 					"type": "oneToMany"
 				}
 			],
-			"system": true
+			"system": true,
+			"titleObjectFieldName": "emailAddress"
 		},
 		{
 			"externalReferenceCode": "L_POSTAL_ADDRESS",
@@ -581,7 +585,8 @@
 			],
 			"objectRelationships": [
 			],
-			"system": true
+			"system": true,
+			"titleObjectFieldName": "name"
 		}
 	]
 }
