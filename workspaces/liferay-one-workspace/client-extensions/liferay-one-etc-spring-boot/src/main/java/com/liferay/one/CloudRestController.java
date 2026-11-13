@@ -70,6 +70,7 @@ import java.nio.file.Path;
 import java.text.ParseException;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import java.util.ArrayList;
 import java.util.Base64;
@@ -1384,11 +1385,13 @@ public class CloudRestController extends OneBaseRestController {
 				environment.getExternalReferenceCode());
 		}
 
+		Instant nowInstant = Instant.now();
+
 		Date expirationDate = _toDate(
 			cloudNativeEntitlement.getEffectiveEndDateInstant(),
-			new Date(System.currentTimeMillis() + Time.YEAR));
+			nowInstant.plusMillis(Time.YEAR));
 		Date startDate = _toDate(
-			cloudNativeEntitlement.getStartDateInstant(), new Date());
+			cloudNativeEntitlement.getStartDateInstant(), nowInstant);
 
 		int maxClusterNodes = ClusterNodesUtil.getMaxClusterNodes(
 			entitlements, environment.getType());
@@ -1529,12 +1532,12 @@ public class CloudRestController extends OneBaseRestController {
 		);
 	}
 
-	private Date _toDate(Instant instant, Date defaultDate) {
+	private Date _toDate(Instant instant, Instant defaultInstant) {
 		if (instant == null) {
-			return defaultDate;
+			instant = defaultInstant;
 		}
 
-		return Date.from(instant);
+		return Date.from(instant.truncatedTo(ChronoUnit.SECONDS));
 	}
 
 	private Set<Long> _toLongs(JSONArray jsonArray) {
