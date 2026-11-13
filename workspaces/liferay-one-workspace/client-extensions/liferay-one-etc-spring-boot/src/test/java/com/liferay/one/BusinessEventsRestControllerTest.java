@@ -5,7 +5,9 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.jira.converter.JiraBusinessEventConverter;
 import com.liferay.one.jira.model.JiraAssetObjectFieldOption;
 import com.liferay.one.jira.model.JiraBusinessEvent;
@@ -55,14 +57,13 @@ public class BusinessEventsRestControllerTest {
 			_businessEventsRestController, "_userAccountService",
 			_userAccountService);
 
-		UserAccount userAccount = new UserAccount();
-
-		userAccount.setEmailAddress(_EMAIL_ADDRESS);
+		_userAccount.setEmailAddress(_EMAIL_ADDRESS);
+		_userAccount.setRoleBriefs(new RoleBrief[0]);
 
 		Mockito.when(
 			_userAccountService.getMyUserAccount(Mockito.any())
 		).thenReturn(
-			userAccount
+			_userAccount
 		);
 
 		Mockito.when(
@@ -141,6 +142,26 @@ public class BusinessEventsRestControllerTest {
 				null, _PROJECT_ERC, "42"));
 
 		Mockito.verifyNoInteractions(_jiraBusinessEventService);
+	}
+
+	@Test
+	public void testDeleteProjectsBusinessEventsWithProvisioningWorkerRole()
+		throws Exception {
+
+		_denyPermission(ActionKeys.UPDATE);
+		_setRoleBriefs(RoleConstants.NAME_PROVISIONING_WORKER);
+
+		ResponseEntity<String> responseEntity =
+			_businessEventsRestController.deleteProjectsBusinessEvents(
+				null, _PROJECT_ERC, "42");
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_jiraBusinessEventService
+		).deleteJiraBusinessEvent(
+			"42"
+		);
 	}
 
 	@Test
@@ -483,6 +504,23 @@ public class BusinessEventsRestControllerTest {
 	}
 
 	@Test
+	public void testPostProjectsBusinessEventsWithLiferayStaffRole()
+		throws Exception {
+
+		_denyPermission(ActionKeys.UPDATE);
+		_setRoleBriefs(RoleConstants.NAME_LIFERAY_STAFF);
+
+		_businessEventsRestController.postProjectsBusinessEvents(
+			null, _PROJECT_ERC, "{\"name\": \"Upgrade\"}");
+
+		Mockito.verify(
+			_jiraBusinessEventService
+		).createJiraBusinessEvent(
+			Mockito.any()
+		);
+	}
+
+	@Test
 	public void testPostProjectsBusinessEventsWithoutPermission()
 		throws Exception {
 
@@ -583,6 +621,27 @@ public class BusinessEventsRestControllerTest {
 	}
 
 	@Test
+	public void testPutProjectsBusinessEventsWithLiferayStaffRole()
+		throws Exception {
+
+		_denyPermission(ActionKeys.UPDATE);
+		_setRoleBriefs(RoleConstants.NAME_LIFERAY_STAFF);
+
+		Mockito.when(
+			_jiraBusinessEventService.updateJiraBusinessEvent(
+				Mockito.any(), Mockito.eq("42"))
+		).thenReturn(
+			_toJiraBusinessEvent("Upgrade")
+		);
+
+		ResponseEntity<String> responseEntity =
+			_businessEventsRestController.putProjectsBusinessEvents(
+				null, _PROJECT_ERC, "42", "{\"name\": \"Upgrade\"}");
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+	}
+
+	@Test
 	public void testPutProjectsBusinessEventsWithoutPermission()
 		throws Exception {
 
@@ -614,6 +673,20 @@ public class BusinessEventsRestControllerTest {
 		return jsonObject.getJSONArray("items");
 	}
 
+	private void _setRoleBriefs(String... roleNames) {
+		RoleBrief[] roleBriefs = new RoleBrief[roleNames.length];
+
+		for (int i = 0; i < roleNames.length; i++) {
+			RoleBrief roleBrief = new RoleBrief();
+
+			roleBrief.setName(roleNames[i]);
+
+			roleBriefs[i] = roleBrief;
+		}
+
+		_userAccount.setRoleBriefs(roleBriefs);
+	}
+
 	private JiraBusinessEvent _toJiraBusinessEvent(String name) {
 		return _jiraBusinessEventConverter.toJiraBusinessEvent(
 			new JSONObject(
@@ -635,6 +708,7 @@ public class BusinessEventsRestControllerTest {
 		Mockito.mock(JiraBusinessEventService.class);
 	private final ProjectPermission _projectPermission = Mockito.mock(
 		ProjectPermission.class);
+	private final UserAccount _userAccount = new UserAccount();
 	private final UserAccountService _userAccountService = Mockito.mock(
 		UserAccountService.class);
 
