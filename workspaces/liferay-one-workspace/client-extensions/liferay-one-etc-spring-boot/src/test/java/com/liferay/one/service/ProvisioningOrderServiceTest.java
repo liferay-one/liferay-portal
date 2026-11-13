@@ -13,6 +13,7 @@ import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
 
 import java.math.BigDecimal;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
@@ -357,6 +358,43 @@ public class ProvisioningOrderServiceTest {
 	}
 
 	@Test
+	public void testTrimRemovedOrderItemsCountsTheUnassignedLicenseKeysWithoutCustomFields()
+		throws Exception {
+
+		Order order = _createRemovalOrder(_createOrderItem("LINE-2", 5002L, 3));
+
+		order.setCustomFields((Map<String, ?>)null);
+
+		Mockito.when(
+			_entitlementService.getOrderItemEntitlements(List.of(5002L))
+		).thenReturn(
+			List.of(_createEntitlement(5002L, 9001L))
+		);
+
+		Mockito.when(
+			_licenseKeyService.getActiveUnassignedLicenseKeyCounts(
+				_ACCOUNT_ID, List.of())
+		).thenReturn(
+			Map.of(9001L, 3)
+		);
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
+			warningMessages);
+
+		Assertions.assertEquals(1, warningMessages.size());
+		Assertions.assertTrue(
+			warningMessages.get(
+				0
+			).contains(
+				"uses 3 activations, but its new quantity allows 0."
+			));
+	}
+
+	@Test
 	public void testTrimRemovedOrderItemsCountsTheUnlinkedLicenseKeysAgainstTheProjectEntitlements()
 		throws Exception {
 
@@ -552,6 +590,32 @@ public class ProvisioningOrderServiceTest {
 	}
 
 	@Test
+	public void testTrimRemovedOrderItemsEndsAnOrderItemInItsGracePeriod()
+		throws Exception {
+
+		Order order = _createRemovalOrder(_createGracePeriodOrderItem());
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 5, "2026-01-01")),
+			new ArrayList<>());
+
+		ArgumentCaptor<Map<Long, Map<String, Object>>> argumentCaptor =
+			ArgumentCaptor.forClass(Map.class);
+
+		Mockito.verify(
+			_commerceOrderItemService
+		).patchOrderItemCustomFields(
+			argumentCaptor.capture(), Mockito.eq(order)
+		);
+
+		Assertions.assertEquals(
+			Set.of(5002L),
+			argumentCaptor.getValue(
+			).keySet());
+	}
+
+	@Test
 	public void testTrimRemovedOrderItemsEndsAnOrderItemThatTheMessageNoLongerHas()
 		throws Exception {
 
@@ -699,6 +763,31 @@ public class ProvisioningOrderServiceTest {
 			new ArrayList<>());
 
 		Mockito.verifyNoInteractions(_commerceOrderItemService);
+	}
+
+	@Test
+	public void testTrimRemovedOrderItemsReadsNothingForAnExpiredOrderItemWithALowerQuantity()
+		throws Exception {
+
+		OrderItem orderItem = SalesforceModelTestUtil.createOrderItem(
+			"Approved", null, "2020-01-01T00:00:00Z", "LINE-1", 5001L,
+			_PRODUCT_2_ID, "2019-01-01T00:00:00Z");
+
+		orderItem.setQuantity(BigDecimal.valueOf(3));
+
+		_createRemovalOrder(orderItem);
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			_OPPORTUNITY_ID,
+			List.of(_createLineItem("LINE-1", 2, "2026-01-01")),
+			warningMessages);
+
+		Assertions.assertTrue(warningMessages.isEmpty());
+
+		Mockito.verifyNoInteractions(
+			_commerceOrderItemService, _entitlementService, _licenseKeyService);
 	}
 
 	@Test
@@ -851,6 +940,24 @@ public class ProvisioningOrderServiceTest {
 
 		Mockito.verifyNoInteractions(
 			_commerceOrderItemService, _entitlementService, _licenseKeyService);
+	}
+
+	@Test
+	public void testTrimRemovedOrderItemsWarnsWithoutLineItemsWhenAnOrderItemIsInItsGracePeriod()
+		throws Exception {
+
+		_createRemovalOrder(_createGracePeriodOrderItem());
+
+		List<String> warningMessages = new ArrayList<>();
+
+		_provisioningOrderService.trimRemovedOrderItems(
+			_OPPORTUNITY_ID, new ArrayList<>(), warningMessages);
+
+		Assertions.assertEquals(
+			List.of(
+				"Opportunity OPP-1 has no line items, but its order has " +
+					"active order items. The system did not end them."),
+			warningMessages);
 	}
 
 	@Test
@@ -1133,6 +1240,18 @@ public class ProvisioningOrderServiceTest {
 		).put(
 			"skuExternalReferenceCode", _PRODUCT_2_ID
 		);
+	}
+
+	private OrderItem _createGracePeriodOrderItem() {
+		Instant nowInstant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.SECONDS
+		);
+
+		return SalesforceModelTestUtil.createOrderItem(
+			"Approved", String.valueOf(nowInstant.plus(Duration.ofDays(29))),
+			String.valueOf(nowInstant.minus(Duration.ofDays(1))), "LINE-2",
+			5002L, _PRODUCT_2_ID, "2026-01-01T00:00:00Z");
 	}
 
 	private SalesforceOpportunityLineItem _createLineItem(
