@@ -44,6 +44,7 @@ Terms used in this file:
 | REQ-PLATFORM-042 | A destructive action asks for confirmation and runs only after the user confirms it. The confirm button is disabled while the action runs. | P1 | — | `HOOK-USECONFIRMATIONMODAL`, `HOOK-USEMODALCONTEXT` |
 | REQ-PLATFORM-043 | Each account logo and each data source keeps the same color on every visit. | P2 | — | `MOD-MYACCOUNT-PROJECTS-GETLOGOCOLOR`, `MOD-MYACCOUNT-PROJECTS-GETDATASOURCECOLOR` |
 | REQ-PLATFORM-044 | Links inside the custom element stay inside the current site. | P2 | — | `MOD-SITEUTILS` |
+| REQ-PLATFORM-045 | A keyword search on an object entry list in the Control Panel or over `/o/c/<objects>` returns the matching entries. The search also matches the title field of each related parent entry, so every parent object of a relationship has a title field. The batch sets the title field of each system object that is a parent. | P1 | LPD-114860 | `FLOW-OBJECT-ENTRY-SEARCH` |
 
 ## Privacy and Analytics
 
