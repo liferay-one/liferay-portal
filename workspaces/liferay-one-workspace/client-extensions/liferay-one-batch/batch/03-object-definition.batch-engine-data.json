@@ -752,7 +752,7 @@
 				"label_i18n": "Approved"
 			},
 			"system": false,
-			"titleObjectFieldName": "name"
+			"titleObjectFieldName": "id"
 		},
 		{
 			"active": true,
