@@ -1459,7 +1459,7 @@ public class LicenseKeyGenerateFormServiceTest {
 	@Test
 	public void testGetSummaryCarriesOnlyWhatTheListReads() throws Exception {
 		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
-			Mockito.spy(new LicenseKeyGenerateFormService());
+			_toSummaryLicenseKeyGenerateFormService();
 
 		Project project = Mockito.mock(Project.class);
 
@@ -1497,6 +1497,38 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		Assertions.assertFalse(jsonObject.has("products"));
 		Assertions.assertFalse(jsonObject.has("bundleProducts"));
+
+		Assertions.assertEquals(
+			Arrays.asList("enterprise", "oem"),
+			jsonObject.getJSONArray(
+				"restrictedKeyTypes"
+			).toList());
+	}
+
+	@Test
+	public void testGetSummaryRestrictsNoKeyTypeForAnAdmin() throws Exception {
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			_toSummaryLicenseKeyGenerateFormService();
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.doReturn(
+			_toGenerateFormJSONObject(
+				_toProductJSONObject(
+					"DXP", _toKeyTypeJSONObject("oem", 1, null, null)))
+		).when(
+			licenseKeyGenerateFormService
+		).getGenerateForm(
+			true, project, true, null
+		);
+
+		JSONObject jsonObject = licenseKeyGenerateFormService.getSummary(
+			true, project, true);
+
+		Assertions.assertTrue(
+			jsonObject.getJSONArray(
+				"restrictedKeyTypes"
+			).isEmpty());
 	}
 
 	@Test
@@ -1504,7 +1536,7 @@ public class LicenseKeyGenerateFormServiceTest {
 		throws Exception {
 
 		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
-			Mockito.spy(new LicenseKeyGenerateFormService());
+			_toSummaryLicenseKeyGenerateFormService();
 
 		Project project = Mockito.mock(Project.class);
 
@@ -2553,6 +2585,34 @@ public class LicenseKeyGenerateFormServiceTest {
 			).put(
 				"startDate", "2026-01-01T00:00:00Z"
 			));
+	}
+
+	private LicenseKeyGenerateFormService
+		_toSummaryLicenseKeyGenerateFormService() {
+
+		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
+			LicenseKeyTypeService.class);
+
+		Mockito.when(
+			licenseKeyTypeService.isAdminType(LicenseKeyType.ENTERPRISE)
+		).thenReturn(
+			true
+		);
+
+		Mockito.when(
+			licenseKeyTypeService.isAdminType(LicenseKeyType.OEM)
+		).thenReturn(
+			true
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			Mockito.spy(new LicenseKeyGenerateFormService());
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyTypeService",
+			licenseKeyTypeService);
+
+		return licenseKeyGenerateFormService;
 	}
 
 }
