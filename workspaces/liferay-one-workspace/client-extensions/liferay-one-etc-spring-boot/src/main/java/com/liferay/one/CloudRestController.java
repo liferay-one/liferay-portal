@@ -997,6 +997,26 @@ public class CloudRestController extends OneBaseRestController {
 		return path;
 	}
 
+	private boolean _endsAfter(
+		Entitlement entitlement1, Entitlement entitlement2) {
+
+		Instant effectiveEndDateInstant2 =
+			entitlement2.getEffectiveEndDateInstant();
+
+		if (effectiveEndDateInstant2 == null) {
+			return false;
+		}
+
+		Instant effectiveEndDateInstant1 =
+			entitlement1.getEffectiveEndDateInstant();
+
+		if (effectiveEndDateInstant1 == null) {
+			return true;
+		}
+
+		return effectiveEndDateInstant1.isAfter(effectiveEndDateInstant2);
+	}
+
 	private Product _fetchProduct(Entitlement entitlement) throws Exception {
 		String skuExternalReferenceCode =
 			entitlement.getSkuExternalReferenceCode();
@@ -1113,8 +1133,15 @@ public class CloudRestController extends OneBaseRestController {
 	private List<Entitlement> _getActiveEntitlements(Environment environment)
 		throws Exception {
 
+		String projectExternalReferenceCode =
+			environment.getProjectExternalReferenceCode();
+
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			return Collections.emptyList();
+		}
+
 		return _entitlementService.getActiveEntitlements(
-			environment.getAccountEntryId());
+			projectExternalReferenceCode);
 	}
 
 	private JSONArray _getAddOnsJSONArray(
@@ -1338,19 +1365,23 @@ public class CloudRestController extends OneBaseRestController {
 		Entitlement cloudNativeEntitlement = null;
 
 		for (Entitlement entitlement : entitlements) {
-			if (Objects.equals(
+			if (!Objects.equals(
 					EntitlementConstants.NAME_CLOUD_NATIVE,
 					entitlement.getName())) {
 
-				cloudNativeEntitlement = entitlement;
+				continue;
+			}
 
-				break;
+			if ((cloudNativeEntitlement == null) ||
+				_endsAfter(entitlement, cloudNativeEntitlement)) {
+
+				cloudNativeEntitlement = entitlement;
 			}
 		}
 
 		if (cloudNativeEntitlement == null) {
 			throw new CloudNativeEntitlementException(
-				environment.getAccountEntryId());
+				environment.getExternalReferenceCode());
 		}
 
 		Date expirationDate = _toDate(
