@@ -695,13 +695,39 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testGetActivationKeysGenerateFormOffersAProvisioningWorkerAVirtualCluster()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController(RoleConstants.NAME_PROVISIONING_WORKER);
+
+		Project project = _stubVirtualClusterActivationKey();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.getGenerateForm(
+				false, project, false, null, true)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"products", new JSONArray()
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getActivationKeysGenerateForm(
+				null, null, _PROJECT_ERC, null);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+	}
+
+	@Test
 	public void testGetActivationKeysGenerateFormOffersAProvisioningWorkerAVirtualClusterRenewal()
 		throws Exception {
 
 		ActivationKeysRestController activationKeysRestController =
 			_createController(RoleConstants.NAME_PROVISIONING_WORKER);
 
-		Project project = _stubVirtualClusterRenewal();
+		Project project = _stubVirtualClusterActivationKey();
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.getGenerateForm(
@@ -1319,6 +1345,83 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPostActivationKeysGenerateAdminKeyTypeNeedsAnAdminForAProvisioningWorker()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController(RoleConstants.NAME_PROVISIONING_WORKER);
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenReturn(
+			Mockito.mock(Project.class)
+		);
+
+		Mockito.when(
+			_licenseKeyTypeService.isAdminType(LicenseKeyType.ENTERPRISE)
+		).thenReturn(
+			true
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.postActivationKeysGenerate(
+				null, _toGenerateJSON("enterprise")));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
+	public void testPostActivationKeysGenerateAdminKeyTypeWithVirtualClusterNeedsAnAdminForAProvisioningWorker()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController(RoleConstants.NAME_PROVISIONING_WORKER);
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenReturn(
+			Mockito.mock(Project.class)
+		);
+
+		Mockito.when(
+			_licenseKeyTypeService.isAdminType(LicenseKeyType.PRODUCTION)
+		).thenReturn(
+			true
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> activationKeysRestController.postActivationKeysGenerate(
+				null,
+				new JSONObject(
+					_toGenerateJSON("production")
+				).put(
+					"virtualCluster", true
+				).toString()));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
+	}
+
+	@Test
 	public void testPostActivationKeysGenerateChecksPermission()
 		throws Exception {
 
@@ -1855,6 +1958,60 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPostActivationKeysGenerateVirtualClusterAllowsAProvisioningWorker()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController(RoleConstants.NAME_PROVISIONING_WORKER);
+
+		Project project = _stubVirtualClusterActivationKey();
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenReturn(
+			project
+		);
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_adminPermission
+		).check(
+			Mockito.any()
+		);
+
+		Mockito.when(
+			_licenseKeyGenerationService.generateActivationKey(Mockito.any())
+		).thenReturn(
+			new ActivationKey(
+				new JSONObject(
+				).put(
+					"externalReferenceCode", "ACTVK-2"
+				).put(
+					"id", 8L
+				))
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.postActivationKeysGenerate(
+				null,
+				new JSONObject(
+					_toGenerateJSON("production")
+				).put(
+					"virtualCluster", true
+				).toString());
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_adminPermission, Mockito.never()
+		).check(
+			Mockito.any()
+		);
+	}
+
+	@Test
 	public void testPostActivationKeysGenerateVirtualClusterNeedsAnAdmin()
 		throws Exception {
 
@@ -1896,7 +2053,7 @@ public class ActivationKeysRestControllerTest {
 		ActivationKeysRestController activationKeysRestController =
 			_createController(RoleConstants.NAME_PROVISIONING_WORKER);
 
-		Project project = _stubVirtualClusterRenewal();
+		Project project = _stubVirtualClusterActivationKey();
 
 		Mockito.when(
 			_environmentActivationPermission.checkLicenseKeyActivation(
@@ -1947,7 +2104,7 @@ public class ActivationKeysRestControllerTest {
 		ActivationKeysRestController activationKeysRestController =
 			_createController();
 
-		Project project = _stubVirtualClusterRenewal();
+		Project project = _stubVirtualClusterActivationKey();
 
 		Mockito.when(
 			_environmentActivationPermission.checkLicenseKeyActivation(
@@ -2289,7 +2446,7 @@ public class ActivationKeysRestControllerTest {
 		);
 	}
 
-	private Project _stubVirtualClusterRenewal() throws Exception {
+	private Project _stubVirtualClusterActivationKey() throws Exception {
 		Project project = Mockito.mock(Project.class);
 
 		Mockito.when(

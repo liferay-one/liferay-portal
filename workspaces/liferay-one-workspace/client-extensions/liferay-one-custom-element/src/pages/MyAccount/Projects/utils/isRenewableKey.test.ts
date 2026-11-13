@@ -59,15 +59,16 @@ describe('[MOD-MYACCOUNT-PROJECTS-ISRENEWABLEKEY] isRenewableKey', () => {
 	});
 
 	it('is true without a project only for a free key of the account', () => {
-		expect(isRenewableKey(toActivationKey({}), false, true)).toBe(false);
+		expect(isRenewableKey(toActivationKey({}), {unassigned: true})).toBe(
+			false
+		);
 		expect(
 			isRenewableKey(
 				toActivationKey({
 					expirationDateValue: toDaysFromNow(30),
 					type: 'free',
 				}),
-				false,
-				true
+				{unassigned: true}
 			)
 		).toBe(true);
 		expect(
@@ -77,8 +78,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-ISRENEWABLEKEY] isRenewableKey', () => {
 					projectExternalReferenceCode: 'PRJCT-001',
 					type: 'free',
 				}),
-				false,
-				true
+				{unassigned: true}
 			)
 		).toBe(false);
 	});
@@ -88,7 +88,9 @@ describe('[MOD-MYACCOUNT-PROJECTS-ISRENEWABLEKEY] isRenewableKey', () => {
 			false
 		);
 		expect(
-			isRenewableKey(toActivationKey({unaggregated: true}), true)
+			isRenewableKey(toActivationKey({unaggregated: true}), {
+				canRenewVirtualCluster: true,
+			})
 		).toBe(false);
 	});
 
@@ -96,7 +98,9 @@ describe('[MOD-MYACCOUNT-PROJECTS-ISRENEWABLEKEY] isRenewableKey', () => {
 		const activationKey = toActivationKey({type: 'virtual-cluster'});
 
 		expect(isRenewableKey(activationKey)).toBe(false);
-		expect(isRenewableKey(activationKey, true)).toBe(true);
+		expect(
+			isRenewableKey(activationKey, {canRenewVirtualCluster: true})
+		).toBe(true);
 	});
 
 	it('is false for a permanent key', () => {
@@ -105,6 +109,27 @@ describe('[MOD-MYACCOUNT-PROJECTS-ISRENEWABLEKEY] isRenewableKey', () => {
 		});
 
 		expect(isRenewableKey(activationKey)).toBe(false);
-		expect(isRenewableKey(activationKey, true)).toBe(false);
+		expect(
+			isRenewableKey(activationKey, {canRenewVirtualCluster: true})
+		).toBe(false);
+	});
+
+	it('is false for a key type that the viewer cannot generate', () => {
+		const restrictedKeyTypes = ['enterprise', 'oem'];
+
+		expect(
+			isRenewableKey(toActivationKey({type: 'oem'}), {restrictedKeyTypes})
+		).toBe(false);
+		expect(
+			isRenewableKey(toActivationKey({type: 'enterprise'}), {
+				restrictedKeyTypes,
+			})
+		).toBe(false);
+		expect(
+			isRenewableKey(toActivationKey({type: 'production'}), {
+				restrictedKeyTypes,
+			})
+		).toBe(true);
+		expect(isRenewableKey(toActivationKey({type: 'oem'}))).toBe(true);
 	});
 });
