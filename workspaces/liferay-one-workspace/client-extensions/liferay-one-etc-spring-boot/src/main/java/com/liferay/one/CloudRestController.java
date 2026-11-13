@@ -1093,31 +1093,38 @@ public class CloudRestController extends OneBaseRestController {
 
 	private String _generateDXPLicenseXML(
 			String accountName, Date expirationDate, String licenseEntryName,
-			int maxClusterNodes, String owner, String productName,
-			String productVersion, Date startDate)
+			String licenseEntryType, int maxClusterNodes, String owner,
+			String productName, String productVersion, Date startDate)
 		throws Exception {
 
 		String description = "Cloud Native";
-		String licenseEntryType = LicenseConstants.TYPE_VIRTUAL_CLUSTER;
+		int maxHttpSessions = 0;
+		String sizing = "Sizing 4";
+
+		if (Objects.equals(licenseEntryType, LicenseConstants.TYPE_DEVELOPER)) {
+			description = licenseEntryName;
+			maxHttpSessions =
+				LicenseKeyGenerationConstants.DEVELOPER_MAX_HTTP_SESSIONS;
+			sizing = StringPool.BLANK;
+		}
 
 		int licenseVersion = LicenseVersion.getLicenseVersion(
 			productName, productVersion);
 
-		String sizing = "Sizing 4";
-
 		String key = _licenseKeyGenerator.generateKey(
 			accountName, licenseEntryName, licenseEntryType, licenseVersion,
 			productName, LicenseConstants.PRODUCT_ID_PORTAL, productVersion,
-			owner, maxClusterNodes, 0, 0, 0, 0, sizing, description,
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+			owner, maxClusterNodes, 0, maxHttpSessions, 0, 0, sizing,
+			description, StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, StringPool.BLANK, startDate, expirationDate);
 
 		return _licenseKeyExporter.toXML(
 			key, accountName, licenseEntryName, licenseEntryType,
 			licenseVersion, productName, LicenseConstants.PRODUCT_ID_PORTAL,
-			productVersion, owner, maxClusterNodes, 0, 0, 0, 0, sizing,
-			description, StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, startDate, expirationDate);
+			productVersion, owner, maxClusterNodes, 0, maxHttpSessions, 0, 0,
+			sizing, description, StringPool.BLANK, StringPool.BLANK,
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
+			expirationDate);
 	}
 
 	private String _getAccountName(Environment environment) throws Exception {
@@ -1205,8 +1212,9 @@ public class CloudRestController extends OneBaseRestController {
 	private String _getAggregateLicenseXML(
 			JSONArray addOnsJSONArray, String accountName,
 			String dxpProductName, String dxpProductVersion,
-			Date expirationDate, String licenseEntryName, int maxClusterNodes,
-			String owner, Date startDate)
+			Date expirationDate, String licenseEntryName,
+			String licenseEntryType, int maxClusterNodes, String owner,
+			Date startDate)
 		throws Exception {
 
 		List<String> licenseXMLs = new ArrayList<>();
@@ -1223,8 +1231,9 @@ public class CloudRestController extends OneBaseRestController {
 
 		licenseXMLs.add(
 			_generateDXPLicenseXML(
-				accountName, expirationDate, licenseEntryName, maxClusterNodes,
-				owner, dxpProductName, dxpProductVersion, startDate));
+				accountName, expirationDate, licenseEntryName, licenseEntryType,
+				maxClusterNodes, owner, dxpProductName, dxpProductVersion,
+				startDate));
 
 		String licenseXML = _licenseKeyExporter.aggregateXMLs(
 			licenseXMLs.toArray(new String[0]));
@@ -1406,19 +1415,22 @@ public class CloudRestController extends OneBaseRestController {
 			_getEntitledProducts(
 				_filterByEntitlementId(entitlements, entitlementIds)));
 
-		String licenseEntryName = "DXP Non-Production (Virtual Cluster)";
-		String productName = "DXP Non-Production";
+		String licenseEntryName = "DXP Development";
+		String licenseEntryType = LicenseConstants.TYPE_DEVELOPER;
+		String productName = "DXP Development";
 
 		if (Objects.equals(
 				environment.getType(), EnvironmentConstants.TYPE_PRODUCTION)) {
 
 			licenseEntryName = "DXP Production (Virtual Cluster)";
+			licenseEntryType = LicenseConstants.TYPE_VIRTUAL_CLUSTER;
 			productName = "DXP Production";
 		}
 		else if (Objects.equals(
 					environment.getType(), EnvironmentConstants.TYPE_UAT)) {
 
 			licenseEntryName = "DXP UAT (Virtual Cluster)";
+			licenseEntryType = LicenseConstants.TYPE_VIRTUAL_CLUSTER;
 			productName = "DXP UAT";
 		}
 
@@ -1433,8 +1445,9 @@ public class CloudRestController extends OneBaseRestController {
 			_getAggregateLicenseXML(
 				addOnsJSONArray, _getAccountName(environment), productName,
 				ProductVersion.extractQuarterlyRelease(dxpVersion),
-				expirationDate, licenseEntryName, maxClusterNodes,
-				environment.getExternalReferenceCode(), startDate)
+				expirationDate, licenseEntryName, licenseEntryType,
+				maxClusterNodes, environment.getExternalReferenceCode(),
+				startDate)
 		).put(
 			"maxClusterNodes", maxClusterNodes
 		);
