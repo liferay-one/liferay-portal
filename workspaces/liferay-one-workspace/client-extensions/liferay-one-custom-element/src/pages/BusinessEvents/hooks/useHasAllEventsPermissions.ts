@@ -27,7 +27,11 @@ export default function useHasAllEventsPermissions(projectERC?: string): {
 	const userId = Liferay.ThemeDisplay.getUserId();
 
 	const hasElevatedRole = Boolean(
-		userAccountModel?.isAdmin || userAccountModel?.isAccountAdministrator
+		userAccountModel?.isAccountAdministrator ||
+			userAccountModel?.isAdmin ||
+			userAccountModel?.isLiferayStaff ||
+			userAccountModel?.isProvisioningAdministrator ||
+			userAccountModel?.isProvisioningWorker
 	);
 
 	const projectTicketRoleExternalReferenceCodes = [

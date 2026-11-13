@@ -5,7 +5,9 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
+import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.jira.constants.JiraBusinessEventConstants;
 import com.liferay.one.jira.converter.JiraBusinessEventConverter;
 import com.liferay.one.jira.model.JiraAssetObjectFieldOption;
@@ -51,7 +53,8 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			@PathVariable("id") String id)
 		throws Exception {
 
-		_projectPermission.check(ActionKeys.UPDATE, jwt, externalReferenceCode);
+		_checkUpdatePermission(
+			externalReferenceCode, jwt, getMyUserAccount(jwt));
 
 		_checkBusinessEvent(externalReferenceCode, id);
 
@@ -139,9 +142,9 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			@RequestBody String json)
 		throws Exception {
 
-		_projectPermission.check(ActionKeys.UPDATE, jwt, externalReferenceCode);
-
 		UserAccount userAccount = getMyUserAccount(jwt);
+
+		_checkUpdatePermission(externalReferenceCode, jwt, userAccount);
 
 		_businessEventService.createJiraBusinessEvent(
 			_businessEventConverter.toJiraBusinessEvent(
@@ -163,11 +166,11 @@ public class BusinessEventsRestController extends OneBaseRestController {
 			_log.info("PUT business event " + id);
 		}
 
-		_projectPermission.check(ActionKeys.UPDATE, jwt, externalReferenceCode);
+		UserAccount userAccount = getMyUserAccount(jwt);
+
+		_checkUpdatePermission(externalReferenceCode, jwt, userAccount);
 
 		_checkBusinessEvent(externalReferenceCode, id);
-
-		UserAccount userAccount = getMyUserAccount(jwt);
 
 		JiraBusinessEvent jiraBusinessEvent =
 			_businessEventConverter.toJiraBusinessEvent(
@@ -190,6 +193,23 @@ public class BusinessEventsRestController extends OneBaseRestController {
 
 			throw new PrincipalException();
 		}
+	}
+
+	private void _checkUpdatePermission(
+			String externalReferenceCode, Jwt jwt, UserAccount userAccount)
+		throws Exception {
+
+		for (RoleBrief roleBrief : userAccount.getRoleBriefs()) {
+			String roleBriefName = roleBrief.getName();
+
+			if (roleBriefName.equals(RoleConstants.NAME_LIFERAY_STAFF) ||
+				roleBriefName.equals(RoleConstants.NAME_PROVISIONING_WORKER)) {
+
+				return;
+			}
+		}
+
+		_projectPermission.check(ActionKeys.UPDATE, jwt, externalReferenceCode);
 	}
 
 	private static final Log _log = LogFactory.getLog(
