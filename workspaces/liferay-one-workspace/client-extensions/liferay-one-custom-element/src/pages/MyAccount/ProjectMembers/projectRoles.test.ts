@@ -11,19 +11,8 @@ import {
 	PROJECT_USER_ERC,
 	getContactRoleChanges,
 	getDesignationNames,
-	getProductContactRoleExternalReferenceCodes,
 	getProjectRoleLabel,
 } from './projectRoles';
-
-import type {DeliveryProductSpecification} from '~/types/product';
-
-function toSpecifications(value?: string) {
-	return (value === undefined
-		? [{specificationKey: 'other', value: 'C_X'}]
-		: [
-				{specificationKey: 'project-contacts-role-ercs', value},
-			]) as unknown as DeliveryProductSpecification[];
-}
 
 const AVAILABLE_DESIGNATIONS = [
 	{
@@ -117,20 +106,5 @@ describe('[MOD-MYACCOUNT-PROJECTMEMBERS-PROJECTROLES] projectRoles', () => {
 
 	it('returns an empty label for an unknown ERC', () => {
 		expect(getProjectRoleLabel('C_UNKNOWN')).toBe('');
-	});
-
-	it('splits, trims, and drops empty contact role ERCs', () => {
-		expect(
-			getProductContactRoleExternalReferenceCodes(
-				toSpecifications(' C_A , ,C_B,,  C_C ')
-			)
-		).toEqual(['C_A', 'C_B', 'C_C']);
-	});
-
-	it('returns an empty array when the specification is absent', () => {
-		expect(
-			getProductContactRoleExternalReferenceCodes(toSpecifications())
-		).toEqual([]);
-		expect(getProductContactRoleExternalReferenceCodes([])).toEqual([]);
 	});
 });

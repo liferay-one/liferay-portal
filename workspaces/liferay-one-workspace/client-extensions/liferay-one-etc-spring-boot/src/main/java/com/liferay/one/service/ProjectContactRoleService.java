@@ -5,18 +5,26 @@
 
 package com.liferay.one.service;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.AccountRole;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.one.constants.ProductSpecificationConstants;
+import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
+import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +107,119 @@ public class ProjectContactRoleService {
 		return new ArrayList<>(contactRoleExternalReferenceCodes);
 	}
 
+	public Map<String, Map<String, String>> getContactRoleNames(
+			Collection<String> projectExternalReferenceCodes)
+		throws Exception {
+
+		Map<String, Map<String, String>> contactRoleNamesMap =
+			new LinkedHashMap<>();
+
+		if (projectExternalReferenceCodes.isEmpty()) {
+			return contactRoleNamesMap;
+		}
+
+		Map<String, String> accountRoleNames = _getAccountRoleNames();
+
+		Map<String, List<ProjectMembership>> projectMembershipsMap =
+			new HashMap<>();
+
+		for (ProjectMembership projectMembership :
+				_projectMembershipService.getProjectMemberships(
+					projectExternalReferenceCodes)) {
+
+			List<ProjectMembership> projectMemberships =
+				projectMembershipsMap.computeIfAbsent(
+					projectMembership.getProjectExternalReferenceCode(),
+					key -> new ArrayList<>());
+
+			projectMemberships.add(projectMembership);
+		}
+
+		for (String projectExternalReferenceCode :
+				projectExternalReferenceCodes) {
+
+			contactRoleNamesMap.put(
+				projectExternalReferenceCode,
+				_getContactRoleNames(
+					accountRoleNames, projectExternalReferenceCode,
+					projectMembershipsMap.getOrDefault(
+						projectExternalReferenceCode, new ArrayList<>())));
+		}
+
+		return contactRoleNamesMap;
+	}
+
+	private Map<String, String> _getAccountRoleNames() throws Exception {
+		Map<String, String> accountRoleNames = new HashMap<>();
+
+		for (AccountRole accountRole : _accountRoleService.getAccountRoles()) {
+			if (Validator.isNull(accountRole.getExternalReferenceCode())) {
+				continue;
+			}
+
+			accountRoleNames.put(
+				accountRole.getExternalReferenceCode(), accountRole.getName());
+		}
+
+		return accountRoleNames;
+	}
+
+	private Map<String, String> _getContactRoleNames(
+			Map<String, String> accountRoleNames,
+			String projectExternalReferenceCode,
+			List<ProjectMembership> projectMemberships)
+		throws Exception {
+
+		Map<String, String> contactRoleNames = new LinkedHashMap<>();
+
+		Set<String> contactRoleExternalReferenceCodes = new LinkedHashSet<>(
+			getContactRoleExternalReferenceCodes(projectExternalReferenceCode));
+
+		Set<Long> projectMemberUserIds = new HashSet<>();
+
+		for (ProjectMembership projectMembership : projectMemberships) {
+			if (!RoleConstants.ercsSupportProject.contains(
+					projectMembership.getRoleExternalReferenceCode())) {
+
+				continue;
+			}
+
+			projectMemberUserIds.add(projectMembership.getUserId());
+		}
+
+		for (ProjectMembership projectMembership : projectMemberships) {
+			String roleExternalReferenceCode =
+				projectMembership.getRoleExternalReferenceCode();
+
+			if (RoleConstants.ercsSupportProject.contains(
+					roleExternalReferenceCode) ||
+				!projectMemberUserIds.contains(projectMembership.getUserId())) {
+
+				continue;
+			}
+
+			contactRoleExternalReferenceCodes.add(roleExternalReferenceCode);
+		}
+
+		for (String contactRoleExternalReferenceCode :
+				contactRoleExternalReferenceCodes) {
+
+			String name = accountRoleNames.get(
+				contactRoleExternalReferenceCode);
+
+			if (Validator.isNull(name)) {
+				continue;
+			}
+
+			contactRoleNames.put(contactRoleExternalReferenceCode, name);
+		}
+
+		return contactRoleNames;
+	}
+
+	@Autowired
+	private AccountRoleService _accountRoleService;
+
 	@Autowired
 	private CommerceProductService _commerceProductService;
 
@@ -110,5 +231,8 @@ public class ProjectContactRoleService {
 
 	@Autowired
 	private EntitlementService _entitlementService;
+
+	@Autowired
+	private ProjectMembershipService _projectMembershipService;
 
 }

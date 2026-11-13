@@ -458,7 +458,9 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 | `POST /organizations/{organizationId}/sync-to-jsm` | AdminPermission | yes | `OrganizationsRestController.java:180` |
 | `DELETE /organizations/{organizationId}/user-accounts/{userId}/organization-roles` | AdminPermission | yes | `OrganizationsRestController.java:66` |
 | `POST /organizations/{organizationId}/user-accounts/{userId}/organization-roles` | AdminPermission | yes | `OrganizationsRestController.java:192` |
+| `GET /projects/contact-roles` | ProjectPermission (VIEW) for each project. The response omits a project that the caller cannot view. | yes | `ProjectRestController.java:145` |
 | `GET /projects/{externalReferenceCode}/jira/object-key` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:139` |
+| `GET /projects/{externalReferenceCode}/placed-orders` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:221` |
 | `POST /projects/{externalReferenceCode}/sync-to-jsm` | ProjectPermission (UPDATE) | yes | `ProjectRestController.java:284` |
 | `GET /projects/{externalReferenceCode}/usage` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:152` |
 | `GET /projects/{externalReferenceCode}/usage/event-history` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:183` |

@@ -13,6 +13,7 @@ liferay-one-etc-spring-boot-oahs:
         -   Liferay.Headless.Commerce.Admin.Channel.everything.read
         -   Liferay.Headless.Commerce.Admin.Order.everything
         -   Liferay.Headless.Commerce.Admin.Pricing.everything
+        -   Liferay.Headless.Commerce.Delivery.Order.everything.read
         -   Liferay.Notification.REST.everything
         -   c_accountinvitation.everything
         -   c_activationkey.everything

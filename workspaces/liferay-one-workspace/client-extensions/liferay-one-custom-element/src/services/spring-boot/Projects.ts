@@ -5,6 +5,10 @@
 
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
+import type {Designation} from '~/pages/MyAccount/ProjectMembers/types';
+import type {APIResponse} from '~/types/api';
+import type {PlacedOrder} from '~/types/orders';
+
 class ProjectsOAuth2 extends OneSpringBootOAuth2 {
 	async deleteContactRole(
 		projectExternalReferenceCode: string,
@@ -25,6 +29,35 @@ class ProjectsOAuth2 extends OneSpringBootOAuth2 {
 		return this.delete(
 			`/${projectExternalReferenceCode}/user-accounts/${userId}` +
 				`/account-roles/${roleExternalReferenceCode}`
+		);
+	}
+
+	async getContactRoles(projectExternalReferenceCodes: string[]) {
+		const searchParams = new URLSearchParams(
+			projectExternalReferenceCodes.map(
+				(projectExternalReferenceCode) => [
+					'externalReferenceCodes',
+					projectExternalReferenceCode,
+				]
+			)
+		);
+
+		return this.get<Record<string, Designation[]>>(
+			`/contact-roles?${searchParams.toString()}`
+		);
+	}
+
+	async getPlacedOrders(
+		projectExternalReferenceCode: string,
+		restrictFields?: string
+	) {
+		const searchParams = new URLSearchParams(
+			restrictFields ? {restrictFields} : {}
+		);
+
+		return this.get<APIResponse<PlacedOrder>>(
+			`/${projectExternalReferenceCode}/placed-orders` +
+				`?${searchParams.toString()}`
 		);
 	}
 

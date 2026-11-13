@@ -4,8 +4,13 @@
  */
 
 import {useMemo} from 'react';
+import {useDataQuery} from '~/hooks/useDataQuery';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
+import {
+	RESTRICTED_ORDER_FIELDS,
+	projectPlacedOrdersQuery,
+} from '~/services/queries/projectPlacedOrdersQuery';
 import {OrderTypes} from '~/types/orders';
 import {formatUTCShortDate} from '~/utils/dateUtils';
 import {
@@ -33,63 +38,6 @@ import type {PlacedOrder, PlacedOrderItems, VirtualItem} from '~/types/orders';
 const MACHINE_TYPE_OPTION_KEY = 'machinetype';
 
 const PAGE_SIZE = 200;
-
-const RESTRICTED_ORDER_FIELDS = [
-	'account',
-	'attachments',
-	'channelId',
-	'couponCode',
-	'lastPriceUpdateDate',
-	'modifiedDate',
-	'name',
-	'orderType',
-	'orderUUID',
-	'paymentMethod',
-	'paymentStatus',
-	'paymentStatusInfo',
-	'paymentStatusLabel',
-	'placedOrderBillingAddressId',
-	'placedOrderItems.adaptiveMediaImageHTMLTag',
-	'placedOrderItems.deliveryGroup',
-	'placedOrderItems.deliveryGroupName',
-	'placedOrderItems.externalReferenceCode',
-	'placedOrderItems.parentOrderItemId',
-	'placedOrderItems.price',
-	'placedOrderItems.productURLs',
-	'placedOrderItems.replacedSku',
-	'placedOrderItems.settings',
-	'placedOrderItems.shippingAddressId',
-	'placedOrderItems.sku',
-	'placedOrderItems.skuId',
-	'placedOrderItems.subscription',
-	'placedOrderItems.unitOfMeasureKey',
-	'placedOrderItems.virtualItemURLs',
-	'placedOrderShippingAddressId',
-	'printedNote',
-	'shippingOption',
-	'steps',
-	'summary.currency',
-	'summary.itemsCount',
-	'summary.itemsQuantity',
-	'summary.shippingDiscountPercentages',
-	'summary.shippingDiscountValue',
-	'summary.shippingDiscountValueFormatted',
-	'summary.shippingValue',
-	'summary.shippingValueFormatted',
-	'summary.shippingValueWithTaxAmount',
-	'summary.shippingValueWithTaxAmountFormatted',
-	'summary.subtotal',
-	'summary.subtotalDiscountPercentages',
-	'summary.subtotalDiscountValue',
-	'summary.subtotalDiscountValueFormatted',
-	'summary.subtotalFormatted',
-	'summary.taxValue',
-	'summary.taxValueFormatted',
-	'summary.total',
-	'summary.totalDiscountPercentages',
-	'summary.totalDiscountValue',
-	'summary.totalDiscountValueFormatted',
-].join(',');
 
 export type ProjectOrder = {
 	createDate?: string;
@@ -234,18 +182,33 @@ function hasProduct(order: PlacedOrder, productId: number): boolean {
 export function useProjectOrders(project?: OrderProject, productId?: number) {
 	const accountId = Liferay.CommerceContext.account?.accountId;
 
-	const {data, error, isLoading} = usePlacedOrders(
-		toProjectOrdersProps(accountId)
+	const projectQuery = projectPlacedOrdersQuery(
+		project?.externalReferenceCode
 	);
+
+	const projectScoped = projectQuery.key !== null;
+
+	const accountPlacedOrders = usePlacedOrders({
+		...toProjectOrdersProps(accountId),
+		shouldFetch: Boolean(accountId) && !projectScoped,
+	});
+
+	const projectPlacedOrders = useDataQuery(projectQuery);
+
+	const {data, error, isLoading} = projectScoped
+		? projectPlacedOrders
+		: accountPlacedOrders;
 
 	const placedOrders = useMemo(
 		() =>
 			(data?.items ?? []).filter(
 				(order) =>
-					(!project || isProjectOrder(order, project)) &&
+					(projectScoped ||
+						!project ||
+						isProjectOrder(order, project)) &&
 					(productId === undefined || hasProduct(order, productId))
 			),
-		[data, productId, project]
+		[data, productId, project, projectScoped]
 	);
 
 	const orders = useMemo<ProjectOrder[]>(
