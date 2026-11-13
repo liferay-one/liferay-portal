@@ -198,7 +198,7 @@
 		},
 		"Provisioning Worker": {
 			"group": "staff",
-			"purpose": "Support and provisioning staff. It views every account and its keys, generates, renews, activates, and deactivates keys, changes account custom fields and account notes in the Control Panel, invites, changes, and removes the members of every account and project, and reads users and ticket attachments. It cannot generate a new virtual cluster key."
+			"purpose": "Support and provisioning staff. It views every account and its keys, generates, renews, activates, and deactivates keys, including virtual cluster keys, changes account custom fields and account notes in the Control Panel, invites, changes, and removes the members of every account and project, and reads users and ticket attachments. It cannot generate an enterprise or OEM key."
 		},
 		"SSA": {
 			"group": "unused",

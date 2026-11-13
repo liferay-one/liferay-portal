@@ -29,16 +29,27 @@ function isInFreeKeyRenewalWindow(expirationDate?: string): boolean {
 	return renewalStart <= new Date();
 }
 
+export type RenewableKeyOptions = {
+	canRenewVirtualCluster?: boolean;
+	restrictedKeyTypes?: string[];
+	unassigned?: boolean;
+};
+
 export function isRenewableKey(
 	activationKey: ProjectActivationKey,
-	canRenewVirtualCluster = false,
-	unassigned = false
+	{
+		canRenewVirtualCluster = false,
+		restrictedKeyTypes = [],
+		unassigned = false,
+	}: RenewableKeyOptions = {}
 ): boolean {
 	const free = activationKey.type === FREE_KEY_TYPE;
 
 	if (
 		(unassigned && (!free || activationKey.projectExternalReferenceCode)) ||
-		(free && !isInFreeKeyRenewalWindow(activationKey.expirationDateValue))
+		(free &&
+			!isInFreeKeyRenewalWindow(activationKey.expirationDateValue)) ||
+		restrictedKeyTypes.includes(activationKey.type)
 	) {
 		return false;
 	}
