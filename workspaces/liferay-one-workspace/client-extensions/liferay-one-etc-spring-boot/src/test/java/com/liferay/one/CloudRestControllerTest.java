@@ -215,7 +215,8 @@ public class CloudRestControllerTest {
 		);
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createProductEntitlement(
@@ -249,7 +250,8 @@ public class CloudRestControllerTest {
 		);
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createProductEntitlement(
@@ -301,7 +303,7 @@ public class CloudRestControllerTest {
 		Mockito.verify(
 			_entitlementService, Mockito.never()
 		).getActiveEntitlements(
-			Mockito.anyLong()
+			Mockito.anyString()
 		);
 	}
 
@@ -338,7 +340,8 @@ public class CloudRestControllerTest {
 		);
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createProductEntitlement(
@@ -369,7 +372,8 @@ public class CloudRestControllerTest {
 		throws Exception {
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1))
@@ -386,7 +390,8 @@ public class CloudRestControllerTest {
 		throws Exception {
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
@@ -401,11 +406,47 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
-	public void testGetManifestJSONObjectNamesProductByEnvironmentType()
+	public void testGetManifestJSONObjectIgnoresOtherProjectEntitlements()
 		throws Exception {
 
 		Mockito.when(
 			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
+				_createEntitlement(
+					EntitlementConstants.NAME_PRODUCTION_PODS, 9))
+		);
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
+				_createEntitlement(
+					EntitlementConstants.NAME_PRODUCTION_PODS, 3))
+		);
+
+		JSONObject jsonObject = _getManifestJSONObject(
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION));
+
+		Assertions.assertEquals(3, jsonObject.getInt("maxClusterNodes"));
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).getActiveEntitlements(
+			Mockito.anyLong()
+		);
+	}
+
+	@Test
+	public void testGetManifestJSONObjectNamesProductByEnvironmentType()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1))
@@ -433,7 +474,8 @@ public class CloudRestControllerTest {
 		_mockCloudEnabledProduct();
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
@@ -483,7 +525,8 @@ public class CloudRestControllerTest {
 		throws Exception {
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createEntitlement(
@@ -504,7 +547,8 @@ public class CloudRestControllerTest {
 		throws Exception {
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1))
@@ -523,7 +567,8 @@ public class CloudRestControllerTest {
 		throws Exception {
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
@@ -540,11 +585,64 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
+	public void testGetManifestJSONObjectUsesLatestCloudNativeEntitlement()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(
+				_createCloudNativeEntitlement(
+					"2027-01-01T00:00:00Z",
+					EntitlementConstants.TERMINATION_STATUS_TERMINATED),
+				_createCloudNativeEntitlement(
+					"2030-01-01T00:00:00Z",
+					EntitlementConstants.TERMINATION_STATUS_ACTIVE),
+				_createCloudNativeEntitlement(
+					"2028-01-01T00:00:00Z",
+					EntitlementConstants.TERMINATION_STATUS_TERMINATED))
+		);
+
+		JSONObject jsonObject = _getManifestJSONObject(
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION));
+
+		Assertions.assertEquals(
+			EntitlementConstants.TERMINATION_STATUS_ACTIVE,
+			jsonObject.getString("dxpTerminationStatus"));
+	}
+
+	@Test
+	public void testGetManifestJSONObjectUsesUnendingCloudNativeEntitlement()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(
+				_createCloudNativeEntitlement(
+					"2030-01-01T00:00:00Z",
+					EntitlementConstants.TERMINATION_STATUS_TERMINATED),
+				_createCloudNativeEntitlement(
+					null, EntitlementConstants.TERMINATION_STATUS_ACTIVE))
+		);
+
+		JSONObject jsonObject = _getManifestJSONObject(
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION));
+
+		Assertions.assertEquals(
+			EntitlementConstants.TERMINATION_STATUS_ACTIVE,
+			jsonObject.getString("dxpTerminationStatus"));
+	}
+
+	@Test
 	public void testGetManifestJSONObjectWithoutCloudNativeEntitlement()
 		throws Exception {
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			Collections.emptyList()
 		);
@@ -553,6 +651,47 @@ public class CloudRestControllerTest {
 			CloudNativeEntitlementException.class,
 			() -> _getManifestJSONObject(
 				_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION)));
+	}
+
+	@Test
+	public void testGetManifestJSONObjectWithoutProject() throws Exception {
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+		).thenReturn(
+			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1))
+		);
+
+		Assertions.assertThrows(
+			CloudNativeEntitlementException.class,
+			() -> _getManifestJSONObject(
+				new Environment(
+					new JSONObject(
+					).put(
+						"externalReferenceCode",
+						_ENVIRONMENT_EXTERNAL_REFERENCE_CODE
+					).put(
+						"id", _ENVIRONMENT_ID
+					).put(
+						"offering", EnvironmentConstants.OFFERING_CLOUD_NATIVE
+					).put(
+						"r_accountEntryToEnvironment_accountEntryId",
+						_ACCOUNT_ID
+					).put(
+						"type", EnvironmentConstants.TYPE_PRODUCTION
+					))));
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).getActiveEntitlements(
+			Mockito.anyLong()
+		);
+
+		Mockito.verify(
+			_entitlementService, Mockito.never()
+		).getActiveEntitlements(
+			Mockito.anyString()
+		);
 	}
 
 	@Test
@@ -1473,7 +1612,8 @@ public class CloudRestControllerTest {
 		);
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
@@ -1552,7 +1692,8 @@ public class CloudRestControllerTest {
 		);
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
@@ -1597,7 +1738,8 @@ public class CloudRestControllerTest {
 		);
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
@@ -1839,7 +1981,8 @@ public class CloudRestControllerTest {
 		_mockVirtualEntryDownload();
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			Collections.emptyList()
 		);
@@ -2158,6 +2301,29 @@ public class CloudRestControllerTest {
 		return product;
 	}
 
+	private Entitlement _createCloudNativeEntitlement(
+		String endDate, String terminationStatus) {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"id", 1L
+		).put(
+			"name", EntitlementConstants.NAME_CLOUD_NATIVE
+		).put(
+			"quantity", 1
+		).put(
+			"startDate", "2020-01-01T00:00:00Z"
+		).put(
+			"terminationStatus", terminationStatus
+		);
+
+		if (endDate != null) {
+			jsonObject.put("endDate", endDate);
+		}
+
+		return new Entitlement(jsonObject);
+	}
+
 	private Environment _createCloudNativeEnvironment(
 		String activationStatus, String externalReferenceCode, String type) {
 
@@ -2412,7 +2578,8 @@ public class CloudRestControllerTest {
 		);
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
 				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1))
@@ -2477,7 +2644,8 @@ public class CloudRestControllerTest {
 		);
 
 		Mockito.when(
-			_entitlementService.getActiveEntitlements(_ACCOUNT_ID)
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(_createProductEntitlement(_SKU_EXTERNAL_REFERENCE_CODE))
 		);
