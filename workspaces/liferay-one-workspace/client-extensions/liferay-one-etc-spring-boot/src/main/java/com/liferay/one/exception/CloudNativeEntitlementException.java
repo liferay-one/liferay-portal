@@ -10,18 +10,20 @@ package com.liferay.one.exception;
  */
 public class CloudNativeEntitlementException extends Exception {
 
-	public CloudNativeEntitlementException(long accountEntryId) {
+	public CloudNativeEntitlementException(
+		String environmentExternalReferenceCode) {
+
 		super(
-			"Account " + accountEntryId +
+			"Environment " + environmentExternalReferenceCode +
 				" does not have an active Cloud Native entitlement");
 
-		_accountEntryId = accountEntryId;
+		_environmentExternalReferenceCode = environmentExternalReferenceCode;
 	}
 
-	public long getAccountEntryId() {
-		return _accountEntryId;
+	public String getEnvironmentExternalReferenceCode() {
+		return _environmentExternalReferenceCode;
 	}
 
-	private final long _accountEntryId;
+	private final String _environmentExternalReferenceCode;
 
 }
