@@ -777,14 +777,14 @@ public class CloudRestController extends OneBaseRestController {
 			_environmentQuotaService.getEnvironmentQuota(
 				projectExternalReferenceCode, type);
 
+		if (!environmentQuota.isAvailable()) {
+			throw new EnvironmentTypeEntitlementException(
+				projectExternalReferenceCode, type);
+		}
+
 		Environment environment = environmentQuota.fetchPendingEnvironment();
 
 		if (environment == null) {
-			if (!environmentQuota.isAvailable()) {
-				throw new EnvironmentTypeEntitlementException(
-					projectExternalReferenceCode, type);
-			}
-
 			environment = _environmentService.fetchOrAddCloudNativeEnvironment(
 				project.getAccountId(),
 				_getContractExternalReferenceCode(

@@ -40,6 +40,14 @@ public class EntitlementConstants {
 
 	public static final String NAME_CLOUD_NATIVE = "cloud-native";
 
+	public static final String NAME_CLOUD_NATIVE_NONPRODUCTION =
+		"cloud-native-non-production";
+
+	public static final String NAME_CLOUD_NATIVE_PRODUCTION =
+		"cloud-native-production";
+
+	public static final String NAME_CLOUD_NATIVE_UAT = "cloud-native-uat";
+
 	public static final String NAME_CONNECTORS = "connectors";
 
 	public static final String NAME_DATABASE = "database";
@@ -89,9 +97,6 @@ public class EntitlementConstants {
 
 	public static final String NAME_MALU = "malu";
 
-	public static final String NAME_NONPRODUCTION_ENVIRONMENTS =
-		"non-production-environments";
-
 	public static final String NAME_PARTNER = "partner";
 
 	public static final String NAME_PLATINUM_SUPPORT = "platinum-support";
@@ -101,9 +106,6 @@ public class EntitlementConstants {
 
 	public static final String NAME_PREMIUM_SUBSCRIPTION =
 		"premium-subscription";
-
-	public static final String NAME_PRODUCTION_ENVIRONMENTS =
-		"production-environments";
 
 	public static final String NAME_PRODUCTION_PODS = "production-pods";
 
@@ -125,8 +127,6 @@ public class EntitlementConstants {
 		"strategic-24-7-support";
 
 	public static final String NAME_TRAFFIC_NETWORKING = "traffic-networking";
-
-	public static final String NAME_UAT_ENVIRONMENTS = "uat-environments";
 
 	public static final String NAME_VCPU = "vcpu";
 

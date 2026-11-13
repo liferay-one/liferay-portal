@@ -35,9 +35,12 @@ public class EnvironmentQuotaService {
 			String projectExternalReferenceCode, String type)
 		throws Exception {
 
-		return _getEnvironmentQuota(
+		List<Entitlement> entitlements =
 			_entitlementService.getActiveEntitlements(
-				projectExternalReferenceCode),
+				projectExternalReferenceCode);
+
+		return _getEnvironmentQuota(
+			_hasCloudNativeEntitlement(entitlements), entitlements,
 			_environmentService.getCloudNativeEnvironments(
 				projectExternalReferenceCode),
 			type);
@@ -65,8 +68,8 @@ public class EnvironmentQuotaService {
 	}
 
 	private EnvironmentQuota _getEnvironmentQuota(
-		List<Entitlement> entitlements, List<Environment> environments,
-		String type) {
+		boolean cloudNative, List<Entitlement> entitlements,
+		List<Environment> environments, String type) {
 
 		String name = _entitlementNamesByEnvironmentType.get(type);
 
@@ -75,7 +78,7 @@ public class EnvironmentQuotaService {
 		boolean unlimited = false;
 
 		for (Entitlement entitlement : entitlements) {
-			if (!Objects.equals(name, entitlement.getName())) {
+			if (!cloudNative || !Objects.equals(name, entitlement.getName())) {
 				continue;
 			}
 
@@ -136,25 +139,41 @@ public class EnvironmentQuotaService {
 
 		List<EnvironmentQuota> environmentQuotas = new ArrayList<>();
 
+		boolean cloudNative = _hasCloudNativeEntitlement(entitlements);
+
 		for (String type : EnvironmentConstants.types) {
 			environmentQuotas.add(
-				_getEnvironmentQuota(entitlements, environments, type));
+				_getEnvironmentQuota(
+					cloudNative, entitlements, environments, type));
 		}
 
 		return environmentQuotas;
+	}
+
+	private boolean _hasCloudNativeEntitlement(List<Entitlement> entitlements) {
+		for (Entitlement entitlement : entitlements) {
+			if (Objects.equals(
+					EntitlementConstants.NAME_CLOUD_NATIVE,
+					entitlement.getName())) {
+
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private static final Map<String, String>
 		_entitlementNamesByEnvironmentType = Collections.unmodifiableMap(
 			LinkedHashMapBuilder.put(
 				EnvironmentConstants.TYPE_NONPRODUCTION,
-				EntitlementConstants.NAME_NONPRODUCTION_ENVIRONMENTS
+				EntitlementConstants.NAME_CLOUD_NATIVE_NONPRODUCTION
 			).put(
 				EnvironmentConstants.TYPE_PRODUCTION,
-				EntitlementConstants.NAME_PRODUCTION_ENVIRONMENTS
+				EntitlementConstants.NAME_CLOUD_NATIVE_PRODUCTION
 			).put(
 				EnvironmentConstants.TYPE_UAT,
-				EntitlementConstants.NAME_UAT_ENVIRONMENTS
+				EntitlementConstants.NAME_CLOUD_NATIVE_UAT
 			).build());
 
 	@Autowired
