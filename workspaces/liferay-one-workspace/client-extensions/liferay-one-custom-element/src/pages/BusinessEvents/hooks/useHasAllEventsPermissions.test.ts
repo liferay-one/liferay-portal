@@ -60,26 +60,24 @@ describe('[HOOK-BUSINESSEVENTS-USEHASALLEVENTSPERMISSIONS] useHasAllEventsPermis
 		});
 	});
 
-	it.each([['isAdmin'], ['isAccountAdministrator']])(
-		'grants access to %s without a membership request',
-		(property) => {
-			setContext({[property]: true});
-			setMembership();
+	it.each([
+		['isAccountAdministrator'],
+		['isAdmin'],
+		['isLiferayStaff'],
+		['isProvisioningAdministrator'],
+		['isProvisioningWorker'],
+	])('grants access to %s without a membership request', (property) => {
+		setContext({[property]: true});
+		setMembership();
 
-			const {result} = renderHook(() =>
-				useHasAllEventsPermissions('PRJ')
-			);
+		const {result} = renderHook(() => useHasAllEventsPermissions('PRJ'));
 
-			expect(result.current).toEqual({
-				hasAllEventsPermissions: true,
-				loading: false,
-			});
-			expect(mocks.useFetch).toHaveBeenCalledWith(
-				null,
-				expect.anything()
-			);
-		}
-	);
+		expect(result.current).toEqual({
+			hasAllEventsPermissions: true,
+			loading: false,
+		});
+		expect(mocks.useFetch).toHaveBeenCalledWith(null, expect.anything());
+	});
 
 	it.each([['C_PROJECT_ADMIN'], ['C_PROJECT_REQUESTER']])(
 		'grants access for the %s membership role',
@@ -104,15 +102,6 @@ describe('[HOOK-BUSINESSEVENTS-USEHASALLEVENTSPERMISSIONS] useHasAllEventsPermis
 			);
 		}
 	);
-
-	it('denies Liferay Staff without a project membership', () => {
-		setContext({isLiferayStaff: true});
-		setMembership();
-
-		const {result} = renderHook(() => useHasAllEventsPermissions('PRJ'));
-
-		expect(result.current.hasAllEventsPermissions).toBe(false);
-	});
 
 	it('denies access for another membership role', () => {
 		setContext({});
