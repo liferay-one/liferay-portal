@@ -45,9 +45,11 @@ import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
 import com.liferay.one.service.ProductVersionService;
+import com.liferay.one.util.ActivationCodeUtil;
 import com.liferay.one.util.CloudNativeSignatureValidator;
 import com.liferay.one.util.ClusterNodesUtil;
 import com.liferay.one.util.CommerceProductUtil;
+import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
@@ -774,31 +776,34 @@ public class CloudRestController extends OneBaseRestController {
 				"The environment type is not recognized");
 		}
 
-		EnvironmentQuota environmentQuota =
-			_environmentQuotaService.getEnvironmentQuota(
-				projectExternalReferenceCode, type);
+		Environment environment = _keyedLock.withLock(
+			StringBundler.concat(
+				projectExternalReferenceCode, StringPool.POUND,
+				EnvironmentConstants.OFFERING_CLOUD_NATIVE, StringPool.POUND,
+				type),
+			() -> {
+				EnvironmentQuota environmentQuota =
+					_environmentQuotaService.getEnvironmentQuota(
+						projectExternalReferenceCode, type);
 
-		if (!environmentQuota.isAvailable()) {
-			throw new EnvironmentTypeEntitlementException(
-				projectExternalReferenceCode, type);
-		}
+				if (!environmentQuota.isAvailable()) {
+					throw new EnvironmentTypeEntitlementException(
+						projectExternalReferenceCode, type);
+				}
 
-		Environment environment = environmentQuota.fetchPendingEnvironment();
+				return _environmentService.addCloudNativeEnvironment(
+					project.getAccountId(), ActivationCodeUtil.generate(),
+					_getContractExternalReferenceCode(
+						environmentQuota.getContractId()),
+					projectExternalReferenceCode, type);
+			});
 
-		if (environment == null) {
-			environment = _environmentService.fetchOrAddCloudNativeEnvironment(
-				project.getAccountId(),
-				_getContractExternalReferenceCode(
-					environmentQuota.getContractId()),
-				projectExternalReferenceCode, type);
-
-			if (_log.isInfoEnabled()) {
-				_log.info(
-					StringBundler.concat(
-						"Generated a ", type,
-						" cloud native activation code for project ",
-						projectExternalReferenceCode));
-			}
+		if (_log.isInfoEnabled()) {
+			_log.info(
+				StringBundler.concat(
+					"Generated a ", type,
+					" cloud native activation code for project ",
+					projectExternalReferenceCode));
 		}
 
 		JSONObject activationCodeJSONObject = _toActivationCodeJSONObject(
@@ -1710,6 +1715,9 @@ public class CloudRestController extends OneBaseRestController {
 
 	@Autowired
 	private EnvironmentService _environmentService;
+
+	@Autowired
+	private KeyedLock _keyedLock;
 
 	@Autowired
 	private LicenseKeyExporter _licenseKeyExporter;

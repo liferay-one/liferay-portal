@@ -115,17 +115,11 @@ public class EnvironmentQuotaService {
 
 			typeEnvironments.add(environment);
 
-			// Generating an activation code does not spend the entitlement.
-			// Only an environment that registered against the code does.
-
-			if (!Objects.equals(
-					EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
+			if (_usedActivationStatuses.contains(
 					environment.getActivationStatus())) {
 
-				continue;
+				usedCount++;
 			}
-
-			usedCount++;
 		}
 
 		return new EnvironmentQuota(
@@ -175,6 +169,9 @@ public class EnvironmentQuotaService {
 				EnvironmentConstants.TYPE_UAT,
 				EntitlementConstants.NAME_CLOUD_NATIVE_UAT
 			).build());
+	private static final Set<String> _usedActivationStatuses = Set.of(
+		EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
+		EnvironmentConstants.ACTIVATION_STATUS_PENDING);
 
 	@Autowired
 	private EntitlementService _entitlementService;

@@ -5,10 +5,7 @@
 
 package com.liferay.one.model;
 
-import com.liferay.one.constants.EnvironmentConstants;
-
 import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Ryan Schuhler
@@ -26,19 +23,6 @@ public class EnvironmentQuota {
 		_type = type;
 		_unlimited = unlimited;
 		_usedCount = usedCount;
-	}
-
-	public Environment fetchPendingEnvironment() {
-		for (Environment environment : _environments) {
-			if (Objects.equals(
-					EnvironmentConstants.ACTIVATION_STATUS_PENDING,
-					environment.getActivationStatus())) {
-
-				return environment;
-			}
-		}
-
-		return null;
 	}
 
 	public int getAvailableCount() {
