@@ -1536,7 +1536,8 @@ public class CloudRestController extends OneBaseRestController {
 			Objects.equals(
 				environment.getActivationStatus(),
 				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE) &&
-			Objects.equals(environment.getPublicKey(), publicKey)) {
+			CloudNativeSignatureValidator.equalsPublicKey(
+				environment.getPublicKey(), publicKey)) {
 
 			return true;
 		}
