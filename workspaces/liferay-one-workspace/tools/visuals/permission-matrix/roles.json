@@ -129,8 +129,8 @@
 			"purpose": "A Liferay employee in the Employees organization, which the Okta group Employees fills. It views every account, its projects, and its keys, and changes nothing."
 		},
 		"Marketplace Account Administrator": {
-			"group": "unused",
-			"purpose": "No code or grant reads it."
+			"group": "marketplace",
+			"purpose": "Administers a business account that the marketplace migration created, and buys in the commerce store for it, without the project and support access of Account Administrator."
 		},
 		"Marketplace Publisher": {
 			"group": "staff",

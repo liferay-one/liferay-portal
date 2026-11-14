@@ -762,6 +762,7 @@
 		"actionIds": [
 			"VIEW"
 		],
+		"primKey": "0",
 		"resourceName": "com.liferay.commerce.model.CommerceOrderType",
 		"roleName": "User",
 		"scope": "1"
