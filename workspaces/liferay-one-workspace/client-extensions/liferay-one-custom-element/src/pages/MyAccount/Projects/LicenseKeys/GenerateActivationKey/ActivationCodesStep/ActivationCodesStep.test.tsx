@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {render, screen} from '@testing-library/react';
+import {fireEvent, render, screen} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useProject} from '~/context/ProjectContext';
 import Cloud from '~/services/spring-boot/Cloud';
@@ -14,7 +14,9 @@ import ActivationCodesStep from './ActivationCodesStep';
 vi.mock('~/context/ProjectContext', () => ({useProject: vi.fn()}));
 
 vi.mock('~/services/spring-boot/Cloud', () => ({
-	default: {postProjectsEnvironmentsActivationCodes: vi.fn()},
+	default: {
+		postProjectsEnvironmentsActivationCodes: vi.fn(() => Promise.resolve()),
+	},
 }));
 
 vi.mock('../hooks/useCloudNativeActivationCodes', () => ({
@@ -22,29 +24,29 @@ vi.mock('../hooks/useCloudNativeActivationCodes', () => ({
 }));
 
 function mockActivationCodes({
-	activationStatus,
+	activationStatuses,
 	availableCount,
 }: {
-	activationStatus: string;
+	activationStatuses: string[];
 	availableCount: number;
 }) {
 	vi.mocked(useCloudNativeActivationCodes).mockReturnValue({
 		environmentTypes: [
 			{
-				activationCodes: [
-					{
-						activationCode: '1a3c5e7b9d0f42648a2c4e6b8d0f1357',
+				activationCodes: activationStatuses.map(
+					(activationStatus, index) => ({
+						activationCode: `1a3c5e7b9d0f42648a2c4e6b8d0f135${index}`,
 						activationStatus,
-						environmentId: 'ENV-1',
+						environmentId: `ENV-${index}`,
 						environmentName: 'Production',
-					},
-				],
+					})
+				),
 				availableCount,
 				maxClusterNodes: 5,
-				totalCount: 1,
+				totalCount: activationStatuses.length + availableCount,
 				type: 'production',
 				unlimited: false,
-				usedCount: 1 - availableCount,
+				usedCount: activationStatuses.length,
 			},
 		],
 		error: undefined,
@@ -73,7 +75,10 @@ describe('ActivationCodesStep', () => {
 	});
 
 	it('marks the activation code as in use when every code of the type is active', () => {
-		mockActivationCodes({activationStatus: 'active', availableCount: 0});
+		mockActivationCodes({
+			activationStatuses: ['active'],
+			availableCount: 0,
+		});
 
 		renderActivationCodesStep();
 
@@ -98,7 +103,10 @@ describe('ActivationCodesStep', () => {
 	});
 
 	it('offers a pending activation code for copy and offline activation', () => {
-		mockActivationCodes({activationStatus: 'pending', availableCount: 0});
+		mockActivationCodes({
+			activationStatuses: ['pending'],
+			availableCount: 0,
+		});
 
 		renderActivationCodesStep();
 
@@ -110,5 +118,56 @@ describe('ActivationCodesStep', () => {
 		expect(
 			screen.getByRole('button', {name: 'click here'})
 		).toBeInTheDocument();
+		expect(
+			screen.queryByRole('button', {
+				name: 'Generate Another Activation Code',
+			})
+		).not.toBeInTheDocument();
+	});
+
+	it('generates another activation code while the quota has room', () => {
+		mockActivationCodes({
+			activationStatuses: ['pending'],
+			availableCount: 1,
+		});
+
+		renderActivationCodesStep();
+
+		expect(
+			Cloud.postProjectsEnvironmentsActivationCodes
+		).not.toHaveBeenCalled();
+
+		fireEvent.click(
+			screen.getByRole('button', {
+				name: 'Generate Another Activation Code',
+			})
+		);
+
+		expect(
+			Cloud.postProjectsEnvironmentsActivationCodes
+		).toHaveBeenCalledWith('PRJCT-1', 'production');
+	});
+
+	it('lists every activation code of the type', () => {
+		mockActivationCodes({
+			activationStatuses: ['active', 'pending'],
+			availableCount: 0,
+		});
+
+		renderActivationCodesStep();
+
+		expect(
+			screen.getByText('1a3c5e7b9d0f42648a2c4e6b8d0f1350')
+		).toBeInTheDocument();
+		expect(
+			screen.getByText('1a3c5e7b9d0f42648a2c4e6b8d0f1351')
+		).toBeInTheDocument();
+		expect(screen.getByText('In Use')).toBeInTheDocument();
+		expect(screen.getByRole('button', {name: 'Copy'})).toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				'Every Production activation code is in use. Each activation code activates one environment.'
+			)
+		).not.toBeInTheDocument();
 	});
 });

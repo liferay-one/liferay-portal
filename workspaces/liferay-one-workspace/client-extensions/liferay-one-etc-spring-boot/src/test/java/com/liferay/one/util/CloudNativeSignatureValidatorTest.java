@@ -51,6 +51,48 @@ public class CloudNativeSignatureValidatorTest {
 	}
 
 	@Test
+	public void testEqualsPublicKey() throws Exception {
+		Base64.Encoder encoder = Base64.getEncoder();
+
+		String base64 = encoder.encodeToString(
+			_keyPair.getPublic(
+			).getEncoded());
+
+		Assertions.assertTrue(
+			CloudNativeSignatureValidator.equalsPublicKey(
+				base64, base64 + "\n"));
+		Assertions.assertTrue(
+			CloudNativeSignatureValidator.equalsPublicKey(
+				_toPEM(_keyPair.getPublic()), base64));
+		Assertions.assertFalse(
+			CloudNativeSignatureValidator.equalsPublicKey(
+				base64, _toPEM(_otherKeyPair.getPublic())));
+		Assertions.assertFalse(
+			CloudNativeSignatureValidator.equalsPublicKey(base64, null));
+	}
+
+	@Test
+	public void testToBase64PublicKey() throws Exception {
+		Base64.Encoder encoder = Base64.getEncoder();
+
+		String base64 = encoder.encodeToString(
+			_keyPair.getPublic(
+			).getEncoded());
+
+		Assertions.assertEquals(
+			base64,
+			CloudNativeSignatureValidator.toBase64PublicKey(base64 + "\n"));
+
+		Assertions.assertEquals(
+			base64,
+			CloudNativeSignatureValidator.toBase64PublicKey(
+				_toPEM(_keyPair.getPublic())));
+
+		Assertions.assertNull(
+			CloudNativeSignatureValidator.toBase64PublicKey(null));
+	}
+
+	@Test
 	public void testValidateSignatureAcceptsPEMPublicKey() throws Exception {
 		_cloudNativeSignatureValidator.validateSignature(
 			_toPEM(_keyPair.getPublic()), _createSignedJWT(_getFutureDate()));

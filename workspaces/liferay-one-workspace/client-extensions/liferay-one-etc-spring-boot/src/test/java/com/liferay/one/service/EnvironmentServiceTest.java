@@ -120,9 +120,33 @@ public class EnvironmentServiceTest {
 			testEnvironmentService._uri.getPath());
 	}
 
+	@Test
+	public void testUpdateEnvironmentActivationStoresBase64PublicKey()
+		throws Exception {
+
+		TestEnvironmentService testEnvironmentService =
+			new TestEnvironmentService();
+
+		testEnvironmentService.updateEnvironmentActivation(
+			EnvironmentConstants.ACTIVATION_MODE_ONLINE, "ENV-1", 7, "UAT",
+			_PEM_PUBLIC_KEY);
+
+		JSONObject bodyJSONObject = new JSONObject(
+			testEnvironmentService._body);
+
+		Assertions.assertEquals(
+			"publickey", bodyJSONObject.getString("publicKey"));
+
+		Assertions.assertEquals(
+			"/o/c/environments/7", testEnvironmentService._uri.getPath());
+	}
+
 	private static final long _ACCOUNT_ENTRY_ID = 40001;
 
 	private static final long _CONTRACT_ID = 50001;
+
+	private static final String _PEM_PUBLIC_KEY =
+		"-----BEGIN PUBLIC KEY-----\npublic\nkey\n-----END PUBLIC KEY-----\n";
 
 	private static final String _PROJECT_ERC = "PRJCT-001";
 
@@ -133,6 +157,14 @@ public class EnvironmentServiceTest {
 		@Override
 		protected String getAuthorization() {
 			return "Bearer token";
+		}
+
+		@Override
+		protected String patch(String authorization, String body, URI uri) {
+			_body = body;
+			_uri = uri;
+
+			return "{}";
 		}
 
 		@Override

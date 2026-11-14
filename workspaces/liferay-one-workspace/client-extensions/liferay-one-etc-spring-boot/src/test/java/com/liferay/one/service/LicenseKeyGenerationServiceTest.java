@@ -2967,6 +2967,42 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateDeveloperLicenseXMLLicensesCloudNativeAsDXP()
+		throws Exception {
+
+		_stubEntitlements(_toDeveloperEntitlement(1L, "PRDCT-CLOUD-NATIVE"));
+
+		_stubLicensedProducts();
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchLicenseEntry(
+				Mockito.any(), Mockito.any(), Mockito.any(),
+				Mockito.anyBoolean())
+		).thenAnswer(
+			invocation -> {
+				if (!Objects.equals(invocation.getArgument(1), "DXP")) {
+					return null;
+				}
+
+				return new LicenseEntry(
+					"portal", "DXP Development", "developer", "2026.Q3",
+					"2026.Q3");
+			}
+		);
+
+		_licenseKeyGenerationService.generateDeveloperLicenseXML(
+			Collections.emptyList(), "developer", "Cloud Native", _toProject(),
+			"2026.Q3");
+
+		Assertions.assertEquals(
+			Collections.singletonList("DXP Development"),
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 2));
+		Assertions.assertEquals(
+			Collections.singletonList("DXP Development"),
+			_getInvocationArguments(_licenseKeyExporter, "toXML", 5));
+	}
+
+	@Test
 	public void testGenerateDeveloperLicenseXMLRejectsADXPKeyWithoutAVersion()
 		throws Exception {
 
@@ -4121,6 +4157,8 @@ public class LicenseKeyGenerationServiceTest {
 
 	private static final Map<String, String> _licenseKeyFamilies =
 		HashMapBuilder.put(
+			"PRDCT-CLOUD-NATIVE", "Cloud Native"
+		).put(
 			"PRDCT-DSR", "DSR"
 		).put(
 			"PRDCT-DXP", "DXP"
