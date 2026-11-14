@@ -10,8 +10,6 @@ import com.liferay.one.constants.EnvironmentConstants;
 import java.util.Collections;
 import java.util.List;
 
-import org.json.JSONObject;
-
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,34 +19,6 @@ import org.junit.jupiter.api.Test;
  */
 @DisplayName("[CLS-ENVIRONMENTQUOTA] EnvironmentQuota")
 public class EnvironmentQuotaTest {
-
-	@Test
-	public void testFetchPendingEnvironmentReturnsFirstPendingEnvironment() {
-		EnvironmentQuota environmentQuota = _createEnvironmentQuota(
-			List.of(
-				_createEnvironment(
-					1, EnvironmentConstants.ACTIVATION_STATUS_ACTIVE),
-				_createEnvironment(
-					2, EnvironmentConstants.ACTIVATION_STATUS_PENDING),
-				_createEnvironment(
-					3, EnvironmentConstants.ACTIVATION_STATUS_PENDING)),
-			3, false, 3);
-
-		Environment environment = environmentQuota.fetchPendingEnvironment();
-
-		Assertions.assertEquals(2, environment.getId());
-	}
-
-	@Test
-	public void testFetchPendingEnvironmentReturnsNullWithoutPendingEnvironment() {
-		EnvironmentQuota environmentQuota = _createEnvironmentQuota(
-			List.of(
-				_createEnvironment(
-					1, EnvironmentConstants.ACTIVATION_STATUS_ACTIVE)),
-			3, false, 1);
-
-		Assertions.assertNull(environmentQuota.fetchPendingEnvironment());
-	}
 
 	@Test
 	public void testGetAvailableCountNeverDropsBelowZero() {
@@ -75,16 +45,6 @@ public class EnvironmentQuotaTest {
 
 		Assertions.assertEquals(0, environmentQuota.getAvailableCount());
 		Assertions.assertTrue(environmentQuota.isAvailable());
-	}
-
-	private Environment _createEnvironment(long id, String activationStatus) {
-		return new Environment(
-			new JSONObject(
-			).put(
-				"activationStatus", activationStatus
-			).put(
-				"id", id
-			));
 	}
 
 	private EnvironmentQuota _createEnvironmentQuota(

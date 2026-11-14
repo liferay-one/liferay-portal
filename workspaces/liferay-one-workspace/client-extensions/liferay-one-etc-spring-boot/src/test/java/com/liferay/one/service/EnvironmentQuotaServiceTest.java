@@ -42,20 +42,22 @@ public class EnvironmentQuotaServiceTest {
 	}
 
 	@Test
-	public void testGetEnvironmentQuotaCountsOnlyActiveEnvironmentsOfTheType()
+	public void testGetEnvironmentQuotaCountsActivationCodesOfTheType()
 		throws Exception {
 
 		_whenProject(
 			Arrays.asList(
 				_createEntitlement(
+					0L, null, 1.0, EntitlementConstants.NAME_CLOUD_NATIVE),
+				_createEntitlement(
 					10L, null, 2.0,
-					EntitlementConstants.NAME_PRODUCTION_ENVIRONMENTS),
+					EntitlementConstants.NAME_CLOUD_NATIVE_PRODUCTION),
 				_createEntitlement(
 					10L, null, 1.0,
-					EntitlementConstants.NAME_PRODUCTION_ENVIRONMENTS),
+					EntitlementConstants.NAME_CLOUD_NATIVE_PRODUCTION),
 				_createEntitlement(
 					20L, null, 5.0,
-					EntitlementConstants.NAME_UAT_ENVIRONMENTS)),
+					EntitlementConstants.NAME_CLOUD_NATIVE_UAT)),
 			Arrays.asList(
 				_createEnvironment(
 					EnvironmentConstants.ACTIVATION_STATUS_ACTIVE, 1,
@@ -71,7 +73,7 @@ public class EnvironmentQuotaServiceTest {
 			_environmentQuotaService.getEnvironmentQuota(
 				"PRJCT-1", EnvironmentConstants.TYPE_PRODUCTION);
 
-		Assertions.assertEquals(2, environmentQuota.getAvailableCount());
+		Assertions.assertEquals(1, environmentQuota.getAvailableCount());
 		Assertions.assertEquals(10L, environmentQuota.getContractId());
 		Assertions.assertEquals(
 			2,
@@ -81,7 +83,7 @@ public class EnvironmentQuotaServiceTest {
 		Assertions.assertEquals(
 			EnvironmentConstants.TYPE_PRODUCTION, environmentQuota.getType());
 		Assertions.assertFalse(environmentQuota.isUnlimited());
-		Assertions.assertEquals(1, environmentQuota.getUsedCount());
+		Assertions.assertEquals(2, environmentQuota.getUsedCount());
 	}
 
 	@Test
@@ -91,11 +93,13 @@ public class EnvironmentQuotaServiceTest {
 		_whenProject(
 			Arrays.asList(
 				_createEntitlement(
-					10L, null, 1.0, EntitlementConstants.NAME_UAT_ENVIRONMENTS),
+					0L, null, 1.0, EntitlementConstants.NAME_CLOUD_NATIVE),
 				_createEntitlement(
-					11L, null, 1.0, EntitlementConstants.NAME_UAT_ENVIRONMENTS),
+					10L, null, 1.0, EntitlementConstants.NAME_CLOUD_NATIVE_UAT),
 				_createEntitlement(
-					0L, null, 1.0, EntitlementConstants.NAME_UAT_ENVIRONMENTS)),
+					11L, null, 1.0, EntitlementConstants.NAME_CLOUD_NATIVE_UAT),
+				_createEntitlement(
+					0L, null, 1.0, EntitlementConstants.NAME_CLOUD_NATIVE_UAT)),
 			List.of());
 
 		EnvironmentQuota environmentQuota =
@@ -122,14 +126,35 @@ public class EnvironmentQuotaServiceTest {
 	}
 
 	@Test
+	public void testGetEnvironmentQuotaWithoutCloudNativeEntitlementIsUnavailable()
+		throws Exception {
+
+		_whenProject(
+			Arrays.asList(
+				_createEntitlement(
+					10L, null, 1.0,
+					EntitlementConstants.NAME_CLOUD_NATIVE_PRODUCTION)),
+			List.of());
+
+		EnvironmentQuota environmentQuota =
+			_environmentQuotaService.getEnvironmentQuota(
+				"PRJCT-1", EnvironmentConstants.TYPE_PRODUCTION);
+
+		Assertions.assertEquals(0, environmentQuota.getTotalCount());
+		Assertions.assertFalse(environmentQuota.isAvailable());
+	}
+
+	@Test
 	public void testGetEnvironmentQuotaWithUnlimitedGrantIsAvailable()
 		throws Exception {
 
 		_whenProject(
 			Arrays.asList(
 				_createEntitlement(
+					0L, null, 1.0, EntitlementConstants.NAME_CLOUD_NATIVE),
+				_createEntitlement(
 					10L, EntitlementConstants.GRANT_TYPE_UNLIMITED, null,
-					EntitlementConstants.NAME_NONPRODUCTION_ENVIRONMENTS)),
+					EntitlementConstants.NAME_CLOUD_NATIVE_NONPRODUCTION)),
 			Arrays.asList(
 				_createEnvironment(
 					EnvironmentConstants.ACTIVATION_STATUS_ACTIVE, 1,
@@ -152,8 +177,10 @@ public class EnvironmentQuotaServiceTest {
 		_whenProject(
 			Arrays.asList(
 				_createEntitlement(
+					0L, null, 1.0, EntitlementConstants.NAME_CLOUD_NATIVE),
+				_createEntitlement(
 					10L, null, 4.0,
-					EntitlementConstants.NAME_UAT_ENVIRONMENTS)),
+					EntitlementConstants.NAME_CLOUD_NATIVE_UAT)),
 			List.of());
 
 		List<EnvironmentQuota> environmentQuotas =

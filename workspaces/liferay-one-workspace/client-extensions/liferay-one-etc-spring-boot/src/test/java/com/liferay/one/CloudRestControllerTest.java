@@ -38,6 +38,8 @@ import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
 import com.liferay.one.service.ProductVersionService;
 import com.liferay.one.util.CloudNativeSignatureValidator;
+import com.liferay.one.util.KeyedLock;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
@@ -192,6 +194,8 @@ public class CloudRestControllerTest {
 			_environmentQuotaService);
 		ReflectionTestUtils.setField(
 			_cloudRestController, "_environmentService", _environmentService);
+		ReflectionTestUtils.setField(
+			_cloudRestController, "_keyedLock", new KeyedLock());
 		ReflectionTestUtils.setField(
 			_cloudRestController, "_licenseKeyExporter", _licenseKeyExporter);
 		ReflectionTestUtils.setField(
@@ -456,7 +460,9 @@ public class CloudRestControllerTest {
 			_createEnvironment(EnvironmentConstants.TYPE_NONPRODUCTION));
 
 		_verifyDXPLicenseXML(
-			"DXP Non-Production (Virtual Cluster)", "DXP Non-Production");
+			"DXP Development", "DXP Development",
+			LicenseConstants.TYPE_DEVELOPER, 5, "DXP Development",
+			StringPool.BLANK);
 
 		Mockito.clearInvocations(_licenseKeyExporter);
 
@@ -464,7 +470,18 @@ public class CloudRestControllerTest {
 			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION));
 
 		_verifyDXPLicenseXML(
-			"DXP Production (Virtual Cluster)", "DXP Production");
+			"Cloud Native", "DXP Production (Virtual Cluster)",
+			LicenseConstants.TYPE_VIRTUAL_CLUSTER, 0, "DXP Production",
+			"Sizing 4");
+
+		Mockito.clearInvocations(_licenseKeyExporter);
+
+		_getManifestJSONObject(
+			_createEnvironment(EnvironmentConstants.TYPE_UAT));
+
+		_verifyDXPLicenseXML(
+			"Cloud Native", "DXP UAT (Virtual Cluster)",
+			LicenseConstants.TYPE_VIRTUAL_CLUSTER, 0, "DXP UAT", "Sizing 4");
 	}
 
 	@Test
@@ -582,6 +599,47 @@ public class CloudRestControllerTest {
 			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION));
 
 		Assertions.assertEquals(7, jsonObject.getInt("maxClusterNodes"));
+	}
+
+	@Test
+	public void testGetManifestJSONObjectTruncatesUndatedLicenseDates()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(
+				new Entitlement(
+					new JSONObject(
+					).put(
+						"id", 1L
+					).put(
+						"name", EntitlementConstants.NAME_CLOUD_NATIVE
+					).put(
+						"quantity", 1
+					)))
+		);
+
+		_getManifestJSONObject(
+			_createEnvironment(EnvironmentConstants.TYPE_PRODUCTION));
+
+		Mockito.verify(
+			_licenseKeyGenerator
+		).generateKey(
+			ArgumentMatchers.any(), ArgumentMatchers.any(),
+			ArgumentMatchers.any(), ArgumentMatchers.anyInt(),
+			ArgumentMatchers.any(), ArgumentMatchers.any(),
+			ArgumentMatchers.any(), ArgumentMatchers.any(),
+			ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt(),
+			ArgumentMatchers.anyInt(), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any(),
+			ArgumentMatchers.any(), ArgumentMatchers.any(),
+			ArgumentMatchers.any(), ArgumentMatchers.any(),
+			ArgumentMatchers.any(), ArgumentMatchers.any(),
+			ArgumentMatchers.argThat(date -> (date.getTime() % 1000) == 0),
+			ArgumentMatchers.argThat(date -> (date.getTime() % 1000) == 0)
+		);
 	}
 
 	@Test
@@ -782,7 +840,7 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
-	public void testGetProjectsEnvironmentsActivationCodesCountsOnlyActiveEnvironments()
+	public void testGetProjectsEnvironmentsActivationCodesCountsPendingActivationCodes()
 		throws Exception {
 
 		Mockito.when(
@@ -790,9 +848,10 @@ public class CloudRestControllerTest {
 				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
 				_createEnvironmentEntitlement(
 					null, 2.0,
-					EntitlementConstants.NAME_PRODUCTION_ENVIRONMENTS))
+					EntitlementConstants.NAME_CLOUD_NATIVE_PRODUCTION))
 		);
 
 		Mockito.when(
@@ -811,9 +870,9 @@ public class CloudRestControllerTest {
 		JSONObject jsonObject = _getEnvironmentTypeJSONObject(
 			EnvironmentConstants.TYPE_PRODUCTION);
 
-		Assertions.assertEquals(1, jsonObject.getInt("availableCount"));
+		Assertions.assertEquals(0, jsonObject.getInt("availableCount"));
 		Assertions.assertEquals(2, jsonObject.getInt("totalCount"));
-		Assertions.assertEquals(1, jsonObject.getInt("usedCount"));
+		Assertions.assertEquals(2, jsonObject.getInt("usedCount"));
 		Assertions.assertFalse(jsonObject.getBoolean("unlimited"));
 
 		JSONArray jsonArray = jsonObject.getJSONArray("activationCodes");
@@ -841,14 +900,15 @@ public class CloudRestControllerTest {
 				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
 				_createEntitlement(
 					EntitlementConstants.NAME_PRODUCTION_PODS, 3),
 				_createEnvironmentEntitlement(
 					null, 1.0,
-					EntitlementConstants.NAME_PRODUCTION_ENVIRONMENTS),
+					EntitlementConstants.NAME_CLOUD_NATIVE_PRODUCTION),
 				_createEnvironmentEntitlement(
 					null, 1.0,
-					EntitlementConstants.NAME_NONPRODUCTION_ENVIRONMENTS))
+					EntitlementConstants.NAME_CLOUD_NATIVE_NONPRODUCTION))
 		);
 
 		Mockito.when(
@@ -882,9 +942,10 @@ public class CloudRestControllerTest {
 				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
 				_createEnvironmentEntitlement(
 					EntitlementConstants.GRANT_TYPE_UNLIMITED, null,
-					EntitlementConstants.NAME_NONPRODUCTION_ENVIRONMENTS))
+					EntitlementConstants.NAME_CLOUD_NATIVE_NONPRODUCTION))
 		);
 
 		Mockito.when(
@@ -1064,6 +1125,28 @@ public class CloudRestControllerTest {
 		).fetchCloudNativeEnvironmentByActivationCode(
 			Mockito.anyString()
 		);
+
+		_assertEnvironmentNotActivated();
+	}
+
+	@Test
+	public void testPostEnvironmentsActivationAcceptsRepeatedActivationWithPEMPublicKey()
+		throws Exception {
+
+		Mockito.when(
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			_createActivatedEnvironment(
+				_ACTIVATION_CODE, EnvironmentConstants.ACTIVATION_MODE_ONLINE,
+				_PEM_PUBLIC_KEY)
+		);
+
+		ResponseEntity<Void> responseEntity =
+			_cloudRestController.postEnvironmentsActivation(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _createActivationToken());
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
 		_assertEnvironmentNotActivated();
 	}
@@ -1465,6 +1548,23 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
+	public void testPostEnvironmentsManifestRejectsProjectWithoutCloudNativeEntitlement() {
+		ResponseEntity<?> responseEntity = _cloudRestController.handleException(
+			new CloudNativeEntitlementException(
+				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE));
+
+		Assertions.assertEquals(
+			HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
+
+		ProblemDetail problemDetail = (ProblemDetail)responseEntity.getBody();
+
+		Assertions.assertEquals(
+			"Environment CNE-1 does not have an active Cloud Native " +
+				"entitlement",
+			problemDetail.getDetail());
+	}
+
+	@Test
 	public void testPostEnvironmentsManifestRejectsUnknownEnvironment()
 		throws Exception {
 
@@ -1480,6 +1580,25 @@ public class CloudRestControllerTest {
 
 		Mockito.verifyNoInteractions(
 			_cloudNativeSignatureValidator, _entitlementService);
+	}
+
+	@Test
+	public void testPostEnvironmentsManifestRejectsUnsupportedDXPVersion()
+		throws Exception {
+
+		_mockManifestEnvironment();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _cloudRestController.postEnvironmentsManifest(
+					_ENVIRONMENT_EXTERNAL_REFERENCE_CODE,
+					_createManifestBody("7.4.13-u112")));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_entitlementService);
 	}
 
 	@Test
@@ -1763,6 +1882,27 @@ public class CloudRestControllerTest {
 			Mockito.eq(Set.of(11L)), Mockito.eq(_ENVIRONMENT_ID),
 			Mockito.eq("DXP 2025.Q3.1")
 		);
+	}
+
+	@Test
+	public void testPostEnvironmentsOfflineActivationRejectsBlankActivationCode()
+		throws Exception {
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"token", _createOfflineActivationToken("CNE-TOKEN")
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _cloudRestController.postEnvironmentsOfflineActivation(
+					jsonObject.toString()));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		_assertEnvironmentNotActivated();
 	}
 
 	@Test
@@ -2058,6 +2198,46 @@ public class CloudRestControllerTest {
 	}
 
 	@Test
+	public void testPostProjectsEnvironmentsActivationCodesCountsPendingActivationCodes()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
+				_createEnvironmentEntitlement(
+					null, 1.0,
+					EntitlementConstants.NAME_CLOUD_NATIVE_PRODUCTION))
+		);
+
+		Mockito.when(
+			_environmentService.getCloudNativeEnvironments(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(
+				_createCloudNativeEnvironment(
+					EnvironmentConstants.ACTIVATION_STATUS_PENDING, "",
+					EnvironmentConstants.TYPE_PRODUCTION))
+		);
+
+		Assertions.assertThrows(
+			EnvironmentTypeEntitlementException.class,
+			() -> _cloudRestController.postProjectsEnvironmentsActivationCodes(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				_createActivationCodeJSON(
+					EnvironmentConstants.TYPE_PRODUCTION)));
+
+		Mockito.verify(
+			_environmentService, Mockito.never()
+		).addCloudNativeEnvironment(
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
+		);
+	}
+
+	@Test
 	public void testPostProjectsEnvironmentsActivationCodesGeneratesActivationCode()
 		throws Exception {
 
@@ -2066,8 +2246,9 @@ public class CloudRestControllerTest {
 				_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
 			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
 				_createEnvironmentEntitlement(
-					null, 1.0, EntitlementConstants.NAME_UAT_ENVIRONMENTS))
+					null, 1.0, EntitlementConstants.NAME_CLOUD_NATIVE_UAT))
 		);
 
 		Mockito.when(
@@ -2078,9 +2259,10 @@ public class CloudRestControllerTest {
 		);
 
 		Mockito.when(
-			_environmentService.fetchOrAddCloudNativeEnvironment(
-				_ACCOUNT_ID, null, _PROJECT_EXTERNAL_REFERENCE_CODE,
-				EnvironmentConstants.TYPE_UAT)
+			_environmentService.addCloudNativeEnvironment(
+				Mockito.eq(_ACCOUNT_ID), Mockito.anyString(), Mockito.isNull(),
+				Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
+				Mockito.eq(EnvironmentConstants.TYPE_UAT))
 		).thenReturn(
 			_createCloudNativeEnvironment(
 				EnvironmentConstants.ACTIVATION_STATUS_PENDING, "",
@@ -2100,6 +2282,98 @@ public class CloudRestControllerTest {
 			_ACTIVATION_CODE, jsonObject.getString("activationCode"));
 		Assertions.assertEquals(
 			EnvironmentConstants.TYPE_UAT, jsonObject.getString("type"));
+	}
+
+	@Test
+	public void testPostProjectsEnvironmentsActivationCodesGeneratesActivationCodeBesidesPendingCode()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(
+				_createEntitlement(EntitlementConstants.NAME_CLOUD_NATIVE, 1),
+				_createEnvironmentEntitlement(
+					null, 2.0,
+					EntitlementConstants.NAME_CLOUD_NATIVE_PRODUCTION))
+		);
+
+		Mockito.when(
+			_environmentService.getCloudNativeEnvironments(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(
+				_createCloudNativeEnvironment(
+					EnvironmentConstants.ACTIVATION_STATUS_PENDING, "",
+					EnvironmentConstants.TYPE_PRODUCTION))
+		);
+
+		Mockito.when(
+			_environmentService.addCloudNativeEnvironment(
+				Mockito.eq(_ACCOUNT_ID), Mockito.anyString(), Mockito.isNull(),
+				Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
+				Mockito.eq(EnvironmentConstants.TYPE_PRODUCTION))
+		).thenReturn(
+			_createCloudNativeEnvironment(
+				EnvironmentConstants.ACTIVATION_STATUS_PENDING, "",
+				EnvironmentConstants.TYPE_PRODUCTION)
+		);
+
+		ResponseEntity<String> responseEntity =
+			_cloudRestController.postProjectsEnvironmentsActivationCodes(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				_createActivationCodeJSON(
+					EnvironmentConstants.TYPE_PRODUCTION));
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		Mockito.verify(
+			_environmentService
+		).addCloudNativeEnvironment(
+			Mockito.eq(_ACCOUNT_ID), Mockito.anyString(), Mockito.isNull(),
+			Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
+			Mockito.eq(EnvironmentConstants.TYPE_PRODUCTION)
+		);
+	}
+
+	@Test
+	public void testPostProjectsEnvironmentsActivationCodesRejectsProjectWithoutCloudNativeEntitlement()
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(
+				_createEnvironmentEntitlement(
+					null, 1.0,
+					EntitlementConstants.NAME_CLOUD_NATIVE_PRODUCTION))
+		);
+
+		Mockito.when(
+			_environmentService.getCloudNativeEnvironments(
+				_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			List.of(
+				_createCloudNativeEnvironment(
+					EnvironmentConstants.ACTIVATION_STATUS_PENDING, "",
+					EnvironmentConstants.TYPE_PRODUCTION))
+		);
+
+		Assertions.assertThrows(
+			EnvironmentTypeEntitlementException.class,
+			() -> _cloudRestController.postProjectsEnvironmentsActivationCodes(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				_createActivationCodeJSON(
+					EnvironmentConstants.TYPE_PRODUCTION)));
+
+		Mockito.verify(
+			_environmentService, Mockito.never()
+		).addCloudNativeEnvironment(
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
+		);
 	}
 
 	@Test
@@ -2129,55 +2403,9 @@ public class CloudRestControllerTest {
 
 		Mockito.verify(
 			_environmentService, Mockito.never()
-		).fetchOrAddCloudNativeEnvironment(
-			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any()
-		);
-	}
-
-	@Test
-	public void testPostProjectsEnvironmentsActivationCodesReturnsExistingActivationCode()
-		throws Exception {
-
-		Mockito.when(
-			_entitlementService.getActiveEntitlements(
-				_PROJECT_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			List.of(
-				_createEnvironmentEntitlement(
-					null, 2.0,
-					EntitlementConstants.NAME_PRODUCTION_ENVIRONMENTS))
-		);
-
-		Mockito.when(
-			_environmentService.getCloudNativeEnvironments(
-				_PROJECT_EXTERNAL_REFERENCE_CODE)
-		).thenReturn(
-			List.of(
-				_createCloudNativeEnvironment(
-					EnvironmentConstants.ACTIVATION_STATUS_PENDING, "",
-					EnvironmentConstants.TYPE_PRODUCTION))
-		);
-
-		ResponseEntity<String> responseEntity =
-			_cloudRestController.postProjectsEnvironmentsActivationCodes(
-				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
-				_createActivationCodeJSON(
-					EnvironmentConstants.TYPE_PRODUCTION));
-
-		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-
-		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
-
-		Assertions.assertEquals(
-			_ACTIVATION_CODE, jsonObject.getString("activationCode"));
-		Assertions.assertEquals(
-			EnvironmentConstants.ACTIVATION_STATUS_PENDING,
-			jsonObject.getString("activationStatus"));
-
-		Mockito.verify(
-			_environmentService, Mockito.never()
-		).fetchOrAddCloudNativeEnvironment(
-			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any()
+		).addCloudNativeEnvironment(
+			Mockito.anyLong(), Mockito.any(), Mockito.any(), Mockito.any(),
+			Mockito.any()
 		);
 	}
 
@@ -2691,7 +2919,9 @@ public class CloudRestControllerTest {
 	}
 
 	private void _verifyDXPLicenseXML(
-			String licenseEntryName, String productName)
+			String description, String licenseEntryName,
+			String licenseEntryType, int maxHttpSessions, String productName,
+			String sizing)
 		throws Exception {
 
 		Mockito.verify(
@@ -2699,17 +2929,17 @@ public class CloudRestControllerTest {
 		).toXML(
 			ArgumentMatchers.any(), ArgumentMatchers.any(),
 			ArgumentMatchers.eq(licenseEntryName),
-			ArgumentMatchers.eq(LicenseConstants.TYPE_VIRTUAL_CLUSTER),
-			ArgumentMatchers.anyInt(), ArgumentMatchers.eq(productName),
-			ArgumentMatchers.any(), ArgumentMatchers.any(),
-			ArgumentMatchers.any(), ArgumentMatchers.anyInt(),
+			ArgumentMatchers.eq(licenseEntryType), ArgumentMatchers.anyInt(),
+			ArgumentMatchers.eq(productName), ArgumentMatchers.any(),
+			ArgumentMatchers.any(),
+			ArgumentMatchers.eq(_ENVIRONMENT_EXTERNAL_REFERENCE_CODE),
 			ArgumentMatchers.anyInt(), ArgumentMatchers.anyInt(),
-			ArgumentMatchers.anyLong(), ArgumentMatchers.anyLong(),
-			ArgumentMatchers.any(), ArgumentMatchers.any(),
-			ArgumentMatchers.any(), ArgumentMatchers.<String>any(),
+			ArgumentMatchers.eq(maxHttpSessions), ArgumentMatchers.anyLong(),
+			ArgumentMatchers.anyLong(), ArgumentMatchers.eq(sizing),
+			ArgumentMatchers.eq(description), ArgumentMatchers.any(),
 			ArgumentMatchers.<String>any(), ArgumentMatchers.<String>any(),
-			ArgumentMatchers.<String>any(), ArgumentMatchers.any(),
-			ArgumentMatchers.any()
+			ArgumentMatchers.<String>any(), ArgumentMatchers.<String>any(),
+			ArgumentMatchers.any(), ArgumentMatchers.any()
 		);
 	}
 
@@ -2724,6 +2954,9 @@ public class CloudRestControllerTest {
 	private static final String _ENVIRONMENT_EXTERNAL_REFERENCE_CODE = "CNE-1";
 
 	private static final long _ENVIRONMENT_ID = 2000L;
+
+	private static final String _PEM_PUBLIC_KEY =
+		"-----BEGIN PUBLIC KEY-----\npublic-key\n-----END PUBLIC KEY-----\n";
 
 	private static final String _PRODUCT_EXTERNAL_REFERENCE_CODE =
 		"PRDCT-ADDON";
