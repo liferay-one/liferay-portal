@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.exception.EnvironmentActivationAlreadyRequestedException;
 import com.liferay.one.model.Environment;
+import com.liferay.one.util.CloudNativeSignatureValidator;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -225,7 +226,8 @@ public class EnvironmentService extends OneBaseService {
 			).put(
 				"name", name
 			).put(
-				"publicKey", publicKey
+				"publicKey",
+				CloudNativeSignatureValidator.toBase64PublicKey(publicKey)
 			));
 	}
 
