@@ -591,14 +591,14 @@
 		},
 		{
 			"active": true,
-			"defaultQuantity": 5,
+			"defaultQuantity": 1,
 			"displayName": "Cloud Native Non-Production",
 			"externalReferenceCode": "C_ENT_DEF_CLOUD_NATIVE_NON_PRODUCTION",
 			"generatesActivationKey": true,
-			"grantType": "fixed",
+			"grantType": "unlimited",
 			"licenseKeyFamily": "Cloud Native",
 			"licenseKeyType": "non-production",
-			"maxQuantity": 5,
+			"maxQuantity": 1,
 			"name": "cloud-native-non-production",
 			"unit": "boolean"
 		},
