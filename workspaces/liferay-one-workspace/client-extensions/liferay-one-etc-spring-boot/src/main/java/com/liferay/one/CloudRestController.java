@@ -322,11 +322,12 @@ public class CloudRestController extends OneBaseRestController {
 	public ResponseEntity<?> handleException(
 		CloudNativeEntitlementException cloudNativeEntitlementException) {
 
-		_log.error(cloudNativeEntitlementException);
+		if (_log.isWarnEnabled()) {
+			_log.warn(cloudNativeEntitlementException);
+		}
 
-		return new ResponseEntity<>(
-			cloudNativeEntitlementException.getMessage(),
-			HttpStatus.INTERNAL_SERVER_ERROR);
+		return _toResponseEntity(
+			HttpStatus.FORBIDDEN, cloudNativeEntitlementException.getMessage());
 	}
 
 	@ExceptionHandler(DisasterRecoveryEntitlementException.class)
@@ -487,6 +488,14 @@ public class CloudRestController extends OneBaseRestController {
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
 
+		if (Validator.isNull(
+				ProductVersion.extractQuarterlyPatchRelease(dxpVersion))) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"DXP version " + dxpVersion + " is not supported");
+		}
+
 		if (_log.isInfoEnabled()) {
 			_log.info(
 				"Retrieving entitlements for environment " + environmentId);
@@ -553,11 +562,10 @@ public class CloudRestController extends OneBaseRestController {
 		);
 
 		if (Validator.isNull(activationCode) || Validator.isNull(token)) {
-			_log.error(
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
 				"The activation code and the offline activation token are " +
 					"required");
-
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		HttpStatus httpStatus = _validateOfflineActivationToken(token);
