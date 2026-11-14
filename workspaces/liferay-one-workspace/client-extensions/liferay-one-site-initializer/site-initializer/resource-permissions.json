@@ -9,6 +9,116 @@
 	},
 	{
 		"actionIds": [
+			"VIEW_CONTROL_PANEL"
+		],
+		"primKey": "0",
+		"resourceName": "90",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:AccountInvitation$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:AccountNote$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:AccountNote$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ActivationKey$]",
+		"roleName": "Liferay Staff",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ActivationKey$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ActivationKey$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:CommonLicenseKey$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:CommonLicenseKey$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Contract$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Entitlement$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:EntitlementDefinition$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
 			"VIEW"
 		],
 		"primKey": "0",
@@ -21,7 +131,70 @@
 			"VIEW"
 		],
 		"primKey": "0",
-		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LiferayBundle$]",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:EntitlementDefinitionSku$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Environment$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LicenseKey$]",
+		"roleName": "Liferay Staff",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LicenseKey$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:LicenseKey$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:OAuth2DxpAuthorization$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ProductVersion$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ProductVersion$]",
 		"roleName": "User",
 		"scope": "1"
 	},
@@ -30,7 +203,81 @@
 			"VIEW"
 		],
 		"primKey": "0",
-		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetails$]",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Project$]",
+		"roleName": "Liferay Staff",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Project$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Project$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ProjectMembership$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:ProjectMembership$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:Property$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherAsset$]",
+		"roleName": "Account App Publisher",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherAsset$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetail$]",
 		"roleName": "Guest",
 		"scope": "1"
 	},
@@ -39,19 +286,372 @@
 			"VIEW"
 		],
 		"primKey": "0",
-		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetails$]",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetail$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherDetail$]",
 		"roleName": "User",
 		"scope": "1"
 	},
 	{
 		"actionIds": [
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherSalesSummary$]",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:PublisherSalesSummary$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:SubscriptionEntry$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:TicketAttachment$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"DELETE",
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:TicketAttachment$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:TrialExtensionRequest$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:UsageDefinition$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:UsageDefinition$]",
+		"roleName": "User",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:UsageEvent$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_CLASS_NAME:UsageReport$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ACCESS_IN_CONTROL_PANEL",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_PORTLET_ID:AccountNote$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ACCESS_IN_CONTROL_PANEL",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_PORTLET_ID:AccountNote$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ACCESS_IN_CONTROL_PANEL",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_PORTLET_ID:ActivationKey$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ACCESS_IN_CONTROL_PANEL",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "[$OBJECT_DEFINITION_PORTLET_ID:LicenseKey$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Account Buyer",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_ACCOUNT_ROLES",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Account Member",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_ADDRESSES"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_ADDRESSES"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Liferay Staff",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ASSIGN_USERS",
+			"MANAGE_ADDRESSES",
+			"MANAGE_CHANNEL_DEFAULTS",
 			"MANAGE_USERS",
-			"VIEW_ACCOUNT_ROLES"
+			"UPDATE",
+			"VIEW",
+			"VIEW_ACCOUNT_ROLES",
+			"VIEW_ADDRESSES",
+			"VIEW_CHANNEL_DEFAULTS",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Marketplace Account Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"MANAGE_ADDRESSES",
+			"MANAGE_USERS",
+			"UPDATE",
+			"VIEW",
+			"VIEW_ACCOUNT_ROLES",
+			"VIEW_ADDRESSES",
+			"VIEW_ORGANIZATIONS",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Partner Account Admin",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"MANAGE_USERS",
+			"VIEW",
+			"VIEW_ACCOUNT_ROLES",
+			"VIEW_USERS"
 		],
 		"primKey": "0",
 		"resourceName": "com.liferay.account.model.AccountEntry",
 		"roleName": "Partner Manager",
 		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Partner Marketing User",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Partner Member",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Partner Sales User",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Partner Technical User",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ASSIGN_USERS",
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Project Admin",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ASSIGN_USERS",
+			"MANAGE_ADDRESSES",
+			"MANAGE_DOMAINS",
+			"UPDATE",
+			"VIEW",
+			"VIEW_ACCOUNT_ROLES",
+			"VIEW_ADDRESSES",
+			"VIEW_ORGANIZATIONS",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"UPDATE",
+			"VIEW",
+			"VIEW_ACCOUNT_ROLES",
+			"VIEW_ADDRESSES",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountRole",
+		"roleName": "Account Member",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountRole",
+		"roleName": "Marketplace Account Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountRole",
+		"roleName": "Partner Account Admin",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountRole",
+		"roleName": "Partner Manager",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountRole",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountRole",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
 	},
 	{
 		"actionIds": [
@@ -124,6 +724,89 @@
 	},
 	{
 		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.model.CommerceOrder",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.model.CommerceOrder",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.model.CommerceOrderType",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.model.CommerceOrderType",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.model.CommerceOrderType",
+		"roleName": "User",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_COMMERCE_ORDER",
+			"CHECKOUT_OPEN_COMMERCE_ORDERS",
+			"MANAGE_COMMERCE_ORDER_DELIVERY_TERMS",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_METHODS",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_TERMS",
+			"MANAGE_COMMERCE_ORDER_SHIPPING_OPTIONS",
+			"VIEW_BILLING_ADDRESS",
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Account Buyer",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Account Member",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"MANAGE_COMMERCE_ORDERS",
+			"MANAGE_COMMERCE_ORDER_PRICES",
+			"VIEW_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
 			"VIEW_COMMERCE_ORDERS",
 			"VIEW_OPEN_COMMERCE_ORDERS"
 		],
@@ -131,6 +814,37 @@
 		"resourceName": "com.liferay.commerce.order",
 		"roleName": "Liferay Staff",
 		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_COMMERCE_ORDER",
+			"APPROVE_OPEN_COMMERCE_ORDERS",
+			"CHECKOUT_OPEN_COMMERCE_ORDERS",
+			"DELETE_COMMERCE_ORDERS",
+			"MANAGE_COMMERCE_ORDERS",
+			"MANAGE_COMMERCE_ORDER_DELIVERY_TERMS",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_METHODS",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_STATUSES",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_TERMS",
+			"MANAGE_COMMERCE_ORDER_SHIPPING_OPTIONS",
+			"VIEW_BILLING_ADDRESS",
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Marketplace Account Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Partner Account Admin",
+		"scope": "3"
 	},
 	{
 		"actionIds": [
@@ -149,8 +863,84 @@
 		],
 		"primKey": "0",
 		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Partner Marketing User",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
 		"roleName": "Partner Member",
 		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Partner Sales User",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Partner Technical User",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.payment.model.CommercePaymentEntry",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.product.model.CommerceCatalog",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.product.model.CommerceCatalog",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW_COMMERCE_PRODUCT_TAX_CATEGORIES"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.tax",
+		"roleName": "Supplier",
+		"scope": "1"
 	},
 	{
 		"actionIds": [
@@ -283,6 +1073,26 @@
 		"primKey": "0",
 		"resourceName": "com.liferay.expando.kernel.model.ExpandoColumn",
 		"roleName": "Guest",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.expando.kernel.model.ExpandoColumn",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"UPDATE",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.expando.kernel.model.ExpandoColumn",
+		"roleName": "Provisioning Worker",
 		"scope": "1"
 	},
 	{
@@ -462,6 +1272,167 @@
 	},
 	{
 		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.list.type.model.ListTypeDefinition",
+		"roleName": "User",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"CREATE_TOKEN"
+		],
+		"resourceName": "com.liferay.oauth2.provider.model.OAuth2Application",
+		"roleName": "User",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:AccountNote$]",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:AccountNote$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:DSRRequest$]",
+		"roleName": "User",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:DXPFreeActivationKeyRequest$]",
+		"roleName": "User",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:OAuth2DxpAuthorization$]",
+		"roleName": "Account Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:OAuth2DxpAuthorization$]",
+		"roleName": "Account Member",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:OAuth2DxpAuthorization$]",
+		"roleName": "Organization User",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:OAuth2DxpAuthorization$]",
+		"roleName": "Project Admin",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:OAuth2DxpAuthorization$]",
+		"roleName": "Project Requester",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:PublisherAsset$]",
+		"roleName": "Account App Publisher",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:PublisherAssetAttachment$]",
+		"roleName": "Supplier",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:TicketAttachment$]",
+		"roleName": "Account Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:TicketAttachment$]",
+		"roleName": "Organization User",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:TicketAttachment$]",
+		"roleName": "Project Admin",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:TicketAttachment$]",
+		"roleName": "Project Requester",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:TicketAttachment$]",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
 			"VIEW_SITE_ADMINISTRATION"
 		],
 		"primKey": "0",
@@ -494,6 +1465,15 @@
 		"actionIds": [
 			"VIEW"
 		],
+		"primKey": "[$ROLE_ID:Finance Administrator$]",
+		"resourceName": "com.liferay.portal.kernel.model.Role",
+		"roleName": "Finance Administrator",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
 		"primKey": "[$ROLE_ID:Liferay Staff$]",
 		"resourceName": "com.liferay.portal.kernel.model.Role",
 		"roleName": "Liferay Staff",
@@ -503,9 +1483,74 @@
 		"actionIds": [
 			"VIEW"
 		],
+		"primKey": "[$ROLE_ID:Provisioning Administrator$]",
+		"resourceName": "com.liferay.portal.kernel.model.Role",
+		"roleName": "Provisioning Administrator",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "[$ROLE_ID:Provisioning Worker$]",
+		"resourceName": "com.liferay.portal.kernel.model.Role",
+		"roleName": "Provisioning Worker",
+		"scope": "4"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
 		"primKey": "0",
 		"resourceName": "com.liferay.portal.kernel.model.User",
-		"roleName": "Provisioning Member",
+		"roleName": "Finance Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.portal.kernel.model.User",
+		"roleName": "Liferay Staff",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.portal.kernel.model.User",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.portal.kernel.model.User",
+		"roleName": "Provisioning Worker",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ACCESS_IN_CONTROL_PANEL",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com_liferay_account_admin_web_internal_portlet_AccountEntriesAdminPortlet",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ACCESS_IN_CONTROL_PANEL",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com_liferay_account_admin_web_internal_portlet_AccountEntriesAdminPortlet",
+		"roleName": "Provisioning Worker",
 		"scope": "1"
 	},
 	{
@@ -535,6 +1580,16 @@
 		"resourceName": "com_liferay_asset_tags_admin_web_portlet_AssetTagsAdminPortlet",
 		"roleName": "Site Content Reviewer",
 		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ACCESS_IN_CONTROL_PANEL",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com_liferay_commerce_product_definitions_web_internal_portlet_CPDefinitionsPortlet",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
 	},
 	{
 		"actionIds": [
@@ -622,5 +1677,15 @@
 		"resourceName": "com_liferay_template_web_internal_portlet_TemplatePortlet",
 		"roleName": "Site Content Reviewer",
 		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"ACCESS_IN_CONTROL_PANEL",
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com_liferay_users_admin_web_portlet_UsersAdminPortlet",
+		"roleName": "Provisioning Administrator",
+		"scope": "1"
 	}
 ]
