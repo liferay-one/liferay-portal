@@ -770,6 +770,7 @@ export default {
 	'general-info': 'General Info',
 	'generate': 'Generate',
 	'generate-activation-key': 'Generate Activation Key',
+	'generate-another-activation-code': 'Generate Another Activation Code',
 	'generate-key': 'Generate Key',
 	'generate-new': 'Generate New',
 	'generate-sample': 'Generate Sample',

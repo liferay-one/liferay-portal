@@ -4,17 +4,19 @@
  */
 
 import ClayAlert from '@clayui/alert';
-import {ClayButtonWithIcon} from '@clayui/button';
+import ClayButton, {ClayButtonWithIcon} from '@clayui/button';
 import ClayLabel from '@clayui/label';
 import ClayTable from '@clayui/table';
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
 import {Word, sub, translate} from '~/i18n';
 import {ACTIVATION_CODE_ERROR_MESSAGE_KEYS} from '~/pages/MyAccount/Projects/utils/cloudActivationErrorConstants';
 import toErrorMessageKey from '~/pages/MyAccount/Projects/utils/toErrorMessageKey';
 import {Liferay, getIconSpriteMap} from '~/services/liferay/liferay';
-import Cloud from '~/services/spring-boot/Cloud';
+import Cloud, {
+	CloudEnvironmentActivationCode,
+} from '~/services/spring-boot/Cloud';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import useCloudNativeActivationCodes from '../hooks/useCloudNativeActivationCodes';
@@ -58,30 +60,15 @@ export default function ActivationCodesStep({
 		(current) => current.activationStatus !== ACTIVATION_STATUS_ACTIVE
 	);
 
-	const activationCode = unusedActivationCode ?? activationCodes[0];
-
-	const activationCodeInUse =
-		activationCode?.activationStatus === ACTIVATION_STATUS_ACTIVE;
-
 	const entitledToAnother = Boolean(
 		environmentType &&
 			(environmentType.unlimited || environmentType.availableCount > 0)
 	);
 
-	useEffect(() => {
-		if (
-			loading ||
-			error ||
-			!environmentType ||
-			unusedActivationCode ||
-			!entitledToAnother ||
-			generatedTypeRef.current === keyType
-		) {
-			return;
-		}
+	const everyActivationCodeInUse =
+		!!activationCodes.length && !unusedActivationCode && !entitledToAnother;
 
-		generatedTypeRef.current = keyType;
-
+	const generateActivationCode = useCallback(() => {
 		setGenerateError('');
 		setGenerating(true);
 
@@ -98,14 +85,30 @@ export default function ActivationCodesStep({
 				)
 			)
 			.finally(() => setGenerating(false));
+	}, [keyType, mutate, projectId]);
+
+	useEffect(() => {
+		if (
+			loading ||
+			error ||
+			!environmentType ||
+			unusedActivationCode ||
+			!entitledToAnother ||
+			generatedTypeRef.current === keyType
+		) {
+			return;
+		}
+
+		generatedTypeRef.current = keyType;
+
+		generateActivationCode();
 	}, [
 		entitledToAnother,
 		environmentType,
 		error,
+		generateActivationCode,
 		keyType,
 		loading,
-		mutate,
-		projectId,
 		unusedActivationCode,
 	]);
 
@@ -113,7 +116,7 @@ export default function ActivationCodesStep({
 		'if-your-environment-doesn-t-have-internet-access-click-here-for-offline-activation'
 	).split('{0}');
 
-	async function onClickCopy() {
+	async function onClickCopy(activationCode: CloudEnvironmentActivationCode) {
 		try {
 			await navigator.clipboard.writeText(activationCode.activationCode);
 		}
@@ -132,11 +135,15 @@ export default function ActivationCodesStep({
 	}
 
 	function onClickOfflineActivation() {
+		if (!unusedActivationCode) {
+			return;
+		}
+
 		onClickOffline({
-			activationCode: activationCode.activationCode,
+			activationCode: unusedActivationCode.activationCode,
 			bundledEntitlementIds: [],
-			environmentId: activationCode.environmentId,
-			environmentName: activationCode.environmentName,
+			environmentId: unusedActivationCode.environmentId,
+			environmentName: unusedActivationCode.environmentName,
 			requestedVersion: '',
 			type: keyType,
 		});
@@ -183,7 +190,7 @@ export default function ActivationCodesStep({
 				</ClayAlert>
 			)}
 
-			{activationCodeInUse && (
+			{everyActivationCodeInUse && (
 				<ClayAlert
 					className="mb-3"
 					displayType="info"
@@ -197,7 +204,7 @@ export default function ActivationCodesStep({
 				</ClayAlert>
 			)}
 
-			{activationCode ? (
+			{activationCodes.length ? (
 				<ClayTable className="generate-activation-key-table">
 					<ClayTable.Head>
 						<ClayTable.Row>
@@ -216,50 +223,70 @@ export default function ActivationCodesStep({
 					</ClayTable.Head>
 
 					<ClayTable.Body>
-						<ClayTable.Row>
-							<ClayTable.Cell>
-								{translate(keyType as Word)}
-							</ClayTable.Cell>
+						{activationCodes.map((activationCode) => {
+							const inUse =
+								activationCode.activationStatus ===
+								ACTIVATION_STATUS_ACTIVE;
 
-							<ClayTable.Cell>
-								<span
-									className={
-										activationCodeInUse
-											? 'align-items-center d-flex text-secondary'
-											: 'align-items-center d-flex'
-									}
+							return (
+								<ClayTable.Row
+									key={activationCode.activationCode}
 								>
-									{activationCode.activationCode || '-'}
+									<ClayTable.Cell>
+										{translate(keyType as Word)}
+									</ClayTable.Cell>
 
-									{activationCodeInUse && (
-										<ClayLabel
-											className="ml-2"
-											displayType="secondary"
+									<ClayTable.Cell>
+										<span
+											className={
+												inUse
+													? 'align-items-center d-flex text-secondary'
+													: 'align-items-center d-flex'
+											}
 										>
-											{translate('in-use')}
-										</ClayLabel>
-									)}
+											{activationCode.activationCode ||
+												'-'}
 
-									{!!activationCode.activationCode &&
-										!activationCodeInUse && (
-											<ClayButtonWithIcon
-												aria-label={translate('copy')}
-												className="ml-2"
-												displayType="unstyled"
-												onClick={onClickCopy}
-												size="sm"
-												spritemap={getIconSpriteMap()}
-												symbol="copy"
-												title={translate('copy')}
-											/>
-										)}
-								</span>
-							</ClayTable.Cell>
+											{inUse && (
+												<ClayLabel
+													className="ml-2"
+													displayType="secondary"
+												>
+													{translate('in-use')}
+												</ClayLabel>
+											)}
 
-							<ClayTable.Cell>
-								{environmentType?.maxClusterNodes ?? '-'}
-							</ClayTable.Cell>
-						</ClayTable.Row>
+											{!!activationCode.activationCode &&
+												!inUse && (
+													<ClayButtonWithIcon
+														aria-label={translate(
+															'copy'
+														)}
+														className="ml-2"
+														displayType="unstyled"
+														onClick={() =>
+															onClickCopy(
+																activationCode
+															)
+														}
+														size="sm"
+														spritemap={getIconSpriteMap()}
+														symbol="copy"
+														title={translate(
+															'copy'
+														)}
+													/>
+												)}
+										</span>
+									</ClayTable.Cell>
+
+									<ClayTable.Cell>
+										{environmentType?.maxClusterNodes ??
+											'-'}
+									</ClayTable.Cell>
+								</ClayTable.Row>
+							);
+						})}
 					</ClayTable.Body>
 				</ClayTable>
 			) : (
@@ -268,6 +295,16 @@ export default function ActivationCodesStep({
 						'no-cloud-native-environments-are-available-for-this-project'
 					)}
 				</p>
+			)}
+
+			{!!activationCodes.length && entitledToAnother && (
+				<ClayButton
+					className="mt-3"
+					displayType="secondary"
+					onClick={generateActivationCode}
+				>
+					{translate('generate-another-activation-code')}
+				</ClayButton>
 			)}
 
 			<p className="generate-activation-key-offline-note mt-3">
@@ -280,7 +317,7 @@ export default function ActivationCodesStep({
 				backButtonProps={{onClick: onClickBack}}
 				cancelButtonProps={{onClick: onClickCancel}}
 				continueButtonProps={
-					activationCodeInUse
+					everyActivationCodeInUse
 						? undefined
 						: {
 								children: translate('finish-online-activation'),
@@ -289,7 +326,7 @@ export default function ActivationCodesStep({
 				}
 			/>
 
-			{!!activationCode && !activationCodeInUse && (
+			{!!unusedActivationCode && (
 				<p className="generate-activation-key-offline-note mt-3">
 					{offlineNoteStart}
 
