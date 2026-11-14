@@ -21,9 +21,9 @@ In this file, `L<n>` means line `<n>` of `resource-permissions.json`, and a scop
 | 43 | Roles in the role batch: 31 account roles, 9 regular roles, and 3 site roles |
 | 4 | Batch roles that are Liferay built in roles and keep their `L_` ERC |
 | 5 | Liferay built in roles that the trees use but do not define: Administrator, Guest, Organization User, Site Member, User |
-| 125 | Grants in `resource-permissions.json` |
-| 43 | Grants on a custom object: 34 at scope 1 and 9 at scope 3 |
-| 64 | Grants at scope 3. All of them go to site, account, or organization roles, where scope 3 is correct. None goes to a regular role. |
+| 165 | Grants in `resource-permissions.json` |
+| 61 | Grants on a custom object: 50 at scope 1 and 11 at scope 3 |
+| 76 | Grants at scope 3. All of them go to site, account, or organization roles, where scope 3 is correct. None goes to a regular role. |
 | 3 | Self `VIEW` grants on a regular role, so that the role appears in `roleBriefs` |
 | 34 | Custom objects (`C_*`) in the batch |
 | 14 | Custom objects restricted to the account |
@@ -96,7 +96,7 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 | LDP Administrator | `C_LDP_ADMIN` | account | 73 | A project contact designation |
 | Liferay Sales | `C_LIFERAY_SALES` | account | 78 | A Salesforce contact role |
 | Liferay Staff | `C_LIFERAY_STAFF` | regular | 83 | Membership in the Employees organization (`organizations.json`), which holds the role (`roles-assignments.json`). The Okta group Employees fills the organization through its `oktaGroupId` link (`OktaUsersPubsubSubscriber`, `POST /organizations/{organizationId}/sync-from-okta`). |
-| Marketplace Account Administrator | `C_MARKETPLACE_ACCOUNT_ADMIN` | account | 88 | Manual. No code reads it. |
+| Marketplace Account Administrator | `C_MARKETPLACE_ACCOUNT_ADMIN` | account | 88 | Outside the workspace: the marketplace data migration gave it to members of the business accounts it created. No workspace code assigns or reads it. Its grants let the holder buy for the account. |
 | Marketplace Publisher | `C_MARKETPLACE_PUBLISHER` | regular | 93 | Manual |
 | PaaS User | `C_PAAS_USER` | account | 98 | A project contact designation |
 | Partner | `C_PARTNER` | regular | 103 | Membership in the Partners user group (`16-user-group.batch-engine-data.json:39`). No code adds users to the group. |
@@ -218,6 +218,7 @@ These are the grants at scope 1 and scope 4 that do not name a custom object.
 | `com.liferay.commerce.model.CommerceOrder` | Provisioning Administrator | `VIEW` | 1 | L524 |
 | `com.liferay.commerce.model.CommerceOrderType` | Finance Administrator | `VIEW` | 1 | L533 |
 | `com.liferay.commerce.model.CommerceOrderType` | Provisioning Administrator | `VIEW` | 1 | L542 |
+| `com.liferay.commerce.model.CommerceOrderType` | User | `VIEW`, which cart creation checks on the order type of every purchase. An account role cannot give it, because the check runs in the commerce group. | 1 | L761 |
 | `com.liferay.commerce.order` | Finance Administrator | `MANAGE_COMMERCE_ORDERS`, `MANAGE_COMMERCE_ORDER_PRICES`, `VIEW_COMMERCE_ORDERS` | 1 | L551 |
 | `com.liferay.commerce.order` | Liferay Staff | `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` | 1 | L562 |
 | `com.liferay.commerce.order` | Provisioning Administrator | `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` | 1 | L592 |
@@ -242,15 +243,16 @@ These are the grants at scope 1 and scope 4 that do not name a custom object.
 
 ### Grants at Scope 3
 
-The 64 scope 3 grants go to 42 site role grants, 20 account role grants, and 2 organization role grants. Each one applies in every account, site, or organization where the user holds the role.
+The 76 scope 3 grants go to 42 site role grants, 32 account role grants, and 2 organization role grants. Each one applies in every account, site, or organization where the user holds the role.
 
 | Role | Type | What the Grants Give | Lines |
 | --- | --- | --- | --- |
 | Account Administrator | account | `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment | L973, L1018 |
-| Account Buyer | account | `VIEW` on the account | L294 |
+| Account Buyer | account | `VIEW` on the account. `ADD_COMMERCE_ORDER`, `CHECKOUT_OPEN_COMMERCE_ORDERS`, `MANAGE_COMMERCE_ORDER_DELIVERY_TERMS`, `MANAGE_COMMERCE_ORDER_PAYMENT_METHODS`, `MANAGE_COMMERCE_ORDER_PAYMENT_TERMS`, `MANAGE_COMMERCE_ORDER_SHIPPING_OPTIONS`, `VIEW_BILLING_ADDRESS`, `VIEW_COMMERCE_ORDERS`, and `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. | L435, L770 |
 | Account Member | account | `VIEW`, `VIEW_ACCOUNT_ROLES`, `VIEW_USERS` on the account. `VIEW` on the account's roles. `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization. | L443, L579, L721, L1238 |
 | Article Administrator | site | Web content and folders, and Site Administration | L629 to L1209 (6 grants) |
 | Documentation Administrator | site | Web content, categories, pages, page templates, and SEO | L446 to L1251 (14 grants) |
+| Marketplace Account Administrator | account | The account and order grants of Account Administrator, without `VIEW_ORGANIZATIONS` and the grants on OAuth2DxpAuthorization and TicketAttachment: account update, users, addresses, channel defaults, and roles, and the 13 order actions of Account Administrator, from `ADD_COMMERCE_ORDER` to `MANAGE_COMMERCE_ORDERS` and `MANAGE_COMMERCE_ORDER_PAYMENT_STATUSES` | L475, L611, L818 |
 | Organization User | organization | `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment | L991, L1027 |
 | Partner Account Admin | account | Account update, users, addresses, and account roles | L323, L419 |
 | Partner Manager | account | Account users and roles, and the account's orders | L339, L428, L572 |
@@ -566,7 +568,7 @@ Each finding names the file and line. The findings are ordered by risk.
 
 1. Who assigns Marketplace Publisher, Account App Publisher, Account Solution Publisher, Account Supplier, Finance Administrator, Provisioning Administrator, and Provisioning Worker? Every publisher needs Account Supplier, which gives the regular role Supplier that the Publisher Dashboard page needs. An app publisher also needs Account App Publisher, and a solution publisher also needs Account Solution Publisher.
 
-1. Are the 3 roles that no code reads still needed: Dashboard Viewer, Marketplace Account Administrator, and SSA?
+1. Are the 2 roles that no code reads still needed: Dashboard Viewer and SSA?
 
 1. Which caller is meant to use the trial and provisioning endpoints: the browser, a Liferay workflow, or an external application? The answer decides between an order check and an application allow list.
 

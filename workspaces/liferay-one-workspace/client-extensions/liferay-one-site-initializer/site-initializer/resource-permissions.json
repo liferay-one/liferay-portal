@@ -474,6 +474,24 @@
 	},
 	{
 		"actionIds": [
+			"ASSIGN_USERS",
+			"MANAGE_ADDRESSES",
+			"MANAGE_CHANNEL_DEFAULTS",
+			"MANAGE_USERS",
+			"UPDATE",
+			"VIEW",
+			"VIEW_ACCOUNT_ROLES",
+			"VIEW_ADDRESSES",
+			"VIEW_CHANNEL_DEFAULTS",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Marketplace Account Administrator",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
 			"MANAGE_ADDRESSES",
 			"MANAGE_USERS",
 			"UPDATE",
@@ -588,6 +606,15 @@
 		"primKey": "0",
 		"resourceName": "com.liferay.account.model.AccountRole",
 		"roleName": "Account Member",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountRole",
+		"roleName": "Marketplace Account Administrator",
 		"scope": "3"
 	},
 	{
@@ -733,6 +760,32 @@
 	},
 	{
 		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.model.CommerceOrderType",
+		"roleName": "User",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_COMMERCE_ORDER",
+			"CHECKOUT_OPEN_COMMERCE_ORDERS",
+			"MANAGE_COMMERCE_ORDER_DELIVERY_TERMS",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_METHODS",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_TERMS",
+			"MANAGE_COMMERCE_ORDER_SHIPPING_OPTIONS",
+			"VIEW_BILLING_ADDRESS",
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Account Buyer",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
 			"VIEW_COMMERCE_ORDERS",
 			"VIEW_OPEN_COMMERCE_ORDERS"
 		],
@@ -761,6 +814,27 @@
 		"resourceName": "com.liferay.commerce.order",
 		"roleName": "Liferay Staff",
 		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_COMMERCE_ORDER",
+			"APPROVE_OPEN_COMMERCE_ORDERS",
+			"CHECKOUT_OPEN_COMMERCE_ORDERS",
+			"DELETE_COMMERCE_ORDERS",
+			"MANAGE_COMMERCE_ORDERS",
+			"MANAGE_COMMERCE_ORDER_DELIVERY_TERMS",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_METHODS",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_STATUSES",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_TERMS",
+			"MANAGE_COMMERCE_ORDER_SHIPPING_OPTIONS",
+			"VIEW_BILLING_ADDRESS",
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Marketplace Account Administrator",
+		"scope": "3"
 	},
 	{
 		"actionIds": [
