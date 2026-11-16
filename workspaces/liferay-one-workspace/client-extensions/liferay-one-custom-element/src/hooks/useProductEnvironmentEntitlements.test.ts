@@ -8,17 +8,26 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import {useProductEnvironmentEntitlements} from './useProductEnvironmentEntitlements';
 
-const {queryGraphQLMock, useDataQueryMock, useFetchMock} = vi.hoisted(() => ({
-	queryGraphQLMock: vi.fn(),
+const {
+	getLicenseKeyCountsMock,
+	useActivationKeyScopeMock,
+	useDataQueryMock,
+	useFetchMock,
+} = vi.hoisted(() => ({
+	getLicenseKeyCountsMock: vi.fn(),
+	useActivationKeyScopeMock: vi.fn(),
 	useDataQueryMock: vi.fn(),
 	useFetchMock: vi.fn(),
 }));
 
 vi.mock('~/hooks/useDataQuery', () => ({useDataQuery: useDataQueryMock}));
 vi.mock('~/hooks/useFetch', () => ({useFetch: useFetchMock}));
-vi.mock('~/services/graphql/GraphQL', () => ({
-	queryGraphQL: queryGraphQLMock,
-	toGraphQLString: JSON.stringify,
+vi.mock(
+	'~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeyScope',
+	() => ({useActivationKeyScope: useActivationKeyScopeMock})
+);
+vi.mock('~/services/spring-boot/ActivationKeys', () => ({
+	default: {getLicenseKeyCounts: getLicenseKeyCountsMock},
 }));
 
 const orderItems = [{id: 7, optionValueNames: [], skuProductName: ''}];
@@ -30,6 +39,7 @@ const entitlementNodes = [
 		generatesActivationKey: true,
 		id: 11,
 		licenseKeyType: 'production',
+		maxQuantity: 3,
 		quantity: 2,
 		startDate: '2026-08-09T00:00:00.000Z',
 	},
@@ -57,7 +67,11 @@ const entitlementNodes = [
 
 describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlements', () => {
 	beforeEach(() => {
-		queryGraphQLMock.mockReset();
+		getLicenseKeyCountsMock.mockReset();
+		useActivationKeyScopeMock.mockReset();
+		useActivationKeyScopeMock.mockReturnValue({
+			projectExternalReferenceCode: 'PRJCT-1',
+		});
 		useDataQueryMock.mockReset();
 		useFetchMock.mockReset();
 	});
@@ -100,8 +114,10 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 		expect(result.current.environmentEntitlements).toEqual([]);
 	});
 
-	it('counts the active license keys that each entitlement granted', async () => {
-		queryGraphQLMock.mockResolvedValue({licenseKeys: {totalCount: 3}});
+	it('reads the license key counts of the project in one request', async () => {
+		const licenseKeyCounts = {11: {totalCount: 3, usedCount: 2}};
+
+		getLicenseKeyCountsMock.mockResolvedValue(licenseKeyCounts);
 		useDataQueryMock.mockReturnValue({data: undefined, isLoading: true});
 		useFetchMock.mockReturnValue({
 			data: {items: entitlementNodes},
@@ -114,12 +130,58 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 
 		const [[{fetcher, key}]] = useDataQueryMock.mock.calls;
 
-		expect(key).toBe('/license-key-counts/11,12');
-		await expect(fetcher()).resolves.toEqual([3, 3]);
-		expect(queryGraphQLMock.mock.calls[0][0]).toContain(
-			"active eq true and entitlementId eq '11'"
+		expect(key).toBe(
+			'/activation-keys/license-key-counts?projectExternalReferenceCode=PRJCT-1'
 		);
+		await expect(fetcher()).resolves.toEqual(licenseKeyCounts);
+		expect(getLicenseKeyCountsMock.mock.calls).toEqual([
+			[{projectExternalReferenceCode: 'PRJCT-1'}],
+		]);
 		expect(result.current.loading).toBe(true);
+	});
+
+	it('reads the license key counts of the account under One Time Purchases', async () => {
+		getLicenseKeyCountsMock.mockResolvedValue({});
+		useActivationKeyScopeMock.mockReturnValue({
+			accountExternalReferenceCode: 'ACCNT-1',
+		});
+		useDataQueryMock.mockReturnValue({data: undefined, isLoading: true});
+		useFetchMock.mockReturnValue({
+			data: {items: entitlementNodes},
+			isLoading: false,
+		});
+
+		renderHook(() => useProductEnvironmentEntitlements(orderItems, true));
+
+		const [[{fetcher, key}]] = useDataQueryMock.mock.calls;
+
+		expect(key).toBe(
+			'/activation-keys/license-key-counts?accountExternalReferenceCode=ACCNT-1'
+		);
+		await fetcher();
+		expect(getLicenseKeyCountsMock.mock.calls).toEqual([
+			[{accountExternalReferenceCode: 'ACCNT-1'}],
+		]);
+	});
+
+	it('skips the license key counts without an activation key scope', () => {
+		useActivationKeyScopeMock.mockReturnValue(undefined);
+		useDataQueryMock.mockReturnValue({data: undefined, isLoading: false});
+		useFetchMock.mockReturnValue({
+			data: {items: entitlementNodes},
+			isLoading: false,
+		});
+
+		const {result} = renderHook(() =>
+			useProductEnvironmentEntitlements(orderItems, true)
+		);
+
+		expect(useDataQueryMock.mock.calls[0][0].key).toBeNull();
+		expect(
+			result.current.environmentEntitlements.map(
+				({provisionedCount}) => provisionedCount
+			)
+		).toEqual([undefined, undefined]);
 	});
 
 	it('keeps the activation key entitlements of the shown environments', () => {
@@ -190,7 +252,10 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 	});
 
 	it('returns the environment, the dates, the status, and the counts of each entitlement', () => {
-		useDataQueryMock.mockReturnValue({data: [1, 0], isLoading: false});
+		useDataQueryMock.mockReturnValue({
+			data: {11: {totalCount: 4, usedCount: 1}},
+			isLoading: false,
+		});
 		useFetchMock.mockReturnValue({
 			data: {items: entitlementNodes},
 			isLoading: false,
@@ -204,6 +269,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 			{
 				endDate: '2027-08-09T00:00:00.000Z',
 				environment: 'production',
+				provisionableCount: 4,
 				provisionedCount: 1,
 				quantity: 2,
 				skuProductName: '',
@@ -213,6 +279,7 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 			{
 				endDate: '',
 				environment: '',
+				provisionableCount: 0,
 				provisionedCount: 0,
 				quantity: 0,
 				skuProductName: '',
@@ -351,6 +418,33 @@ describe('[HOOK-USEPRODUCTENVIRONMENTENTITLEMENTS] useProductEnvironmentEntitlem
 				({environment}) => environment
 			)
 		).toEqual(['non-production']);
+	});
+
+	it('falls back to the maximum quantity without a total count', () => {
+		useDataQueryMock.mockReturnValue({
+			data: {12: {usedCount: 5}},
+			isLoading: false,
+		});
+		useFetchMock.mockReturnValue({
+			data: {items: entitlementNodes},
+			isLoading: false,
+		});
+
+		const {result} = renderHook(() =>
+			useProductEnvironmentEntitlements(orderItems, true)
+		);
+
+		expect(
+			result.current.environmentEntitlements.map(
+				({provisionableCount, provisionedCount}) => [
+					provisionedCount,
+					provisionableCount,
+				]
+			)
+		).toEqual([
+			[0, 3],
+			[5, 0],
+		]);
 	});
 
 	it('leaves the counts out when they did not load', () => {

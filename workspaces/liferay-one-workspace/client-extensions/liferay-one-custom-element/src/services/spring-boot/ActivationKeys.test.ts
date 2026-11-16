@@ -66,10 +66,28 @@ describe('[CLIENT-SPRING-BOOT-ACTIVATIONKEYS] ActivationKeys', () => {
 		]);
 	});
 
-	it('scopes the generate form and the summary by the account', async () => {
+	it('reads the license key counts of the project', async () => {
+		const licenseKeyCounts = {11: {totalCount: 3, usedCount: 2}};
+
+		oAuth2Fetch.mockResolvedValue(jsonResponse(licenseKeyCounts));
+
+		await expect(
+			ActivationKeys.getLicenseKeyCounts({
+				projectExternalReferenceCode: 'PRJCT-1',
+			})
+		).resolves.toEqual(licenseKeyCounts);
+		expect(oAuth2Fetch.mock.calls[0][0]).toBe(
+			'/activation-keys/license-key-counts?projectExternalReferenceCode=PRJCT-1'
+		);
+	});
+
+	it('scopes the generate form, the license key counts, and the summary by the account', async () => {
 		oAuth2Fetch.mockImplementation(() => Promise.resolve(jsonResponse({})));
 
 		await ActivationKeys.getGenerateForm({
+			accountExternalReferenceCode: 'ACCNT-1',
+		});
+		await ActivationKeys.getLicenseKeyCounts({
 			accountExternalReferenceCode: 'ACCNT-1',
 		});
 		await ActivationKeys.getSummary({
@@ -78,6 +96,7 @@ describe('[CLIENT-SPRING-BOOT-ACTIVATIONKEYS] ActivationKeys', () => {
 
 		expect(oAuth2Fetch.mock.calls.map(([resource]) => resource)).toEqual([
 			'/activation-keys/generate-form?accountExternalReferenceCode=ACCNT-1',
+			'/activation-keys/license-key-counts?accountExternalReferenceCode=ACCNT-1',
 			'/activation-keys/summary?accountExternalReferenceCode=ACCNT-1',
 		]);
 	});

@@ -65,6 +65,7 @@ function getSections(
 const environmentEntitlement = {
 	endDate: '2099-08-09T12:00:00Z',
 	environment: 'production',
+	provisionableCount: 2,
 	provisionedCount: 1,
 	quantity: 2,
 	skuProductName: '',
@@ -201,6 +202,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 					{
 						...environmentEntitlement,
 						environment: 'non-production',
+						provisionableCount: 3,
 						provisionedCount: 0,
 						quantity: 3,
 					},
@@ -210,11 +212,11 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		).toEqual([
 			[
 				'Production',
-				[['Keys Provisioned', '1 of 2'], ...environmentRows],
+				[['Key Activations Provisioned', '1 of 2'], ...environmentRows],
 			],
 			[
 				'Non-Production',
-				[['Keys Provisioned', '0 of 3'], ...environmentRows],
+				[['Key Activations Provisioned', '0 of 3'], ...environmentRows],
 			],
 		]);
 	});
@@ -257,6 +259,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 					{
 						...environmentEntitlement,
 						endDate: '2100-08-09T12:00:00Z',
+						provisionableCount: 3,
 						provisionedCount: 2,
 						quantity: 3,
 						startDate: '2025-08-09T12:00:00Z',
@@ -267,7 +270,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 			[
 				'Production',
 				[
-					['Keys Provisioned', '3 of 5'],
+					['Key Activations Provisioned', '3 of 5'],
 					['Start Date', 'Aug 9, 2025'],
 					['Expiration Date', 'Aug 9, 2100'],
 					['Status', 'Active'],
@@ -283,6 +286,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 					{
 						...environmentEntitlement,
 						endDate: '2021-08-09T12:00:00Z',
+						provisionableCount: 4,
 						provisionedCount: 4,
 						quantity: 4,
 						startDate: '2020-08-09T12:00:00Z',
@@ -291,6 +295,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 					{
 						...environmentEntitlement,
 						endDate: '2101-08-09T12:00:00Z',
+						provisionableCount: 6,
 						provisionedCount: 0,
 						quantity: 6,
 						startDate: '2099-08-09T12:00:00Z',
@@ -300,7 +305,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		).toEqual([
 			[
 				'Production',
-				[['Keys Provisioned', '1 of 2'], ...environmentRows],
+				[['Key Activations Provisioned', '1 of 2'], ...environmentRows],
 			],
 		]);
 	});
@@ -431,6 +436,21 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 		}
 	});
 
+	it('shows the keys provisioned against the provisionable count instead of the purchased quantity', () => {
+		expect(
+			getRows('env-instance', {
+				environmentEntitlements: [
+					{
+						...environmentEntitlement,
+						provisionableCount: 4,
+						provisionedCount: 3,
+						quantity: 2,
+					},
+				],
+			})[0]
+		).toEqual(['Key Activations Provisioned', '3 of 4']);
+	});
+
 	it('shows a dash for keys that were not counted', () => {
 		expect(
 			getRows('env-instance', {
@@ -438,7 +458,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 					{...environmentEntitlement, provisionedCount: undefined},
 				],
 			})[0]
-		).toEqual(['Keys Provisioned', '-']);
+		).toEqual(['Key Activations Provisioned', '-']);
 	});
 
 	it('takes the start date from the entitlements that have one', () => {
@@ -570,7 +590,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 						'Product',
 						'Subscription Portal EE - Platinum (Production), Subscription Portal EE - Gold (Production)',
 					],
-					['Keys Provisioned', '3 of 6'],
+					['Key Activations Provisioned', '3 of 6'],
 					...environmentRows,
 				],
 			],
@@ -581,7 +601,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] buildDetailsSections', () => {
 						'Product',
 						'Subscription Portal EE - Platinum (Non-Production)',
 					],
-					['Keys Provisioned', '1 of 2'],
+					['Key Activations Provisioned', '1 of 2'],
 					...environmentRows,
 				],
 			],
