@@ -49,7 +49,9 @@ export default function ServerFieldGroup({
 			{serverField === 'ipAddresses' && (
 				<Input
 					{...register(`servers.${index}.ipAddresses`, {
-						validate: validateIPAddresses,
+						validate: (value, formValues) =>
+							formValues.serverField !== 'ipAddresses' ||
+							validateIPAddresses(value),
 					})}
 					component="textarea"
 					disabled={disabled}
@@ -65,7 +67,9 @@ export default function ServerFieldGroup({
 			{serverField === 'macAddresses' && (
 				<Input
 					{...register(`servers.${index}.macAddresses`, {
-						validate: validateMACAddresses,
+						validate: (value, formValues) =>
+							formValues.serverField !== 'macAddresses' ||
+							validateMACAddresses(value),
 					})}
 					component="textarea"
 					disabled={disabled}
