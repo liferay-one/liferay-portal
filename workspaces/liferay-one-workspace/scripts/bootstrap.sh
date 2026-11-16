@@ -72,6 +72,9 @@ function main {
 	echo "Setting virtual hosts."
 	./scripts/bootstrap/set_virtual_hosts.sh
 
+	echo "Setting company settings."
+	./scripts/bootstrap/set_company_settings.sh
+
 	echo "Setting redirect entries."
 	./scripts/bootstrap/set_redirect_entries.sh
 
