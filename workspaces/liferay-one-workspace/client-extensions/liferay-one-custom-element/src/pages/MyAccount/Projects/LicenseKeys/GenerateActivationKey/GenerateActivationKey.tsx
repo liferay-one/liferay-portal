@@ -59,6 +59,7 @@ import {
 	isDeveloperKeyType,
 	isFreeKeyType,
 	isServerlessKeyType,
+	toSelectedServers,
 	toServerField,
 } from './utils';
 
@@ -608,7 +609,7 @@ export default function GenerateActivationKey() {
 					isServerlessKeyType(values.keyType) ||
 					virtualCluster
 						? []
-						: values.servers,
+						: toSelectedServers(values.serverField, values.servers),
 				startDate:
 					complimentary && !startsToday
 						? toISODate(values.startDate)
