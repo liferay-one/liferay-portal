@@ -3,10 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {fireEvent, render, screen} from '@testing-library/react';
+import {fireEvent, render, screen, waitFor} from '@testing-library/react';
 import {useForm} from 'react-hook-form';
 import {describe, expect, it, vi} from 'vitest';
-import {sub, translate} from '~/i18n';
+import {Word, sub, translate} from '~/i18n';
 
 import {GenerateActivationKeyForm} from '../types';
 import {buildEmptyServer} from '../utils';
@@ -20,18 +20,26 @@ vi.mock('../../../CloudAppInstall/WizardFooter/WizardFooter', () => ({
 	default: ({
 		continueButtonProps,
 	}: {
-		continueButtonProps: {disabled: boolean};
-	}) => <button data-testid="next" disabled={continueButtonProps.disabled} />,
+		continueButtonProps: {disabled: boolean; onClick: () => void};
+	}) => (
+		<button
+			data-testid="next"
+			disabled={continueButtonProps.disabled}
+			onClick={continueButtonProps.onClick}
+		/>
+	),
 }));
 
 function Harness({
 	appLicense = false,
 	keyType = 'production',
+	onClickGenerate = vi.fn(),
 	version = '2026.Q3',
 	virtualClusterAvailable = false,
 }: {
 	appLicense?: boolean;
 	keyType?: string;
+	onClickGenerate?: () => void;
 	version?: string;
 	virtualClusterAvailable?: boolean;
 }) {
@@ -59,7 +67,7 @@ function Harness({
 			onClickBack={vi.fn()}
 			onClickCancel={vi.fn()}
 			onClickDone={vi.fn()}
-			onClickGenerate={vi.fn()}
+			onClickGenerate={onClickGenerate}
 			renewing={false}
 			submitting={false}
 			virtualCluster={
@@ -68,6 +76,10 @@ function Harness({
 			virtualClusterAvailable={virtualClusterAvailable}
 		/>
 	);
+}
+
+function clickServerField(word: Word) {
+	fireEvent.click(screen.getAllByText(translate(word))[0]);
 }
 
 function getNextButton() {
@@ -186,5 +198,83 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] Environment
 
 		expect(screen.getByLabelText(translate('host-name'))).toBeTruthy();
 		expect(screen.queryByLabelText(translate('cluster-nodes'))).toBeNull();
+	});
+
+	it('keeps the host name after the server field changes', () => {
+		render(<Harness />);
+
+		fireEvent.change(screen.getByLabelText(translate('host-name')), {
+			target: {value: 'dxp-host'},
+		});
+
+		clickServerField('ip-addresses');
+
+		expect(screen.queryByLabelText(translate('host-name'))).toBeNull();
+
+		clickServerField('host-name');
+
+		expect(
+			(screen.getByLabelText(translate('host-name')) as HTMLInputElement)
+				.value
+		).toBe('dxp-host');
+		expect(getNextButton().disabled).toBe(false);
+	});
+
+	it('generates a host name key when a hidden MAC address is not valid', async () => {
+		const onClickGenerate = vi.fn();
+
+		render(<Harness onClickGenerate={onClickGenerate} />);
+
+		clickServerField('mac-addresses');
+
+		fireEvent.change(screen.getByLabelText(translate('mac-addresses')), {
+			target: {value: 'not-a-mac-address'},
+		});
+
+		clickServerField('host-name');
+
+		fireEvent.change(screen.getByLabelText(translate('host-name')), {
+			target: {value: 'dxp-host'},
+		});
+
+		fireEvent.click(getNextButton());
+
+		await waitFor(() => expect(onClickGenerate).toHaveBeenCalled());
+	});
+
+	it('shows the required fields for a production key', () => {
+		render(<Harness />);
+
+		expect(
+			screen.getByText(
+				translate(
+					'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
+				)
+			)
+		).toBeTruthy();
+	});
+
+	it('shows the required fields without a version for an app license key', () => {
+		render(<Harness appLicense />);
+
+		expect(
+			screen.getByText(
+				translate(
+					'to-generate-a-key-enter-an-environment-name-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
+				)
+			)
+		).toBeTruthy();
+	});
+
+	it('does not show the required fields for a free key', () => {
+		render(<Harness keyType="free" />);
+
+		expect(
+			screen.queryByText(
+				translate(
+					'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
+				)
+			)
+		).toBeNull();
 	});
 });
