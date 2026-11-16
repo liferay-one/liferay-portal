@@ -32,6 +32,7 @@ import {
 	isDeveloperKeyType,
 	isLicensedForVersion,
 	isServerlessKeyType,
+	toSelectedServers,
 	toServerField,
 } from './utils';
 
@@ -482,6 +483,22 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(
 				hasServerInfo([server, buildEmptyServer()], 'hostName')
 			).toBe(false);
+		});
+
+		it('sends only the selected server field', () => {
+			const server = {
+				hostName: 'node-1',
+				ipAddresses: '10.0.0.1',
+				macAddresses: '00:1A:2B:3C:4D:5E',
+			};
+
+			expect(toSelectedServers('ipAddresses', [server, server])).toEqual([
+				{...buildEmptyServer(), ipAddresses: '10.0.0.1'},
+				{...buildEmptyServer(), ipAddresses: '10.0.0.1'},
+			]);
+			expect(toSelectedServers('hostName', [server])).toEqual([
+				{...buildEmptyServer(), hostName: 'node-1'},
+			]);
 		});
 	});
 
