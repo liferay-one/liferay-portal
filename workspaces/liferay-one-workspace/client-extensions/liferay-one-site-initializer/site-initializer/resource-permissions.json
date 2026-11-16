@@ -733,6 +733,32 @@
 	},
 	{
 		"actionIds": [
+			"VIEW"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.model.CommerceOrderType",
+		"roleName": "User",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_COMMERCE_ORDER",
+			"CHECKOUT_OPEN_COMMERCE_ORDERS",
+			"MANAGE_COMMERCE_ORDER_DELIVERY_TERMS",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_METHODS",
+			"MANAGE_COMMERCE_ORDER_PAYMENT_TERMS",
+			"MANAGE_COMMERCE_ORDER_SHIPPING_OPTIONS",
+			"VIEW_BILLING_ADDRESS",
+			"VIEW_COMMERCE_ORDERS",
+			"VIEW_OPEN_COMMERCE_ORDERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.commerce.order",
+		"roleName": "Account Buyer",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
 			"VIEW_COMMERCE_ORDERS",
 			"VIEW_OPEN_COMMERCE_ORDERS"
 		],
