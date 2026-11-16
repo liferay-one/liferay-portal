@@ -111,6 +111,7 @@ function _configure {
 		export LIFERAY_ENV_FILE=/dev/null
 		export LIFERAY_URL=$(_get_url "${web_id}")
 
+		./scripts/bootstrap/set_company_settings.sh &&
 		./scripts/bootstrap/set_redirect_entries.sh &&
 		./scripts/bootstrap/set_payment_methods.sh &&
 		./scripts/bootstrap/create_dxp_oauth_application.sh

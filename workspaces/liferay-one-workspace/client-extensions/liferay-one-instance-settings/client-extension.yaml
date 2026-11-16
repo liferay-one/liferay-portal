@@ -56,6 +56,12 @@ liferay-one-instance-settings-fragment-service:
     pid: com.liferay.fragment.configuration.FragmentServiceConfiguration
     propagateChanges: true
     type: instanceSettings
+liferay-one-instance-settings-layout-seo-general:
+    includeInstanceName: true
+    includeSiteName: false
+    name: Liferay One Instance Settings Layout SEO General
+    pid: com.liferay.layout.seo.internal.configuration.LayoutSEOGeneralGroupConfiguration
+    type: instanceSettings
 liferay-one-instance-settings-release-team-oahs:
     .serviceAddress: localhost:8080
     .serviceScheme: http
