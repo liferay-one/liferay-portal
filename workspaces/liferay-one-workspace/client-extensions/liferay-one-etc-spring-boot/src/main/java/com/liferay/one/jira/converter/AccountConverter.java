@@ -59,6 +59,12 @@ public class AccountConverter extends BaseJiraAssetObjectConverter {
 			AccountConstants.ATTRIBUTE_NAME_EXTERNAL_UPDATED_AT,
 			formatDate(account.getDateModified()));
 		jiraAssetObject.setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_SALESFORCE_ACCOUNT_ID,
+			account.getExternalReferenceCode());
+		jiraAssetObject.setAttributeValue(
+			AccountConstants.ATTRIBUTE_NAME_SALESFORCE_ACCOUNT_NAME,
+			account.getName());
+		jiraAssetObject.setAttributeValue(
 			AccountConstants.ATTRIBUTE_NAME_STATUS,
 			_status(account.getStatus()));
 
