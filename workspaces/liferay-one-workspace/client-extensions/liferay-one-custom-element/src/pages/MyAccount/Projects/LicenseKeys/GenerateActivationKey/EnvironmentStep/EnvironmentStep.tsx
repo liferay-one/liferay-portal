@@ -3,11 +3,13 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayAlert from '@clayui/alert';
 import {ClayCheckbox} from '@clayui/form';
 import {UseFormReturn, useFieldArray} from 'react-hook-form';
 import {Input} from '~/components/Input/Input';
 import RadioCard from '~/components/RadioCard/RadioCard';
 import {Word, translate} from '~/i18n';
+import {getIconSpriteMap} from '~/services/liferay/liferay';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import ClusterNodesField from '../components/ClusterNodesField/ClusterNodesField';
@@ -119,14 +121,6 @@ export default function EnvironmentStep({
 	function onChangeServerField(value: GenerateActivationKeyServerField) {
 		setValue('serverField', value);
 		setValue('virtualCluster', false);
-
-		servers.forEach((server, index) => {
-			SERVER_FIELDS.forEach((current) => {
-				if (current !== value) {
-					setValue(`servers.${index}.${current}`, '');
-				}
-			});
-		});
 	}
 
 	return (
@@ -166,6 +160,22 @@ export default function EnvironmentStep({
 						'e-g-liferay-dev-environment-ecom-dxp-7-2'
 					)}
 				/>
+			)}
+
+			{!free && !serverless && !virtualCluster && (
+				<ClayAlert
+					className="mt-4"
+					displayType="info"
+					role={null}
+					spritemap={getIconSpriteMap()}
+					symbol="info-circle"
+				>
+					{translate(
+						appLicense
+							? 'to-generate-a-key-enter-an-environment-name-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
+							: 'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
+					)}
+				</ClayAlert>
 			)}
 
 			{!free && !serverless && (
