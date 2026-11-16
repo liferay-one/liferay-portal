@@ -63,6 +63,11 @@ export type ActivationKeyServer = {
 
 export type ActivationKeyServerField = keyof ActivationKeyServer;
 
+export type ActivationKeyLicenseKeyCounts = Record<
+	string,
+	{totalCount?: number; usedCount: number}
+>;
+
 export type ActivationKeyScope =
 	| {accountExternalReferenceCode: string}
 	| {projectExternalReferenceCode: string};
@@ -135,6 +140,16 @@ class ActivationKeysOAuth2 extends OneSpringBootOAuth2 {
 		}
 
 		return this.get<GenerateForm>(`/generate-form?${searchParams}`);
+	}
+
+	getLicenseKeyCounts(
+		scope: ActivationKeyScope
+	): Promise<ActivationKeyLicenseKeyCounts> {
+		const searchParams = new URLSearchParams(scope);
+
+		return this.get<ActivationKeyLicenseKeyCounts>(
+			`/license-key-counts?${searchParams}`
+		);
 	}
 
 	getSummary(scope: ActivationKeyScope): Promise<ActivationKeySummary> {

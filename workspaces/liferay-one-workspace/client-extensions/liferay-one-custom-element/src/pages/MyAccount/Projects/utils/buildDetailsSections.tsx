@@ -59,6 +59,7 @@ const ENTITLEMENT_STATUSES: Word[] = [
 type EnvironmentSummary = {
 	endDate: string;
 	environment: string;
+	provisionableCount?: number;
 	provisionedCount?: number;
 	quantity: number;
 	skuProductNames: string[];
@@ -156,6 +157,10 @@ function summarizeEnvironment(
 	return {
 		endDate: sortDates(term.map(({endDate}) => endDate)).at(-1) ?? '',
 		environment,
+		provisionableCount: term.reduce(
+			(total, {provisionableCount}) => total + (provisionableCount ?? 0),
+			0
+		),
 		provisionedCount: provisionedCounted
 			? term.reduce(
 					(total, {provisionedCount}) =>
@@ -252,13 +257,16 @@ function environmentDateRows(
 }
 
 function keysProvisioned(environmentSummary: EnvironmentSummary): string {
-	const {provisionedCount, quantity} = environmentSummary;
+	const {provisionableCount, provisionedCount} = environmentSummary;
 
 	if (provisionedCount === undefined) {
 		return '-';
 	}
 
-	return i18n.sub('x-of-x', [String(provisionedCount), String(quantity)]);
+	return i18n.sub('x-of-x', [
+		String(provisionedCount),
+		String(provisionableCount ?? 0),
+	]);
 }
 
 function orderRows(context: DetailsContext): DetailsRow[] {
@@ -406,7 +414,7 @@ const DETAILS_SECTIONS_BY_PROFILE: Record<
 	'env-instance': (context) =>
 		environmentSections(context, (environmentSummary) => [
 			{
-				label: i18n.translate('keys-provisioned'),
+				label: i18n.translate('key-activations-provisioned'),
 				value: keysProvisioned(environmentSummary),
 			},
 			...environmentDateRows(environmentSummary),

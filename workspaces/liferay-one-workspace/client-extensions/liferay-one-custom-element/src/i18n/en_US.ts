@@ -928,10 +928,10 @@ export default {
 	'key': 'Key',
 	'key-activations-available-x-of-x':
 		'Key activations available: {0} of {1}.',
+	'key-activations-provisioned': 'Key Activations Provisioned',
 	'key-deactivation-requested-succesfully':
 		'Key deactivation requested successfully',
 	'key-type': 'Key Type',
-	'keys-provisioned': 'Keys Provisioned',
 	'knowledge-management': 'Knowledge Management',
 	'kpis': 'KPIs',
 	'last-login': 'Last Login',
