@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 import {Analytics} from '~/services/liferay/Analytics';
+import {Liferay} from '~/services/liferay/liferay';
 import GetAppInformations from '~/services/objects/GetAppInformations';
 import {getProductOrderTypes} from '~/utils/getProductOrderTypes';
 import {OrderCustomFields} from '~/utils/orderUtils';
@@ -47,7 +49,7 @@ export default class ProductPurchaseApp extends ProductPurchase {
 		const {priceModel} = getProductPriceModel(this.product);
 
 		await GetAppInformations.postGetAppInformation({
-			dashboardLink: getSiteURL() + '/my-account',
+			dashboardLink: `${Liferay.ThemeDisplay.getPortalURL()}${getSiteURL()}/my-account#/${this.account.externalReferenceCode}/project/${ONE_TIME_PURCHASES}/applications`,
 			orderId: String(order.id),
 			priceModel,
 			productName: this.product.name,
