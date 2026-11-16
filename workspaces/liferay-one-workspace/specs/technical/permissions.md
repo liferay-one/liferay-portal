@@ -218,6 +218,7 @@ These are the grants at scope 1 and scope 4 that do not name a custom object.
 | `com.liferay.commerce.model.CommerceOrder` | Provisioning Administrator | `VIEW` | 1 | L524 |
 | `com.liferay.commerce.model.CommerceOrderType` | Finance Administrator | `VIEW` | 1 | L533 |
 | `com.liferay.commerce.model.CommerceOrderType` | Provisioning Administrator | `VIEW` | 1 | L542 |
+| `com.liferay.commerce.model.CommerceOrderType` | User | `VIEW`. A cart that names an order type reads the order type in the channel site, where no account role applies. | 1 | L734 |
 | `com.liferay.commerce.order` | Finance Administrator | `MANAGE_COMMERCE_ORDERS`, `MANAGE_COMMERCE_ORDER_PRICES`, `VIEW_COMMERCE_ORDERS` | 1 | L551 |
 | `com.liferay.commerce.order` | Liferay Staff | `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` | 1 | L562 |
 | `com.liferay.commerce.order` | Provisioning Administrator | `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` | 1 | L592 |
@@ -242,12 +243,12 @@ These are the grants at scope 1 and scope 4 that do not name a custom object.
 
 ### Grants at Scope 3
 
-The 64 scope 3 grants go to 42 site role grants, 20 account role grants, and 2 organization role grants. Each one applies in every account, site, or organization where the user holds the role.
+The 73 scope 3 grants go to 42 site role grants, 29 account role grants, and 2 organization role grants. Each one applies in every account, site, or organization where the user holds the role.
 
 | Role | Type | What the Grants Give | Lines |
 | --- | --- | --- | --- |
 | Account Administrator | account | `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment | L973, L1018 |
-| Account Buyer | account | `VIEW` on the account | L294 |
+| Account Buyer | account | `VIEW` on the account. `ADD_COMMERCE_ORDER`, `CHECKOUT_OPEN_COMMERCE_ORDERS`, `MANAGE_COMMERCE_ORDER_DELIVERY_TERMS`, `MANAGE_COMMERCE_ORDER_PAYMENT_METHODS`, `MANAGE_COMMERCE_ORDER_PAYMENT_TERMS`, `MANAGE_COMMERCE_ORDER_SHIPPING_OPTIONS`, `VIEW_BILLING_ADDRESS`, `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. Liferay Commerce gives these actions only to an Account Buyer role that it creates, and the batch creates this role first. | L435, L743 |
 | Account Member | account | `VIEW`, `VIEW_ACCOUNT_ROLES`, `VIEW_USERS` on the account. `VIEW` on the account's roles. `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization. | L443, L579, L721, L1238 |
 | Article Administrator | site | Web content and folders, and Site Administration | L629 to L1209 (6 grants) |
 | Documentation Administrator | site | Web content, categories, pages, page templates, and SEO | L446 to L1251 (14 grants) |
