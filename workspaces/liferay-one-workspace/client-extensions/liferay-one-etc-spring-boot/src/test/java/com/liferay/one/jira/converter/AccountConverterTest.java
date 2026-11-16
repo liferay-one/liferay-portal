@@ -203,6 +203,26 @@ public class AccountConverterTest {
 	}
 
 	@Test
+	public void testToAssetObjectSetsSalesforceAccountOnProjectAsset() {
+		Account account = new Account();
+
+		account.setExternalReferenceCode("001SALESFORCEACCOUNT");
+		account.setName("Salesforce Account");
+
+		JiraAssetObject jiraAssetObject = _accountConverter.toAssetObject(
+			account, "a0XSALESFORCEPROJECT", "Salesforce Project");
+
+		Assertions.assertEquals(
+			"001SALESFORCEACCOUNT",
+			jiraAssetObject.getAttributeValue(
+				AccountConstants.ATTRIBUTE_NAME_SALESFORCE_ACCOUNT_ID));
+		Assertions.assertEquals(
+			"Salesforce Account",
+			jiraAssetObject.getAttributeValue(
+				AccountConstants.ATTRIBUTE_NAME_SALESFORCE_ACCOUNT_NAME));
+	}
+
+	@Test
 	public void testToAssetObjectSkipsAccountCode() {
 		Account account = new Account();
 
