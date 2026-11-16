@@ -175,8 +175,7 @@ public class CommerceProductService extends OneBaseService {
 					"CPDEFINITION_PRODUCTID",
 					String.valueOf(product.getProductId())
 				).put(
-					"PRODUCT_THUMBNAIL",
-					GetterUtil.getString(product.getThumbnail())
+					"PRODUCT_THUMBNAIL", _getThumbnailURL(product)
 				).build());
 
 		_notificationQueueEntryService.addNotificationQueueEntry(
@@ -208,7 +207,8 @@ public class CommerceProductService extends OneBaseService {
 
 		String dashboardURL = StringBundler.concat(
 			lxcDXPServerProtocol, "://", lxcDXPMainDomain,
-			"/web/one/administrator-dashboard#/apps/", product.getProductId());
+			"/web/one/admin#/mp-apps/", product.getProductId());
+		String thumbnailURL = _getThumbnailURL(product);
 
 		JSONObject processedTemplateJSONObject =
 			_notificationTemplateService.getAndProcessTemplateJSONObject(
@@ -233,8 +233,7 @@ public class CommerceProductService extends OneBaseService {
 				).put(
 					"CPDEFINITION_NAME", CommerceProductUtil.getName(product)
 				).put(
-					"CPDEFINITION_THUMBNAIL",
-					GetterUtil.getString(product.getThumbnail())
+					"CPDEFINITION_THUMBNAIL", thumbnailURL
 				).put(
 					"CPDEFINITION_URL", dashboardURL
 				).put(
@@ -246,8 +245,7 @@ public class CommerceProductService extends OneBaseService {
 				).put(
 					"PRODUCT_NAME", CommerceProductUtil.getName(product)
 				).put(
-					"PRODUCT_THUMBNAIL",
-					GetterUtil.getString(product.getThumbnail())
+					"PRODUCT_THUMBNAIL", thumbnailURL
 				).build());
 
 		_notificationQueueEntryService.addNotificationQueueEntry(
@@ -279,8 +277,7 @@ public class CommerceProductService extends OneBaseService {
 						"CPDEFINITION_PRODUCTID",
 						String.valueOf(product.getProductId())
 					).put(
-						"PRODUCT_THUMBNAIL",
-						GetterUtil.getString(product.getThumbnail())
+						"PRODUCT_THUMBNAIL", thumbnailURL
 					).build());
 
 			_notificationQueueEntryService.addNotificationQueueEntry(
@@ -645,6 +642,19 @@ public class CommerceProductService extends OneBaseService {
 		}
 
 		return "";
+	}
+
+	private String _getThumbnailURL(Product product) {
+		String thumbnail = GetterUtil.getString(product.getThumbnail());
+
+		if (Validator.isNull(thumbnail) || !thumbnail.startsWith("/") ||
+			thumbnail.startsWith("//")) {
+
+			return thumbnail;
+		}
+
+		return StringBundler.concat(
+			lxcDXPServerProtocol, "://", lxcDXPMainDomain, thumbnail);
 	}
 
 	private boolean _hasProductOptionValue(String key, long productOptionId)
