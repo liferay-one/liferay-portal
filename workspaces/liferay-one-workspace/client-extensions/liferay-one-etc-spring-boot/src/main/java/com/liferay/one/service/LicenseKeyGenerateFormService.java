@@ -329,6 +329,26 @@ public class LicenseKeyGenerateFormService {
 	}
 
 	/**
+	 * Returns the used and the total license key count of each active
+	 * entitlement of the account that no project holds, with the rules the
+	 * generate form enforces.
+	 */
+	public JSONObject getLicenseKeyCounts(Account account) throws Exception {
+		return _getLicenseKeyCountsJSONObject(ActivationKeyScope.of(account));
+	}
+
+	/**
+	 * Returns the used and the total license key count of each active
+	 * entitlement of the project, with the rules the generate form enforces. A
+	 * key with no entitlement link counts only against an active entitlement.
+	 * An entitlement that holds keys but is no longer active has no total
+	 * count.
+	 */
+	public JSONObject getLicenseKeyCounts(Project project) throws Exception {
+		return _getLicenseKeyCountsJSONObject(ActivationKeyScope.of(project));
+	}
+
+	/**
 	 * Returns only what the activation key list reads off the generate form:
 	 * whether anything is left to generate, and the Cloud Native subscription
 	 * dates each environment row is stamped with. The list has no use for the
@@ -894,6 +914,48 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return licenseEntries;
+	}
+
+	private JSONObject _getLicenseKeyCountsJSONObject(
+			ActivationKeyScope activationKeyScope)
+		throws Exception {
+
+		List<Entitlement> entitlements =
+			_entitlementService.getActiveEntitlements(activationKeyScope);
+
+		Map<Long, Integer> licenseKeyCounts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				activationKeyScope, entitlements, Collections.emptyList());
+
+		JSONObject jsonObject = new JSONObject();
+
+		for (Entitlement entitlement : entitlements) {
+			jsonObject.put(
+				String.valueOf(entitlement.getEntitlementId()),
+				new JSONObject(
+				).put(
+					"totalCount", getTotalCount(entitlement)
+				).put(
+					"usedCount",
+					licenseKeyCounts.getOrDefault(
+						entitlement.getEntitlementId(), 0)
+				));
+		}
+
+		for (Map.Entry<Long, Integer> entry : licenseKeyCounts.entrySet()) {
+			String entitlementId = String.valueOf(entry.getKey());
+
+			if (!jsonObject.has(entitlementId)) {
+				jsonObject.put(
+					entitlementId,
+					new JSONObject(
+					).put(
+						"usedCount", entry.getValue()
+					));
+			}
+		}
+
+		return jsonObject;
 	}
 
 	private Map<String, Map<String, List<Entitlement>>>

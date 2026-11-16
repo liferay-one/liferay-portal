@@ -806,10 +806,10 @@ export default {
 		'Unirse a una cuenta empresarial existente',
 	'key-activations-available-x-of-x':
 		'Activaciones de claves disponibles: {0} de {1}.',
+	'key-activations-provisioned': 'Activaciones de claves entregadas',
 	'key-deactivation-requested-succesfully':
 		'Desactivación de clave solicitada con éxito',
 	'key-type': 'Tipo de código',
-	'keys-provisioned': 'Códigos de activación entregados',
 	'knowledge-management': 'Gestión del conocimiento',
 	'kpis': 'KPIs',
 	'last-login': 'Último acceso:',

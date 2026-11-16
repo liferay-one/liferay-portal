@@ -6,8 +6,9 @@
 import {useMemo} from 'react';
 import {useDataQuery} from '~/hooks/useDataQuery';
 import {useFetch} from '~/hooks/useFetch';
+import {useActivationKeyScope} from '~/pages/MyAccount/Projects/LicenseKeys/hooks/useActivationKeyScope';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
-import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
+import ActivationKeys from '~/services/spring-boot/ActivationKeys';
 import {getEnvironment} from '~/utils/orderItemOptionUtils';
 
 import type {ProductOrderItem} from '~/hooks/useProjectOrders';
@@ -17,6 +18,7 @@ import type {APIResponse} from '~/types/api';
 export type EnvironmentEntitlement = {
 	endDate: string;
 	environment: string;
+	provisionableCount?: number;
 	provisionedCount?: number;
 	quantity: number;
 	skuProductName: string;
@@ -32,6 +34,7 @@ type EntitlementNode = {
 	generatesActivationKey?: boolean;
 	id: number;
 	licenseKeyType?: string;
+	maxQuantity?: number;
 	quantity?: number;
 	r_commerceOrderItemToEntitlement_commerceOrderItemId?: number;
 	startDate?: string;
@@ -51,23 +54,12 @@ const ENTITLEMENT_FIELDS = [
 	'generatesActivationKey',
 	'id',
 	'licenseKeyType',
+	'maxQuantity',
 	'quantity',
 	'r_commerceOrderItemToEntitlement_commerceOrderItemId',
 	'startDate',
 	'terminationStatus',
 ].join(',');
-
-function countLicenseKeys(entitlementId: number) {
-	return queryGraphQL<{licenseKeys: {totalCount: number}}>(
-		`c { licenseKeys(filter: ${toGraphQLString(
-			new SearchBuilder()
-				.eq('active', true)
-				.and()
-				.eq('entitlementId', String(entitlementId))
-				.build()
-		)}, pageSize: 1) { totalCount } }`
-	).then((data) => data.licenseKeys.totalCount);
-}
 
 function isEnvironmentEntitlement(
 	entitlementNode: EntitlementNode,
@@ -91,6 +83,8 @@ export function useProductEnvironmentEntitlements(
 	orderItems: ProductOrderItem[],
 	activationKeys: boolean
 ) {
+	const scope = useActivationKeyScope();
+
 	const orderItemIds = orderItems.map((orderItem) => orderItem.id);
 
 	const {data: entitlementData, isLoading: entitlementsLoading} = useFetch<
@@ -115,16 +109,15 @@ export function useProductEnvironmentEntitlements(
 		[activationKeys, entitlementData]
 	);
 
-	const entitlementIds = entitlementNodes.map(
-		(entitlementNode) => entitlementNode.id
-	);
-
-	const {data: provisionedCounts, isLoading: provisionedCountsLoading} =
+	const {data: licenseKeyCounts, isLoading: licenseKeyCountsLoading} =
 		useDataQuery({
-			fetcher: () => Promise.all(entitlementIds.map(countLicenseKeys)),
+			fetcher: () =>
+				scope
+					? ActivationKeys.getLicenseKeyCounts(scope)
+					: Promise.reject(new Error('No activation key scope')),
 			key:
-				activationKeys && entitlementIds.length
-					? `/license-key-counts/${entitlementIds.join(',')}`
+				activationKeys && entitlementNodes.length && scope
+					? `/activation-keys/license-key-counts?${new URLSearchParams(scope)}`
 					: null,
 		});
 
@@ -133,11 +126,13 @@ export function useProductEnvironmentEntitlements(
 			orderItems.map((orderItem) => [orderItem.id, orderItem])
 		);
 
-		return entitlementNodes.map((entitlementNode, index) => {
+		return entitlementNodes.map((entitlementNode) => {
 			const orderItem = orderItemsById.get(
 				entitlementNode.r_commerceOrderItemToEntitlement_commerceOrderItemId ??
 					0
 			);
+
+			const licenseKeyCount = licenseKeyCounts?.[entitlementNode.id];
 
 			const optionValueNames = orderItem?.optionValueNames ?? [];
 
@@ -146,17 +141,22 @@ export function useProductEnvironmentEntitlements(
 				environment:
 					entitlementNode.licenseKeyType ||
 					getEnvironment(optionValueNames),
-				provisionedCount: provisionedCounts?.[index],
+				provisionableCount:
+					licenseKeyCount?.totalCount ??
+					Math.trunc(entitlementNode.maxQuantity ?? 0),
+				provisionedCount: licenseKeyCounts
+					? licenseKeyCount?.usedCount ?? 0
+					: undefined,
 				quantity: entitlementNode.quantity ?? 0,
 				skuProductName: orderItem?.skuProductName ?? '',
 				startDate: entitlementNode.startDate ?? '',
 				terminationStatus: entitlementNode.terminationStatus ?? '',
 			};
 		});
-	}, [entitlementNodes, orderItems, provisionedCounts]);
+	}, [entitlementNodes, licenseKeyCounts, orderItems]);
 
 	return {
 		environmentEntitlements,
-		loading: entitlementsLoading || provisionedCountsLoading,
+		loading: entitlementsLoading || licenseKeyCountsLoading,
 	};
 }

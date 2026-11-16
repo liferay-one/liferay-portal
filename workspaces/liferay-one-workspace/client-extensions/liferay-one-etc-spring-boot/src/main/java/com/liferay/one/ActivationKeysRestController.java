@@ -20,6 +20,7 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
+import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
@@ -201,6 +202,38 @@ public class ActivationKeysRestController extends OneBaseRestController {
 				UserAccountUtil.hasRole(
 					userAccount, RoleConstants.NAME_PROVISIONING_WORKER)
 			).toString()
+		);
+	}
+
+	@GetMapping("/license-key-counts")
+	public ResponseEntity<String> getActivationKeysLicenseKeyCounts(
+			@RequestParam(
+				name = "accountExternalReferenceCode", required = false
+			)
+			String accountExternalReferenceCode,
+			@AuthenticationPrincipal Jwt jwt,
+			@RequestParam(
+				name = "projectExternalReferenceCode", required = false
+			)
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		JSONObject jsonObject = null;
+
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			jsonObject = _licenseKeyGenerateFormService.getLicenseKeyCounts(
+				_getViewableAccount(accountExternalReferenceCode, jwt));
+		}
+		else {
+			jsonObject = _licenseKeyGenerateFormService.getLicenseKeyCounts(
+				_getProject(jwt, projectExternalReferenceCode));
+		}
+
+		return ResponseEntity.ok(
+		).contentType(
+			MediaType.APPLICATION_JSON
+		).body(
+			jsonObject.toString()
 		);
 	}
 
@@ -638,6 +671,32 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		return project;
 	}
 
+	/**
+	 * Returns the account when the user can view it, the same as a project
+	 * viewer can read the counts of the project. A user who cannot view the
+	 * account still needs license key activation on it.
+	 */
+	private Account _getViewableAccount(
+			String accountExternalReferenceCode, Jwt jwt)
+		throws Exception {
+
+		Account account = null;
+
+		if (_accountPermission.contains(
+				accountExternalReferenceCode, ActionKeys.VIEW, jwt,
+				getMyUserAccount(jwt))) {
+
+			account = _accountService.fetchAccountByExternalReferenceCode(
+				accountExternalReferenceCode);
+		}
+
+		if (account == null) {
+			return _getAccount(accountExternalReferenceCode, jwt);
+		}
+
+		return account;
+	}
+
 	private boolean _isSelfServiceTrialEntitlement(
 			Account account, long entitlementId)
 		throws Exception {
@@ -814,6 +873,9 @@ public class ActivationKeysRestController extends OneBaseRestController {
 
 	private static final Log _log = LogFactory.getLog(
 		ActivationKeysRestController.class);
+
+	@Autowired
+	private AccountPermission _accountPermission;
 
 	@Autowired
 	private AccountService _accountService;
