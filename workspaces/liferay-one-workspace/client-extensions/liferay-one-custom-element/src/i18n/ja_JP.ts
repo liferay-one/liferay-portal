@@ -1683,6 +1683,10 @@ export default {
 	'to-be-renewed': '更新予定',
 	'to-continue-please-enter-the-required-information':
 		'続行するには、必要な情報を入力してください。',
+	'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server':
+		'キーを生成するには、環境名、バージョン、および各サーバーのホスト名、IPアドレス、またはMACアドレスを入力してください。',
+	'to-generate-a-key-enter-an-environment-name-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server':
+		'キーを生成するには、環境名、および各サーバーのホスト名、IPアドレス、またはMACアドレスを入力してください。',
 	'to-generate-your-unique-activation-key-file-and-access-the-download-please-complete-your-profile-details-below-tell-us-a-bit-about-your-intended-use-to-help-us-support-your-experience':
 		'一意のアクティベーションキーファイルを生成してダウンロードにアクセスするには、以下のプロフィール詳細を入力してください。お客様のエクスペリエンスをサポートするため、使用目的について少し教えてください。',
 	'to-generate-your-unique-activation-key-file-please-provide-the-technical-specifications-required-below-these-details-are-used-exclusively-to-configure-the-software-for-your-environment-and-ensure-hardware-compatibility':
