@@ -42,7 +42,7 @@ vi.mock('~/services/objects/GetAppInformations', () => ({
 	default: {postGetAppInformation: vi.fn()},
 }));
 
-const account = {id: 1} as Account;
+const account = {externalReferenceCode: 'ACCOUNT-1', id: 1} as Account;
 
 function createProduct(specifications: Record<string, string>) {
 	return {
@@ -86,6 +86,7 @@ const product = createProduct({'price-model': 'Free', 'type': 'dxp'});
 
 describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAPP] ProductPurchaseApp', () => {
 	const commerceContext = {...Liferay.CommerceContext};
+	const themeDisplay = Liferay.ThemeDisplay;
 
 	beforeEach(() => {
 		Object.assign(Liferay.CommerceContext, {
@@ -106,6 +107,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAPP] ProductPurchaseApp', () => {
 
 	afterEach(() => {
 		Liferay.CommerceContext = {...commerceContext};
+		Liferay.ThemeDisplay = themeDisplay;
 
 		vi.clearAllMocks();
 		vi.restoreAllMocks();
@@ -187,10 +189,18 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAPP] ProductPurchaseApp', () => {
 	});
 
 	it('posts the get app information after the order and tracks the app purchase', async () => {
+		Liferay.ThemeDisplay = new Proxy(themeDisplay, {
+			get: (target, property, receiver) =>
+				property === 'getPortalURL'
+					? () => 'https://one.liferay.com'
+					: Reflect.get(target, property, receiver),
+		});
+
 		await new ProductPurchaseApp(account, product).createOrder();
 
 		expect(GetAppInformations.postGetAppInformation).toHaveBeenCalledWith({
-			dashboardLink: '/my-account',
+			dashboardLink:
+				'https://one.liferay.com/my-account#/ACCOUNT-1/project/one-time-purchases/applications',
 			orderId: '5',
 			priceModel: 'free',
 			productName: 'App',
