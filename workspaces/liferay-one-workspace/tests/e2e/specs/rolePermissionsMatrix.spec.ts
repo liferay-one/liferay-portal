@@ -37,26 +37,13 @@ const NO_ACCESS_TEXT = 'You do not have access to this page.';
 
 const RENDER_TIMEOUT = 30000;
 
-const PLACED_ORDERS_404 =
-	'GET /o/headless-commerce-delivery-order/v1.0/channels/{channelId}/accounts/{accountId}/placed-orders answers 404 for every role but Account Administrator, so the page shows "An error occurred while fetching the data."';
-
 const KNOWN_DEFECTS: Record<string, string> = {
 	'Account Admin — Account Details':
 		'Account Details renders no edit control for any role, so an administrator cannot change the account details the matrix grants them.',
-	'Account Buyer — Account Orders': PLACED_ORDERS_404,
-	'Account Buyer — Projects':
-		'An Account Buyer with no project membership lands on the One-Time Purchases pseudo-project, whose Products tab shows "An error occurred while fetching the data." instead of a denial or "No Projects Yet", because ' +
-		PLACED_ORDERS_404,
-	'Account Member — Account Orders': PLACED_ORDERS_404,
-	'No Role (null) — Projects':
-		'A user without an account role or project lands on the One-Time Purchases pseudo-project, whose Products tab shows "An error occurred while fetching the data." instead of a denial or "No Projects Yet", because ' +
-		PLACED_ORDERS_404,
-	'No Role (null), project member — assigned project': `The assigned project opens, but its Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
+	'No Role (null) — no project membership':
+		'Liferay gives the Account Member role to every member of an account, and Account Member holds VIEW_COMMERCE_ORDERS on the account. A user with no account role therefore lands on the One-Time Purchases project and sees the account orders that the matrix denies.',
 	'Partner Account Admin — Account Details':
 		'Account Details renders no edit control for any role, so a partner administrator cannot change the account details the matrix grants them.',
-	'Project Admin — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
-	'Project Requester — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
-	'Project User — Project details (view)': `The project Products tab shows "An error occurred while fetching the data." because ${PLACED_ORDERS_404}`,
 	'Project User — Submit support ticket':
 		'The Support menu offers Submit a Request, an external Jira Service Management link, to every signed in user, so a Project User is not limited to viewing tickets.',
 	'Project User — Ticket Attachments (view)':
