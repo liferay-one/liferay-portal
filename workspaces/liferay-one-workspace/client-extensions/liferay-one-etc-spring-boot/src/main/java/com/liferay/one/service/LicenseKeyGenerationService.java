@@ -1591,11 +1591,21 @@ public class LicenseKeyGenerationService {
 		String description = StringBundler.concat(
 			productName, StringPool.SPACE, _getDeveloperLabel(keyType));
 
+		String licenseKeyFamily =
+			LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement);
+
+		if (Objects.equals(
+				licenseKeyFamily,
+				LicenseKeyGenerationConstants.
+					LICENSE_KEY_FAMILY_CLOUD_NATIVE)) {
+
+			licenseKeyFamily =
+				LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP;
+		}
+
 		LicenseEntry licenseEntry =
 			_licenseKeyGenerateFormService.fetchLicenseEntry(
-				keyType,
-				LicenseKeyGenerateFormService.getLicenseKeyFamily(entitlement),
-				version, false);
+				keyType, licenseKeyFamily, version, false);
 
 		if (licenseEntry != null) {
 			description = licenseEntry.getName();
