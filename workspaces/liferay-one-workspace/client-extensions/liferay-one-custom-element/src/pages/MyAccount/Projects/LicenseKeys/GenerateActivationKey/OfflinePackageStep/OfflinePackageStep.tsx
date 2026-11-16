@@ -209,10 +209,7 @@ export default function OfflinePackageStep({
 				}}
 				continueButtonProps={{
 					children: translate('save-and-download-package'),
-					disabled:
-						submitting ||
-						!offlineSubscriptionIds.length ||
-						!version,
+					disabled: submitting || !version,
 					onClick: onClickDownload,
 				}}
 			/>
