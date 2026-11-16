@@ -22,6 +22,7 @@ import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.SubscriptionEntry;
+import com.liferay.one.permission.AccountPermission;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.LicenseKeyPermission;
@@ -758,6 +759,149 @@ public class ActivationKeysRestControllerTest {
 			ProjectNotFoundException.class,
 			() -> activationKeysRestController.getActivationKeysGenerateForm(
 				null, null, _PROJECT_ERC, null));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
+	}
+
+	@Test
+	public void testGetActivationKeysLicenseKeyCounts() throws Exception {
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_ERC)
+		).thenReturn(
+			project
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.getLicenseKeyCounts(project)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"10",
+				new JSONObject(
+				).put(
+					"totalCount", 3
+				).put(
+					"usedCount", 2
+				)
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getActivationKeysLicenseKeyCounts(
+				null, null, _PROJECT_ERC);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		JSONObject entitlementJSONObject = jsonObject.getJSONObject("10");
+
+		Assertions.assertEquals(3, entitlementJSONObject.getInt("totalCount"));
+		Assertions.assertEquals(2, entitlementJSONObject.getInt("usedCount"));
+	}
+
+	@Test
+	public void testGetActivationKeysLicenseKeyCountsChecksPermission()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_projectPermission
+		).check(
+			ActionKeys.VIEW, null, _PROJECT_ERC
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() ->
+				activationKeysRestController.getActivationKeysLicenseKeyCounts(
+					null, null, _PROJECT_ERC));
+
+		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
+	}
+
+	@Test
+	public void testGetActivationKeysLicenseKeyCountsForAccount()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_accountPermission.contains(
+				Mockito.eq(_ACCOUNT_ERC), Mockito.eq(ActionKeys.VIEW),
+				Mockito.isNull(), Mockito.any())
+		).thenReturn(
+			true
+		);
+
+		Account account = Mockito.mock(Account.class);
+
+		Mockito.when(
+			_accountService.fetchAccountByExternalReferenceCode(_ACCOUNT_ERC)
+		).thenReturn(
+			account
+		);
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.getLicenseKeyCounts(account)
+		).thenReturn(
+			new JSONObject(
+			).put(
+				"20",
+				new JSONObject(
+				).put(
+					"totalCount", 5
+				).put(
+					"usedCount", 1
+				)
+			)
+		);
+
+		ResponseEntity<String> responseEntity =
+			activationKeysRestController.getActivationKeysLicenseKeyCounts(
+				_ACCOUNT_ERC, null, null);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		JSONObject entitlementJSONObject = jsonObject.getJSONObject("20");
+
+		Assertions.assertEquals(5, entitlementJSONObject.getInt("totalCount"));
+		Assertions.assertEquals(1, entitlementJSONObject.getInt("usedCount"));
+
+		Mockito.verifyNoInteractions(_environmentActivationPermission);
+	}
+
+	@Test
+	public void testGetActivationKeysLicenseKeyCountsForAccountChecksPermission()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		Mockito.when(
+			_environmentActivationPermission.checkAccountLicenseKeyActivation(
+				_ACCOUNT_ERC, null)
+		).thenThrow(
+			new PrincipalException()
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() ->
+				activationKeysRestController.getActivationKeysLicenseKeyCounts(
+					_ACCOUNT_ERC, null, null));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerateFormService);
 	}
@@ -2277,6 +2421,10 @@ public class ActivationKeysRestControllerTest {
 		);
 
 		ReflectionTestUtils.setField(
+			activationKeysRestController, "_accountPermission",
+			_accountPermission);
+
+		ReflectionTestUtils.setField(
 			activationKeysRestController, "_accountService", _accountService);
 
 		ReflectionTestUtils.setField(
@@ -2568,6 +2716,8 @@ public class ActivationKeysRestControllerTest {
 	private static final String _VIRTUAL_CLUSTER_ACTIVATION_KEY_ERC =
 		"ACTVK-VC";
 
+	private final AccountPermission _accountPermission = Mockito.mock(
+		AccountPermission.class);
 	private final AccountService _accountService = Mockito.mock(
 		AccountService.class);
 	private final ActivationKeyService _activationKeyService = Mockito.mock(

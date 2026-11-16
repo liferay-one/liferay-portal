@@ -1275,6 +1275,166 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetLicenseKeyCountsCountsTheKeysAsTheQuotaCountsThem()
+		throws Exception {
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.when(
+			project.getExternalReferenceCode()
+		).thenReturn(
+			"PRJCT-1"
+		);
+
+		EntitlementService entitlementService = Mockito.mock(
+			EntitlementService.class);
+
+		Mockito.when(
+			entitlementService.getActiveEntitlements(
+				Mockito.any(ActivationKeyScope.class))
+		).thenReturn(
+			Arrays.asList(
+				new Entitlement(
+					new JSONObject(
+					).put(
+						"endDate", "2099-12-31T00:00:00Z"
+					).put(
+						"id", 10L
+					).put(
+						"maxQuantity", 3D
+					).put(
+						"quantity", 5D
+					).put(
+						"r_entitlementDefinitionToEntitlement_c_" +
+							"entitlementDefinitionId",
+						5L
+					).put(
+						"startDate", "2026-01-01T00:00:00Z"
+					)))
+		);
+
+		LicenseKeyService licenseKeyService = Mockito.spy(
+			new LicenseKeyService());
+
+		Mockito.doReturn(
+			Arrays.asList(
+				_toLicenseKey(false, 0L, 10L, 1L),
+				_toLicenseKey(true, 0L, 10L, 2L),
+				_toLicenseKey(false, 5L, 0L, 3L),
+				_toLicenseKey(false, 0L, 20L, 4L))
+		).when(
+			licenseKeyService
+		).getAllProjectedItems(
+			Mockito.eq("/o/c/licensekeys"), Mockito.any(), Mockito.any(),
+			Mockito.any()
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_entitlementService",
+			entitlementService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyService",
+			licenseKeyService);
+
+		JSONObject jsonObject =
+			licenseKeyGenerateFormService.getLicenseKeyCounts(project);
+
+		JSONObject activeEntitlementJSONObject = jsonObject.getJSONObject("10");
+
+		Assertions.assertEquals(
+			3, activeEntitlementJSONObject.getInt("totalCount"));
+		Assertions.assertEquals(
+			2, activeEntitlementJSONObject.getInt("usedCount"));
+
+		JSONObject endedEntitlementJSONObject = jsonObject.getJSONObject("20");
+
+		Assertions.assertFalse(endedEntitlementJSONObject.has("totalCount"));
+		Assertions.assertEquals(
+			1, endedEntitlementJSONObject.getInt("usedCount"));
+
+		Assertions.assertEquals(2, jsonObject.length());
+	}
+
+	@Test
+	public void testGetLicenseKeyCountsForAccountCountsTheKeysThatNoProjectHolds()
+		throws Exception {
+
+		Account account = Mockito.mock(Account.class);
+
+		Mockito.when(
+			account.getId()
+		).thenReturn(
+			1L
+		);
+
+		EntitlementService entitlementService = Mockito.mock(
+			EntitlementService.class);
+
+		Mockito.when(
+			entitlementService.getActiveEntitlements(
+				Mockito.any(ActivationKeyScope.class))
+		).thenReturn(
+			Arrays.asList(
+				new Entitlement(
+					new JSONObject(
+					).put(
+						"endDate", "2099-12-31T00:00:00Z"
+					).put(
+						"id", 10L
+					).put(
+						"maxQuantity", 3D
+					).put(
+						"startDate", "2026-01-01T00:00:00Z"
+					)))
+		);
+
+		LicenseKeyService licenseKeyService = Mockito.mock(
+			LicenseKeyService.class);
+
+		Mockito.when(
+			licenseKeyService.getActiveLicenseKeyCounts(
+				Mockito.any(ActivationKeyScope.class), Mockito.anyList(),
+				Mockito.anyCollection())
+		).thenCallRealMethod();
+
+		Mockito.when(
+			licenseKeyService.getActiveUnassignedLicenseKeyCounts(
+				1L, Collections.emptyList())
+		).thenReturn(
+			HashMapBuilder.put(
+				10L, 2
+			).build()
+		);
+
+		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
+			new LicenseKeyGenerateFormService();
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_entitlementService",
+			entitlementService);
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_licenseKeyService",
+			licenseKeyService);
+
+		JSONObject jsonObject =
+			licenseKeyGenerateFormService.getLicenseKeyCounts(account);
+
+		JSONObject entitlementJSONObject = jsonObject.getJSONObject("10");
+
+		Assertions.assertEquals(3, entitlementJSONObject.getInt("totalCount"));
+		Assertions.assertEquals(2, entitlementJSONObject.getInt("usedCount"));
+
+		Mockito.verify(
+			licenseKeyService, Mockito.never()
+		).getActiveLicenseKeyCounts(
+			Mockito.anyList(), Mockito.anyCollection(), Mockito.anyString()
+		);
+	}
+
+	@Test
 	public void testGetLicensedVersionsKeepsVersionsWithLicenseEntries() {
 		LicenseEntryService licenseEntryService = Mockito.mock(
 			LicenseEntryService.class);
@@ -2362,6 +2522,31 @@ public class LicenseKeyGenerateFormServiceTest {
 				)
 			)
 		);
+	}
+
+	private LicenseKey _toLicenseKey(
+		boolean complimentary, long entitlementDefinitionId, long entitlementId,
+		long licenseKeyId) {
+
+		return new LicenseKey(
+			new JSONObject(
+			).put(
+				"active", true
+			).put(
+				"complimentary", complimentary
+			).put(
+				"customExpirationDate", "2099-01-01T00:00:00Z"
+			).put(
+				"entitlementDefinitionId", entitlementDefinitionId
+			).put(
+				"entitlementId", entitlementId
+			).put(
+				"id", licenseKeyId
+			).put(
+				"r_activationKeyToLicenseKey_c_activationKeyId", licenseKeyId
+			).put(
+				"startDate", "2026-06-01T00:00:00Z"
+			));
 	}
 
 	private Entitlement _toLicenseKeyDurationDaysEntitlement(
