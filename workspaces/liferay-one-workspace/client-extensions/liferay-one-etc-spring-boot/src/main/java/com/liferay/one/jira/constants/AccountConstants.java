@@ -48,6 +48,12 @@ public interface AccountConstants {
 
 	public static final String ATTRIBUTE_NAME_REGION = "Region";
 
+	public static final String ATTRIBUTE_NAME_SALESFORCE_ACCOUNT_ID =
+		"Salesforce Account ID";
+
+	public static final String ATTRIBUTE_NAME_SALESFORCE_ACCOUNT_NAME =
+		"Salesforce Account Name";
+
 	public static final String ATTRIBUTE_NAME_STATUS = "Status";
 
 	public static final String ATTRIBUTE_NAME_TIER = "Tier";
