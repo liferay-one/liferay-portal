@@ -789,10 +789,11 @@ export default {
 	'join-existing-business-account': '既存のビジネスアカウントに参加',
 	'key-activations-available-x-of-x':
 		'利用可能なキーのアクティベーション数: {0} / {1}。',
+	'key-activations-provisioned':
+		'プロビジョニング済みのキーのアクティベーション数',
 	'key-deactivation-requested-succesfully':
 		'キーの無効化リクエストが正常に送信されました',
 	'key-type': 'キータイプ',
-	'keys-provisioned': 'プロビジョニング済みキー',
 	'knowledge-management': 'ナレッジ管理',
 	'kpis': 'KPI',
 	'last-login': '最終ログイン:',

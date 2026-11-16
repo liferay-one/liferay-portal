@@ -800,10 +800,10 @@ export default {
 		'Entrar em uma conta empresarial existente',
 	'key-activations-available-x-of-x':
 		'Ativações de chave disponíveis: {0} de {1}.',
+	'key-activations-provisioned': 'Ativações de chave provisionadas',
 	'key-deactivation-requested-succesfully':
 		'Desativação da chave solicitada com sucesso',
 	'key-type': 'Tipo de chave',
-	'keys-provisioned': 'Chaves provisionadas',
 	'knowledge-management': 'Gestão do conhecimento',
 	'kpis': 'KPIs',
 	'last-login': 'Último acesso:',
