@@ -185,6 +185,34 @@ public class ProvisioningIssueServiceTest {
 	}
 
 	@Test
+	public void testAddOpportunityInvoicedIssueIncludesAccountLink()
+		throws Exception {
+
+		_invokeAddOpportunityInvoicedIssue(
+			"US", "owner@example.com", Collections.emptyList());
+
+		ArgumentCaptor<JSONObject> descriptionArgumentCaptor =
+			ArgumentCaptor.forClass(JSONObject.class);
+
+		Mockito.verify(
+			_jiraIssueService
+		).addIssue(
+			Mockito.any(), descriptionArgumentCaptor.capture(),
+			Mockito.eq(_JIRA_ISSUE_PROVISIONING_ID),
+			Mockito.eq(_JIRA_PROJECT_SUPPORT_HC), Mockito.any()
+		);
+
+		JSONObject descriptionJSONObject = descriptionArgumentCaptor.getValue();
+
+		Assertions.assertTrue(
+			descriptionJSONObject.toString(
+			).contains(
+				"https://one.liferay.com/my-account/#/" + _ACCOUNT_ERC +
+					"/account-details"
+			));
+	}
+
+	@Test
 	public void testAddOpportunityInvoicedIssueIncludesCountryAndOwnerWhenPresent()
 		throws Exception {
 
