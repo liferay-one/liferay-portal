@@ -32,7 +32,7 @@ import {
 	isDeveloperKeyType,
 	isLicensedForVersion,
 	isServerlessKeyType,
-	toSelectedServers,
+	toRequestServers,
 	toServerField,
 } from './utils';
 
@@ -492,13 +492,34 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 				macAddresses: '00:1A:2B:3C:4D:5E',
 			};
 
-			expect(toSelectedServers('ipAddresses', [server, server])).toEqual([
+			expect(
+				toRequestServers(false, 'ipAddresses', [server, server])
+			).toEqual([
 				{...buildEmptyServer(), ipAddresses: '10.0.0.1'},
 				{...buildEmptyServer(), ipAddresses: '10.0.0.1'},
 			]);
-			expect(toSelectedServers('hostName', [server])).toEqual([
+			expect(toRequestServers(false, 'hostName', [server])).toEqual([
 				{...buildEmptyServer(), hostName: 'node-1'},
 			]);
+		});
+
+		it('keeps every server field of a renewed key', () => {
+			const servers = [
+				{
+					hostName: 'node-1',
+					ipAddresses: '10.0.0.1',
+					macAddresses: '00:1A:2B:3C:4D:5E',
+				},
+				{
+					hostName: 'node-1',
+					ipAddresses: '10.0.0.2',
+					macAddresses: '00:1A:2B:3C:4D:5E',
+				},
+			];
+
+			expect(toRequestServers(true, 'hostName', servers)).toEqual(
+				servers
+			);
 		});
 	});
 
