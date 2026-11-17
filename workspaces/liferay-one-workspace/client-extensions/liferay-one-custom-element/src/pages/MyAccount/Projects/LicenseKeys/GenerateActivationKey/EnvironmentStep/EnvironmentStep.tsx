@@ -161,7 +161,7 @@ export default function EnvironmentStep({
 				/>
 			)}
 
-			{showServerOptions && !generated && !renewing && (
+			{showServers && !generated && !renewing && (
 				<ClayAlert
 					className="mt-4"
 					displayType="info"
@@ -170,7 +170,7 @@ export default function EnvironmentStep({
 					symbol="info-circle"
 				>
 					{translate(
-						'host-name-ip-address-and-mac-address-are-required'
+						'one-host-name-ip-address-or-mac-address-is-required'
 					)}
 				</ClayAlert>
 			)}

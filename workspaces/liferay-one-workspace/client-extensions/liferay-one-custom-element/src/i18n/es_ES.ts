@@ -708,8 +708,6 @@ export default {
 	'home': 'Inicio',
 	'host-name': 'Nombre del host',
 	'host-name-cluster-size': 'Nombre de host / Tamaño del clúster',
-	'host-name-ip-address-and-mac-address-are-required':
-		'El nombre de host, la dirección IP y la dirección MAC son obligatorios.',
 	'how-easy-to-use-is-the-product': '¿Qué tan fácil de usar es el producto?',
 	'how-satisfied-are-you-with-the-product':
 		'¿Qué tan satisfecho estás con el producto?',
@@ -1082,6 +1080,8 @@ export default {
 	'on-premise': 'On-premise',
 	'once-canceled-no-further-edits-can-be-made-to-this-event':
 		'Una vez cancelado no se podrá editar este evento.',
+	'one-host-name-ip-address-or-mac-address-is-required':
+		'Se requiere un nombre de host, una dirección IP o una dirección MAC.',
 	'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version':
 		'Uno o más complementos no están disponibles para la versión de DXP seleccionada.',
 	'one-time-purchases': 'Compras únicas',
