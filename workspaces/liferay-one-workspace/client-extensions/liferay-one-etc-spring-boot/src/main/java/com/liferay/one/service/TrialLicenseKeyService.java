@@ -12,6 +12,7 @@ import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -31,19 +32,23 @@ import org.springframework.stereotype.Component;
 public class TrialLicenseKeyService {
 
 	public String getCMSTrialLicenseKeyXML(
-			long licenseLifetime, String owner, long startTime)
+			long licenseLifetime, String owner, String productVersion,
+			long startTime)
 		throws Exception {
 
 		return _toLicenseKeyXML(
-			licenseLifetime, owner, _PRODUCT_NAME_CMS, startTime);
+			licenseLifetime, owner, _PRODUCT_NAME_CMS, productVersion,
+			startTime);
 	}
 
 	public String getDXPTrialLicenseKeyXML(
-			long licenseLifetime, String owner, long startTime)
+			long licenseLifetime, String owner, String productVersion,
+			long startTime)
 		throws Exception {
 
 		return _toLicenseKeyXML(
-			licenseLifetime, owner, _PRODUCT_NAME_DXP, startTime);
+			licenseLifetime, owner, _PRODUCT_NAME_DXP, productVersion,
+			startTime);
 	}
 
 	private String _getProductVersion(Instant startInstant) {
@@ -56,7 +61,7 @@ public class TrialLicenseKeyService {
 
 	private String _toLicenseKeyXML(
 			long licenseLifetime, String owner, String productName,
-			long startTime)
+			String productVersion, long startTime)
 		throws Exception {
 
 		Instant startInstant = Instant.ofEpochMilli(
@@ -65,7 +70,9 @@ public class TrialLicenseKeyService {
 			ChronoUnit.SECONDS
 		);
 
-		String productVersion = _getProductVersion(startInstant);
+		if (Validator.isNull(productVersion)) {
+			productVersion = _getProductVersion(startInstant);
+		}
 
 		int licenseVersion = LicenseVersion.getLicenseVersion(
 			productName, productVersion);
