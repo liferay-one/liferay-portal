@@ -5,8 +5,8 @@
 
 import {getProductSpecificationValue} from '~/utils/productUtils';
 
+import {SKU_UTILIZATION_PROFILES} from './constants';
 import {resolveProfile} from './resolveProfile';
-import {SKU_UTILIZATION_PROFILES} from './skuUtilizationProfiles';
 
 import type {DeliveryProduct} from '~/types/product';
 

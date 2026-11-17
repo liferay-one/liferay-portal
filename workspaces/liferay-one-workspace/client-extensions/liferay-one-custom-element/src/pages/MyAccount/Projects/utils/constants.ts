@@ -8,6 +8,7 @@ import {Word} from '~/i18n';
 import {PROJECT_TAB_KEYS} from '../types';
 
 import type {ProjectTabKey} from '../types';
+import type {UtilizationProfile} from './resolveUtilizationProfile';
 
 export const LAST_PROJECT_STORAGE_KEY = 'liferay-one:last-project';
 
@@ -113,3 +114,51 @@ export const LOGO_COLORS = [
 	'#f5b400',
 	'#ff7847',
 ];
+
+export const SKU_UTILIZATION_PROFILES: Record<string, UtilizationProfile> = {
+	'01t0g00000UvVonAAF': 'none',
+	'01t0g00000UvVosAAF': 'none',
+	'01t0g00000UvVp2AAF': 'none',
+	'01t0g00000UvVp7AAF': 'none',
+	'01t0g00000UvVpCAAV': 'none',
+	'01t0g00000UvVpHAAV': 'none',
+	'01t0g00000UvVpMAAV': 'none',
+	'01t0g00000UvVpRAAV': 'none',
+	'01t0g00000UvVpWAAV': 'none',
+	'01t0g00000UvVpbAAF': 'none',
+	'01t0g00000UvVpgAAF': 'none',
+	'01t0g00000UvVplAAF': 'none',
+	'01t0g00000UvVpqAAF': 'none',
+	'01t0g00000UvVpvAAF': 'none',
+	'01t0g00000UvVq0AAF': 'none',
+	'01t0g00000UvVq5AAF': 'none',
+	'01t4u00000dIUryAAG': 'none',
+	'01t4u00000dIUs3AAG': 'none',
+	'01t4u00000dIUs8AAG': 'none',
+	'01t4u00000dIUsIAAW': 'none',
+	'01t4u00000dIUsNAAW': 'none',
+	'01t4u00000dIUsSAAW': 'none',
+	'01t4u00000dIUsXAAW': 'none',
+	'01t4u00000dZBxAAAW': 'legacy',
+	'01t4u00000dZBxBAAW': 'legacy',
+	'01t4u00000dZBxCAAW': 'legacy',
+	'01t4u00000dcJNHAA2': 'none',
+	'01t4u00000dcJNMAA2': 'none',
+	'01t4u00000dcJNRAA2': 'none',
+	'01t4u00000dcJNWAA2': 'none',
+	'01t4u00000dcJNbAAM': 'none',
+	'01t4u00000dcJNgAAM': 'none',
+	'01t4u00000dcJNqAAM': 'none',
+	'01t4u00000dci4AAAQ': 'none',
+	'01t4u00000dci4FAAQ': 'none',
+	'01t4u00000dci4KAAQ': 'none',
+	'01t4u00000dci4PAAQ': 'none',
+	'01t4u00000dci4UAAQ': 'none',
+	'01t4u00000dci4ZAAQ': 'none',
+	'01t4u00000dci4qAAA': 'none',
+	'01tVO000000jLLGYA2': 'none',
+	'01tVO00000QYrl8YAD': 'none',
+	'01tVO00000QYrl9YAD': 'none',
+	'01tVO00000QYrlAYAT': 'none',
+	'01tVO00000QYrlBYAT': 'none',
+};
