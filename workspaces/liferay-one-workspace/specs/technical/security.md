@@ -14,3 +14,4 @@ Terms used in this file:
 | TECH-SECURITY-001 | Every user value that the system puts into an OData filter or an AQL query is escaped, so the value cannot change the query. | P0 | — | `MOD-ESCAPEODATASTRING`, `CLS-AQLUTIL`, `CLS-ONEBASESERVICE`, `CLIENT-FETCHER-SEARCHBUILDER`, `CLIENT-FETCHER-CREATEFILTERS` |
 | TECH-SECURITY-002 | Every request that the browser sends to the portal carries the CSRF token of the portal session. | P0 | — | `CLIENT-FETCHER-FETCHER` |
 | TECH-SECURITY-003 | The system never changes a link from https to http on a page that the browser loaded over https. | P1 | — | `MOD-STRINGUTILS` |
+| TECH-SECURITY-004 | The admin pages load each solution image and app image from the origin of the page. When the catalog API gives an absolute image URL, the page removes the scheme and the host, so the browser does not block the image as mixed content. | P1 | LPD-113281 | `MOD-TORELATIVEURL` |
