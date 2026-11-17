@@ -20,7 +20,6 @@ import {
 } from '../types';
 import {
 	SERVER_FIELDS,
-	buildEmptyServer,
 	getGenerateButtonLabel,
 	hasServerInfo,
 	isComplimentaryKeyType,
@@ -72,7 +71,7 @@ export default function EnvironmentStep({
 		watch,
 	} = form;
 
-	const {append, fields, remove} = useFieldArray({control, name: 'servers'});
+	const {fields} = useFieldArray({control, name: 'servers'});
 
 	const domain = watch('domain');
 	const environmentName = watch('environmentName');
@@ -232,18 +231,6 @@ export default function EnvironmentStep({
 							}
 							index={index}
 							key={field.id}
-							onClickAdd={
-								!renewing &&
-								!complimentary &&
-								index === fields.length - 1
-									? () => append(buildEmptyServer())
-									: undefined
-							}
-							onClickRemove={
-								!renewing && fields.length > 1
-									? () => remove(index)
-									: undefined
-							}
 							register={register}
 							serverField={serverField}
 						/>

@@ -4,7 +4,6 @@
  */
 
 import {UseFormRegister} from 'react-hook-form';
-import Button from '~/components/Button/Button';
 import {Input} from '~/components/Input/Input';
 import {translate} from '~/i18n';
 import {
@@ -21,8 +20,6 @@ type ServerFieldGroupProps = {
 	disabled?: boolean;
 	errorMessage?: string;
 	index: number;
-	onClickAdd?: () => void;
-	onClickRemove?: () => void;
 	register: UseFormRegister<GenerateActivationKeyForm>;
 	serverField: GenerateActivationKeyServerField;
 };
@@ -31,8 +28,6 @@ export default function ServerFieldGroup({
 	disabled,
 	errorMessage,
 	index,
-	onClickAdd,
-	onClickRemove,
 	register,
 	serverField,
 }: ServerFieldGroupProps) {
@@ -75,28 +70,6 @@ export default function ServerFieldGroup({
 					placeholder={'XX-XX-XX-XX-XX-XX\nXX-XX-XX-XX-XX-XX'}
 				/>
 			)}
-
-			<div className="d-flex gap-3">
-				{onClickRemove && (
-					<Button
-						displayType="secondary"
-						onClick={onClickRemove}
-						prependIcon="hr"
-					>
-						{translate('remove-server')}
-					</Button>
-				)}
-
-				{onClickAdd && (
-					<Button
-						displayType="secondary"
-						onClick={onClickAdd}
-						prependIcon="plus"
-					>
-						{translate('add-server')}
-					</Button>
-				)}
-			</div>
 		</div>
 	);
 }
