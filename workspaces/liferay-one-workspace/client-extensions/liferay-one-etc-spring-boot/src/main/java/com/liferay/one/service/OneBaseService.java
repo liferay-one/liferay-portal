@@ -8,6 +8,7 @@ package com.liferay.one.service;
 import com.liferay.client.extension.util.spring.boot3.client.LiferayOAuth2AccessTokenManager;
 import com.liferay.client.extension.util.spring.boot3.service.BaseService;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -70,6 +71,19 @@ public abstract class OneBaseService extends BaseService {
 
 			throw webClientResponseException;
 		}
+	}
+
+	protected String getAbsoluteURL(String url) {
+		url = GetterUtil.getString(url);
+
+		if (Validator.isNull(url) || !url.startsWith("/") ||
+			url.startsWith("//")) {
+
+			return url;
+		}
+
+		return StringBundler.concat(
+			lxcDXPServerProtocol, "://", lxcDXPMainDomain, url);
 	}
 
 	protected <T> List<T> getAllItems(

@@ -1862,7 +1862,7 @@ public class CommerceOrderService extends OneBaseService {
 			return "";
 		}
 
-		return GetterUtil.getString(product.getThumbnail());
+		return getAbsoluteURL(product.getThumbnail());
 	}
 
 	private String _getProjectName(Order order, String salesforceProjectId) {

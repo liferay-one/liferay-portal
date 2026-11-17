@@ -175,7 +175,7 @@ public class CommerceProductService extends OneBaseService {
 					"CPDEFINITION_PRODUCTID",
 					String.valueOf(product.getProductId())
 				).put(
-					"PRODUCT_THUMBNAIL", _getThumbnailURL(product)
+					"PRODUCT_THUMBNAIL", getAbsoluteURL(product.getThumbnail())
 				).build());
 
 		_notificationQueueEntryService.addNotificationQueueEntry(
@@ -208,7 +208,7 @@ public class CommerceProductService extends OneBaseService {
 		String dashboardURL = StringBundler.concat(
 			lxcDXPServerProtocol, "://", lxcDXPMainDomain,
 			"/web/one/admin#/mp-apps/", product.getProductId());
-		String thumbnailURL = _getThumbnailURL(product);
+		String thumbnailURL = getAbsoluteURL(product.getThumbnail());
 
 		JSONObject processedTemplateJSONObject =
 			_notificationTemplateService.getAndProcessTemplateJSONObject(
@@ -642,19 +642,6 @@ public class CommerceProductService extends OneBaseService {
 		}
 
 		return "";
-	}
-
-	private String _getThumbnailURL(Product product) {
-		String thumbnail = GetterUtil.getString(product.getThumbnail());
-
-		if (Validator.isNull(thumbnail) || !thumbnail.startsWith("/") ||
-			thumbnail.startsWith("//")) {
-
-			return thumbnail;
-		}
-
-		return StringBundler.concat(
-			lxcDXPServerProtocol, "://", lxcDXPMainDomain, thumbnail);
 	}
 
 	private boolean _hasProductOptionValue(String key, long productOptionId)
