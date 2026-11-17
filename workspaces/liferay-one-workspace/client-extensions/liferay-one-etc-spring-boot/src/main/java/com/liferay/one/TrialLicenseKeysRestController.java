@@ -5,6 +5,7 @@
 
 package com.liferay.one;
 
+import com.liferay.one.constants.ProductVersion;
 import com.liferay.one.permission.TrialLicenseKeyPermission;
 import com.liferay.one.service.TrialLicenseKeyService;
 import com.liferay.petra.string.StringBundler;
@@ -39,6 +40,8 @@ public class TrialLicenseKeysRestController extends OneBaseRestController {
 			@AuthenticationPrincipal Jwt jwt,
 			@RequestParam("licenseLifetime") long licenseLifetime,
 			@RequestParam("owner") String owner,
+			@RequestParam(required = false, value = "productVersion") String
+				productVersion,
 			@RequestParam("startDate") long startDate)
 		throws Exception {
 
@@ -46,11 +49,13 @@ public class TrialLicenseKeysRestController extends OneBaseRestController {
 
 		owner = _validate(licenseLifetime, owner);
 
+		productVersion = _getProductVersion(productVersion);
+
 		_logTrialLicenseKey(jwt, owner, "CMS");
 
 		return _toResponseEntity(
 			_trialLicenseKeyService.getCMSTrialLicenseKeyXML(
-				licenseLifetime, owner, startDate));
+				licenseLifetime, owner, productVersion, startDate));
 	}
 
 	@GetMapping("/dxp")
@@ -58,6 +63,8 @@ public class TrialLicenseKeysRestController extends OneBaseRestController {
 			@AuthenticationPrincipal Jwt jwt,
 			@RequestParam("licenseLifetime") long licenseLifetime,
 			@RequestParam("owner") String owner,
+			@RequestParam(required = false, value = "productVersion") String
+				productVersion,
 			@RequestParam("startDate") long startDate)
 		throws Exception {
 
@@ -65,11 +72,31 @@ public class TrialLicenseKeysRestController extends OneBaseRestController {
 
 		owner = _validate(licenseLifetime, owner);
 
+		productVersion = _getProductVersion(productVersion);
+
 		_logTrialLicenseKey(jwt, owner, "DXP");
 
 		return _toResponseEntity(
 			_trialLicenseKeyService.getDXPTrialLicenseKeyXML(
-				licenseLifetime, owner, startDate));
+				licenseLifetime, owner, productVersion, startDate));
+	}
+
+	private String _getProductVersion(String productVersion) {
+		if (Validator.isNull(productVersion)) {
+			return null;
+		}
+
+		String quarterlyRelease = ProductVersion.extractQuarterlyRelease(
+			productVersion);
+
+		if (Validator.isNull(quarterlyRelease)) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"The product version must be a quarterly release such as " +
+					"2026.Q4");
+		}
+
+		return quarterlyRelease;
 	}
 
 	private void _logTrialLicenseKey(
