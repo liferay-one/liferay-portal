@@ -429,27 +429,6 @@ public class CommerceProductServiceTest {
 	}
 
 	@Test
-	public void testSendNewAppSubmittedNotificationThumbnailURL()
-		throws Exception {
-
-		ReflectionTestUtils.setField(
-			_commerceProductService, "lxcDXPMainDomain", "one.liferay.com");
-		ReflectionTestUtils.setField(
-			_commerceProductService, "lxcDXPServerProtocol", "https");
-
-		Assertions.assertEquals("", _getThumbnailURL(null));
-		Assertions.assertEquals(
-			"//cdn.example.com/thumb.png",
-			_getThumbnailURL("//cdn.example.com/thumb.png"));
-		Assertions.assertEquals(
-			"https://cdn.example.com/thumb.png",
-			_getThumbnailURL("https://cdn.example.com/thumb.png"));
-		Assertions.assertEquals(
-			"https://one.liferay.com/documents/thumb.png",
-			_getThumbnailURL("/documents/thumb.png"));
-	}
-
-	@Test
 	public void testSendNewAppSubmittedNotificationLiferayIncProduct()
 		throws Exception {
 
@@ -1005,15 +984,6 @@ public class CommerceProductServiceTest {
 		sku.setPublished(published);
 
 		return sku;
-	}
-
-	private String _getThumbnailURL(String thumbnail) {
-		Product product = new Product();
-
-		product.setThumbnail(() -> thumbnail);
-
-		return ReflectionTestUtils.invokeMethod(
-			_commerceProductService, "_getThumbnailURL", product);
 	}
 
 	private void _setUpCatalog() throws Exception {

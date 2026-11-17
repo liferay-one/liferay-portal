@@ -94,6 +94,10 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAPP] ProductPurchaseApp', () => {
 			currency: {currencyCode: 'USD'},
 		});
 
+		Liferay.ThemeDisplay = Object.assign(Object.create(themeDisplay), {
+			getPortalURL: () => 'https://one.liferay.com',
+		});
+
 		vi.mocked(
 			HeadlessCommerceAdminAccount.getAccountAddresses
 		).mockResolvedValue({items: []} as never);
@@ -189,13 +193,6 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAPP] ProductPurchaseApp', () => {
 	});
 
 	it('posts the get app information after the order and tracks the app purchase', async () => {
-		Liferay.ThemeDisplay = new Proxy(themeDisplay, {
-			get: (target, property, receiver) =>
-				property === 'getPortalURL'
-					? () => 'https://one.liferay.com'
-					: Reflect.get(target, property, receiver),
-		});
-
 		await new ProductPurchaseApp(account, product).createOrder();
 
 		expect(GetAppInformations.postGetAppInformation).toHaveBeenCalledWith({
@@ -218,6 +215,19 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAPP] ProductPurchaseApp', () => {
 			.mock.invocationCallOrder;
 
 		expect(checkoutOrder).toBeLessThan(postOrder);
+	});
+
+	it('posts the project dashboard link with a Salesforce project', async () => {
+		await new ProductPurchaseApp(account, product, {
+			externalReferenceCode: 'PRJCT-1',
+		} as SalesforceProject).createOrder();
+
+		expect(GetAppInformations.postGetAppInformation).toHaveBeenCalledWith(
+			expect.objectContaining({
+				dashboardLink:
+					'https://one.liferay.com/my-account#/ACCOUNT-1/project/PRJCT-1/applications',
+			})
+		);
 	});
 
 	it('uses SEO_STUDIO as the order type for an SEO Studio product', async () => {
