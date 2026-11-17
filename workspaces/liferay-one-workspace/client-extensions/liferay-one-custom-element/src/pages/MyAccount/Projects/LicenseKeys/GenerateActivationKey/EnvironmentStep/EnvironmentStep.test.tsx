@@ -246,26 +246,29 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] Environment
 		await waitFor(() => expect(onClickGenerate).toHaveBeenCalled());
 	});
 
-	it('shows the required fields for a production key', () => {
-		render(<Harness />);
+	it.each([
+		['host-name'],
+		['ip-addresses'],
+		['mac-addresses'],
+		['virtual-cluster'],
+	] as const)('shows the required fields on the %s tab', (serverField) => {
+		render(<Harness virtualClusterAvailable />);
+
+		clickServerField(serverField);
 
 		expect(
 			screen.getByText(
-				translate(
-					'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
-				)
+				translate('host-name-ip-address-and-mac-address-are-required')
 			)
 		).toBeTruthy();
 	});
 
-	it('shows the required fields without a version for an app license key', () => {
+	it('shows the required fields for an app license key', () => {
 		render(<Harness appLicense />);
 
 		expect(
 			screen.getByText(
-				translate(
-					'to-generate-a-key-enter-an-environment-name-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
-				)
+				translate('host-name-ip-address-and-mac-address-are-required')
 			)
 		).toBeTruthy();
 	});
@@ -275,30 +278,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] Environment
 
 		expect(
 			screen.queryByText(
-				translate(
-					'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
-				)
-			)
-		).toBeNull();
-	});
-
-	it('shows the required fields for a virtual cluster key', () => {
-		render(<Harness virtualClusterAvailable />);
-
-		clickServerField('virtual-cluster');
-
-		expect(
-			screen.getByText(
-				translate(
-					'to-generate-a-key-enter-an-environment-name-a-version-and-the-number-of-cluster-nodes'
-				)
-			)
-		).toBeTruthy();
-		expect(
-			screen.queryByText(
-				translate(
-					'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
-				)
+				translate('host-name-ip-address-and-mac-address-are-required')
 			)
 		).toBeNull();
 	});
@@ -311,9 +291,7 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] Environment
 
 		expect(
 			screen.queryByText(
-				translate(
-					'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
-				)
+				translate('host-name-ip-address-and-mac-address-are-required')
 			)
 		).toBeNull();
 	});
