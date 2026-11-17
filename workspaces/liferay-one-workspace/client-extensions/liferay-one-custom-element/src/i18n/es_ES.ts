@@ -1713,8 +1713,12 @@ export default {
 		'Para continuar, introduce la información requerida.',
 	'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server':
 		'Para generar una clave, introduce un nombre de entorno, una versión y un nombre de host, direcciones IP o direcciones MAC para cada servidor.',
+	'to-generate-a-key-enter-an-environment-name-a-version-and-the-number-of-cluster-nodes':
+		'Para generar una clave, introduce un nombre de entorno, una versión y el número de nodos del clúster.',
 	'to-generate-a-key-enter-an-environment-name-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server':
 		'Para generar una clave, introduce un nombre de entorno y un nombre de host, direcciones IP o direcciones MAC para cada servidor.',
+	'to-generate-a-key-enter-an-environment-name-and-the-number-of-cluster-nodes':
+		'Para generar una clave, introduce un nombre de entorno y el número de nodos del clúster.',
 	'to-generate-your-unique-activation-key-file-and-access-the-download-please-complete-your-profile-details-below-tell-us-a-bit-about-your-intended-use-to-help-us-support-your-experience':
 		'Para generar tu archivo de clave de activación único y acceder a la descarga, completa los datos de tu perfil a continuación. Cuéntanos un poco sobre tu uso previsto para ayudarnos a respaldar tu experiencia.',
 	'to-generate-your-unique-activation-key-file-please-provide-the-technical-specifications-required-below-these-details-are-used-exclusively-to-configure-the-software-for-your-environment-and-ensure-hardware-compatibility':

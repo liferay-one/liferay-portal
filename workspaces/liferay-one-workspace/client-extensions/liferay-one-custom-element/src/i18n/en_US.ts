@@ -2068,8 +2068,12 @@ export default {
 		'To continue, please enter the required information.',
 	'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server':
 		'To generate a key, enter an environment name, a version, and a host name, IP addresses, or MAC addresses for each server.',
+	'to-generate-a-key-enter-an-environment-name-a-version-and-the-number-of-cluster-nodes':
+		'To generate a key, enter an environment name, a version, and the number of cluster nodes.',
 	'to-generate-a-key-enter-an-environment-name-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server':
 		'To generate a key, enter an environment name and a host name, IP addresses, or MAC addresses for each server.',
+	'to-generate-a-key-enter-an-environment-name-and-the-number-of-cluster-nodes':
+		'To generate a key, enter an environment name and the number of cluster nodes.',
 	'to-generate-your-unique-activation-key-file-and-access-the-download-please-complete-your-profile-details-below-tell-us-a-bit-about-your-intended-use-to-help-us-support-your-experience':
 		'To generate your unique activation key file and access the download, please complete your profile details below. Tell us a bit about your intended use to help us support your experience',
 	'to-generate-your-unique-activation-key-file-please-provide-the-technical-specifications-required-below-these-details-are-used-exclusively-to-configure-the-software-for-your-environment-and-ensure-hardware-compatibility':

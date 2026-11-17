@@ -295,10 +295,15 @@ export function hasServerInfo(
 	return servers.every((server) => Boolean(server[serverField].trim()));
 }
 
-export function toSelectedServers(
+export function toRequestServers(
+	renewing: boolean,
 	serverField: GenerateActivationKeyServerField,
 	servers: GenerateActivationKeyServer[]
 ): GenerateActivationKeyServer[] {
+	if (renewing) {
+		return servers;
+	}
+
 	return servers.map((server) => ({
 		...buildEmptyServer(),
 		[serverField]: server[serverField],
