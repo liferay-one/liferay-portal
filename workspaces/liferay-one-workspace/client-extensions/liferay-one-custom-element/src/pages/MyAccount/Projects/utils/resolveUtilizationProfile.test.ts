@@ -49,19 +49,13 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEUTILIZATIONPROFILE] resolveUtilizationP
 	it('uses the profile of a hardcoded SKU over the product profile', () => {
 		const product = toProduct('saas-plan-dashboard');
 
-		// Liferay SaaS Subscription - Engage Site
-
 		expect(resolveUtilizationProfile(product, ['01t4u00000dZBxAAAW'])).toBe(
 			'legacy'
 		);
 
-		// Liferay Experience Cloud - Trial Plan
-
 		expect(resolveUtilizationProfile(product, ['01tVO000000jLLGYA2'])).toBe(
 			'none'
 		);
-
-		// Liferay PaaS Subscription - Std Prod Env
 
 		expect(
 			resolveUtilizationProfile(toProduct('experience-dashboard'), [
@@ -73,8 +67,6 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEUTILIZATIONPROFILE] resolveUtilizationP
 	it('prefers a dashboard over legacy over none across the active SKUs', () => {
 		const product = toProduct('saas-plan-dashboard');
 
-		// Pro Plan, Engage Site and Digital Accelerator Bundle
-
 		expect(
 			resolveUtilizationProfile(product, [
 				'01tVO00000QYrl8YAD',
@@ -82,8 +74,6 @@ describe('[MOD-MYACCOUNT-PROJECTS-RESOLVEUTILIZATIONPROFILE] resolveUtilizationP
 				'01t4u00000f7jOwAAI',
 			])
 		).toBe('saas-plan-dashboard');
-
-		// Engage Site and Digital Accelerator Bundle
 
 		expect(
 			resolveUtilizationProfile(product, [
