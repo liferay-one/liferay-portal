@@ -787,9 +787,514 @@
 			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
 		},
 		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVonAAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVonAAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVosAAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVosAAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVp2AAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVp2AAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVp7AAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVp7AAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVpCAAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVpCAAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVpHAAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVpHAAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVpMAAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVpMAAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVpRAAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVpRAAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVpWAAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVpWAAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVpbAAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVpbAAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVpgAAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVpgAAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVplAAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVplAAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVpqAAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVpqAAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVpvAAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVpvAAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVq0AAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVq0AAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVq5AAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVq5AAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVqAAAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVqAAAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVqFAAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVqFAAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000UvVqKAAV",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000UvVqKAAV"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000aN0VXAA0",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000aN0VXAA0"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000aN0VhAAK",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000aN0VhAAK"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000aN0VrAAK",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000aN0VrAAK"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000aN0VwAAK",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000aN0VwAAK"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000aN0WBAA0",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000aN0WBAA0"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000aN4hiAAC",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000aN4hiAAC"
+		},
+		{
 			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8fFYAAY",
 			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
 			"skuExternalReferenceCode": "01t0g00000c8fFYAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8jLxAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000c8jLxAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8k2gAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000c8k2gAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8k2lAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000c8k2lAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8k2qAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000c8k2qAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8qE1AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000c8qE1AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8qEBAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000c8qEBAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8qEGAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000c8qEGAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8qELAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000c8qELAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t0g00000c8qEQAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t0g00000c8qEQAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dIUryAAG",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dIUryAAG"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dIUs3AAG",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dIUs3AAG"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dIUs8AAG",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dIUs8AAG"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dIUsIAAW",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dIUsIAAW"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dIUsNAAW",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dIUsNAAW"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dIUsSAAW",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dIUsSAAW"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dIUsXAAW",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dIUsXAAW"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dIUscAAG",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dIUscAAG"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dIUshAAG",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dIUshAAG"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dIUsmAAG",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dIUsmAAG"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dcJNHAA2",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dcJNHAA2"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dcJNMAA2",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dcJNMAA2"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dcJNRAA2",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dcJNRAA2"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dcJNWAA2",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dcJNWAA2"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dcJNbAAM",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dcJNbAAM"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dcJNgAAM",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dcJNgAAM"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dcJNqAAM",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dcJNqAAM"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dchPeAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dchPeAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dchPjAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dchPjAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dchPoAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dchPoAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dchPtAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dchPtAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dchPyAAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dchPyAAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dchQ3AAI",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dchQ3AAI"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dchQIAAY",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dchQIAAY"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dci4AAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dci4AAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dci4FAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dci4FAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dci4KAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dci4KAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dci4PAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dci4PAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dci4UAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dci4UAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dci4ZAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dci4ZAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dci4qAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dci4qAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dkhiXAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dkhiXAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dkhicAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dkhicAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dkhihAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dkhihAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dkhimAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dkhimAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000dkoqbAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000dkoqbAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000f7aysAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000f7aysAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000f7aytAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000f7aytAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000f7ayuAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000f7ayuAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000f7ayvAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000f7ayvAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000f7aywAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000f7aywAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000f7ayxAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000f7ayxAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000f7ayyAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000f7ayyAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000f7ayzAAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000f7ayzAAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01t4u00000fvr6OAAQ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01t4u00000fvr6OAAQ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO0000045hmoYAA",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO0000045hmoYAA"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000At4MzYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000At4MzYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000At4RpYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000At4RpYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000At4ZtYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000At4ZtYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000At8VSYAZ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000At8VSYAZ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000AtBRlYAN",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000AtBRlYAN"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000AtE7pYAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000AtE7pYAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000AtEHVYA3",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000AtEHVYA3"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000BIrtxYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000BIrtxYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000BIs3eYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000BIs3eYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000BIt1JYAT",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000BIt1JYAT"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000BItpJYAT",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000BItpJYAT"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000J0N6aYAF",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000J0N6aYAF"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000P5xKPYAZ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000P5xKPYAZ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000P5xQrYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000P5xQrYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000P5xYvYAJ",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000P5xYvYAJ"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000PL9rWYAT",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000PL9rWYAT"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000QYrkpYAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000QYrkpYAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000QYrl4YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000QYrl4YAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000QYrl5YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000QYrl5YAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000QYrl6YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000QYrl6YAD"
+		},
+		{
+			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_01tVO00000QYrl7YAD",
+			"r_entitlementDefinitionToSku_c_entitlementDefinitionERC": "C_ENT_DEF_SELF_HOSTED_DEVELOPER",
+			"skuExternalReferenceCode": "01tVO00000QYrl7YAD"
 		},
 		{
 			"externalReferenceCode": "C_ENT_DEF_SELF_HOSTED_DEVELOPER_CLUSTER_01t0g00000c8fFYAAY",
