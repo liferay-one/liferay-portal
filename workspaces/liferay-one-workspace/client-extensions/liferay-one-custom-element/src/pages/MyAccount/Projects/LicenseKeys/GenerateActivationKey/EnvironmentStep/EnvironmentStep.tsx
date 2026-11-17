@@ -34,6 +34,21 @@ const SERVER_FIELD_LABELS: Record<GenerateActivationKeyServerField, Word> = {
 	macAddresses: 'mac-addresses',
 };
 
+function getRequiredFieldsWord(
+	appLicense: boolean,
+	virtualCluster: boolean
+): Word {
+	if (virtualCluster) {
+		return appLicense
+			? 'to-generate-a-key-enter-an-environment-name-and-the-number-of-cluster-nodes'
+			: 'to-generate-a-key-enter-an-environment-name-a-version-and-the-number-of-cluster-nodes';
+	}
+
+	return appLicense
+		? 'to-generate-a-key-enter-an-environment-name-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
+		: 'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server';
+}
+
 type EnvironmentStepProps = {
 	appLicense?: boolean;
 	availableClusterNodes: number;
@@ -87,6 +102,10 @@ export default function EnvironmentStep({
 	const free = isFreeKeyType(keyType);
 	const serverless = isServerlessKeyType(keyType);
 
+	const showServerOptions = !free && !serverless;
+
+	const showServers = showServerOptions && !virtualCluster;
+
 	let hasTarget =
 		hasServerInfo(servers, serverField) &&
 		!(complimentary && servers.length > 1);
@@ -106,12 +125,7 @@ export default function EnvironmentStep({
 	);
 
 	async function onClickValidateAndGenerate() {
-		if (
-			!free &&
-			!serverless &&
-			!virtualCluster &&
-			!(await trigger('servers'))
-		) {
+		if (showServers && !(await trigger('servers'))) {
 			return;
 		}
 
@@ -162,7 +176,7 @@ export default function EnvironmentStep({
 				/>
 			)}
 
-			{!free && !serverless && !virtualCluster && (
+			{showServerOptions && !generated && !renewing && (
 				<ClayAlert
 					className="mt-4"
 					displayType="info"
@@ -171,14 +185,15 @@ export default function EnvironmentStep({
 					symbol="info-circle"
 				>
 					{translate(
-						appLicense
-							? 'to-generate-a-key-enter-an-environment-name-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
-							: 'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
+						getRequiredFieldsWord(
+							Boolean(appLicense),
+							virtualCluster
+						)
 					)}
 				</ClayAlert>
 			)}
 
-			{!free && !serverless && (
+			{showServerOptions && (
 				<div className="mb-4 mt-4 row">
 					{SERVER_FIELDS.map((current) => (
 						<div
@@ -217,7 +232,7 @@ export default function EnvironmentStep({
 				</div>
 			)}
 
-			{!free && !serverless && virtualCluster && (
+			{showServerOptions && virtualCluster && (
 				<ClusterNodesField
 					availableCount={availableClusterNodes}
 					disabled={renewing}
@@ -225,7 +240,7 @@ export default function EnvironmentStep({
 				/>
 			)}
 
-			{!free && !serverless && !virtualCluster && (
+			{showServers && (
 				<>
 					{fields.map((field, index) => (
 						<ServerFieldGroup
