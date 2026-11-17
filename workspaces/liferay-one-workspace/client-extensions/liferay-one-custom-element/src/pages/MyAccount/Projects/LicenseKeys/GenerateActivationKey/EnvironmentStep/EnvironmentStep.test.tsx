@@ -32,14 +32,18 @@ vi.mock('../../../CloudAppInstall/WizardFooter/WizardFooter', () => ({
 
 function Harness({
 	appLicense = false,
+	generated = false,
 	keyType = 'production',
 	onClickGenerate = vi.fn(),
+	renewing = false,
 	version = '2026.Q3',
 	virtualClusterAvailable = false,
 }: {
 	appLicense?: boolean;
+	generated?: boolean;
 	keyType?: string;
 	onClickGenerate?: () => void;
+	renewing?: boolean;
 	version?: string;
 	virtualClusterAvailable?: boolean;
 }) {
@@ -63,12 +67,12 @@ function Harness({
 			appLicense={appLicense}
 			availableClusterNodes={3}
 			form={form}
-			generated={false}
+			generated={generated}
 			onClickBack={vi.fn()}
 			onClickCancel={vi.fn()}
 			onClickDone={vi.fn()}
 			onClickGenerate={onClickGenerate}
-			renewing={false}
+			renewing={renewing}
 			submitting={false}
 			virtualCluster={
 				virtualClusterAvailable && form.watch('virtualCluster')
@@ -79,7 +83,7 @@ function Harness({
 }
 
 function clickServerField(word: Word) {
-	fireEvent.click(screen.getAllByText(translate(word))[0]);
+	fireEvent.click(screen.getByRole('button', {name: translate(word)}));
 }
 
 function getNextButton() {
@@ -268,6 +272,42 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] Environment
 
 	it('does not show the required fields for a free key', () => {
 		render(<Harness keyType="free" />);
+
+		expect(
+			screen.queryByText(
+				translate(
+					'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
+				)
+			)
+		).toBeNull();
+	});
+
+	it('shows the required fields for a virtual cluster key', () => {
+		render(<Harness virtualClusterAvailable />);
+
+		clickServerField('virtual-cluster');
+
+		expect(
+			screen.getByText(
+				translate(
+					'to-generate-a-key-enter-an-environment-name-a-version-and-the-number-of-cluster-nodes'
+				)
+			)
+		).toBeTruthy();
+		expect(
+			screen.queryByText(
+				translate(
+					'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
+				)
+			)
+		).toBeNull();
+	});
+
+	it.each([
+		['renewing', {renewing: true}],
+		['generated', {generated: true}],
+	])('does not show the required fields when the key is %s', (_, props) => {
+		render(<Harness {...props} />);
 
 		expect(
 			screen.queryByText(
