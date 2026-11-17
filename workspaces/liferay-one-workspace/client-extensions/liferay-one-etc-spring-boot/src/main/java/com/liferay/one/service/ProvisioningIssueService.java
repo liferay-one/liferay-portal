@@ -89,7 +89,7 @@ public class ProvisioningIssueService {
 				JiraDocumentUtil.createLinkParagraph(
 					"One Liferay Account Link",
 					StringBundler.concat(
-						_portalURL, "/web/one/my-account#/",
+						_portalURL, "/my-account/#/",
 						account.getExternalReferenceCode(), "/account-details"))
 			).put(
 				JiraDocumentUtil.createLinkParagraph(
