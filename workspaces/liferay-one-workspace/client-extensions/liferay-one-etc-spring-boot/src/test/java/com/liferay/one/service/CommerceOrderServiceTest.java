@@ -2617,6 +2617,39 @@ public class CommerceOrderServiceTest {
 	}
 
 	@Test
+	public void testGetProductPlaceholdersUsesAbsoluteThumbnailURL()
+		throws Exception {
+
+		ReflectionTestUtils.setField(
+			_commerceOrderService, "lxcDXPMainDomain", "one.liferay.com");
+		ReflectionTestUtils.setField(
+			_commerceOrderService, "lxcDXPServerProtocol", "https");
+
+		Product product = _createProduct("dxp");
+
+		product.setThumbnail(() -> "/documents/thumb.png");
+
+		Mockito.when(
+			_commerceProductService.fetchProduct(9L)
+		).thenReturn(
+			product
+		);
+
+		OrderItem orderItem = new OrderItem();
+
+		orderItem.setProductId(() -> 9L);
+
+		Map<String, String> productPlaceholders =
+			ReflectionTestUtils.invokeMethod(
+				_commerceOrderService, "_getProductPlaceholders",
+				(Object)new OrderItem[] {orderItem});
+
+		Assertions.assertEquals(
+			"https://one.liferay.com/documents/thumb.png",
+			productPlaceholders.get("PRODUCT_THUMBNAIL"));
+	}
+
+	@Test
 	public void testOnApplicationReadyCompletesSettledOrders()
 		throws Exception {
 

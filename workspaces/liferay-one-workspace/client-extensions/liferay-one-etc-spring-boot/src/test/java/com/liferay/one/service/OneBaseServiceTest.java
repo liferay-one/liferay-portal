@@ -18,6 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -27,6 +28,28 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @DisplayName("[CLS-ONEBASESERVICE] OneBaseService")
 public class OneBaseServiceTest {
+
+	@Test
+	public void testGetAbsoluteURL() {
+		TestOneBaseService testOneBaseService = new TestOneBaseService();
+
+		ReflectionTestUtils.setField(
+			testOneBaseService, "lxcDXPMainDomain", "one.liferay.com");
+		ReflectionTestUtils.setField(
+			testOneBaseService, "lxcDXPServerProtocol", "https");
+
+		Assertions.assertEquals("", testOneBaseService.getAbsoluteURL(null));
+		Assertions.assertEquals(
+			"//cdn.example.com/thumb.png",
+			testOneBaseService.getAbsoluteURL("//cdn.example.com/thumb.png"));
+		Assertions.assertEquals(
+			"https://cdn.example.com/thumb.png",
+			testOneBaseService.getAbsoluteURL(
+				"https://cdn.example.com/thumb.png"));
+		Assertions.assertEquals(
+			"https://one.liferay.com/documents/thumb.png",
+			testOneBaseService.getAbsoluteURL("/documents/thumb.png"));
+	}
 
 	@Test
 	public void testGetAllItemsEncodesFilterAndNestedFields() throws Exception {
