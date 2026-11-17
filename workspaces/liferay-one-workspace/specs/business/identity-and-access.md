@@ -105,6 +105,7 @@ Terms used in this file:
 | REQ-ACCESS-062 | An Account Administrator and an Account Member can view the account. An Account Administrator can also change its support data. | P0 | — | `PERM-ACCOUNTPERMISSION` |
 | REQ-ACCESS-063 | A member of a shared organization can view and change the account, but cannot manage its members. | P0 | — | `PERM-ACCOUNTPERMISSION`, `PERM-PROJECTPERMISSION` |
 | REQ-ACCESS-064 | A user can see an order only when the order belongs to an account of the user. The system refuses an order that does not exist or that has no account. | P0 | — | `PERM-COMMERCEORDERPERMISSION` |
+| REQ-ACCESS-065 | A user with the Liferay Staff or the Finance Administrator role can see every member of every account, also when the user is a member of another account. For this reason, both roles can view every user of the company. Without this, the member search of an account shows only the users of the accounts of the viewer, and the customer contacts show as unknown. | P1 | LPD-115065 | `AUTH-STAFF-ACCOUNT-MEMBER-READS` |
 
 ## Account Role Matrix
 

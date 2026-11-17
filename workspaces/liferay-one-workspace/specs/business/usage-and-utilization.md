@@ -119,5 +119,5 @@ Terms used in this file:
 | --- | --- | --- | --- | --- |
 | REQ-USAGE-080 | The system meters the usage of each account and each project and adds it up into billable consumption records for each billing cycle. | P0 | LPD-88265 | `FLOW-CONSUMPTION-METERING` |
 | REQ-USAGE-081 | The system turns the consumption of a billing cycle into Stripe charges or invoice lines. It bills the overage above the allowance of the plan. A second run for the same cycle bills nothing more. | P0 | LPD-88265 | `FLOW-CONSUMPTION-BILLING` |
-| REQ-USAGE-082 | When a reviewer approves a usage report, the system creates one overage order for the bucket SKU, records the order on the report, and sends it to Salesforce. It refuses a report without a SKU. A completed report creates no order. | P0 | LPD-88265 | `FLOW-CONSUMPTION-BILLING` |
+| REQ-USAGE-082 | When a reviewer approves a usage report, the system creates one overage order for the bucket SKU, records the order on the report, and sends it to Salesforce. It refuses a report without a SKU. A completed report creates no order. | P0 | LPD-88265 | `FLOW-CONSUMPTION-BILLING`, `REST-POST-OBJECT-ACTION-USAGE-REPORT-APPROVED` |
 | REQ-USAGE-083 | The monthly usage reports cover every metered entitlement, not only Liferay Data Platform events. | P1 | LPD-88265 | `FLOW-CONSUMPTION-METERING` |

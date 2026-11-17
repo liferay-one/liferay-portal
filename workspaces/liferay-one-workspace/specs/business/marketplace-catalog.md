@@ -26,6 +26,7 @@ Terms used in this file:
 | REQ-CATALOG-006 | The category navigation links each configured app category to the Applications page with that category as the filter. It shows the category names in English, Japanese, Spanish, and Portuguese. | P2 | — | — |
 | REQ-CATALOG-007 | The catalog uses one commerce channel for the whole site, with USD as its default currency. The Guest role and the User role can view the channel. | P1 | — | `CTX-MARKETPLACECONTEXTPROVIDER` |
 | REQ-CATALOG-008 | The channel sells to accounts, not to persons. Every purchase acts for one account of the buyer. | P0 | — | `CTX-MARKETPLACECONTEXTPROVIDER` |
+| REQ-CATALOG-009 | The filters of the Applications page show a category name that contains an ampersand with one ampersand, never as an HTML entity. An app page shows no template error, and a wide gallery image stays inside its column. | P2 | LPD-113260, LPD-114143 | `FLOW-MARKETPLACE-CATALOG` |
 
 ## Taxonomy
 
@@ -59,6 +60,7 @@ Terms used in this file:
 | REQ-CATALOG-033 | When a product has no purchasable SKU, the page shows Contact Publisher instead of Get App. A visitor who is not signed in goes to sign in, and the contact form opens on return. | P1 | — | — |
 | REQ-CATALOG-034 | A referral product shows no purchase button and no contact button. | P2 | — | — |
 | REQ-CATALOG-035 | The purchase page shows "Product unavailable" when the URL names no product, or names a product that does not exist. | P1 | — | `FLOW-PRODUCT-PURCHASE-ENTRY` |
+| REQ-CATALOG-036 | A product page gives Open Graph tags for a link preview. The title and the image description are the name of the product. The image is the absolute URL of the product icon, and a guest can download it. This applies to every display page template of a product. | P2 | LPD-112776 | `FLOW-PRODUCT-LINK-PREVIEW` |
 
 ## License Tiers
 

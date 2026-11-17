@@ -12,7 +12,7 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-PLATFORM-003 | A CSV export quotes every cell and doubles each quote inside a cell. The file is UTF-8 with a byte order mark, so a spreadsheet opens text in every language correctly. | P1 | — | `MOD-EXPORTTOCSV`, `CLIENT-SPRING-BOOT-ORDERS` |
+| REQ-PLATFORM-003 | A CSV export quotes every cell and doubles each quote inside a cell. The file is UTF-8 with a byte order mark, so a spreadsheet opens text in every language correctly. | P1 | — | `MOD-EXPORTTOCSV`, `CLIENT-SPRING-BOOT-ORDERS`, `CLS-CSVUTIL` |
 | REQ-PLATFORM-004 | A downloaded file keeps the file name that the server gives it. | P2 | — | `MOD-DOWNLOADFILEUTILS`, `MOD-FILEUTILS` |
 
 ## Product Versions
@@ -58,6 +58,12 @@ Terms used in this file:
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
 | REQ-PLATFORM-060 | When the connectivity check is on, the Spring Boot service checks each Google dependency one time at startup and logs the result. The dependencies are the LDP usage API, the composable and customer usage functions, the Salesforce function, Cloud Storage, and Pub/Sub. A dependency with no URL or no bucket reports that it is not configured. When a service account is set for a dependency, the check impersonates that service account. Otherwise the check uses the application default credentials. When the application default credentials do not resolve, the check logs an error and stops. A failed check does not stop the service. | P2 | LPD-108678 | `CLS-GOOGLECONNECTIVITYCHECK`, `LSN-GOOGLECONNECTIVITYCHECK-CHECKONSTARTUP` |
+
+## Site Identity
+
+| ID | Requirement | Priority | Tickets | Verified By |
+| --- | --- | --- | --- | --- |
+| REQ-PLATFORM-070 | The title of the One home page is "Home - Liferay One". The title does not name the web ID of the instance. A user who signs in with no redirect goes to the One home page and not to /web/guest. | P2 | LPD-115068 | `FLOW-SITE-IDENTITY` |
 
 ## Not Yet Built
 
