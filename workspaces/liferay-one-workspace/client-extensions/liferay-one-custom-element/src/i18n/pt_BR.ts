@@ -701,6 +701,8 @@ export default {
 	'home': 'Início',
 	'host-name': 'Nome do Host',
 	'host-name-cluster-size': 'Nome do host / Tamanho do cluster',
+	'host-name-ip-address-and-mac-address-are-required':
+		'Nome do host, endereço IP e endereço MAC são obrigatórios.',
 	'how-easy-to-use-is-the-product': 'O quanto o produto é fácil de usar?',
 	'how-satisfied-are-you-with-the-product':
 		'O quanto você está satisfeito com o produto?',
@@ -1698,14 +1700,6 @@ export default {
 	'to-be-renewed': 'A ser renovado',
 	'to-continue-please-enter-the-required-information':
 		'Para continuar, insira as informações obrigatórias.',
-	'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server':
-		'Para gerar uma chave, insira um nome de ambiente, uma versão e um nome de host, endereços IP ou endereços MAC para cada servidor.',
-	'to-generate-a-key-enter-an-environment-name-a-version-and-the-number-of-cluster-nodes':
-		'Para gerar uma chave, insira um nome de ambiente, uma versão e o número de nós do cluster.',
-	'to-generate-a-key-enter-an-environment-name-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server':
-		'Para gerar uma chave, insira um nome de ambiente e um nome de host, endereços IP ou endereços MAC para cada servidor.',
-	'to-generate-a-key-enter-an-environment-name-and-the-number-of-cluster-nodes':
-		'Para gerar uma chave, insira um nome de ambiente e o número de nós do cluster.',
 	'to-generate-your-unique-activation-key-file-and-access-the-download-please-complete-your-profile-details-below-tell-us-a-bit-about-your-intended-use-to-help-us-support-your-experience':
 		'Para gerar seu arquivo de chave de ativação exclusivo e acessar o download, preencha os dados do seu perfil abaixo. Conte-nos um pouco sobre o uso pretendido para nos ajudar a apoiar sua experiência.',
 	'to-generate-your-unique-activation-key-file-please-provide-the-technical-specifications-required-below-these-details-are-used-exclusively-to-configure-the-software-for-your-environment-and-ensure-hardware-compatibility':
