@@ -421,7 +421,7 @@ public class CommerceProductServiceTest {
 		Map<String, String> values = valuesArgumentCaptor.getValue();
 
 		Assertions.assertEquals(
-			"https://one.liferay.com/admin#/mp-apps/" + _PRODUCT_ID,
+			"https://one.liferay.com/admin/#/mp-apps/" + _PRODUCT_ID,
 			values.get("CPDEFINITION_URL"));
 		Assertions.assertEquals(
 			"https://one.liferay.com/documents/thumb.png",
