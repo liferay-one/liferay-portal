@@ -34,21 +34,6 @@ const SERVER_FIELD_LABELS: Record<GenerateActivationKeyServerField, Word> = {
 	macAddresses: 'mac-addresses',
 };
 
-function getRequiredFieldsWord(
-	appLicense: boolean,
-	virtualCluster: boolean
-): Word {
-	if (virtualCluster) {
-		return appLicense
-			? 'to-generate-a-key-enter-an-environment-name-and-the-number-of-cluster-nodes'
-			: 'to-generate-a-key-enter-an-environment-name-a-version-and-the-number-of-cluster-nodes';
-	}
-
-	return appLicense
-		? 'to-generate-a-key-enter-an-environment-name-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server'
-		: 'to-generate-a-key-enter-an-environment-name-a-version-and-a-host-name-ip-addresses-or-mac-addresses-for-each-server';
-}
-
 type EnvironmentStepProps = {
 	appLicense?: boolean;
 	availableClusterNodes: number;
@@ -185,10 +170,7 @@ export default function EnvironmentStep({
 					symbol="info-circle"
 				>
 					{translate(
-						getRequiredFieldsWord(
-							Boolean(appLicense),
-							virtualCluster
-						)
+						'host-name-ip-address-and-mac-address-are-required'
 					)}
 				</ClayAlert>
 			)}
