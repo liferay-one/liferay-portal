@@ -695,8 +695,6 @@ export default {
 	'home': 'ホーム',
 	'host-name': 'ホスト名',
 	'host-name-cluster-size': 'ホスト名 / クラスターサイズ',
-	'host-name-ip-address-and-mac-address-are-required':
-		'ホスト名、IPアドレス、およびMACアドレスは必須です。',
 	'how-easy-to-use-is-the-product': '製品の使いやすさはいかがですか？',
 	'how-satisfied-are-you-with-the-product': '製品の満足度はいかがですか？',
 	'how-useful-is-the-product-for-your-workflow':
@@ -1058,6 +1056,8 @@ export default {
 	'on-premise': 'オンプレミス',
 	'once-canceled-no-further-edits-can-be-made-to-this-event':
 		'一度キャンセルすると、これ以上、このイベントを編集できなくなります。',
+	'one-host-name-ip-address-or-mac-address-is-required':
+		'ホスト名、IPアドレス、またはMACアドレスのいずれかが必要です。',
 	'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version':
 		'選択したDXPバージョンでは、1つ以上のアドオンが利用できません。',
 	'one-time-purchases': '1回限りの購入',
