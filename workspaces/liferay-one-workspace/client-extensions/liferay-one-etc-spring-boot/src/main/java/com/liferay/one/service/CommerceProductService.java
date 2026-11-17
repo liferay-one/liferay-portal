@@ -207,7 +207,7 @@ public class CommerceProductService extends OneBaseService {
 
 		String dashboardURL = StringBundler.concat(
 			lxcDXPServerProtocol, "://", lxcDXPMainDomain,
-			"/web/one/admin#/mp-apps/", product.getProductId());
+			"/admin#/mp-apps/", product.getProductId());
 		String thumbnailURL = getAbsoluteURL(product.getThumbnail());
 
 		JSONObject processedTemplateJSONObject =
