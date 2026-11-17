@@ -98,6 +98,15 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] Environment
 		expect(screen.queryByLabelText(translate('cluster-nodes'))).toBeNull();
 	});
 
+	it('asks a production key for one server only', () => {
+		render(<Harness />);
+
+		expect(screen.getAllByLabelText(translate('host-name'))).toHaveLength(
+			1
+		);
+		expect(screen.queryByRole('button', {name: /server/i})).toBeNull();
+	});
+
 	it('asks a free key for its domain instead of its servers', () => {
 		render(<Harness keyType="free" />);
 
