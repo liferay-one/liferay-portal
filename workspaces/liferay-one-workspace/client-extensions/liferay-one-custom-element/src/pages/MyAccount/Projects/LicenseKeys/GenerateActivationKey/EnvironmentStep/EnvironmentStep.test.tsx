@@ -246,39 +246,51 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] Environment
 		await waitFor(() => expect(onClickGenerate).toHaveBeenCalled());
 	});
 
-	it.each([
-		['host-name'],
-		['ip-addresses'],
-		['mac-addresses'],
-		['virtual-cluster'],
-	] as const)('shows the required fields on the %s tab', (serverField) => {
+	it.each([['host-name'], ['ip-addresses'], ['mac-addresses']] as const)(
+		'shows the required server field message on the %s tab',
+		(serverField) => {
+			render(<Harness virtualClusterAvailable />);
+
+			clickServerField(serverField);
+
+			expect(
+				screen.getByText(
+					translate(
+						'one-host-name-ip-address-or-mac-address-is-required'
+					)
+				)
+			).toBeTruthy();
+		}
+	);
+
+	it('does not show the required server field message on the virtual cluster tab', () => {
 		render(<Harness virtualClusterAvailable />);
 
-		clickServerField(serverField);
+		clickServerField('virtual-cluster');
 
 		expect(
-			screen.getByText(
-				translate('host-name-ip-address-and-mac-address-are-required')
+			screen.queryByText(
+				translate('one-host-name-ip-address-or-mac-address-is-required')
 			)
-		).toBeTruthy();
+		).toBeNull();
 	});
 
-	it('shows the required fields for an app license key', () => {
+	it('shows the required server field message for an app license key', () => {
 		render(<Harness appLicense />);
 
 		expect(
 			screen.getByText(
-				translate('host-name-ip-address-and-mac-address-are-required')
+				translate('one-host-name-ip-address-or-mac-address-is-required')
 			)
 		).toBeTruthy();
 	});
 
-	it('does not show the required fields for a free key', () => {
+	it('does not show the required server field message for a free key', () => {
 		render(<Harness keyType="free" />);
 
 		expect(
 			screen.queryByText(
-				translate('host-name-ip-address-and-mac-address-are-required')
+				translate('one-host-name-ip-address-or-mac-address-is-required')
 			)
 		).toBeNull();
 	});
@@ -286,13 +298,18 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] Environment
 	it.each([
 		['renewing', {renewing: true}],
 		['generated', {generated: true}],
-	])('does not show the required fields when the key is %s', (_, props) => {
-		render(<Harness {...props} />);
+	])(
+		'does not show the required server field message when the key is %s',
+		(_, props) => {
+			render(<Harness {...props} />);
 
-		expect(
-			screen.queryByText(
-				translate('host-name-ip-address-and-mac-address-are-required')
-			)
-		).toBeNull();
-	});
+			expect(
+				screen.queryByText(
+					translate(
+						'one-host-name-ip-address-or-mac-address-is-required'
+					)
+				)
+			).toBeNull();
+		}
+	);
 });
