@@ -820,8 +820,6 @@ export default {
 	'home': 'Home',
 	'host-name': 'Host Name',
 	'host-name-cluster-size': 'Host Name / Cluster Size',
-	'host-name-ip-address-and-mac-address-are-required':
-		'Host name, IP address and MAC address are required.',
 	'how-easy-to-use-is-the-product': 'How easy to use is the product?',
 	'how-satisfied-are-you-with-the-product':
 		'How satisfied are you with the product?',
@@ -1244,7 +1242,7 @@ export default {
 	'once-canceled-no-further-edits-can-be-made-to-this-event':
 		'Once canceled, no further edits can be made to this event.',
 	'one-host-name-ip-address-or-mac-address-is-required':
-		'One Host Name, IP Address, or MAC Address is required',
+		'One host name, IP address, or MAC address is required.',
 	'one-or-more-add-ons-are-not-available-for-the-selected-dxp-version':
 		'One or more add-ons are not available for the selected DXP version.',
 	'one-or-more-selected-subscriptions-are-not-entitled-to-this-project':
