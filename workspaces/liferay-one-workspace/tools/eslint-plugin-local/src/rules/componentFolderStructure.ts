@@ -31,7 +31,7 @@ const rule: TSESLint.RuleModule<MessageId, []> = {
 
 				const parts = match[1].split('/');
 				const fileName = parts[parts.length - 1];
-				const baseName = fileName.replace(/\.[^.]+$/, '');
+				const baseName = fileName.replace(/(\.test)?\.[^.]+$/, '');
 
 				if (parts.length === 1) {
 					context.report({
