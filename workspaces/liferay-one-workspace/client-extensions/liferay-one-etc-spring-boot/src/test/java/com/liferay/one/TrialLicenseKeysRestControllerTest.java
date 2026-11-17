@@ -44,14 +44,14 @@ public class TrialLicenseKeysRestControllerTest {
 	public void testGetTrialLicenseKeysCMS() throws Exception {
 		Mockito.when(
 			_trialLicenseKeyService.getCMSTrialLicenseKeyXML(
-				_LICENSE_LIFETIME, _OWNER, _START_TIME)
+				_LICENSE_LIFETIME, _OWNER, null, _START_TIME)
 		).thenReturn(
 			"<license>CMS</license>"
 		);
 
 		ResponseEntity<String> responseEntity =
 			_trialLicenseKeysRestController.getTrialLicenseKeysCMS(
-				_jwt, _LICENSE_LIFETIME, " " + _OWNER + " ", _START_TIME);
+				_jwt, _LICENSE_LIFETIME, " " + _OWNER + " ", null, _START_TIME);
 
 		Assertions.assertEquals(
 			"<license>CMS</license>", responseEntity.getBody());
@@ -71,14 +71,14 @@ public class TrialLicenseKeysRestControllerTest {
 	public void testGetTrialLicenseKeysDXP() throws Exception {
 		Mockito.when(
 			_trialLicenseKeyService.getDXPTrialLicenseKeyXML(
-				_LICENSE_LIFETIME, _OWNER, _START_TIME)
+				_LICENSE_LIFETIME, _OWNER, null, _START_TIME)
 		).thenReturn(
 			"<license>DXP</license>"
 		);
 
 		ResponseEntity<String> responseEntity =
 			_trialLicenseKeysRestController.getTrialLicenseKeysDXP(
-				_jwt, _LICENSE_LIFETIME, _OWNER, _START_TIME);
+				_jwt, _LICENSE_LIFETIME, _OWNER, null, _START_TIME);
 
 		Assertions.assertEquals(
 			"<license>DXP</license>", responseEntity.getBody());
@@ -96,22 +96,54 @@ public class TrialLicenseKeysRestControllerTest {
 
 	@Test
 	public void testGetTrialLicenseKeysDXPRejectsBlankOwner() throws Exception {
-		_assertBadRequest(_LICENSE_LIFETIME, " ");
+		_assertBadRequest(_LICENSE_LIFETIME, " ", null);
+	}
+
+	@Test
+	public void testGetTrialLicenseKeysDXPRejectsInvalidProductVersion()
+		throws Exception {
+
+		_assertBadRequest(_LICENSE_LIFETIME, _OWNER, "7.4");
+		_assertBadRequest(_LICENSE_LIFETIME, _OWNER, "2026.Q5");
 	}
 
 	@Test
 	public void testGetTrialLicenseKeysDXPRejectsLicenseLifetimeOverOneYear()
 		throws Exception {
 
-		_assertBadRequest(TimeUnit.DAYS.toMillis(365) + 1, _OWNER);
+		_assertBadRequest(TimeUnit.DAYS.toMillis(365) + 1, _OWNER, null);
 	}
 
 	@Test
 	public void testGetTrialLicenseKeysDXPRejectsNonpositiveLicenseLifetime()
 		throws Exception {
 
-		_assertBadRequest(0, _OWNER);
-		_assertBadRequest(-1, _OWNER);
+		_assertBadRequest(0, _OWNER, null);
+		_assertBadRequest(-1, _OWNER, null);
+	}
+
+	@Test
+	public void testGetTrialLicenseKeysDXPWithProductVersion()
+		throws Exception {
+
+		Mockito.when(
+			_trialLicenseKeyService.getDXPTrialLicenseKeyXML(
+				_LICENSE_LIFETIME, _OWNER, "2026.Q3", _START_TIME)
+		).thenReturn(
+			"<license>DXP</license>"
+		);
+
+		for (String productVersion :
+				new String[] {"2026.Q3", "2026.q3", "2026.q3.5"}) {
+
+			ResponseEntity<String> responseEntity =
+				_trialLicenseKeysRestController.getTrialLicenseKeysDXP(
+					_jwt, _LICENSE_LIFETIME, _OWNER, productVersion,
+					_START_TIME);
+
+			Assertions.assertEquals(
+				"<license>DXP</license>", responseEntity.getBody());
+		}
 	}
 
 	@Test
@@ -127,19 +159,20 @@ public class TrialLicenseKeysRestControllerTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> _trialLicenseKeysRestController.getTrialLicenseKeysDXP(
-				_jwt, _LICENSE_LIFETIME, _OWNER, _START_TIME));
+				_jwt, _LICENSE_LIFETIME, _OWNER, null, _START_TIME));
 
 		Mockito.verifyNoInteractions(_trialLicenseKeyService);
 	}
 
-	private void _assertBadRequest(long licenseLifetime, String owner)
+	private void _assertBadRequest(
+			long licenseLifetime, String owner, String productVersion)
 		throws Exception {
 
 		ResponseStatusException responseStatusException =
 			Assertions.assertThrows(
 				ResponseStatusException.class,
 				() -> _trialLicenseKeysRestController.getTrialLicenseKeysDXP(
-					_jwt, licenseLifetime, owner, _START_TIME));
+					_jwt, licenseLifetime, owner, productVersion, _START_TIME));
 
 		Assertions.assertEquals(
 			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
@@ -148,7 +181,7 @@ public class TrialLicenseKeysRestControllerTest {
 			_trialLicenseKeyService, Mockito.never()
 		).getDXPTrialLicenseKeyXML(
 			ArgumentMatchers.anyLong(), ArgumentMatchers.anyString(),
-			ArgumentMatchers.anyLong()
+			ArgumentMatchers.any(), ArgumentMatchers.anyLong()
 		);
 	}
 

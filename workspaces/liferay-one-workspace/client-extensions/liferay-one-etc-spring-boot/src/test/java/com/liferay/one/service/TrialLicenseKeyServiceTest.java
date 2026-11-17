@@ -51,7 +51,7 @@ public class TrialLicenseKeyServiceTest {
 		Assertions.assertEquals(
 			_read("trial_cms_license_key.xml"),
 			_trialLicenseKeyService.getCMSTrialLicenseKeyXML(
-				_LICENSE_LIFETIME, _OWNER, _START_TIME));
+				_LICENSE_LIFETIME, _OWNER, null, _START_TIME));
 	}
 
 	@Test
@@ -59,7 +59,7 @@ public class TrialLicenseKeyServiceTest {
 		Assertions.assertEquals(
 			_read("trial_dxp_license_key.xml"),
 			_trialLicenseKeyService.getDXPTrialLicenseKeyXML(
-				_LICENSE_LIFETIME, _OWNER, _START_TIME));
+				_LICENSE_LIFETIME, _OWNER, null, _START_TIME));
 	}
 
 	@Test
@@ -69,7 +69,7 @@ public class TrialLicenseKeyServiceTest {
 		Assertions.assertEquals(
 			_read("trial_dxp_license_key.xml"),
 			_trialLicenseKeyService.getDXPTrialLicenseKeyXML(
-				_LICENSE_LIFETIME + 500, _OWNER, _START_TIME + 999));
+				_LICENSE_LIFETIME + 500, _OWNER, null, _START_TIME + 999));
 	}
 
 	@Test
@@ -79,7 +79,7 @@ public class TrialLicenseKeyServiceTest {
 		Instant instant = Instant.parse("2027-01-01T00:00:00Z");
 
 		String xml = _trialLicenseKeyService.getDXPTrialLicenseKeyXML(
-			_LICENSE_LIFETIME, _OWNER, instant.toEpochMilli());
+			_LICENSE_LIFETIME, _OWNER, null, instant.toEpochMilli());
 
 		Assertions.assertTrue(
 			xml.contains("<product-version>2027.Q1</product-version>"));
@@ -87,10 +87,23 @@ public class TrialLicenseKeyServiceTest {
 		instant = Instant.parse("2026-12-31T23:59:59Z");
 
 		xml = _trialLicenseKeyService.getDXPTrialLicenseKeyXML(
-			_LICENSE_LIFETIME, _OWNER, instant.toEpochMilli());
+			_LICENSE_LIFETIME, _OWNER, null, instant.toEpochMilli());
 
 		Assertions.assertTrue(
 			xml.contains("<product-version>2026.Q4</product-version>"));
+	}
+
+	@Test
+	public void testGetDXPTrialLicenseKeyXMLUsesProductVersion()
+		throws Exception {
+
+		String xml = _trialLicenseKeyService.getDXPTrialLicenseKeyXML(
+			_LICENSE_LIFETIME, _OWNER, "2026.Q2", _START_TIME);
+
+		Assertions.assertTrue(
+			xml.contains("<product-version>2026.Q2</product-version>"));
+		Assertions.assertTrue(
+			xml.contains("<license-version>6</license-version>"));
 	}
 
 	private String _read(String fileName) throws Exception {
