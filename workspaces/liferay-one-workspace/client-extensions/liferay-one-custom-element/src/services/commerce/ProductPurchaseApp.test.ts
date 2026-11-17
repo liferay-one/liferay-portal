@@ -197,7 +197,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAPP] ProductPurchaseApp', () => {
 
 		expect(GetAppInformations.postGetAppInformation).toHaveBeenCalledWith({
 			dashboardLink:
-				'https://one.liferay.com/my-account#/ACCOUNT-1/project/one-time-purchases/applications',
+				'https://one.liferay.com/my-account/#/ACCOUNT-1/project/one-time-purchases/applications',
 			orderId: '5',
 			priceModel: 'free',
 			productName: 'App',
@@ -225,7 +225,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAPP] ProductPurchaseApp', () => {
 		expect(GetAppInformations.postGetAppInformation).toHaveBeenCalledWith(
 			expect.objectContaining({
 				dashboardLink:
-					'https://one.liferay.com/my-account#/ACCOUNT-1/project/PRJCT-1/applications',
+					'https://one.liferay.com/my-account/#/ACCOUNT-1/project/PRJCT-1/applications',
 			})
 		);
 	});
