@@ -152,7 +152,7 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 		}
 	);
 
-	it.each(['#/new', '#/'])(
+	it.each(['#/new', '#/', '#/ACCNT-1/project/PRJCT-1', '#/project/PRJCT-1'])(
 		'adds the order query for the ticket attachments page at %s',
 		async (hash) => {
 			window.location.hash = hash;
@@ -165,7 +165,15 @@ describe('[MOD-PRELOADAPPDATA] preloadAppData', () => {
 		}
 	);
 
-	it.each(['#/12345', '#/new/12345', '#/erc/ATTACHMENT-1'])(
+	it.each([
+		'#/12345',
+		'#/erc/ATTACHMENT-1',
+		'#/erc/project',
+		'#/id/678',
+		'#/id/project',
+		'#/new/12345',
+		'#/new/project',
+	])(
 		'skips the order query for the ticket attachments page at %s',
 		async (hash) => {
 			window.location.hash = hash;
