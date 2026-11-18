@@ -3,12 +3,14 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import ClayAlert from '@clayui/alert';
 import {ClayCheckbox} from '@clayui/form';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import classNames from 'classnames';
 import {useLayoutEffect, useRef} from 'react';
 import {UseFormReturn} from 'react-hook-form';
 import {translate} from '~/i18n';
+import {getIconSpriteMap} from '~/services/liferay/liferay';
 import {
 	GenerateForm,
 	GenerateFormBundleProduct,
@@ -22,6 +24,7 @@ import {getBundleProductUnavailableReason, getBundleProducts} from '../utils';
 
 type AddOnStepProps = {
 	developer: boolean;
+	dxpActivationCode?: boolean;
 	form: UseFormReturn<GenerateActivationKeyForm>;
 	generateForm: GenerateForm;
 	onClickBack: () => void;
@@ -35,6 +38,7 @@ type AddOnStepProps = {
 
 export default function AddOnStep({
 	developer,
+	dxpActivationCode,
 	form,
 	generateForm,
 	onClickBack,
@@ -174,52 +178,77 @@ export default function AddOnStep({
 		<>
 			<VersionField form={form} renewing={renewing} versions={versions} />
 
-			<SelectionButtons
-				onClickDeselectAll={() => select(requiredEntitlementIds)}
-				onClickSelectAll={() => select(selectableEntitlementIds)}
-			/>
+			{dxpActivationCode ? (
+				<ClayAlert
+					className="mb-4"
+					displayType="info"
+					role={null}
+					spritemap={getIconSpriteMap()}
+					symbol="info-circle"
+				>
+					{translate(
+						'dxp-2027-and-later-is-activated-with-an-activation-code-every-add-on-of-this-project-is-included-automatically'
+					)}
+				</ClayAlert>
+			) : (
+				<>
+					<SelectionButtons
+						onClickDeselectAll={() =>
+							select(requiredEntitlementIds)
+						}
+						onClickSelectAll={() =>
+							select(selectableEntitlementIds)
+						}
+					/>
 
-			<div className="generate-activation-key-add-ons">
-				{bundleProducts.map((bundleProduct) => {
-					const checked = bundleEntitlementIds.includes(
-						bundleProduct.entitlementId
-					);
-					const required = isRequired(bundleProduct);
-					const unavailableReason =
-						getUnavailableReason(bundleProduct);
+					<div className="generate-activation-key-add-ons">
+						{bundleProducts.map((bundleProduct) => {
+							const checked = bundleEntitlementIds.includes(
+								bundleProduct.entitlementId
+							);
+							const required = isRequired(bundleProduct);
+							const unavailableReason =
+								getUnavailableReason(bundleProduct);
 
-					return (
-						<ClayTooltipProvider key={bundleProduct.entitlementId}>
-							<div
-								className={classNames(
-									'generate-activation-key-add-on',
-									{
-										'generate-activation-key-add-on-required':
-											required,
-										'generate-activation-key-add-on-selected':
-											checked,
-										'generate-activation-key-add-on-unavailable':
-											unavailableReason,
-									}
-								)}
-								data-tooltip-align="top"
-								title={unavailableReason || undefined}
-							>
-								<ClayCheckbox
-									checked={checked}
-									disabled={
-										Boolean(unavailableReason) || required
-									}
-									label={bundleProduct.name}
-									onChange={() =>
-										toggle(bundleProduct.entitlementId)
-									}
-								/>
-							</div>
-						</ClayTooltipProvider>
-					);
-				})}
-			</div>
+							return (
+								<ClayTooltipProvider
+									key={bundleProduct.entitlementId}
+								>
+									<div
+										className={classNames(
+											'generate-activation-key-add-on',
+											{
+												'generate-activation-key-add-on-required':
+													required,
+												'generate-activation-key-add-on-selected':
+													checked,
+												'generate-activation-key-add-on-unavailable':
+													unavailableReason,
+											}
+										)}
+										data-tooltip-align="top"
+										title={unavailableReason || undefined}
+									>
+										<ClayCheckbox
+											checked={checked}
+											disabled={
+												Boolean(unavailableReason) ||
+												required
+											}
+											label={bundleProduct.name}
+											onChange={() =>
+												toggle(
+													bundleProduct.entitlementId
+												)
+											}
+										/>
+									</div>
+								</ClayTooltipProvider>
+							);
+						})}
+					</div>
+				</>
+			)}
 
 			<WizardFooter
 				backButtonProps={{disabled: submitting, onClick: onClickBack}}
@@ -230,7 +259,9 @@ export default function AddOnStep({
 				continueButtonProps={{
 					children: translate(developer ? 'download' : 'next'),
 					disabled:
-						(!developer && !bundleEntitlementIds.length) ||
+						(!developer &&
+							!dxpActivationCode &&
+							!bundleEntitlementIds.length) ||
 						!version ||
 						submitting,
 					onClick: onClickContinue,

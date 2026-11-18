@@ -15,6 +15,7 @@ import {Word, translate} from '~/i18n';
 import {
 	ACTIVATION_ERROR_MESSAGE_KEYS,
 	BUNDLE_ERROR_MESSAGE_KEYS,
+	DXP_BUNDLE_ERROR_MESSAGE_KEYS,
 } from '~/pages/MyAccount/Projects/utils/cloudActivationErrorConstants';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import toErrorMessageKey from '~/pages/MyAccount/Projects/utils/toErrorMessageKey';
@@ -22,6 +23,7 @@ import FetcherError from '~/services/fetcher/FetcherError';
 import ActivationKeys from '~/services/spring-boot/ActivationKeys';
 import Cloud from '~/services/spring-boot/Cloud';
 import LicenseKeys from '~/services/spring-boot/LicenseKeys';
+import Projects from '~/services/spring-boot/Projects';
 import {scrollToTop} from '~/utils/browserUtils';
 import {toISODate, toUTCDateString} from '~/utils/dateUtils';
 
@@ -30,6 +32,8 @@ import {useActivationKeyScope} from '../hooks/useActivationKeyScope';
 import ActivationCodesStep from './ActivationCodesStep/ActivationCodesStep';
 import AddOnStep from './AddOnStep/AddOnStep';
 import ComplimentaryStep from './ComplimentaryStep/ComplimentaryStep';
+import DXPActivationCodesStep from './DXPActivationCodesStep/DXPActivationCodesStep';
+import DXPOfflinePackageStep from './DXPOfflinePackageStep/DXPOfflinePackageStep';
 import EnvironmentStep from './EnvironmentStep/EnvironmentStep';
 import OfflinePackageStep from './OfflinePackageStep/OfflinePackageStep';
 import OfflineTokenStep from './OfflineTokenStep/OfflineTokenStep';
@@ -57,6 +61,8 @@ import {
 	hasRemainingKeyType,
 	isCloudNativeProduct,
 	isComplimentaryKeyType,
+	isDXPActivationCodeKeyType,
+	isDXPActivationCodeVersion,
 	isDeveloperKeyType,
 	isFreeKeyType,
 	isServerlessKeyType,
@@ -111,7 +117,9 @@ export default function GenerateActivationKey() {
 			bundleEntitlementIds: [],
 			description: '',
 			domain: '',
+			dxpActivationCode: '',
 			environmentName: '',
+			installationId: '',
 			keyType: '',
 			maxClusterNodes: 0,
 			notify: true,
@@ -311,6 +319,11 @@ export default function GenerateActivationKey() {
 
 	const appLicense = Boolean(product?.appLicense);
 	const cloudNative = isCloudNativeProduct(product);
+	const dxpActivationCode =
+		!renewing &&
+		!unassigned &&
+		isDXPActivationCodeKeyType(keyType, product) &&
+		isDXPActivationCodeVersion(version);
 
 	const {productVersions} = useDXPProductVersions(cloudNative);
 
@@ -510,6 +523,43 @@ export default function GenerateActivationKey() {
 		}
 	}
 
+	async function onClickDownloadDXPPackage() {
+		const values = getValues();
+
+		setSubmitError('');
+		setSubmitting(true);
+
+		try {
+			await Projects.downloadDXPOfflineActivationBundle(
+				projectId,
+				values.dxpActivationCode,
+				values.version,
+				values.installationId.trim()
+			);
+
+			navigate('..');
+		}
+		catch (error) {
+			setSubmitError(
+				translate(
+					toErrorMessageKey(error, DXP_BUNDLE_ERROR_MESSAGE_KEYS)
+				)
+			);
+		}
+		finally {
+			setSubmitting(false);
+		}
+	}
+
+	function onClickDXPOfflineActivation(activationCode: string) {
+		setSubmitError('');
+
+		setValue('dxpActivationCode', activationCode);
+		setValue('installationId', '');
+
+		goTo('dxp-offline-package');
+	}
+
 	function onClickOfflineActivation(
 		offlineEnvironment: GenerateActivationKeyOfflineEnvironment
 	) {
@@ -707,6 +757,10 @@ export default function GenerateActivationKey() {
 			'select-the-items-you-would-like-to-include-in-the-activation-key',
 		'complimentary':
 			'select-the-subscription-and-key-type-you-would-like-to-generate',
+		'dxp-activation-codes':
+			'please-copy-and-paste-the-activation-code-for-the-installation-type-you-would-like-to-activate-into-dxp',
+		'dxp-offline-package':
+			'enter-the-installation-id-of-the-dxp-installation-to-download-its-offline-activation-package',
 		'environment':
 			'fill-out-the-information-required-to-generate-the-activation-key',
 		'offline-package':
@@ -719,6 +773,8 @@ export default function GenerateActivationKey() {
 
 	const titles: Partial<Record<GenerateActivationKeyStep, Word>> = {
 		'activation-codes': 'activation-codes',
+		'dxp-activation-codes': 'activation-codes',
+		'dxp-offline-package': 'download-offline-activation-package',
 		'offline-package': 'download-offline-activation-package',
 		'offline-token': 'download-offline-activation-package',
 	};
@@ -761,15 +817,22 @@ export default function GenerateActivationKey() {
 					{step === 'add-ons' && (
 						<AddOnStep
 							developer={developer}
+							dxpActivationCode={dxpActivationCode}
 							form={form}
 							generateForm={generateForm}
 							onClickBack={() => goTo('subscription')}
 							onClickCancel={onClickCancel}
-							onClickContinue={() =>
-								developer
-									? onClickDownload()
-									: goTo('environment')
-							}
+							onClickContinue={() => {
+								if (developer) {
+									onClickDownload();
+								}
+								else if (dxpActivationCode) {
+									goTo('dxp-activation-codes');
+								}
+								else {
+									goTo('environment');
+								}
+							}}
 							renewing={renewing}
 							serverless={serverless}
 							submitting={submitting}
@@ -795,6 +858,29 @@ export default function GenerateActivationKey() {
 							onClickCancel={onClickCancel}
 							onClickFinish={() => navigate('..')}
 							onClickOffline={onClickOfflineActivation}
+						/>
+					)}
+
+					{step === 'dxp-activation-codes' && (
+						<DXPActivationCodesStep
+							keyType={keyType}
+							onClickBack={() => goTo('add-ons')}
+							onClickCancel={onClickCancel}
+							onClickFinish={() => navigate('..')}
+							onClickOffline={onClickDXPOfflineActivation}
+						/>
+					)}
+
+					{step === 'dxp-offline-package' && (
+						<DXPOfflinePackageStep
+							form={form}
+							onClickBack={() => goTo('dxp-activation-codes')}
+							onClickCancel={onClickCancel}
+							onClickDownload={onClickDownloadDXPPackage}
+							submitting={submitting}
+							versions={versions.filter(
+								isDXPActivationCodeVersion
+							)}
 						/>
 					)}
 

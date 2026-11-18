@@ -129,6 +129,8 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 				).put(
 					"availableCount", environmentQuota.getAvailableCount()
 				).put(
+					"maxClusterNodes", environmentQuota.getMaxClusterNodes()
+				).put(
 					"totalCount", environmentQuota.getTotalCount()
 				).put(
 					"type", environmentQuota.getType()
