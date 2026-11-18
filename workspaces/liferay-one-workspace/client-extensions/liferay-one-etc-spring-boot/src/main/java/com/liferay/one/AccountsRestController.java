@@ -38,7 +38,6 @@ import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.ContractService;
-import com.liferay.one.service.EmailAddressValidatorService;
 import com.liferay.one.service.EntitlementDefinitionService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyService;
@@ -695,12 +694,6 @@ public class AccountsRestController extends OneBaseRestController {
 
 		_adminPermission.check(jwt);
 
-		if (_emailAddressValidatorService.isLiferayDomain(emailAddress)) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST,
-				"Email address uses a reserved Liferay domain");
-		}
-
 		JSONObject jsonObject = new JSONObject(json);
 
 		Account account = _accountService.getAccount(
@@ -1152,12 +1145,6 @@ public class AccountsRestController extends OneBaseRestController {
 			throw new ResponseStatusException(
 				HttpStatus.BAD_REQUEST, "Email address is not valid");
 		}
-
-		if (_emailAddressValidatorService.isLiferayDomain(emailAddress)) {
-			throw new ResponseStatusException(
-				HttpStatus.BAD_REQUEST,
-				"Email address uses a reserved Liferay domain");
-		}
 	}
 
 	private void _validateProjectInvitation(
@@ -1243,9 +1230,6 @@ public class AccountsRestController extends OneBaseRestController {
 
 	@Autowired
 	private ContractService _contractService;
-
-	@Autowired
-	private EmailAddressValidatorService _emailAddressValidatorService;
 
 	@Autowired
 	private EntitlementDefinitionService _entitlementDefinitionService;
