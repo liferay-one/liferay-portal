@@ -268,6 +268,28 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 			expect(screen.queryByText('Portal Environment')).toBeNull();
 		});
 
+		it('ignores a date filter of the URL that has no bound', () => {
+			renderLicenseKeys('/?startDate=2026-01-01');
+
+			expect(screen.getByText('DXP Environment')).toBeInTheDocument();
+			expect(screen.getByText('Portal Environment')).toBeInTheDocument();
+			expect(screen.queryByText(/^Start Date:/)).toBeNull();
+		});
+
+		it('keeps the text when the user types before the search of the URL', async () => {
+			const user = userEvent.setup();
+
+			renderLicenseKeys('/?search=dxp');
+
+			await user.type(screen.getByPlaceholderText('Search'), 'my ', {
+				initialSelectionEnd: 0,
+				initialSelectionStart: 0,
+			});
+
+			expect(screen.getByPlaceholderText('Search')).toHaveValue('my dxp');
+			expect(getLocationSearch().get('search')).toBe('my dxp');
+		});
+
 		it('writes the search to the URL and keeps the other parameters', async () => {
 			const user = userEvent.setup();
 
