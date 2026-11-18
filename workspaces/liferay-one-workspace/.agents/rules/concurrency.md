@@ -157,3 +157,29 @@ Two related traps in the same family:
 
 - **Stale closures** — an effect or callback with an incomplete dependency array captures the first render's values forever. Read the current value from a ref, or list the dependency.
 - **Uncleaned subscriptions** — `setInterval`, `addEventListener`, and any subscribe call must be torn down in the effect's cleanup function.
+
+## React: A Text Input Cannot Take Its Value From the URL
+
+Each router in `liferay-one-custom-element` is a `<HashRouter>` with no `useTransitions` prop. In react-router 7, that router applies each location change inside `React.startTransition`. A value that `useSearchParams` returns therefore updates in a transition, and React does not support a controlled text input that a transition updates. Each keystroke writes the URL, React puts the old value back into the DOM, and the transition commits later. Fast typing loses characters, and an edit in the middle of the text moves the caret. On LPD-116363, the input "liferay commerce connector" became `"yoc or"`.
+
+The Vitest suite does not find this defect. `MemoryRouter` with `user.type` adds characters slowly and only at the end of the text. Test it in a browser: type at full speed, and type in the middle of the text.
+
+```tsx
+// Wrong. The input reads its value from a transition update.
+const keywords = searchParams.get('search') ?? '';
+
+<ClayInput onChange={(event) => setSearchParam(event.target.value)} value={keywords} />
+
+// Correct. The input reads local state. The URL copies that state.
+const [keywords, setKeywords] = useState(() => searchParams.get('search') ?? '');
+
+<ClayInput
+	onChange={(event) => {
+		setKeywords(event.target.value);
+		setSearchParam(event.target.value);
+	}}
+	value={keywords}
+/>
+```
+
+This applies only to a text input. A checkbox, a select, or a filter that the user applies with a button can read the URL directly.
