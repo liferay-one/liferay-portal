@@ -4,11 +4,6 @@
  */
 
 import i18n from '~/i18n';
-import {
-	getCurrentUserId,
-	getSelectedAccountId,
-	setLastViewedProjectCookie,
-} from '~/pages/MyAccount/Projects/projects';
 import AttachmentMessage from '~/pages/TicketAttachments/components/AttachmentMessage/AttachmentMessage';
 import routerPath from '~/utils/routerPath';
 
@@ -29,14 +24,7 @@ const CommentPostFailed = ({ticketURL, uploadProjectKey}: IProps) => {
 			{uploadProjectKey && (
 				<a
 					className="btn btn-secondary mr-2 uploader-secondary-button"
-					href={pageRoutes.ticketAttachments()}
-					onClick={() =>
-						setLastViewedProjectCookie(
-							getSelectedAccountId(),
-							uploadProjectKey,
-							getCurrentUserId()
-						)
-					}
+					href={pageRoutes.ticketAttachments(uploadProjectKey)}
 				>
 					{i18n.translate('return-to-attachments')}
 				</a>

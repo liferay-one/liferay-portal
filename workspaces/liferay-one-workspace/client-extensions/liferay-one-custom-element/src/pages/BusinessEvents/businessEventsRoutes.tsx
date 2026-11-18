@@ -5,9 +5,14 @@
 
 import {lazy} from 'react';
 import {Navigate} from 'react-router';
+import ProjectLinkRedirect from '~/components/ProjectLinkRedirect/ProjectLinkRedirect';
+import ProjectRouteLayout from '~/components/ProjectRouteLayout/ProjectRouteLayout';
+import ProjectRouteRedirect from '~/components/ProjectRouteRedirect/ProjectRouteRedirect';
+import {AccountProvider} from '~/context/AccountContext';
+import {translate} from '~/i18n';
+import {getBusinessEventsPath} from '~/pages/BusinessEvents/utils/getBusinessEventsPath';
 import {AppRoute} from '~/utils/routeUtils';
 
-const BusinessEventsRedirect = lazy(() => import('./BusinessEventsRedirect'));
 const BusinessEvents = lazy(() => import('./BusinessEvents'));
 const BusinessEventsAdd = lazy(
 	() => import('./BusinessEventsAdd/BusinessEventsAdd')
@@ -23,27 +28,71 @@ const BusinessEventsEdit = lazy(
 	() => import('./BusinessEventsEdit/BusinessEventsEdit')
 );
 
+const TITLE = translate('business-events');
+
+const redirect = (
+	<ProjectRouteRedirect getPath={getBusinessEventsPath} title={TITLE} />
+);
+
 export const businessEventsRoutes: AppRoute[] = [
-	{element: <BusinessEventsRedirect />, index: true},
+	{element: redirect, index: true},
+	{
+		element: (
+			<ProjectLinkRedirect
+				getPath={getBusinessEventsPath}
+				title={TITLE}
+			/>
+		),
+		path: ':projectERC/business-events/*',
+	},
 	{
 		children: [
-			{element: <BusinessEvents />, index: true},
-			{element: <BusinessEventsAdd />, path: 'add'},
+			{element: <Navigate replace to="project" />, index: true},
 			{
 				children: [
-					{element: <BusinessEventsDetails />, index: true},
-					{element: <BusinessEventsEdit />, path: 'edit'},
+					{element: redirect, index: true},
 					{
-						element: <BusinessEventsActivityHistory />,
-						path: 'activity-history',
+						children: [
+							{element: <BusinessEvents />, index: true},
+							{element: <BusinessEventsAdd />, path: 'add'},
+							{
+								children: [
+									{
+										element: <BusinessEventsDetails />,
+										index: true,
+									},
+									{
+										element: <BusinessEventsEdit />,
+										path: 'edit',
+									},
+									{
+										element: (
+											<BusinessEventsActivityHistory />
+										),
+										path: 'activity-history',
+									},
+									{
+										element: <Navigate replace to=".." />,
+										path: '*',
+									},
+								],
+								path: ':id',
+							},
+							{element: <Navigate replace to=".." />, path: '*'},
+						],
+						element: <ProjectRouteLayout title={TITLE} />,
+						path: ':projectERC/business-events',
 					},
-					{element: <Navigate replace to=".." />, path: '*'},
+					{
+						element: <Navigate replace to="business-events" />,
+						path: ':projectERC',
+					},
 				],
-				path: ':id',
+				path: 'project',
 			},
-			{element: <Navigate replace to=".." />, path: '*'},
 		],
-		element: <BusinessEventsRedirect />,
-		path: ':projectERC/business-events',
+		element: <AccountProvider />,
+		path: ':accountERC',
 	},
+	{element: <Navigate replace to="/" />, path: '*'},
 ];

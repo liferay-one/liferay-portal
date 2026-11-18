@@ -4,9 +4,10 @@
  */
 
 import {useCallback, useEffect, useState} from 'react';
-import {useNavigate} from 'react-router';
+import {useNavigate, useParams} from 'react-router';
 import {translate} from '~/i18n';
 import {IBusinessEvent} from '~/pages/BusinessEvents/types';
+import {getBusinessEventsPath} from '~/pages/BusinessEvents/utils/getBusinessEventsPath';
 import {Liferay} from '~/services/liferay/liferay';
 import {getBusinessEventById} from '~/services/spring-boot/Jira';
 
@@ -25,6 +26,8 @@ export default function useGetBusinessEvent(
 	const [loading, setLoading] = useState(true);
 
 	const navigate = useNavigate();
+
+	const {accountERC = ''} = useParams();
 
 	const fetchBusinessEvent = useCallback(async () => {
 		if (!projectERC) {
@@ -47,12 +50,12 @@ export default function useGetBusinessEvent(
 				type: 'danger',
 			});
 
-			navigate(`/${projectERC}/business-events`);
+			navigate(getBusinessEventsPath(accountERC, projectERC));
 		}
 		finally {
 			setLoading(false);
 		}
-	}, [id, navigate, projectERC]);
+	}, [accountERC, id, navigate, projectERC]);
 
 	useEffect(() => {
 		if (!id) {
