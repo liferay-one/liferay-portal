@@ -57,6 +57,6 @@ export class ProductPurchaseSEOStudio extends ProductPurchase {
 			throw new Error('Form is missing.');
 		}
 
-		return `${window.location.origin}${getSiteURL()}/my-account#/${this.account.externalReferenceCode}/project/${this.form.salesforceProjectId}/products/${this.product.externalReferenceCode}`;
+		return `${window.location.origin}${getSiteURL()}/my-account/#/${this.account.externalReferenceCode}/project/${this.form.salesforceProjectId}/products/${this.product.externalReferenceCode}`;
 	}
 }
