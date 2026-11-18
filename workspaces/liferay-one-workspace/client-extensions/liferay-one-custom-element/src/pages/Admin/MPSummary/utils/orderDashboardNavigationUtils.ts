@@ -72,7 +72,7 @@ export async function openCustomerDashboard(order: Order) {
 	await setCurrentAccount(String(order.accountId));
 
 	window.location.assign(
-		`${getSiteURL()}/my-account#/project/${projectPath}`
+		`${getSiteURL()}/my-account/#/project/${projectPath}`
 	);
 }
 

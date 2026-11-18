@@ -247,7 +247,7 @@ export default class ProductPurchaseSelfServiceTrial extends ProductPurchase {
 	}
 
 	private getProjectLink() {
-		return `${window.location.origin}${getSiteURL()}/my-account#/${this.account.externalReferenceCode}/project/${ONE_TIME_PURCHASES}`;
+		return `${window.location.origin}${getSiteURL()}/my-account/#/${this.account.externalReferenceCode}/project/${ONE_TIME_PURCHASES}`;
 	}
 
 	private async getTrialGenerateForm() {

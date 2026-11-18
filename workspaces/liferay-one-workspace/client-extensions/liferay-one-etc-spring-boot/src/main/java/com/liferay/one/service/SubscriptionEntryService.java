@@ -180,7 +180,7 @@ public class SubscriptionEntryService extends OneBaseService {
 		}
 
 		return StringBundler.concat(
-			_portalURL, "/my-account#/", accountExternalReferenceCode,
+			_portalURL, "/my-account/#/", accountExternalReferenceCode,
 			"/project/", projectExternalReferenceCode, "/activation");
 	}
 

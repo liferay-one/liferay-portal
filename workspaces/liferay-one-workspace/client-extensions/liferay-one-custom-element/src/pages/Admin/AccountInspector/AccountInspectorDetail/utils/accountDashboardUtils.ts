@@ -8,7 +8,7 @@ import {getSiteURL} from '~/utils/siteUtils';
 import type {Account} from '~/types/accounts';
 
 export function getAccountDashboardURL(account: Account, path = '') {
-	return `${getSiteURL()}/my-account#/${encodeURIComponent(
+	return `${getSiteURL()}/my-account/#/${encodeURIComponent(
 		account.externalReferenceCode
 	)}${path ? `/${path}` : ''}`;
 }

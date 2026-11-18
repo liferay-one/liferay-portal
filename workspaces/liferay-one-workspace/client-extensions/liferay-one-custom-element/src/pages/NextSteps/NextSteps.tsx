@@ -181,7 +181,7 @@ export function NextStepsBody(props: NextStepsBodyProps) {
 							{i18n.translate('your-order-id-is')} &nbsp;
 							<a
 								className="next-step-page-text-bold"
-								href={`${getSiteURL()}/my-account#/orders`}
+								href={`${getSiteURL()}/my-account/#/orders`}
 							>
 								<span className="mb-0 next-step-page-order next-step-page-text-bold span">
 									{orderId}
@@ -286,8 +286,8 @@ export function NextStepsBody(props: NextStepsBodyProps) {
 						const url =
 							paymentStatus === PaymentStatus.PAID
 								? isCloudApp
-									? `${getSiteURL()}/my-account#/project/${ONE_TIME_PURCHASES}/applications`
-									: `${getSiteURL()}/my-account#/orders`
+									? `${getSiteURL()}/my-account/#/project/${ONE_TIME_PURCHASES}/applications`
+									: `${getSiteURL()}/my-account/#/orders`
 								: `${getSiteURL()}/marketplace/applications`;
 						Liferay.Util.navigate(url);
 					}}

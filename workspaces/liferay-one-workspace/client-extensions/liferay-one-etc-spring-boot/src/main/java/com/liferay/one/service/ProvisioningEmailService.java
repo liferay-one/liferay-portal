@@ -225,7 +225,7 @@ public class ProvisioningEmailService extends OneBaseService {
 
 	private String _getProjectURL(Project project) {
 		return StringBundler.concat(
-			_portalURL, "/my-account#/",
+			_portalURL, "/my-account/#/",
 			project.getAccountExternalReferenceCode(), "/project/",
 			project.getExternalReferenceCode());
 	}
