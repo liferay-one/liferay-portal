@@ -604,6 +604,7 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 					contractTerm: 12,
 					externalReferenceCode: 'C_FUTURE',
 					id: 1,
+					name: 'Enterprise Renewal',
 					startDate: FUTURE,
 				},
 				{
@@ -634,9 +635,10 @@ describe('[HOOK-USEPROJECTCOMMERCE] useProjectCommerce', () => {
 			['C_ACTIVE', 'active'],
 		]);
 		expect(result.contracts[0]).toMatchObject({
-			name: 'C_FUTURE',
+			name: 'Enterprise Renewal',
 			termMonths: 12,
 		});
+		expect(result.contracts[1].name).toBeUndefined();
 	});
 });
 

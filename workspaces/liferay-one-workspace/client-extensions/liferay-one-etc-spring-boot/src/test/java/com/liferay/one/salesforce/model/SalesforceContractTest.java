@@ -26,6 +26,7 @@ public class SalesforceContractTest {
 		Assertions.assertNull(salesforceContract.getContractTerm());
 		Assertions.assertEquals("", salesforceContract.getEndDate());
 		Assertions.assertEquals("", salesforceContract.getId());
+		Assertions.assertEquals("", salesforceContract.getName());
 		Assertions.assertEquals("", salesforceContract.getOpportunityId());
 		Assertions.assertEquals(
 			"", salesforceContract.getRenewalOpportunityId());
@@ -45,6 +46,8 @@ public class SalesforceContractTest {
 			).put(
 				"Id", "800-CONTRACT"
 			).put(
+				"Name", "Enterprise Renewal"
+			).put(
 				"SBQQ__Opportunity__c", "006-OPPORTUNITY"
 			).put(
 				"SBQQ__RenewalOpportunity__c", "006-RENEWAL"
@@ -57,6 +60,8 @@ public class SalesforceContractTest {
 		Assertions.assertEquals(12, salesforceContract.getContractTerm());
 		Assertions.assertEquals("2027-11-30", salesforceContract.getEndDate());
 		Assertions.assertEquals("800-CONTRACT", salesforceContract.getId());
+		Assertions.assertEquals(
+			"Enterprise Renewal", salesforceContract.getName());
 		Assertions.assertEquals(
 			"006-OPPORTUNITY", salesforceContract.getOpportunityId());
 		Assertions.assertEquals(
