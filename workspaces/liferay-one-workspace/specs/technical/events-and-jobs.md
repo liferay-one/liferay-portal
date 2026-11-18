@@ -233,7 +233,7 @@ No other client extension in the workspace runs a timer. `client-extensions/life
 
 ## Message Listeners
 
-Each subscriber extends `…/one/pubsub/subscriber/BasePubsubSubscriber.java`. The base class acks a message when `receive` returns and nacks it when `receive` throws (lines 100 and 110). A subscriber that creates its own subscription sets an ack deadline of 30 seconds, message ordering, and a dead letter policy of 5 delivery attempts. The two Salesforce subscribers do not create their subscriptions, so the dead letter policy for them is set outside this code.
+Each subscriber extends `…/one/pubsub/subscriber/BasePubsubSubscriber.java`. The base class acks a message when `receive` returns and nacks it when `receive` throws (lines 102 and 112). A subscriber that creates its own subscription sets an ack deadline of 30 seconds, message ordering, a retry policy with a backoff of 60 to 600 seconds, and a dead letter policy of 5 delivery attempts. The code sets these only when it creates the subscription, so a subscription that already exists keeps its settings. The two Salesforce subscribers do not create their subscriptions, so the dead letter policy for them is set outside this code.
 
 | Subscriber | Enabled By (Default) | Subscription and Topic Keys | Creates Its Subscription | Writes | Ack and Nack | Source |
 | --- | --- | --- | --- | --- | --- | --- |
