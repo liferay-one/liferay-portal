@@ -52,6 +52,8 @@ Under `--read-only`, run the check-only form. It is the non-mutating counterpart
 
 Otherwise run the mutating form. If formatting fails, stop and report the error — do not review on a broken formatter pass.
 
+The mutating form also rewrites files the diff never touched wherever master-temp itself fails a check. `yarn lint:fix` deletes comments, and `formatSource` reorders Java. Compare `git status` before and after the run. Restore by name each file that was clean before the run and is outside the diff. That edit is not part of the change, and if it is committed it goes into an unrelated PR.
+
 A lint or formatter failure the diff did not introduce is not a finding. **Only the session confirms that**, and only in a throwaway worktree — `git -C <TARGET> worktree add --detach <tmp> <BASE>`, run the command there, remove it. In the workspace lane that materializes the whole portal checkout for one formatter run, so add `--no-checkout` and sparse-checkout just the paths the command needs. Never by checking out or stashing in the shared checkout: in a `one-team` run it holds staged work with no commit behind it, so one stash discards the change under review. Under `--adversarial` there is a second reason — passes are reading that tree concurrently, and every one of them would see a different repository than it started on — and there a pass reports such a failure as unconfirmed and leaves the confirming to the session. When it does fail at `<BASE>` too, say so plainly and move on.
 
 ## Step 2: Establish the Diff
