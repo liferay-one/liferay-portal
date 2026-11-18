@@ -17,6 +17,7 @@ import Loading from '~/components/Loading/Loading';
 import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';
 import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {Word, sub, translate} from '~/i18n';
+import {getBusinessEventsPath} from '~/pages/BusinessEvents/utils/getBusinessEventsPath';
 import {useProjectsWithOrders} from '~/pages/MyAccount/Projects/projects';
 import {Liferay} from '~/services/liferay/liferay';
 import getKebabCase from '~/utils/getKebabCase';
@@ -62,7 +63,7 @@ const columns = [
 ];
 
 const BusinessEvents = () => {
-	const {projectERC} = useParams<{projectERC: string}>();
+	const {accountERC = '', projectERC = ''} = useParams();
 
 	const {filters, handleFilterChange, handleSearchChange} = useFilters();
 
@@ -261,7 +262,11 @@ const BusinessEvents = () => {
 						label: translate('view-details'),
 						onClick: () => {
 							navigate(
-								`/${projectERC}/business-events/${businessEvent.id}`
+								getBusinessEventsPath(
+									accountERC,
+									projectERC,
+									String(businessEvent.id)
+								)
 							);
 						},
 					},
@@ -279,7 +284,12 @@ const BusinessEvents = () => {
 							label: translate('edit-event'),
 							onClick: () => {
 								navigate(
-									`/${projectERC}/business-events/${businessEvent.id}/edit`
+									getBusinessEventsPath(
+										accountERC,
+										projectERC,
+										String(businessEvent.id),
+										'edit'
+									)
 								);
 							},
 						},
@@ -339,7 +349,11 @@ const BusinessEvents = () => {
 						<div>
 							<div className="be-event-name font-weight-semi-bold text-neutral-10">
 								<Link
-									to={`/${projectERC}/business-events/${businessEvent.id}`}
+									to={getBusinessEventsPath(
+										accountERC,
+										projectERC,
+										String(businessEvent.id)
+									)}
 								>
 									{businessEvent?.name}
 								</Link>
@@ -392,6 +406,7 @@ const BusinessEvents = () => {
 
 		return [];
 	}, [
+		accountERC,
 		filteredBusinessEvents,
 		hasAllEventsPermissions,
 		isSaasOnly,
@@ -423,7 +438,7 @@ const BusinessEvents = () => {
 					<ProjectSelector
 						onSelect={(id) => {
 							if (id !== projectERC) {
-								navigate(`/${id}/business-events`);
+								navigate(getBusinessEventsPath(accountERC, id));
 							}
 						}}
 						projects={projects}

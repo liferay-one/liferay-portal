@@ -23,6 +23,8 @@ const ACCOUNT_SECTIONS = [
 	'project-members',
 ];
 
+const PROJECT_HASH_PATTERN = /^#\/[^/]+\/project(\/|$)/;
+
 export default function AccountSelector() {
 	const account = Liferay.CommerceContext?.account;
 	const currentAccountId = account?.accountId;
@@ -107,6 +109,19 @@ export default function AccountSelector() {
 			window.location.hash = ACCOUNT_SECTIONS.includes(section)
 				? `#/${externalReferenceCode}/${section}`
 				: `#/${externalReferenceCode}`;
+		}
+
+		if (
+			externalReferenceCode &&
+			(document.querySelector(
+				'liferay-one-custom-element[route="business-events"]'
+			) ||
+				(document.querySelector(
+					'liferay-one-custom-element[route="ticket-attachments"]'
+				) &&
+					PROJECT_HASH_PATTERN.test(window.location.hash)))
+		) {
+			window.location.hash = `#/${externalReferenceCode}/project`;
 		}
 
 		window.location.reload();

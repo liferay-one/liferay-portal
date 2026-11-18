@@ -4,23 +4,21 @@
  */
 
 import ClayLink from '@clayui/link';
+import {useNavigate, useParams} from 'react-router';
 import Table, {
 	IRow,
 } from '~/components/BusinessEventsTable/BusinessEventsTable';
 import Loading from '~/components/Loading/Loading';
 import ProjectSelector from '~/components/ProjectSelector/ProjectSelector';
-import RestrictedFeatureMessage from '~/components/RestrictedFeatureMessage/RestrictedFeatureMessage';
 import {useOneContext} from '~/context/OneContextProvider';
 import {useProperties} from '~/context/PropertiesContext';
 import {useConfirmationModal} from '~/hooks/useConfirmationModal';
 import {useFetch} from '~/hooks/useFetch';
 import {translate} from '~/i18n';
-import {
-	useProjectsWithOrders,
-	useSelectedProject,
-} from '~/pages/MyAccount/Projects/projects';
+import {useProjectsWithOrders} from '~/pages/MyAccount/Projects/projects';
 import useDeleteTicketAttachment from '~/pages/TicketAttachments/hooks/useDeleteTicketAttachment';
 import formatFileSize from '~/pages/TicketAttachments/utils/formatFileSize';
+import {getTicketAttachmentsPath} from '~/pages/TicketAttachments/utils/getTicketAttachmentsPath';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
 
@@ -72,16 +70,17 @@ const TicketAttachmentsList = () => {
 
 	const {jiraFLSPortalURL, jiraFLSProject, jiraHCPortalURL} = useProperties();
 
-	const {
-		hasAccountProjects,
-		loading: projectsLoading,
-		projects,
-	} = useProjectsWithOrders();
+	const navigate = useNavigate();
 
-	const {projectERC, selectProject} = useSelectedProject(
-		projectsLoading,
-		projects
-	);
+	const {accountERC = '', projectERC = ''} = useParams();
+
+	const {projects} = useProjectsWithOrders();
+
+	const selectProject = (id: string) => {
+		if (id !== projectERC) {
+			navigate(getTicketAttachmentsPath(accountERC, id));
+		}
+	};
 
 	const {
 		data,
@@ -132,28 +131,6 @@ const TicketAttachmentsList = () => {
 			)}
 		</div>
 	);
-
-	if (projectsLoading) {
-		return <Loading.Page />;
-	}
-
-	if (!projects.length) {
-		return (
-			<div className="py-4">
-				{header}
-
-				<RestrictedFeatureMessage
-					message={
-						hasAccountProjects
-							? translate(
-									'login-as-a-user-that-has-access-to-a-project-or-contact-your-project-administrator-to-add-you-to-a-project.'
-								)
-							: undefined
-					}
-				/>
-			</div>
-		);
-	}
 
 	const attachments = data?.items ?? [];
 
@@ -236,7 +213,7 @@ const TicketAttachmentsList = () => {
 			{header}
 
 			<div className="mt-3">
-				{!projectERC || loading ? (
+				{loading ? (
 					<Loading.Page />
 				) : attachments.length ? (
 					<Table columns={columns} rows={rows as unknown as IRow[]} />
