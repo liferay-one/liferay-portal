@@ -225,6 +225,14 @@ public class LicenseKeyExporter {
 		return document.formattedString();
 	}
 
+	public String toXML(String key, Map<String, String> properties)
+		throws Exception {
+
+		Document document = toXMLVersion3_4(properties, key, false);
+
+		return document.formattedString();
+	}
+
 	public String toXML(
 			String key, String accountName, String licenseEntryName,
 			String licenseType, int licenseVersion, String productName,
@@ -429,6 +437,12 @@ public class LicenseKeyExporter {
 
 		_addElement(
 			rootElement, "license-version", String.valueOf(licenseVersion));
+
+		String installationId = properties.get("installationId");
+
+		if (Validator.isNotNull(installationId)) {
+			_addElement(rootElement, "installation-id", installationId);
+		}
 
 		DateFormat longDateFormatDateTime = new SimpleDateFormat(
 			_LICENSE_DATE_FORMAT, LocaleUtil.US);

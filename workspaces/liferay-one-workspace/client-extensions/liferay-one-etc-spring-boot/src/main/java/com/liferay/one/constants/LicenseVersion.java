@@ -16,6 +16,10 @@ public class LicenseVersion {
 		return 3;
 	}
 
+	public static int getInstallationLicenseVersion() {
+		return 7;
+	}
+
 	public static int getLicenseVersion(
 		String productName, String productVersion) {
 

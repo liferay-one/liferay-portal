@@ -7,6 +7,7 @@ package com.liferay.one.service;
 
 import com.liferay.one.constants.EntitlementConstants;
 import com.liferay.one.constants.EnvironmentConstants;
+import com.liferay.one.constants.LicenseKeyGenerationConstants;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.Environment;
 import com.liferay.one.model.EnvironmentQuota;
@@ -30,6 +31,52 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class EnvironmentQuotaService {
+
+	public static boolean isDXPEntitlement(
+		Entitlement entitlement, String type) {
+
+		if (Objects.equals(
+				LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP,
+				entitlement.getLicenseKeyFamily()) &&
+			Objects.equals(type, entitlement.getLicenseKeyType())) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public EnvironmentQuota getDXPEnvironmentQuota(
+			String projectExternalReferenceCode, String type)
+		throws Exception {
+
+		return _getDXPEnvironmentQuota(
+			_entitlementService.getActiveEntitlements(
+				projectExternalReferenceCode),
+			_environmentService.getDXPEnvironments(
+				projectExternalReferenceCode),
+			type);
+	}
+
+	public List<EnvironmentQuota> getDXPEnvironmentQuotas(
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		List<Entitlement> entitlements =
+			_entitlementService.getActiveEntitlements(
+				projectExternalReferenceCode);
+		List<Environment> environments = _environmentService.getDXPEnvironments(
+			projectExternalReferenceCode);
+
+		List<EnvironmentQuota> environmentQuotas = new ArrayList<>();
+
+		for (String type : EnvironmentConstants.dxpTypes) {
+			environmentQuotas.add(
+				_getDXPEnvironmentQuota(entitlements, environments, type));
+		}
+
+		return environmentQuotas;
+	}
 
 	public EnvironmentQuota getEnvironmentQuota(
 			String projectExternalReferenceCode, String type)
@@ -65,6 +112,43 @@ public class EnvironmentQuotaService {
 		Iterator<Long> iterator = contractIds.iterator();
 
 		return iterator.next();
+	}
+
+	private EnvironmentQuota _getDXPEnvironmentQuota(
+		List<Entitlement> entitlements, List<Environment> environments,
+		String type) {
+
+		Set<Long> contractIds = new HashSet<>();
+		int totalCount = 0;
+		boolean unlimited = false;
+
+		for (Entitlement entitlement : entitlements) {
+			if (!isDXPEntitlement(entitlement, type)) {
+				continue;
+			}
+
+			long contractId = entitlement.getContractId();
+
+			if (contractId > 0) {
+				contractIds.add(contractId);
+			}
+
+			if (Objects.equals(
+					EntitlementConstants.GRANT_TYPE_UNLIMITED,
+					entitlement.getGrantType())) {
+
+				unlimited = true;
+
+				continue;
+			}
+
+			totalCount += LicenseKeyGenerateFormService.getTotalCount(
+				entitlement);
+		}
+
+		return _toEnvironmentQuota(
+			_getContractId(contractIds), entitlements, environments, totalCount,
+			type, unlimited);
 	}
 
 	private EnvironmentQuota _getEnvironmentQuota(
@@ -105,27 +189,9 @@ public class EnvironmentQuotaService {
 				entitlement);
 		}
 
-		List<Environment> typeEnvironments = new ArrayList<>();
-		int usedCount = 0;
-
-		for (Environment environment : environments) {
-			if (!Objects.equals(type, environment.getType())) {
-				continue;
-			}
-
-			typeEnvironments.add(environment);
-
-			if (_usedActivationStatuses.contains(
-					environment.getActivationStatus())) {
-
-				usedCount++;
-			}
-		}
-
-		return new EnvironmentQuota(
-			_getContractId(contractIds), typeEnvironments,
-			ClusterNodesUtil.getMaxClusterNodes(entitlements, type), totalCount,
-			type, unlimited, usedCount);
+		return _toEnvironmentQuota(
+			_getContractId(contractIds), entitlements, environments, totalCount,
+			type, unlimited);
 	}
 
 	private List<EnvironmentQuota> _getEnvironmentQuotas(
@@ -155,6 +221,34 @@ public class EnvironmentQuotaService {
 		}
 
 		return false;
+	}
+
+	private EnvironmentQuota _toEnvironmentQuota(
+		long contractId, List<Entitlement> entitlements,
+		List<Environment> environments, int totalCount, String type,
+		boolean unlimited) {
+
+		List<Environment> typeEnvironments = new ArrayList<>();
+		int usedCount = 0;
+
+		for (Environment environment : environments) {
+			if (!Objects.equals(type, environment.getType())) {
+				continue;
+			}
+
+			typeEnvironments.add(environment);
+
+			if (_usedActivationStatuses.contains(
+					environment.getActivationStatus())) {
+
+				usedCount++;
+			}
+		}
+
+		return new EnvironmentQuota(
+			contractId, typeEnvironments,
+			ClusterNodesUtil.getMaxClusterNodes(entitlements, type), totalCount,
+			type, unlimited, usedCount);
 	}
 
 	private static final Map<String, String>
