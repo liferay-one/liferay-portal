@@ -14,6 +14,20 @@ import i18n from '~/i18n';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/projects';
 import {formatTermRange} from '~/utils/dateUtils';
 
+import type {ProjectContract} from '~/hooks/useProjectCommerce';
+
+function getContractSubtitle(contract?: ProjectContract) {
+	return contract?.externalReferenceCode === ONE_TIME_PURCHASES
+		? i18n.translate('no-contract-linked')
+		: contract?.name;
+}
+
+function getContractTitle(contract?: ProjectContract) {
+	return contract?.externalReferenceCode === ONE_TIME_PURCHASES
+		? contract.name
+		: formatTermRange(contract?.endDate, contract?.startDate);
+}
+
 export default function ProjectHeader() {
 	const {projectId, selectedContractERC, setSelectedContractERC} =
 		useProject();
@@ -29,34 +43,20 @@ export default function ProjectHeader() {
 		(contract) => contract.externalReferenceCode === resolvedContractERC
 	);
 
+	const normalizedSearchValue = searchValue.trim().toLowerCase();
+
 	const items: SelectorItem[] = contracts
-		.filter((contract) =>
-			contract.externalReferenceCode
-				.toLowerCase()
-				.includes(searchValue.trim().toLowerCase())
-		)
 		.map((contract) => ({
 			id: contract.externalReferenceCode,
-			name: contract.name,
-			subtitle:
-				contract.externalReferenceCode === ONE_TIME_PURCHASES
-					? i18n.translate('no-contract-linked')
-					: formatTermRange(contract.endDate, contract.startDate),
-		}));
-
-	const oneTimeSelected =
-		selectedContract?.externalReferenceCode === ONE_TIME_PURCHASES;
-
-	const triggerName = oneTimeSelected
-		? selectedContract.name
-		: formatTermRange(
-				selectedContract?.endDate,
-				selectedContract?.startDate
-			);
-
-	const triggerSubtitle = oneTimeSelected
-		? i18n.translate('no-contract-linked')
-		: undefined;
+			name: getContractTitle(contract) ?? '',
+			subtitle: getContractSubtitle(contract),
+		}))
+		.filter((item) =>
+			[item.name, item.subtitle]
+				.join(' ')
+				.toLowerCase()
+				.includes(normalizedSearchValue)
+		);
 
 	const handleSelect = (contractERC: string) => {
 		setSearchValue('');
@@ -86,13 +86,13 @@ export default function ProjectHeader() {
 				items={items}
 				label={i18n.translate('contract-term')}
 				loading={loading}
-				name={triggerName}
+				name={getContractTitle(selectedContract) ?? ''}
 				onSearchChange={setSearchValue}
 				onSelect={handleSelect}
 				readOnly={readOnly}
 				searchValue={searchValue}
 				selectedId={resolvedContractERC}
-				subtitle={triggerSubtitle}
+				subtitle={getContractSubtitle(selectedContract)}
 				triggerIcon={<img alt="" src={contractTermIconUrl} />}
 				variant="rich"
 			/>
