@@ -40,4 +40,30 @@ services:
                 paths:
                     -   ~/cloud/products/[^/]+/virtual-entry/[^/]+/download$
                 strip_path: false
+            -   methods:
+                    -   POST
+                name: dxp-installation-activate
+                paths:
+                    -   ~/dxp/v1/installations/(?<installation_id>[^/]+)/activation$
+                plugins:
+                    -   config:
+                            replace:
+                                uri: /dxp/installations/$(uri_captures["installation_id"])/activation
+                        name: request-transformer
+            -   methods:
+                    -   POST
+                name: dxp-installation-manifest
+                paths:
+                    -   ~/dxp/v1/installations/(?<installation_id>[^/]+)/manifest$
+                plugins:
+                    -   config:
+                            replace:
+                                uri: /dxp/installations/$(uri_captures["installation_id"])/manifest
+                        name: request-transformer
+            -   methods:
+                    -   POST
+                name: dxp-product-virtual-entry-download
+                paths:
+                    -   ~/dxp/products/[^/]+/virtual-entry/[^/]+/download$
+                strip_path: false
         url: __SPRING_BOOT_URL__
