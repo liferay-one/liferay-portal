@@ -10,7 +10,8 @@ import ClayIcon from '@clayui/icon';
 import {ClayPaginationBarWithBasicItems} from '@clayui/pagination-bar';
 import ClayTable from '@clayui/table';
 import classNames from 'classnames';
-import {ReactNode, useMemo, useState} from 'react';
+import {ReactNode, useCallback, useMemo, useState} from 'react';
+import {useSearchParams} from 'react-router';
 import Button from '~/components/Button/Button';
 import {Word, translate} from '~/i18n';
 
@@ -19,6 +20,8 @@ import './FilterableListCard.css';
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
 const FILTER_SEARCH_MIN_OPTIONS = 10;
+
+const SEARCH_PARAMETER = 'search';
 
 export type FilterOption = {label: string; value: string};
 
@@ -228,15 +231,48 @@ export default function FilterableListCard<T>({
 	rowKey,
 	title,
 }: FilterableListCardProps<T>) {
-	const [keywords, setKeywords] = useState('');
+	const [searchParams, setSearchParams] = useSearchParams();
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(defaultPageSize);
 	const [filterActive, setFilterActive] = useState(false);
 	const [sort, setSort] = useState<ListSort | null>(null);
 	const [activeFilterKey, setActiveFilterKey] = useState<string | null>(null);
-	const [selectedFilters, setSelectedFilters] = useState<
-		Record<string, string[]>
-	>({});
+
+	const keywords = searchParams.get(SEARCH_PARAMETER) ?? '';
+
+	const selectedFilters = useMemo(
+		() =>
+			Object.fromEntries(
+				filters.map((filter) => [
+					filter.key,
+					searchParams.getAll(filter.key),
+				])
+			),
+		[filters, searchParams]
+	);
+
+	const setParameterValues = useCallback(
+		(key: string, values: string[]) => {
+			setSearchParams(
+				(previousSearchParams) => {
+					const nextSearchParams = new URLSearchParams(
+						previousSearchParams
+					);
+
+					nextSearchParams.delete(key);
+
+					values.forEach((value) =>
+						nextSearchParams.append(key, value)
+					);
+
+					return nextSearchParams;
+				},
+				{replace: true}
+			);
+			setPage(1);
+		},
+		[setSearchParams]
+	);
 
 	const filteredItems = useMemo(() => {
 		const search = keywords.trim().toLowerCase();
@@ -302,22 +338,18 @@ export default function FilterableListCard<T>({
 					label: hasMultipleCategories
 						? `${translate(filter.label)}: ${optionLabel}`
 						: optionLabel,
-					onRemove: () => {
-						setSelectedFilters((previous) => ({
-							...previous,
-							[filter.key]: (previous[filter.key] ?? []).filter(
-								(current) => current !== value
-							),
-						}));
-						setPage(1);
-					},
+					onRemove: () =>
+						setParameterValues(
+							filter.key,
+							values.filter((current) => current !== value)
+						),
 					value: `${filter.key}-${value}`,
 				});
 			});
 		});
 
 		return active;
-	}, [filters, selectedFilters]);
+	}, [filters, selectedFilters, setParameterValues]);
 
 	const closeFilter = () => {
 		setFilterActive(false);
@@ -420,11 +452,10 @@ export default function FilterableListCard<T>({
 						{activeFilter ? (
 							<FilterSubPanel
 								onApply={(values) => {
-									setSelectedFilters((previous) => ({
-										...previous,
-										[activeFilter.key]: values,
-									}));
-									setPage(1);
+									setParameterValues(
+										activeFilter.key,
+										values
+									);
 									closeFilter();
 								}}
 								onBack={() => setActiveFilterKey(null)}
@@ -463,10 +494,14 @@ export default function FilterableListCard<T>({
 						<ClayInput.GroupItem>
 							<ClayInput
 								className="input-group-inset input-group-inset-after"
-								onChange={(event) => {
-									setPage(1);
-									setKeywords(event.target.value);
-								}}
+								onChange={(event) =>
+									setParameterValues(
+										SEARCH_PARAMETER,
+										event.target.value
+											? [event.target.value]
+											: []
+									)
+								}
 								placeholder={translate('search')}
 								type="text"
 								value={keywords}
