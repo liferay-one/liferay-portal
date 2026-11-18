@@ -75,7 +75,7 @@ const BankTransferCompleted = ({product}: BankTransferCompletedProps) => {
 					displayType="secondary"
 					onClick={() =>
 						Liferay.Util.navigate(
-							`${getSiteURL()}/my-account#/project/${ONE_TIME_PURCHASES}/applications`
+							`${getSiteURL()}/my-account/#/project/${ONE_TIME_PURCHASES}/applications`
 						)
 					}
 				>

@@ -16,7 +16,6 @@ import {
 	getSkuByOptionValueKey,
 	isSEOStudioProduct,
 } from '~/utils/productUtils';
-import {getSiteURL} from '~/utils/siteUtils';
 
 import ProductPurchase from './ProductPurchase';
 
@@ -49,7 +48,7 @@ export default class ProductPurchaseApp extends ProductPurchase {
 		const {priceModel} = getProductPriceModel(this.product);
 
 		await GetAppInformations.postGetAppInformation({
-			dashboardLink: `${Liferay.ThemeDisplay.getPortalURL()}${getSiteURL()}/my-account/#/${this.account.externalReferenceCode}/project/${this.salesforceProject?.externalReferenceCode ?? ONE_TIME_PURCHASES}/applications`,
+			dashboardLink: `${Liferay.ThemeDisplay.getPortalURL()}/my-account/#/${this.account.externalReferenceCode}/project/${this.salesforceProject?.externalReferenceCode ?? ONE_TIME_PURCHASES}/applications`,
 			orderId: String(order.id),
 			priceModel,
 			productName: this.product.name,

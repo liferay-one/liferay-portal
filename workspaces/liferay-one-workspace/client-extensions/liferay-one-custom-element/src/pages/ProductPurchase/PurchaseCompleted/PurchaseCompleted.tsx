@@ -157,7 +157,7 @@ const PurchaseCompleted = ({product}: PurchaseCompletedProps) => {
 
 	const isDXPFree = isDXPFreeTierProduct(product);
 
-	const projectURL = `${getSiteURL()}/my-account#/project/${ONE_TIME_PURCHASES}`;
+	const projectURL = `${getSiteURL()}/my-account/#/project/${ONE_TIME_PURCHASES}`;
 
 	const myItemsURL = isDXPFree
 		? `${projectURL}/products`
