@@ -16,7 +16,7 @@
 	background: #fff;
 	border: 0;
 	border-radius: 6px;
-	box-shadow: inset 0 0 0 1px #ebeef2;
+	box-shadow: inset 0 0 0 1px #999aa3;
 	font-family: var(--font-family-base);
 	font-weight: 600;
 	height: 45px;
@@ -38,6 +38,15 @@
 	background-position: 97% 50%;
 	background-repeat: no-repeat;
 	background-size: 14px;
+}
+
+.mktoForm select.mktoField option:not([value='']) {
+	color: #54555f;
+}
+
+.mktoForm select.mktoField:has(option[value='']:checked) {
+	color: #b1b2b9;
+	font-weight: 500;
 }
 
 .mktoForm .g-recaptcha > iframe {
@@ -129,6 +138,7 @@
 	padding: 0 2px;
 	position: relative;
 	top: 9px;
+	width: fit-content;
 }
 
 .mktoForm .mktoLabel .mktoAsterix {
@@ -167,29 +177,47 @@
 	color: #da1414;
 }
 
-.mktoForm .mktoFieldWrap.checkbox-field,
-.mktoForm .mktoFieldWrap.radio-field {
+.mktoForm .mktoFieldWrap:has(> .mktoCheckboxList),
+.mktoForm .mktoFieldWrap:has(> .mktoRadioList) {
 	padding-top: 1rem;
 }
 
-.mktoForm .mktoFieldWrap.checkbox-field .mktoLabel,
-.mktoForm .mktoFieldWrap.radio-field .mktoLabel {
+.mktoForm .mktoFieldWrap:has(> .mktoCheckboxList) .mktoLabel,
+.mktoForm .mktoFieldWrap:has(> .mktoRadioList) .mktoLabel {
 	background: transparent;
-	color: #394452;
-	font-size: 1rem;
-	line-height: 24px;
 	padding: 0;
 	position: static;
 }
 
-.mktoForm .mktoFieldWrap.checkbox-field.single-checkbox {
-	display: flex;
-	flex-direction: row-reverse;
-	justify-content: start;
+.mktoForm .mktoFieldWrap:has(> .mktoCheckboxList > input:only-of-type) .mktoCheckboxList {
+	display: inline-block;
+	float: none;
+	margin: 0;
+	padding: 0;
+	vertical-align: middle;
+	width: auto;
 }
 
-.mktoForm .mktoFieldWrap.checkbox-field.single-checkbox .mktoCheckboxList {
-	padding-bottom: 0.5rem;
+.mktoForm .mktoFieldWrap:has(> .mktoCheckboxList > input:only-of-type) .mktoCheckboxList input {
+	float: none;
+	height: 16px;
+	margin: 0 0 0 8px;
+	vertical-align: middle;
+	width: 16px;
+}
+
+.mktoForm .mktoFieldWrap:has(> .mktoCheckboxList > input:only-of-type) .mktoCheckboxList label:empty,
+.mktoForm .mktoFieldWrap:has(> .mktoCheckboxList > input:only-of-type) .mktoGutter {
+	display: none;
+}
+
+.mktoForm .mktoFieldWrap:has(> .mktoCheckboxList > input:only-of-type) .mktoLabel {
+	display: inline;
+	width: auto;
+}
+
+.mktoForm .mktoFieldWrap:has(> .mktoCheckboxList > input:only-of-type) .mktoLabel > div:not(.mktoAsterix) {
+	display: inline;
 }
 
 .mktoForm .mktoFormCol {
