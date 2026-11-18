@@ -47,7 +47,7 @@ const PAGE_SIZE = 100;
 export type ProjectContract = {
 	endDate?: string;
 	externalReferenceCode: string;
-	name: string;
+	name?: string;
 	spendLimit?: number;
 	startDate?: string;
 	status?: string;
@@ -81,6 +81,7 @@ type ContractNode = {
 	endDate?: string;
 	externalReferenceCode: string;
 	id: number;
+	name?: string;
 	r_projectToContract_c_projectId?: number;
 	spendLimit?: number;
 	startDate?: string;
@@ -125,7 +126,7 @@ function toProjectContract(contractNode: ContractNode): ProjectContract {
 	return {
 		endDate: contractNode.endDate,
 		externalReferenceCode: contractNode.externalReferenceCode,
-		name: contractNode.externalReferenceCode,
+		name: contractNode.name,
 		spendLimit: contractNode.spendLimit,
 		startDate: contractNode.startDate,
 		status: getContractStatus(contractNode.startDate, contractNode.endDate),
@@ -549,7 +550,7 @@ export function useProjectCommerce(
 }
 
 const CONTRACT_FIELDS =
-	'contractTerm endDate externalReferenceCode id spendLimit startDate';
+	'contractTerm endDate externalReferenceCode id name spendLimit startDate';
 
 function getAccountContractsPage(
 	accountId: number | string | null | undefined,

@@ -114,10 +114,7 @@ const ContractSelection = () => {
 			/>
 			<RadioCardList<ContractAPIItem>
 				contentList={contracts.map((contract, index) => ({
-					description: formatTermRange(
-						contract.endDate,
-						contract.startDate
-					),
+					description: contract.name,
 					fullTitle: true,
 					id: index,
 					selected:
@@ -125,7 +122,10 @@ const ContractSelection = () => {
 						salesforceContract?.externalReferenceCode,
 					title: (
 						<span className="font-weight-semi-bold">
-							{contract.name || contract.externalReferenceCode}
+							{formatTermRange(
+								contract.endDate,
+								contract.startDate
+							)}
 						</span>
 					),
 					value: contract,

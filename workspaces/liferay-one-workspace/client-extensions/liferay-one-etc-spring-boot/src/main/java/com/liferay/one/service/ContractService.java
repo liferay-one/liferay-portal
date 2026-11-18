@@ -458,6 +458,10 @@ public class ContractService extends OneBaseService {
 			jsonObject.put("endDate", endDate);
 		}
 
+		if (Validator.isNotNull(salesforceContract.getName())) {
+			jsonObject.put("name", salesforceContract.getName());
+		}
+
 		if (Validator.isNotNull(salesforceContract.getOpportunityId())) {
 			jsonObject.put(
 				"opportunityId", salesforceContract.getOpportunityId());
