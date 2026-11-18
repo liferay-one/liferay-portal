@@ -5,10 +5,12 @@
 
 import {render, screen} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {MemoryRouter} from 'react-router';
+import {MemoryRouter, useLocation} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import LicenseKeys from './LicenseKeys';
+
+import type {ProjectActivationKey} from '~/hooks/useProjectActivationKeys';
 
 const mocks = vi.hoisted(() => ({
 	handleNewKey: vi.fn(),
@@ -82,10 +84,48 @@ function mockSummary({
 	});
 }
 
-function renderLicenseKeys() {
+function toActivationKey(
+	id: string,
+	productName: string,
+	status: ProjectActivationKey['status']
+): ProjectActivationKey {
+	return {
+		activationKeyId: id,
+		active: status === 'active',
+		complimentary: false,
+		description: '',
+		expirationDate: '',
+		expirationDateValue: '',
+		id,
+		licenseKeyFamily: '',
+		name: `${productName} Environment`,
+		productName,
+		productVersion: '',
+		startDate: '',
+		startDateValue: '',
+		status,
+		type: 'production',
+	};
+}
+
+function LocationSearch() {
+	const {search} = useLocation();
+
+	return <output data-testid="location-search">{search}</output>;
+}
+
+function getLocationSearch() {
+	return new URLSearchParams(
+		screen.getByTestId('location-search').textContent ?? ''
+	);
+}
+
+function renderLicenseKeys(initialEntry = '/') {
 	render(
-		<MemoryRouter>
+		<MemoryRouter initialEntries={[initialEntry]}>
 			<LicenseKeys />
+
+			<LocationSearch />
 		</MemoryRouter>
 	);
 }
@@ -195,5 +235,64 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 			screen.getByRole('button', {name: 'Filter'})
 		).toBeInTheDocument();
 		expect(screen.queryByText('Filter')).toBeNull();
+	});
+
+	describe('filters in the URL', () => {
+		beforeEach(() => {
+			mockGeneratePermission(false);
+			mockSummary({generatable: true});
+
+			mocks.useProjectActivationKeys.mockReturnValue({
+				activationKeys: [
+					toActivationKey('KEY-DXP', 'DXP', 'active'),
+					toActivationKey('KEY-PORTAL', 'Portal', 'expired'),
+				],
+				loading: false,
+				revalidate: vi.fn(),
+			});
+		});
+
+		it('applies the filters of the URL on the first render', () => {
+			renderLicenseKeys('/?status=expired');
+
+			expect(screen.getByText('Portal Environment')).toBeInTheDocument();
+			expect(screen.queryByText('DXP Environment')).toBeNull();
+			expect(screen.getByText('Status: Expired')).toBeInTheDocument();
+		});
+
+		it('applies the search of the URL on the first render', () => {
+			renderLicenseKeys('/?search=dxp');
+
+			expect(screen.getByPlaceholderText('Search')).toHaveValue('dxp');
+			expect(screen.getByText('DXP Environment')).toBeInTheDocument();
+			expect(screen.queryByText('Portal Environment')).toBeNull();
+		});
+
+		it('writes the search to the URL and keeps the other parameters', async () => {
+			const user = userEvent.setup();
+
+			renderLicenseKeys('/?status=active');
+
+			await user.type(screen.getByPlaceholderText('Search'), 'dxp');
+
+			const searchParams = getLocationSearch();
+
+			expect(searchParams.get('search')).toBe('dxp');
+			expect(searchParams.get('status')).toBe('active');
+		});
+
+		it('removes a filter from the URL when the user removes its tag', async () => {
+			const user = userEvent.setup();
+
+			renderLicenseKeys('/?status=active&status=expired');
+
+			const tag = screen.getByText('Status: Expired');
+
+			await user.click(tag.querySelector('button') as HTMLButtonElement);
+
+			expect(getLocationSearch().getAll('status')).toEqual(['active']);
+			expect(screen.getByText('DXP Environment')).toBeInTheDocument();
+			expect(screen.queryByText('Portal Environment')).toBeNull();
+		});
 	});
 });
