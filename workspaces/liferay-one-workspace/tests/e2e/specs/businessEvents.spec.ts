@@ -6,28 +6,34 @@
 import {Locator, Page} from '@playwright/test';
 
 import {expect, oneTest as test} from '../fixtures/oneTest';
-import {selectCurrentAccount} from '../utils/accountUtils';
+import {
+	readCurrentAccountId,
+	selectCurrentAccount,
+} from '../utils/accountUtils';
 import {gotoAndExpectRender} from '../utils/customElementUtils';
 import {
 	ACCOUNT_ERC,
 	PROJECT_ERC,
+	SWITCH_ACCOUNT_ERC,
 	sitePath,
 	uniqueName,
 } from '../utils/environmentUtils';
 import {FakeJira} from '../utils/supportFakesUtils';
 
-const LIST_PATH = sitePath(
-	`/support/business-events#/${PROJECT_ERC}/business-events`
-);
+const PROJECT_HASH = `#/${ACCOUNT_ERC}/project/${PROJECT_ERC}/business-events`;
 
-const ADD_PATH = sitePath(
-	`/support/business-events#/${PROJECT_ERC}/business-events/add`
-);
+const LIST_PATH = sitePath(`/support/business-events${PROJECT_HASH}`);
+
+const ADD_PATH = sitePath(`/support/business-events${PROJECT_HASH}/add`);
+
+function emailLinkPath(id: string) {
+	return sitePath(
+		`/support/business-events/#/${PROJECT_ERC}/business-events/${id}`
+	);
+}
 
 function eventPath(id: string, suffix = '') {
-	return sitePath(
-		`/support/business-events#/${PROJECT_ERC}/business-events/${id}${suffix}`
-	);
+	return sitePath(`/support/business-events${PROJECT_HASH}/${id}${suffix}`);
 }
 
 function dateFromToday(daysAhead: number) {
@@ -485,6 +491,69 @@ test.describe('[FLOW-BUSINESS-EVENT-LIFECYCLE] business event permissions', () =
 				'Make sure the project link is correct and that you have access to this project.'
 			)
 		).toBeVisible();
+	});
+
+	test('[FLOW-BUSINESS-EVENT-LIFECYCLE] [ROUTE-BUSINESS-EVENTS-ACCOUNTERC] [ROUTE-BUSINESS-EVENTS-PROJECTERC-BUSINESS-EVENTS] an email link opens the event in the account of its project', async ({
+		adminAPI,
+		page,
+		signIn,
+		springBoot,
+	}) => {
+		test.skip(
+			!springBoot.enabled,
+			'Asserts on a Jira event that only the stub can seed'
+		);
+
+		const jira = new FakeJira(springBoot);
+
+		await jira.install();
+
+		const businessEvent = jira.addEvent({name: uniqueName('Email Link')});
+
+		const account = await adminAPI.getAccountByERC(ACCOUNT_ERC);
+
+		await signIn('MULTI_ACCOUNT');
+
+		try {
+			await selectCurrentAccount(page, SWITCH_ACCOUNT_ERC);
+
+			await gotoAndExpectRender(page, emailLinkPath(businessEvent.id));
+
+			await expect(
+				page.getByRole('heading', {name: businessEvent.name})
+			).toBeVisible({timeout: 30000});
+
+			await expect(page).toHaveURL(
+				new RegExp(`${PROJECT_HASH}/${businessEvent.id}$`)
+			);
+
+			expect(await readCurrentAccountId(page)).toBe(String(account.id));
+		}
+		finally {
+			await selectCurrentAccount(page, ACCOUNT_ERC);
+		}
+	});
+
+	test('[FLOW-BUSINESS-EVENT-LIFECYCLE] [ROUTE-BUSINESS-EVENTS-PROJECTERC-BUSINESS-EVENTS] a link to a project that the user cannot see shows no access', async ({
+		page,
+		signIn,
+	}) => {
+		await signIn('PROJECT_USER');
+
+		await selectCurrentAccount(page, ACCOUNT_ERC);
+
+		await gotoAndExpectRender(
+			page,
+			sitePath(
+				'/support/business-events/#/PRJCT-DOES-NOT-EXIST/business-events/1'
+			)
+		);
+
+		await expect(
+			page.getByText('You do not have access to this page.')
+		).toBeVisible();
+
+		await expect(page).toHaveURL(/PRJCT-DOES-NOT-EXIST/);
 	});
 
 	test('[FLOW-BUSINESS-EVENT-LIFECYCLE] [ROUTE-BUSINESS-EVENTS-PROJECTERC-BUSINESS-EVENTS] a user without a project sees the restricted message', async ({

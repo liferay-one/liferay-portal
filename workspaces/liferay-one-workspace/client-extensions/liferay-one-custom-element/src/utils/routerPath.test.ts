@@ -50,4 +50,12 @@ describe('[MOD-ROUTERPATH] routerPath', () => {
 			'https://portal.example.com/support/ticket-attachments'
 		);
 	});
+
+	it('links to the attachments of a project', () => {
+		getLayoutRelativeURL.mockReturnValue('/support/ticket-attachments');
+
+		expect(routerPath().ticketAttachments('PRJCT-1')).toBe(
+			'https://portal.example.com/support/ticket-attachments/#/project/PRJCT-1'
+		);
+	});
 });

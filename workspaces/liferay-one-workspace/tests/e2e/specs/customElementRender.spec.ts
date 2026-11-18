@@ -206,53 +206,63 @@ const ROUTE_CHECKS: IRouteCheck[] = [
 	{
 		name: 'business events list',
 		planId: 'ROUTE-BUSINESS-EVENTS-PROJECTERC-BUSINESS-EVENTS',
-		url: `${BUSINESS_EVENTS}#/${ACCOUNT}/business-events`,
+		url: `${BUSINESS_EVENTS}/#/${ACCOUNT}/project/${PROJECT}/business-events`,
 	},
 	{
 		name: 'business events add',
 		planId: 'ROUTE-BUSINESS-EVENTS-ADD',
-		url: `${BUSINESS_EVENTS}#/${ACCOUNT}/business-events/add`,
+		url: `${BUSINESS_EVENTS}/#/${ACCOUNT}/project/${PROJECT}/business-events/add`,
 	},
 	{
 		name: 'business event details',
 		planId: 'ROUTE-BUSINESS-EVENTS-ID',
-		url: `${BUSINESS_EVENTS}#/${ACCOUNT}/business-events/${ID}`,
+		url: `${BUSINESS_EVENTS}/#/${ACCOUNT}/project/${PROJECT}/business-events/${ID}`,
 	},
 	{
 		name: 'business event edit',
 		planId: 'ROUTE-BUSINESS-EVENTS-EDIT',
-		url: `${BUSINESS_EVENTS}#/${ACCOUNT}/business-events/${ID}/edit`,
+		url: `${BUSINESS_EVENTS}/#/${ACCOUNT}/project/${PROJECT}/business-events/${ID}/edit`,
 	},
 	{
 		name: 'business event activity history',
 		planId: 'ROUTE-BUSINESS-EVENTS-ACTIVITY-HISTORY',
-		url: `${BUSINESS_EVENTS}#/${ACCOUNT}/business-events/${ID}/activity-history`,
+		url: `${BUSINESS_EVENTS}/#/${ACCOUNT}/project/${PROJECT}/business-events/${ID}/activity-history`,
 	},
 
 	{
 		name: 'ticket attachments new',
 		planId: 'ROUTE-TICKET-ATTACHMENTS-NEW',
-		url: `${TICKET_ATTACHMENTS}#/new`,
+		url: `${TICKET_ATTACHMENTS}/#/new`,
 	},
 	{
 		name: 'ticket attachments uploader for a new ticket',
 		planId: 'ROUTE-TICKET-ATTACHMENTS-NEW-TICKETID',
-		url: `${TICKET_ATTACHMENTS}#/new/${ID}`,
+		url: `${TICKET_ATTACHMENTS}/#/new/${ID}`,
 	},
 	{
 		name: 'ticket attachments downloader by ERC',
 		planId: 'ROUTE-TICKET-ATTACHMENTS-ERC-TICKETATTACHMENTERC',
-		url: `${TICKET_ATTACHMENTS}#/erc/${ERC}`,
+		url: `${TICKET_ATTACHMENTS}/#/erc/${ERC}`,
 	},
 	{
 		name: 'ticket attachments downloader by id',
 		planId: 'ROUTE-TICKET-ATTACHMENTS-ID-TICKETATTACHMENTID',
-		url: `${TICKET_ATTACHMENTS}#/id/${ID}`,
+		url: `${TICKET_ATTACHMENTS}/#/id/${ID}`,
 	},
 	{
 		name: 'ticket attachments uploader for a ticket',
 		planId: 'ROUTE-TICKET-ATTACHMENTS-TICKETID',
-		url: `${TICKET_ATTACHMENTS}#/${ID}`,
+		url: `${TICKET_ATTACHMENTS}/#/${ID}`,
+	},
+	{
+		name: 'ticket attachments of a project',
+		planId: 'ROUTE-TICKET-ATTACHMENTS-PROJECTERC',
+		url: `${TICKET_ATTACHMENTS}/#/${ACCOUNT}/project/${PROJECT}`,
+	},
+	{
+		name: 'ticket attachments link to a project',
+		planId: 'ROUTE-TICKET-ATTACHMENTS-PROJECT-PROJECTERC',
+		url: `${TICKET_ATTACHMENTS}/#/project/${PROJECT}`,
 	},
 
 	{
