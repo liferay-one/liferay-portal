@@ -16,6 +16,7 @@ const {navigate} = vi.hoisted(() => ({navigate: vi.fn()}));
 vi.mock('react-router', async (importOriginal) => ({
 	...(await importOriginal<typeof import('react-router')>()),
 	useNavigate: vi.fn(),
+	useParams: () => ({accountERC: 'ACCNT-1'}),
 }));
 
 vi.mock('~/services/spring-boot/Jira', () => ({
@@ -81,7 +82,9 @@ describe('[HOOK-BUSINESSEVENTS-USEGETBUSINESSEVENT] useGetBusinessEvent', () => 
 			message: 'An unexpected error occurred.',
 			type: 'danger',
 		});
-		expect(navigate).toHaveBeenCalledWith('/PRJCT-1/business-events');
+		expect(navigate).toHaveBeenCalledWith(
+			'/ACCNT-1/project/PRJCT-1/business-events'
+		);
 		expect(result.current.businessEvent).toBeUndefined();
 	});
 });
