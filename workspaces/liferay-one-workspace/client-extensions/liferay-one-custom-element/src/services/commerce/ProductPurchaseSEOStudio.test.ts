@@ -116,7 +116,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASESEOSTUDIO] ProductPurchaseSEOStudio', 
 		productPurchase.setForm(form);
 
 		await expect(productPurchase.getNextStepsLink()).resolves.toBe(
-			`${window.location.origin}/web/one/my-account#/ACCOUNT-1/project/PRJCT-1/products/PRDCT-SEO`
+			`${window.location.origin}/web/one/my-account/#/ACCOUNT-1/project/PRJCT-1/products/PRDCT-SEO`
 		);
 		expect(
 			HeadlessCommerceDeliveryCart.getPaymentMethodURL

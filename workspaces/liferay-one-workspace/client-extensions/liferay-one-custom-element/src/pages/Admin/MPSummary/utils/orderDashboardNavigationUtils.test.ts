@@ -155,7 +155,7 @@ describe('[MOD-ADMIN-MPSUMMARY-ORDERDASHBOARDNAVIGATIONUTILS] orderDashboardNavi
 
 			expect(mocks.setCurrentAccount).toHaveBeenCalledWith('43720');
 			expect(assign).toHaveBeenCalledWith(
-				'/web/one/my-account#/project/one-time-purchases/applications'
+				'/web/one/my-account/#/project/one-time-purchases/applications'
 			);
 			expect(
 				mocks.setCurrentAccount.mock.invocationCallOrder[0]

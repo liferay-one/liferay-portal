@@ -34,7 +34,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-GETRECORDACTIONS] g
 			})
 		).toEqual([
 			{
-				href: '/web/one/my-account#/ACCNT-001/project/PRJCT-001',
+				href: '/web/one/my-account/#/ACCNT-001/project/PRJCT-001',
 				label: 'open-project',
 			},
 			{
@@ -55,7 +55,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-GETRECORDACTIONS] g
 		};
 
 		expect(getRecordActions(ACCOUNT, 'contracts', contract)[0]).toEqual({
-			href: '/web/one/my-account#/ACCNT-001/project/PRJCT-001/contract/C-1/products',
+			href: '/web/one/my-account/#/ACCNT-001/project/PRJCT-001/contract/C-1/products',
 			label: 'open-contract',
 		});
 		expect(
@@ -79,7 +79,7 @@ describe('[MOD-ADMIN-ACCOUNTINSPECTOR-ACCOUNTINSPECTORDETAIL-GETRECORDACTIONS] g
 
 		expect(actions.slice(0, 2)).toEqual([
 			{
-				href: '/web/one/my-account#/ACCNT-001/orders/50',
+				href: '/web/one/my-account/#/ACCNT-001/orders/50',
 				label: 'open-order',
 			},
 			{
