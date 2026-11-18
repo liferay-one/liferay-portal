@@ -237,7 +237,7 @@ public class ProvisioningEmailServiceTest {
 				"My Project"
 			));
 		Assertions.assertEquals(
-			"https://one.liferay.com/my-account#/ACCOUNT-ERC-1/project" +
+			"https://one.liferay.com/my-account/#/ACCOUNT-ERC-1/project" +
 				"/PROJECT-ERC-1",
 			placeholders.get("PROJECT_URL"));
 	}
@@ -677,14 +677,14 @@ public class ProvisioningEmailServiceTest {
 			placeholders.get(
 				"PROJECT_INVITATION_MESSAGE"
 			).contains(
-				"href=\"https://one.liferay.com/my-account#/ACCOUNT-ERC-1" +
+				"href=\"https://one.liferay.com/my-account/#/ACCOUNT-ERC-1" +
 					"/project/PROJECT-ERC-1\""
 			));
 		Assertions.assertTrue(
 			placeholders.get(
 				"PROJECT_INVITATION_MESSAGE"
 			).contains(
-				"href=\"https://one.liferay.com/my-account#/ACCOUNT-ERC-1" +
+				"href=\"https://one.liferay.com/my-account/#/ACCOUNT-ERC-1" +
 					"/project/PROJECT-ERC-2\""
 			));
 	}

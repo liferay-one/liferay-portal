@@ -179,7 +179,7 @@ public class SubscriptionEntryServiceScheduledSendExpiringLicenseKeyEmailsTest {
 		Map<String, String> placeholders = _captureLicenseKeyPlaceholders();
 
 		Assertions.assertEquals(
-			"https://one.liferay.com/my-account#/ACCOUNT-ERC-1/project" +
+			"https://one.liferay.com/my-account/#/ACCOUNT-ERC-1/project" +
 				"/PROJECT-ERC-2/activation",
 			placeholders.get("ACTIVATION_URL"));
 		Assertions.assertEquals(
@@ -269,7 +269,7 @@ public class SubscriptionEntryServiceScheduledSendExpiringLicenseKeyEmailsTest {
 		Map<String, String> placeholders = _captureLicenseKeyPlaceholders();
 
 		Assertions.assertEquals(
-			"https://one.liferay.com/my-account#/ACCOUNT-ERC-1/project" +
+			"https://one.liferay.com/my-account/#/ACCOUNT-ERC-1/project" +
 				"/PROJECT-ERC-1/activation",
 			placeholders.get("ACTIVATION_URL"));
 

@@ -61,7 +61,7 @@ vi.mock('~/utils/siteUtils', () => ({
 
 const account = {externalReferenceCode: 'ACCNT-1', id: 1} as Account;
 
-const PROJECT_LINK = `${window.location.origin}/web/one/my-account#/ACCNT-1/project/one-time-purchases`;
+const PROJECT_LINK = `${window.location.origin}/web/one/my-account/#/ACCNT-1/project/one-time-purchases`;
 
 const TRIAL_GENERATE_FORM = {
 	bundleProducts: [

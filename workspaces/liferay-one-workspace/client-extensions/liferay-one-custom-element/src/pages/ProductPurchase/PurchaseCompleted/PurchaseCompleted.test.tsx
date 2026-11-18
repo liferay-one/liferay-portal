@@ -42,7 +42,7 @@ vi.mock('~/utils/siteUtils', () => ({
 }));
 
 const applicationURL =
-	'/web/one/my-account#/project/one-time-purchases/applications/PRDCT-TEST';
+	'/web/one/my-account/#/project/one-time-purchases/applications/PRDCT-TEST';
 
 function getProduct(specifications: [string, string][]) {
 	return {
@@ -148,7 +148,7 @@ describe('[ROUTE-PRODUCT-PURCHASE-PURCHASE-COMPLETED] PurchaseCompleted', () => 
 		);
 
 		expect(navigate).toHaveBeenCalledWith(
-			'/web/one/my-account#/project/one-time-purchases/activation'
+			'/web/one/my-account/#/project/one-time-purchases/activation'
 		);
 	});
 });
