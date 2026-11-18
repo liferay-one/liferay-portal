@@ -41,7 +41,6 @@ import com.liferay.one.service.CommerceOrderService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.ContractService;
-import com.liferay.one.service.EmailAddressValidatorService;
 import com.liferay.one.service.EntitlementDefinitionService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.LicenseKeyService;
@@ -1423,6 +1422,49 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testPostInvitationsAcceptsLiferayDomain() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createAccount()
+		);
+
+		Mockito.when(
+			_userAccountService.getMyUserAccount(null)
+		).thenReturn(
+			_createInviterUserAccount()
+		);
+
+		Mockito.when(
+			_accountInvitationService.addAccountInvitation(
+				_EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS_LIFERAY_DOMAIN, "Doe",
+				"Jane", "", "", List.of())
+		).thenReturn(
+			_createAccountInvitation()
+		);
+
+		accountsRestController.postInvitations(
+			null, _EXTERNAL_REFERENCE_CODE,
+			new JSONObject(
+			).put(
+				"emailAddress", _EMAIL_ADDRESS_LIFERAY_DOMAIN
+			).put(
+				"familyName", "Doe"
+			).put(
+				"givenName", "Jane"
+			).toString());
+
+		Mockito.verify(
+			_accountInvitationService
+		).addAccountInvitation(
+			_EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS_LIFERAY_DOMAIN, "Doe",
+			"Jane", "", "", List.of()
+		);
+	}
+
+	@Test
 	public void testPostInvitationsChecksAssignMembersPermission()
 		throws Exception {
 
@@ -2211,6 +2253,34 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testPostUserAccountsByEmailAddressAccountRolesAcceptsLiferayDomain()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		_mockAccount();
+
+		_mockAccountRole(_ACCOUNT_ROLE_ID, "Account Buyer");
+
+		Mockito.when(
+			_userAccountService.addUserAccount(
+				_EMAIL_ADDRESS_LIFERAY_DOMAIN, "Doe", "Jane")
+		).thenReturn(
+			_createUserAccount()
+		);
+
+		accountsRestController.postUserAccountsByEmailAddressAccountRoles(
+			null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS_LIFERAY_DOMAIN,
+			_createBodyJSON(_ACCOUNT_ROLE_ID, "Jane", "Doe"));
+
+		Mockito.verify(
+			_userAccountService
+		).addUserAccount(
+			_EMAIL_ADDRESS_LIFERAY_DOMAIN, "Doe", "Jane"
+		);
+	}
+
+	@Test
 	public void testPostUserAccountsByEmailAddressAccountRolesAddsMemberWithoutRoles()
 		throws Exception {
 
@@ -2379,33 +2449,6 @@ public class AccountsRestControllerTest {
 						"not json"));
 
 		Mockito.verifyNoInteractions(_userAssignmentService);
-	}
-
-	@Test
-	public void testPostUserAccountsByEmailAddressAccountRolesRejectsReservedDomain()
-		throws Exception {
-
-		AccountsRestController accountsRestController = _createController();
-
-		Mockito.when(
-			_emailAddressValidatorService.isLiferayDomain(_EMAIL_ADDRESS)
-		).thenReturn(
-			true
-		);
-
-		ResponseStatusException responseStatusException =
-			Assertions.assertThrows(
-				ResponseStatusException.class,
-				() ->
-					accountsRestController.
-						postUserAccountsByEmailAddressAccountRoles(
-							null, _EXTERNAL_REFERENCE_CODE, _EMAIL_ADDRESS,
-							"{}"));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
-
-		Mockito.verifyNoInteractions(_accountService, _userAssignmentService);
 	}
 
 	@Test
@@ -2773,9 +2816,6 @@ public class AccountsRestControllerTest {
 		ReflectionTestUtils.setField(
 			accountsRestController, "_contractService", _contractService);
 		ReflectionTestUtils.setField(
-			accountsRestController, "_emailAddressValidatorService",
-			_emailAddressValidatorService);
-		ReflectionTestUtils.setField(
 			accountsRestController, "_entitlementDefinitionService",
 			_entitlementDefinitionService);
 		ReflectionTestUtils.setField(
@@ -2973,6 +3013,9 @@ public class AccountsRestControllerTest {
 
 	private static final String _EMAIL_ADDRESS = "jane@example.com";
 
+	private static final String _EMAIL_ADDRESS_LIFERAY_DOMAIN =
+		"jane@liferay.com";
+
 	private static final long _ENTITLED_PRODUCT_ID = 55556;
 
 	private static final String _EXTERNAL_REFERENCE_CODE = "ACC-1";
@@ -3027,8 +3070,6 @@ public class AccountsRestControllerTest {
 		CommerceSkuService.class);
 	private final ContractService _contractService = Mockito.mock(
 		ContractService.class);
-	private final EmailAddressValidatorService _emailAddressValidatorService =
-		Mockito.mock(EmailAddressValidatorService.class);
 	private final EntitlementDefinitionService _entitlementDefinitionService =
 		Mockito.mock(EntitlementDefinitionService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
