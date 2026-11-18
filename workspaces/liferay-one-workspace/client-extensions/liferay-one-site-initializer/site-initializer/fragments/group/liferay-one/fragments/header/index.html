@@ -6,6 +6,12 @@
 
 [#assign uiAvatarsURL = "" /]
 
+[#attempt]
+	[#assign primaryNavigationMenuId = restClient.get("/headless-delivery/v1.0/sites/" + themeDisplay.getScopeGroupId()?c + "/navigation-menus/by-external-reference-code/LO_PRIMARY_NAV").id /]
+[#recover]
+	[#assign primaryNavigationMenuId = 0 /]
+[/#attempt]
+
 [#if themeDisplay.isSignedIn()]
 	[#assign userName = user.getFullName() /]
 
@@ -217,7 +223,7 @@
 					preview=false
 					rootItemLevel=0
 					rootLayoutType="absolute"
-					siteNavigationMenuId=0
+					siteNavigationMenuId=primaryNavigationMenuId
 				/]
 			</div>
 		</div>

@@ -149,10 +149,10 @@
 																		},
 																		"text": {
 																			"value_i18n": {
-																				"en_US": "Marketplace, Support, Projects and Account unified into one experience. Browse the catalogue freely or manage your Account.",
-																				"es_ES": "Marketplace, Soporte, Proyectos y Cuenta unificados en una sola experiencia. Explora el catálogo libremente o gestiona tu Cuenta.",
+																				"en_US": "Marketplace, Support, Projects and Account unified into one experience. Browse the catalog freely or manage your account.",
+																				"es_ES": "Marketplace, Soporte, Proyectos y Cuenta unificados en una sola experiencia. Explora el catálogo libremente o gestiona tu cuenta.",
 																				"ja_JP": "Marketplace、サポート、プロジェクト、アカウントをひとつの体験に統合。カタログを自由に閲覧、またはアカウントを管理できます。",
-																				"pt_BR": "Marketplace, Suporte, Projetos e Conta unificados em uma única experiência. Explore o catálogo livremente ou gerencie sua Conta."
+																				"pt_BR": "Marketplace, Suporte, Projetos e Conta unificados em uma única experiência. Explore o catálogo livremente ou gerencie sua conta."
 																			}
 																		}
 																	}
@@ -445,11 +445,11 @@
 						"pageElements": [
 							{
 								"definition": {
-									"customCSS": ".[$FRAGMENT_CLASS$] > .row {\n\talign-items: stretch !important;\n}",
+									"customCSS": ".[$FRAGMENT_CLASS$] > .row {\n\talign-items: stretch !important;\n}\n\n@media (min-width: 768px) {\n\t.[$FRAGMENT_CLASS$] > .row > [class*=\"col-\"] {\n\t\tflex: 1 1 0 !important;\n\t\tmax-width: none !important;\n\t}\n}\n\n.[$FRAGMENT_CLASS$] > .row > [class*=\"col-\"]:has(.one-optional-service-card):not(:has(.one-conditional-wrapper)) {\n\tdisplay: none;\n}\n\n.[$FRAGMENT_CLASS$] .one-optional-service-card,\n.[$FRAGMENT_CLASS$] .one-optional-service-card > div,\n.[$FRAGMENT_CLASS$] .one-optional-service-card .one-conditional-wrapper,\n.[$FRAGMENT_CLASS$] .one-optional-service-card .one-conditional-wrapper > div,\n.[$FRAGMENT_CLASS$] .one-optional-service-card .one-conditional-wrapper > div > a {\n\theight: 100%;\n}",
 									"gutters": true,
 									"indexed": true,
-									"modulesPerRow": 4,
-									"numberOfColumns": 4,
+									"modulesPerRow": 5,
+									"numberOfColumns": 5,
 									"reverseOrder": false,
 									"rowViewports": [
 										{
@@ -503,22 +503,20 @@
 														"one-card"
 													],
 													"fragmentLink": {
-														"value": {
-															"href": {
-																"mapping": {
-																	"itemReference": {
-																		"className": "com.liferay.portal.kernel.model.Layout",
-																		"fields": [
-																			{
-																				"fieldName": "friendlyURL",
-																				"fieldValue": "/my-account"
-																			},
-																			{
-																				"fieldName": "privatePage",
-																				"fieldValue": "false"
-																			}
-																		]
-																	}
+														"href": {
+															"mapping": {
+																"itemReference": {
+																	"className": "com.liferay.portal.kernel.model.Layout",
+																	"fields": [
+																		{
+																			"fieldName": "friendlyURL",
+																			"fieldValue": "/my-account"
+																		},
+																		{
+																			"fieldName": "privatePage",
+																			"fieldValue": "false"
+																		}
+																	]
 																}
 															}
 														}
@@ -620,10 +618,10 @@
 																		},
 																		"text": {
 																			"value_i18n": {
-																				"en_US": "Manage your Liferay account, projects, permissions, fast and efficient.",
-																				"es_ES": "Gestiona tu cuenta, proyectos y permisos de Liferay, rápido y eficiente.",
-																				"ja_JP": "Liferayアカウント、プロジェクト、権限を迅速かつ効率的に管理します。",
-																				"pt_BR": "Gerencie sua conta, projetos e permissões Liferay de forma rápida e eficiente."
+																				"en_US": "Manage your Liferay account and project.",
+																				"es_ES": "Gestiona tu cuenta y proyecto de Liferay.",
+																				"ja_JP": "Liferayアカウントとプロジェクトを管理します。",
+																				"pt_BR": "Gerencie sua conta e projeto Liferay."
 																			}
 																		}
 																	}
@@ -663,7 +661,193 @@
 													"id": "tablet"
 												}
 											],
-											"size": 3
+											"size": 2
+										},
+										"pageElements": [
+											{
+												"definition": {
+													"cssClasses": [
+														"one-optional-service-card"
+													],
+													"fragment": {
+														"key": "conditional-wrapper",
+														"siteKey": "[$GROUP_KEY$]"
+													},
+													"fragmentConfig": {
+														"displayMode": "inRoleOnly",
+														"roles": "Customer"
+													},
+													"indexed": true
+												},
+												"pageElements": [
+													{
+														"definition": {
+															"fragmentDropZoneId": "2"
+														},
+														"pageElements": [
+															{
+																"definition": {
+																	"cssClasses": [
+																		"h-100",
+																		"one-card"
+																	],
+																	"fragmentLink": {
+																		"href": {
+																			"value_i18n": {
+																				"en_US": "https://liferay.atlassian.net/servicedesk/customer/user/requests",
+																				"es_ES": "https://liferay.atlassian.net/servicedesk/customer/user/requests",
+																				"ja_JP": "https://liferay.atlassian.net/servicedesk/customer/user/requests",
+																				"pt_BR": "https://liferay.atlassian.net/servicedesk/customer/user/requests"
+																			}
+																		}
+																	},
+																	"fragmentStyle": {
+																		"paddingBottom": "4",
+																		"paddingLeft": "4",
+																		"paddingRight": "4",
+																		"paddingTop": "4"
+																	},
+																	"indexed": true,
+																	"layout": {
+																		"align": "Start",
+																		"contentDisplay": "FlexColumn"
+																	}
+																},
+																"pageElements": [
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-image"
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "image-square",
+																					"value": {
+																						"fragmentImage": {
+																							"url": {
+																								"mapping": {
+																									"fieldKey": "FileEntry_previewImage",
+																									"itemReference": {
+																										"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																										"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/my_tickets.svg#]"
+																									}
+																								}
+																							}
+																						},
+																						"fragmentLink": {
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"height": "32px",
+																				"marginBottom": "3",
+																				"width": "32px"
+																			},
+																			"indexed": true
+																		},
+																		"type": "Fragment"
+																	},
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-heading"
+																			},
+																			"fragmentConfig": {
+																				"headingLevel": "h5"
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-text",
+																					"value": {
+																						"fragmentLink": {
+																						},
+																						"text": {
+																							"value_i18n": {
+																								"en_US": "My Tickets",
+																								"es_ES": "Mis Tickets",
+																								"ja_JP": "マイチケット",
+																								"pt_BR": "Meus Tickets"
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"marginBottom": "2",
+																				"marginTop": "0"
+																			},
+																			"indexed": true
+																		},
+																		"type": "Fragment"
+																	},
+																	{
+																		"definition": {
+																			"cssClasses": [
+																				"small",
+																				"text-secondary"
+																			],
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-paragraph"
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-text",
+																					"value": {
+																						"fragmentLink": {
+																						},
+																						"text": {
+																							"value_i18n": {
+																								"en_US": "Track your open and closed support requests.",
+																								"es_ES": "Consulta tus solicitudes de soporte abiertas y cerradas.",
+																								"ja_JP": "オープンおよびクローズされたサポートリクエストを確認できます。",
+																								"pt_BR": "Acompanhe suas solicitações de suporte abertas e fechadas."
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"marginBottom": "0"
+																			},
+																			"indexed": true
+																		},
+																		"type": "Fragment"
+																	}
+																],
+																"type": "Section"
+															}
+														],
+														"type": "FragmentDropZone"
+													}
+												],
+												"type": "Fragment"
+											}
+										],
+										"type": "Column"
+									},
+									{
+										"definition": {
+											"columnViewports": [
+												{
+													"columnViewportDefinition": {
+														"size": 12
+													},
+													"id": "landscapeMobile"
+												},
+												{
+													"columnViewportDefinition": {
+														"size": 12
+													},
+													"id": "portraitMobile"
+												},
+												{
+													"columnViewportDefinition": {
+													},
+													"id": "tablet"
+												}
+											],
+											"size": 2
 										},
 										"pageElements": [
 											{
@@ -710,7 +894,7 @@
 																					"fieldKey": "FileEntry_previewImage",
 																					"itemReference": {
 																						"className": "com.liferay.portal.kernel.repository.model.FileEntry",
-																						"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/service_card_support.svg#]"
+																						"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/submit_a_request.svg#]"
 																					}
 																				}
 																			}
@@ -745,10 +929,10 @@
 																		},
 																		"text": {
 																			"value_i18n": {
-																				"en_US": "Support",
-																				"es_ES": "Soporte",
-																				"ja_JP": "サポート",
-																				"pt_BR": "Suporte"
+																				"en_US": "Submit a Request",
+																				"es_ES": "Enviar una Solicitud",
+																				"ja_JP": "リクエストを送信",
+																				"pt_BR": "Enviar uma Solicitação"
 																			}
 																		}
 																	}
@@ -938,10 +1122,10 @@
 																		},
 																		"text": {
 																			"value_i18n": {
-																				"en_US": "Explore courses and learning paths to master Liferay DXP and other products.",
-																				"es_ES": "Explora cursos y rutas de aprendizaje para dominar Liferay DXP y otros productos.",
-																				"ja_JP": "Liferay DXPおよびその他の製品をマスターするためのコースと学習パスをご覧ください。",
-																				"pt_BR": "Explore cursos e trilhas de aprendizagem para dominar o Liferay DXP e outros produtos."
+																				"en_US": "Explore documentation and courses to master Liferay products.",
+																				"es_ES": "Explora documentación y cursos para dominar los productos de Liferay.",
+																				"ja_JP": "Liferay製品をマスターするためのドキュメントとコースをご覧ください。",
+																				"pt_BR": "Explore documentação e cursos para dominar os produtos Liferay."
 																			}
 																		}
 																	}
@@ -991,22 +1175,20 @@
 														"one-card"
 													],
 													"fragmentLink": {
-														"value": {
-															"href": {
-																"mapping": {
-																	"itemReference": {
-																		"className": "com.liferay.portal.kernel.model.Layout",
-																		"fields": [
-																			{
-																				"fieldName": "friendlyURL",
-																				"fieldValue": "/marketplace"
-																			},
-																			{
-																				"fieldName": "privatePage",
-																				"fieldValue": "false"
-																			}
-																		]
-																	}
+														"href": {
+															"mapping": {
+																"itemReference": {
+																	"className": "com.liferay.portal.kernel.model.Layout",
+																	"fields": [
+																		{
+																			"fieldName": "friendlyURL",
+																			"fieldValue": "/marketplace"
+																		},
+																		{
+																			"fieldName": "privatePage",
+																			"fieldValue": "false"
+																		}
+																	]
 																}
 															}
 														}
@@ -1108,10 +1290,10 @@
 																		},
 																		"text": {
 																			"value_i18n": {
-																				"en_US": "Find apps, themes, and other resources to extend your Liferay DXP platform.",
-																				"es_ES": "Encuentra aplicaciones, temas y otros recursos para ampliar tu plataforma Liferay DXP.",
-																				"ja_JP": "Liferay DXPプラットフォームを拡張するためのアプリ、テーマ、その他のリソースをご覧ください。",
-																				"pt_BR": "Encontre aplicativos, temas e outros recursos para estender sua plataforma Liferay DXP."
+																				"en_US": "Find the latest apps, products and other resources to extend your Liferay platform.",
+																				"es_ES": "Encuentra las últimas aplicaciones, productos y otros recursos para ampliar tu plataforma Liferay.",
+																				"ja_JP": "Liferayプラットフォームを拡張するための最新のアプリ、製品、その他のリソースをご覧ください。",
+																				"pt_BR": "Encontre os aplicativos e produtos mais recentes e outros recursos para estender sua plataforma Liferay."
 																			}
 																		}
 																	}
@@ -1210,10 +1392,10 @@
 																	"value": {
 																		"href": {
 																			"value_i18n": {
-																				"en_US": "/web/one/support/announcements",
-																				"es_ES": "/web/one/support/announcements",
-																				"ja_JP": "/web/one/support/announcements",
-																				"pt_BR": "/web/one/support/announcements"
+																				"en_US": "/support/announcements",
+																				"es_ES": "/support/announcements",
+																				"ja_JP": "/support/announcements",
+																				"pt_BR": "/support/announcements"
 																			}
 																		}
 																	}
@@ -1512,6 +1694,165 @@
 											}
 										],
 										"type": "Collection"
+									},
+									{
+										"definition": {
+											"fragment": {
+												"key": "conditional-wrapper",
+												"siteKey": "[$GROUP_KEY$]"
+											},
+											"fragmentConfig": {
+												"displayMode": "inRoleOnly",
+												"roles": "User"
+											},
+											"indexed": true
+										},
+										"pageElements": [
+											{
+												"definition": {
+													"fragmentDropZoneId": "2"
+												},
+												"pageElements": [
+													{
+														"definition": {
+															"customCSS": ".[$FRAGMENT_CLASS$] {\n\tbackground: linear-gradient(90deg, color-mix(in srgb, var(--color-accent-1-lighten) 60%, var(--color-neutral-0)), var(--color-neutral-0));\n\tborder-radius: 8px;\n}\n\n.[$FRAGMENT_CLASS$] .component-paragraph {\n\tcolor: var(--color-neutral-10);\n\tfont-size: 1rem;\n\tfont-weight: 600;\n\tmargin-bottom: 0;\n}\n\n@media screen and (max-width: 767px) {\n\t.[$FRAGMENT_CLASS$] {\n\t\tflex-direction: column !important;\n\t\trow-gap: 1rem;\n\t\ttext-align: center;\n\t}\n}",
+															"fragmentStyle": {
+																"marginTop": "4",
+																"paddingBottom": "4",
+																"paddingLeft": "4",
+																"paddingRight": "4",
+																"paddingTop": "4"
+															},
+															"indexed": true,
+															"layout": {
+																"align": "Center",
+																"contentDisplay": "FlexRow",
+																"justify": "SpaceBetween"
+															}
+														},
+														"pageElements": [
+															{
+																"definition": {
+																	"indexed": true,
+																	"layout": {
+																		"align": "Center",
+																		"contentDisplay": "FlexRow"
+																	}
+																},
+																"pageElements": [
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-image"
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "image-square",
+																					"value": {
+																						"fragmentImage": {
+																							"url": {
+																								"mapping": {
+																									"fieldKey": "FileEntry_previewImage",
+																									"itemReference": {
+																										"className": "com.liferay.portal.kernel.repository.model.FileEntry",
+																										"classPK": "[#DOCUMENT_FILE_ENTRY_ID:/site-initializer/documents/group/announcements_subscribe.svg#]"
+																									}
+																								}
+																							}
+																						},
+																						"fragmentLink": {
+																						}
+																					}
+																				}
+																			],
+																			"fragmentStyle": {
+																				"height": "48px",
+																				"marginRight": "4",
+																				"width": "48px"
+																			},
+																			"indexed": true
+																		},
+																		"type": "Fragment"
+																	},
+																	{
+																		"definition": {
+																			"fragment": {
+																				"key": "BASIC_COMPONENT-paragraph"
+																			},
+																			"fragmentFields": [
+																				{
+																					"id": "element-text",
+																					"value": {
+																						"fragmentLink": {
+																						},
+																						"text": {
+																							"value_i18n": {
+																								"en_US": "Get the latest updates on products, security, and system improvements.",
+																								"es_ES": "Recibe las últimas novedades sobre productos, seguridad y mejoras del sistema.",
+																								"ja_JP": "製品、セキュリティ、システム改善に関する最新情報を受け取りましょう。",
+																								"pt_BR": "Receba as últimas novidades sobre produtos, segurança e melhorias do sistema."
+																							}
+																						}
+																					}
+																				}
+																			],
+																			"indexed": true
+																		},
+																		"type": "Fragment"
+																	}
+																],
+																"type": "Section"
+															},
+															{
+																"definition": {
+																	"fragment": {
+																		"key": "BASIC_COMPONENT-button"
+																	},
+																	"fragmentConfig": {
+																		"buttonSize": "lg",
+																		"buttonType": "primary",
+																		"type": "link"
+																	},
+																	"fragmentFields": [
+																		{
+																			"id": "link",
+																			"value": {
+																				"fragmentLink": {
+																					"value": {
+																						"href": {
+																							"value_i18n": {
+																								"en_US": "https://www.subscribepage.com/liferay",
+																								"es_ES": "https://www.subscribepage.com/liferay",
+																								"ja_JP": "https://www.subscribepage.com/liferay",
+																								"pt_BR": "https://www.subscribepage.com/liferay"
+																							}
+																						},
+																						"target": "Blank"
+																					}
+																				},
+																				"text": {
+																					"value_i18n": {
+																						"en_US": "Subscribe",
+																						"es_ES": "Suscribirse",
+																						"ja_JP": "購読する",
+																						"pt_BR": "Inscrever-se"
+																					}
+																				}
+																			}
+																		}
+																	],
+																	"indexed": true
+																},
+																"type": "Fragment"
+															}
+														],
+														"type": "Section"
+													}
+												],
+												"type": "FragmentDropZone"
+											}
+										],
+										"type": "Fragment"
 									}
 								],
 								"type": "Section"
@@ -1626,6 +1967,7 @@
 										}
 									],
 									"fragmentStyle": {
+										"marginBottom": "5",
 										"textColor": "#82828C"
 									},
 									"indexed": true
@@ -1664,7 +2006,7 @@
 											"federatedSearchKey": "",
 											"filterField": "assetCategoryIds",
 											"filterQueryType": "match",
-											"filterValue": "[$TAXONOMY_CATEGORY_ID:/site-initializer/taxonomy-vocabularies/company/marketplace-product-type/liferay-product.json$]",
+											"filterValue": "[$TAXONOMY_CATEGORY_ID:/site-initializer/taxonomy-vocabularies/company/marketplace-listing/listed.json$]",
 											"immutable": "true",
 											"invisible": "true",
 											"occur": "must",
@@ -1725,6 +2067,7 @@
 							},
 							"name": "What Is New on Marketplace"
 						},
+						"id": "9a2da114-bd42-888f-09b7-9ad62d57f38a",
 						"pageElements": [
 							{
 								"definition": {
@@ -1734,14 +2077,18 @@
 									},
 									"fragmentConfig": {
 										"cardSize": "large",
+										"channelId": "",
 										"hideRatingInfo": true,
-										"pageSize": "4",
-										"sectionDescription": "Fragments and client extensions help foster your productivity.",
+										"pageSize": 4,
+										"sectionDescription": "The latest releases and updates from our growing Marketplace ecosystem.",
 										"sectionTitle": "What Is New on Marketplace",
-										"specificationFilterValue": "true"
+										"specificationFilterValue": "What Is new"
 									},
+									"fragmentFields": [
+									],
 									"indexed": true
 								},
+								"id": "1bd18479-f7ea-475f-afce-b3f5ed5e5ab0",
 								"type": "Fragment"
 							}
 						],

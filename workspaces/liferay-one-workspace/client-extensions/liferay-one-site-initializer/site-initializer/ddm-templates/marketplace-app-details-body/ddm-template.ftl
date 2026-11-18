@@ -1,7 +1,31 @@
 <#assign
-	channel = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels?accountId=-1&filter=siteGroupId eq '${themeDisplay.getScopeGroupId()}'")
+	accountId = "-1"
+	currencyCode = "USD"
 
-	product = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels/" + channel.items[0].id + "/products/" + CPDefinition_cProductId.getData() + "?accountId=-1&nestedFields=categories,productSpecifications,skus&skus.accountId=-1&skus.currencyCode=USD")
+	commerceContext = (renderRequest.getAttribute("COMMERCE_CONTEXT"))!
+/>
+
+<#if commerceContext?has_content>
+	<#if commerceContext.getAccountEntry()??>
+		<#assign
+			accountEntry = commerceContext.getAccountEntry()
+
+			accountId = accountEntry.getAccountEntryId()?string
+		/>
+	</#if>
+
+	<#if commerceContext.getCommerceCurrency()??>
+		<#assign
+			commerceCurrency = commerceContext.getCommerceCurrency()
+
+			currencyCode = commerceCurrency.getCode()
+		/>
+	</#if>
+</#if>
+
+<#assign
+	channel = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels?accountId=" + accountId + "&filter=siteGroupId eq '${themeDisplay.getScopeGroupId()}'")
+	product = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels/" + channel.items[0].id + "/products/" + CPDefinition_cProductId.getData() + "?accountId=" + accountId + "&nestedFields=categories,productSpecifications,skus&skus.accountId=" + accountId + "&skus.currencyCode=" + currencyCode)
 	productSpecifications = product.productSpecifications![]
 
 	licenseSpecifications = productSpecifications?filter(spec -> stringUtil.equals(spec.specificationKey, "license"))

@@ -1,3 +1,9 @@
+[#attempt]
+	[#assign footerNavigationMenuId = restClient.get("/headless-delivery/v1.0/sites/" + themeDisplay.getScopeGroupId()?c + "/navigation-menus/by-external-reference-code/LO_FOOTER_NAV").id /]
+[#recover]
+	[#assign footerNavigationMenuId = 0 /]
+[/#attempt]
+
 <footer class="liferay-one-footer pb-5 pt-5">
 	<div class="container-fluid-max-xl footer-content mx-auto">
 		<div class="align-start c-my-0 d-flex justify-content-between max-nav">
@@ -23,7 +29,7 @@
 					preview=false
 					rootItemLevel=0
 					rootLayoutType="absolute"
-					siteNavigationMenuId=0
+					siteNavigationMenuId=footerNavigationMenuId
 				/]
 
 				<section class="c-px-0 footer-social">
@@ -67,7 +73,7 @@
 			<p class="c-mb-0">
 				© ${.now?string.yyyy} Liferay Inc. All Rights Reserved •
 
-				<a class="c-mb-0" href="https://www.liferay.com/legal/privacy-policy" target="_blank">Privacy Policy</a>
+				<a class="c-mb-0" href="https://www.liferay.com/privacy-policy" target="_blank">Privacy Policy</a>
 			</p>
 
 			<p class="c-mb-0">Powered by <a class="c-mb-0 liferay-link" href="https://www.liferay.com" target="_blank">Liferay</a></p>

@@ -1,10 +1,33 @@
 <#assign
-	channel = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels?accountId=-1&filter=siteGroupId eq '${themeDisplay.getScopeGroupId()}'")
+	accountId = "-1"
+	currencyCode = "USD"
 
+	commerceContext = (renderRequest.getAttribute("COMMERCE_CONTEXT"))!
+/>
+
+<#if commerceContext?has_content>
+	<#if commerceContext.getAccountEntry()??>
+		<#assign
+			accountEntry = commerceContext.getAccountEntry()
+
+			accountId = accountEntry.getAccountEntryId()?string
+		/>
+	</#if>
+	<#if commerceContext.getCommerceCurrency()??>
+		<#assign
+			commerceCurrency = commerceContext.getCommerceCurrency()
+
+			currencyCode = commerceCurrency.getCode()
+		/>
+	</#if>
+</#if>
+
+<#assign
+	channel = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels?accountId=" + accountId + "&filter=siteGroupId eq '${themeDisplay.getScopeGroupId()}'")
 	product = restClient.get(
 		"/headless-commerce-delivery-catalog/v1.0/channels/" + channel.items[0].id +
 		"/products/" + CPDefinition_cProductId.getData() +
-		"?accountId=-1&nestedFields=categories,productSpecifications,skus&skus.accountId=-1&skus.currencyCode=USD"
+		"?accountId=" + accountId + "&nestedFields=categories,productSpecifications,skus&skus.accountId=" + accountId + "&skus.currencyCode=" + currencyCode
 	)
 
 	catalogName = product.catalogName!""
@@ -17,33 +40,41 @@
 >
 
 <#assign
-	publisherDetailsResponse = restClient.get("/c/publisherdetailses?filter=publisherName eq '${catalogName}'")
+	publisherName = catalogName?replace("'", "''")
+
+	publisherDetailsResponse = restClient.get("/c/publisherdetails?filter=publisherName eq '${publisherName}'")
 />
 
 <#if publisherDetailsResponse.items?has_content>
 	<#assign
 		publisherDetails = publisherDetailsResponse.items[0]
-		profileImageURL = publisherDetails.publisherProfileImageURL?replace("https://", "http://")
+		profileImageURL = publisherDetails.publisherProfileImageURL
 	/>
 </#if>
 
 <#assign
-	appDocumentationURL = getSpecificationValue("appdocumentationurl")
-	appInstallationGuideURL = getSpecificationValue("appinstallationguideurl")
-	appUsageTerms = getSpecificationValue("appusagetermsurl")
-	cpuValue = getSpecificationValue("cpu")
+	appDocumentationURL = getSpecificationValue("app-documentation-url")
+	appInstallationGuideURL = getSpecificationValue("app-installation-guide-url")
+	appUsageTerms = getSpecificationValue("app-usage-terms-url")
+	cpuValue = getSpecificationValue("number-of-cpus")
 	developerName = getSpecificationValue("developer-name", catalogName)
-	publisherURL = (getSpecificationValue("publisherwebsiteurl")?trim?replace(" ", ""))!""
-	ramValue = getSpecificationValue("ram")
+	publisherURL = getSpecificationValue("publisher-web-site-url")?trim?replace(" ", "")
+	ramValue = getSpecificationValue("ram-in-gb")
 	sourceCode = getSpecificationValue("source-code-url")
-	supportEmail = getSpecificationValue("supportemailaddress")
-	supportPhone = getSpecificationValue("supportphone")
+	supportEmail = getSpecificationValue("support-email-address")
+	supportPhone = getSpecificationValue("support-phone")
+	supportURL = getSpecificationValue("support-url")
 	type = getSpecificationValue("type")?lower_case
 >
+
 <@section title = languageUtil.get(locale, "developer")>
-	<a href = "/applications?publisherName=${developerName}">
+	<#if (publisherDetails.friendlyUrlPath)?has_content>
+		<a href = "/c_publisherdetail/${htmlUtil.escape(publisherDetails.friendlyUrlPath)}">
+			${developerName}
+		</a>
+	<#else>
 		${developerName}
-	</a>
+	</#if>
 </@section>
 
 <@section title = languageUtil.get(locale, "publisher-date", "Publisher Date")>
@@ -56,7 +87,7 @@
 
 <@section title = languageUtil.get(locale, "deployment-method", "Deployment Method")>
 	<#list platformOffering as offering>
-		<p>${offering.name}</p>
+		<p>${languageUtil.get(locale, offering.name, offering.title)}</p>
 	</#list>
 </@section>
 
@@ -112,7 +143,7 @@
 		<#list purchasableSkus as sku>
 			<#assign matched = false />
 
-			<#list sku.skuOptions as opt>
+			<#list (sku.skuOptions)![] as opt>
 				<#if stringUtil.equals(opt.skuOptionValueKey, "standard")>
 					<#assign
 						matched = true
@@ -193,7 +224,7 @@
 
 			<a
 				class="d-flex justify-content-between support-link w-100"
-				href="/documents/d/marketplace/end_user_license_agreement-pdf"
+				href="/documents/d/one/end_user_license_agreement"
 				target="_blank">
 
 				<span class="ml-1">

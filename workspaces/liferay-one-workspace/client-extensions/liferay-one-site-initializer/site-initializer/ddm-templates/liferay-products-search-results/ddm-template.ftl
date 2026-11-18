@@ -4,29 +4,39 @@
 	specificationGroups = cpContentHelper.getCPOptionCategories(themeDisplay.getCompanyId())
 />
 
+<#function langKey label>
+	<#return label?lower_case?replace(" ", "-", "r")?replace("&", "and", "r")?replace(",", "", "r")?replace("/", "-", "r") />
+</#function>
+
 <#function getSpecificationValue specificationGroupKey specificationKey productId defaultValue="">
 	<#local specificationGroup=specificationGroups?filter(specificationGroup -> specificationGroup.getKey() == specificationGroupKey) />
 		<#if specificationGroup?has_content>
 			<#local specifications=cpContentHelper.getCategorizedCPDefinitionSpecificationOptionValues(productId, specificationGroup?first.getCPOptionCategoryId()) />
 			<#local specification=specifications?filter(productSpecification -> stringUtil.equals(productSpecification.getCPSpecificationOption().getKey(), specificationKey)) />
 
-			<#return (specification?first.value)!defaultValue />
+			<#return (specification?first.getValue(locale))!defaultValue />
 		</#if>
 
 		<#return defaultValue />
 </#function>
 
 <#function getSpecificationValues specificationGroupKey specificationKey productId>
+	<#local values=getUncategorizedSpecificationValues(specificationKey, productId) />
 	<#local specificationGroup=specificationGroups?filter(specificationGroup -> specificationGroup.getKey() == specificationGroupKey) />
-		<#if specificationGroup?has_content>
-			<#local specifications=cpContentHelper.getCategorizedCPDefinitionSpecificationOptionValues( productId, specificationGroup?first.getCPOptionCategoryId() ) />
-			<#local specificationsFiltered=specifications?filter(productSpecification -> stringUtil.equals(productSpecification.getCPSpecificationOption().getKey(), specificationKey)) />
 
-			<#if specificationsFiltered?has_content>
-				<#return specificationsFiltered?map(item -> item.value) />
-			</#if>
-		</#if>
-	<#return [] />
+	<#if specificationGroup?has_content>
+		<#local specifications=cpContentHelper.getCategorizedCPDefinitionSpecificationOptionValues(productId, specificationGroup?first.getCPOptionCategoryId()) />
+
+		<#local values=values + specifications?filter(productSpecification -> stringUtil.equals(productSpecification.getCPSpecificationOption().getKey(), specificationKey))?map(item -> item.getValue(locale)) />
+	</#if>
+
+	<#return values />
+</#function>
+
+<#function getUncategorizedSpecificationValues specificationKey productId>
+	<#local specifications=cpContentHelper.getCPDefinitionSpecificationOptionValues(productId) />
+
+	<#return specifications?filter(productSpecification -> stringUtil.equals(productSpecification.getCPSpecificationOption().getKey(), specificationKey))?map(item -> item.getValue(locale)) />
 </#function>
 
 <div class="card-grid">
@@ -35,14 +45,15 @@
 			<#list entries as entry>
 				<#if entry?has_content>
 					<#assign
-						capabilities = getSpecificationValues("product-metadata", "liferay-products-capabilities", entry.getCPDefinitionId())
-						categories = getSpecificationValues("product-metadata", "liferay-products-categories", entry.getCPDefinitionId())
+						capabilities = getSpecificationValues("product-metadata", "liferay-product-capabilities", entry.getCPDefinitionId())
+						categories = getSpecificationValues("product-metadata", "liferay-product-categories", entry.getCPDefinitionId())
 						developerName = getSpecificationValue("product-metadata", "developer-name", entry.getCPDefinitionId())
-						productImage = cpContentHelper.getDefaultImageFileURL(-1, entry.getCPDefinitionId())!""
+						productDescription = stringUtil.shorten(htmlUtil.stripHtml(entry.getDescription()!""), 160, "...")
+						productImage = cpContentHelper.getDefaultImageFileURL(-1, entry.getCPDefinitionId())
 					/>
 
 					<a class="card d-flex flex-column overflow-hidden text-dark text-decoration-none" href="${cpContentHelper.getFriendlyURL(entry, themeDisplay)}">
-						<div class="align-items-center card-image-wrapper d-flex justify-content-center w-100">
+						<div class="align-items-center card-image-wrapper card-image-wrapper-liferay-product d-flex justify-content-center w-100">
 							<img alt="${entry.getName()}" class="card-product-image" draggable="false" loading="lazy" src="${productImage}" />
 						</div>
 
@@ -50,16 +61,22 @@
 							<div class="d-flex flex-column">
 								<h3 class="card-title">${entry.getName()}</h3>
 
-								<p class="card-subtitle">${developerName!''}</p>
+								<#if developerName?has_content>
+									<p class="card-subtitle">By ${developerName}</p>
+								</#if>
 
 								<#if categories?has_content>
-									<div class="d-flex flex-wrap">
+									<div class="card-labels d-flex flex-wrap my-2">
 										<#list categories as category>
-											<span class="badge badge-info mr-1 mb-1">${category}</span>
+											<span class="lo-product-label">${languageUtil.get(locale, langKey(category), category)}</span>
 										</#list>
 									</div>
 								</#if>
 							</div>
+
+							<#if productDescription?has_content>
+								<p class="card-description">${productDescription}</p>
+							</#if>
 
 							<#if capabilities?has_content>
 								<ul class="card-bullet-list list-unstyled mb-0">

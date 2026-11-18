@@ -1,6 +1,63 @@
+<#function langKey label>
+	<#return label?lower_case?replace(" ", "-", "r")?replace("&", "and", "r")?replace(",", "", "r")?replace("/", "-", "r") />
+</#function>
+
+<#function getFacetTitle paramName>
+	<#local key = langKey(paramName) />
+	<#if locale?starts_with("ja")>
+		<#switch key>
+			<#case "dxp-versions"><#return "DXPバージョン" />
+			<#case "availability"><#return "可用性" />
+			<#case "app-category"><#return "アプリカテゴリ" />
+			<#case "category"><#return "カテゴリ" />
+			<#case "deployment-method"><#return "デプロイ方法" />
+			<#case "type"><#return "タイプ" />
+			<#case "liferay-product-categories"><#return "Liferay製品カテゴリ" />
+			<#case "liferay-version"><#return "Liferayバージョン" />
+			<#case "our-selection"><#return "おすすめ" />
+			<#case "price-model"><#return "価格モデル" />
+			<#case "tag"><#return "タグ" />
+			<#default><#return languageUtil.get(locale, key, paramName) />
+		</#switch>
+	<#elseif locale?starts_with("es")>
+		<#switch key>
+			<#case "dxp-versions"><#return "Versiones de DXP" />
+			<#case "availability"><#return "Disponibilidad" />
+			<#case "app-category"><#return "Categoría de aplicación" />
+			<#case "category"><#return "Categoría" />
+			<#case "deployment-method"><#return "Método de implementación" />
+			<#case "type"><#return "Tipo" />
+			<#case "liferay-product-categories"><#return "Categorías de productos de Liferay" />
+			<#case "liferay-version"><#return "Versión de Liferay" />
+			<#case "our-selection"><#return "Nuestra selección" />
+			<#case "price-model"><#return "Modelo de precios" />
+			<#case "tag"><#return "Etiqueta" />
+			<#default><#return languageUtil.get(locale, key, paramName) />
+		</#switch>
+	<#elseif locale?starts_with("pt")>
+		<#switch key>
+			<#case "dxp-versions"><#return "Versões do DXP" />
+			<#case "availability"><#return "Disponibilidade" />
+			<#case "app-category"><#return "Categoria do aplicativo" />
+			<#case "category"><#return "Categoria" />
+			<#case "deployment-method"><#return "Método de implantação" />
+			<#case "type"><#return "Tipo" />
+			<#case "liferay-product-categories"><#return "Categorias de produtos Liferay" />
+			<#case "liferay-version"><#return "Versão do Liferay" />
+			<#case "our-selection"><#return "Nossa seleção" />
+			<#case "price-model"><#return "Modelo de preço" />
+			<#case "tag"><#return "Tag" />
+			<#default><#return languageUtil.get(locale, key, paramName) />
+		</#switch>
+	<#else>
+		<#return languageUtil.get(locale, key, paramName) />
+	</#if>
+</#function>
+
 <#assign
 	filteredCount = 0
-	title = assetCategoriesSearchFacetDisplayContext.getParameterName()
+	parameterName = assetCategoriesSearchFacetDisplayContext.getParameterName()
+	title = getFacetTitle(parameterName)
 />
 
 <#list entries as entry>
@@ -14,7 +71,7 @@
 </#if>
 
 <@liferay_ui["panel-container"]
-	cssClass="bg-white border-radius-xlarge facet-panel"
+	cssClass="border-radius-xlarge facet-panel"
 	extended=true
 	id="${namespace + 'facetAssetCategoriesPanelContainer'}"
 	markupView="lexicon"
@@ -61,7 +118,7 @@
 
 							<span class="custom-control-label font-size-paragraph-small term-name ${(entry.isSelected())?then('facet-term-selected', 'facet-term-unselected')}">
 								<span class="custom-control-label-text">
-									${htmlUtil.escape(entry.getDisplayName())}
+									${htmlUtil.escape(htmlUtil.unescape(languageUtil.get(locale, langKey(entry.getDisplayName()), entry.getDisplayName())))}
 
 									<span class="facet-frequency">(${entry.getFrequency()})</span>
 								</span>
