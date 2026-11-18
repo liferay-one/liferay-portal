@@ -155,6 +155,23 @@ public abstract class OneBaseService extends BaseService {
 	protected ExchangeFilterFunction getWebClientExchangeFilterFunction() {
 		return super.getWebClientExchangeFilterFunction(
 		).andThen(
+			ExchangeFilterFunction.ofRequestProcessor(
+				clientRequest -> Mono.just(
+					ClientRequest.from(
+						clientRequest
+					).headers(
+						httpHeaders -> {
+							if (!httpHeaders.containsKey(
+									HttpHeaders.USER_AGENT)) {
+
+								httpHeaders.set(
+									HttpHeaders.USER_AGENT,
+									"liferay-one-etc-spring-boot (" +
+										getClass().getSimpleName() + ")");
+							}
+						}
+					).build()))
+		).andThen(
 			(clientRequest, exchangeFunction) -> exchangeFunction.exchange(
 				clientRequest
 			).flatMap(
