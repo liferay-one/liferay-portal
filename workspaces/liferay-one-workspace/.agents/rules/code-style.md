@@ -129,6 +129,22 @@ function toISODate(value?: string): string | undefined {
 
 Prefer a shared helper in `~/utils/dateUtils.ts` over re-deriving this per file.
 
+## Clay Drop Down Menus Render Outside the Component
+
+`ClayDropDown` renders its menu in a portal at the end of `body`, not inside the element that carries `className`. A selector such as `.my-dropdown .dropdown-menu` therefore never matches, and the rule has no effect. Give the menu its own class through `menuElementAttrs`, and select that class:
+
+```tsx
+<ClayDropDown className="list-card-filter-dropdown" menuElementAttrs={{className: 'list-card-filter-menu'}} />
+```
+
+```css
+.list-card-filter-menu.dropdown-menu {
+	max-width: min(320px, calc(100vw - 32px)) !important;
+}
+```
+
+All the CSS in the custom element goes into one stylesheet, so a bare `.dropdown-menu` rule in a page file applies to every page. `ProvideAppBuildPage.css` sets `.dropdown-menu { max-width: none !important; }`, and a menu that needs a maximum width must override it with `!important`. Scope a new menu rule to a class of its own.
+
 ## Java Code Ordering
 
 In Java classes, declare resource clients before the objects that use them:
