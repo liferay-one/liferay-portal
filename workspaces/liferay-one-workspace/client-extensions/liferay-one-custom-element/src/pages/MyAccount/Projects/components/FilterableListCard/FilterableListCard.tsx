@@ -19,6 +19,8 @@ import './FilterableListCard.css';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
 
+const DATE_BOUND_PATTERN = /^(after|before):\d{4}-\d{2}-\d{2}$/;
+
 const FILTER_SEARCH_MIN_OPTIONS = 10;
 
 const SEARCH_PARAMETER = 'search';
@@ -238,14 +240,22 @@ export default function FilterableListCard<T>({
 	const [sort, setSort] = useState<ListSort | null>(null);
 	const [activeFilterKey, setActiveFilterKey] = useState<string | null>(null);
 
-	const keywords = searchParams.get(SEARCH_PARAMETER) ?? '';
+	const [keywords, setKeywords] = useState(
+		() => searchParams.get(SEARCH_PARAMETER) ?? ''
+	);
 
 	const selectedFilters = useMemo(
 		() =>
 			Object.fromEntries(
 				filters.map((filter) => [
 					filter.key,
-					searchParams.getAll(filter.key),
+					searchParams
+						.getAll(filter.key)
+						.filter(
+							(value) =>
+								filter.variant !== 'date-range' ||
+								DATE_BOUND_PATTERN.test(value)
+						),
 				])
 			),
 		[filters, searchParams]
@@ -422,6 +432,7 @@ export default function FilterableListCard<T>({
 					<ClayDropDown
 						active={filterActive}
 						className="list-card-filter-dropdown"
+						menuElementAttrs={{className: 'list-card-filter-menu'}}
 						onActiveChange={(active) => {
 							setFilterActive(active);
 
@@ -494,14 +505,15 @@ export default function FilterableListCard<T>({
 						<ClayInput.GroupItem>
 							<ClayInput
 								className="input-group-inset input-group-inset-after"
-								onChange={(event) =>
+								onChange={(event) => {
+									setKeywords(event.target.value);
 									setParameterValues(
 										SEARCH_PARAMETER,
 										event.target.value
 											? [event.target.value]
 											: []
-									)
-								}
+									);
+								}}
 								placeholder={translate('search')}
 								type="text"
 								value={keywords}
