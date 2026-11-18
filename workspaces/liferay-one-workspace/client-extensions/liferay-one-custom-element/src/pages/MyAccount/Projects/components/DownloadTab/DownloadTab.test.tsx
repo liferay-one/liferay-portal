@@ -4,6 +4,7 @@
  */
 
 import {fireEvent, render, screen} from '@testing-library/react';
+import {MemoryRouter} from 'react-router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useFetch} from '~/hooks/useFetch';
 
@@ -58,7 +59,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DownloadTab', () => {
 			},
 		]);
 
-		render(<DownloadTab profile="bundle" />);
+		render(<DownloadTab profile="bundle" />, {wrapper: MemoryRouter});
 
 		expect(screen.getByText('Bundle Name')).toBeInTheDocument();
 		expect(
@@ -82,7 +83,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DownloadTab', () => {
 			},
 		]);
 
-		render(<DownloadTab profile="bundle" />);
+		render(<DownloadTab profile="bundle" />, {wrapper: MemoryRouter});
 
 		fireEvent.click(screen.getByRole('button', {name: 'Download'}));
 
@@ -101,7 +102,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DownloadTab', () => {
 			},
 		]);
 
-		render(<DownloadTab profile="bundle" />);
+		render(<DownloadTab profile="bundle" />, {wrapper: MemoryRouter});
 
 		expect(screen.getByText('No Bundles Yet')).toBeInTheDocument();
 	});
@@ -109,7 +110,9 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DownloadTab', () => {
 	it('requests only the free tier versions for the free tier product', () => {
 		mockProductVersions([]);
 
-		render(<DownloadTab freeTier profile="bundle" />);
+		render(<DownloadTab freeTier profile="bundle" />, {
+			wrapper: MemoryRouter,
+		});
 
 		expect(useFetch).toHaveBeenCalledWith(
 			'/o/c/productversions',
@@ -124,7 +127,7 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DownloadTab', () => {
 	it('requests every version for another product with the bundle profile', () => {
 		mockProductVersions([]);
 
-		render(<DownloadTab profile="bundle" />);
+		render(<DownloadTab profile="bundle" />, {wrapper: MemoryRouter});
 
 		expect(useFetch).toHaveBeenCalledWith(
 			'/o/c/productversions',
@@ -144,7 +147,9 @@ describe('[ROUTE-MY-ACCOUNT-PRODUCTERC] DownloadTab', () => {
 
 		mockProductVersions([]);
 
-		render(<DownloadTab profile="app" virtualItems={virtualItems} />);
+		render(<DownloadTab profile="app" virtualItems={virtualItems} />, {
+			wrapper: MemoryRouter,
+		});
 
 		expect(screen.getByText('Supported Version')).toBeInTheDocument();
 		expect(screen.getByText('1.0.0')).toBeInTheDocument();
