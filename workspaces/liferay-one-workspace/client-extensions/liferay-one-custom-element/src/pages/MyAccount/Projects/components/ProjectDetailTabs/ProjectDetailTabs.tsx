@@ -36,13 +36,7 @@ export default function ProjectDetailTabs({
 	);
 
 	function handleTabChange(index: number) {
-		setSearchParams((previousSearchParams) => {
-			const nextSearchParams = new URLSearchParams(previousSearchParams);
-
-			nextSearchParams.set('tab', tabs[index].key);
-
-			return nextSearchParams;
-		});
+		setSearchParams({tab: tabs[index].key});
 	}
 
 	return (
