@@ -71,6 +71,54 @@ public class SalesforceRecordComparisonUtilTest {
 	}
 
 	@Test
+	public void testCompareWhenContractNameDiffers() {
+		List<SalesforceRecordComparison> salesforceRecordComparisons =
+			SalesforceRecordComparisonUtil.compare(
+				SalesforceRecordComparisonUtil.contractFieldNames,
+				List.of(
+					new JSONObject(
+					).put(
+						"externalReferenceCode", "800A"
+					).put(
+						"name", "Enterprise"
+					)),
+				List.of(
+					new JSONObject(
+					).put(
+						"Id", "800A"
+					).put(
+						"Name", "Enterprise Renewal"
+					)),
+				SalesforceRecordComparison.TYPE_CONTRACT);
+
+		Assertions.assertEquals(1, salesforceRecordComparisons.size());
+
+		SalesforceRecordComparison salesforceRecordComparison =
+			salesforceRecordComparisons.get(0);
+
+		List<JSONObject> differenceJSONObjects =
+			salesforceRecordComparison.getDifferenceJSONObjects();
+
+		Assertions.assertEquals(1, differenceJSONObjects.size());
+
+		JSONObject differenceJSONObject = differenceJSONObjects.get(0);
+
+		Assertions.assertEquals(
+			"name", differenceJSONObject.getString("fieldName"));
+		Assertions.assertEquals(
+			"Enterprise", differenceJSONObject.getString("liferayValue"));
+		Assertions.assertEquals(
+			"Enterprise Renewal",
+			differenceJSONObject.getString("salesforceValue"));
+
+		Assertions.assertEquals(
+			"Enterprise", salesforceRecordComparison.getName());
+		Assertions.assertEquals(
+			SalesforceRecordComparison.STATUS_DIFFERS,
+			salesforceRecordComparison.getStatus());
+	}
+
+	@Test
 	public void testCompareWhenDescriptionLineBreaksDiffer() {
 		List<SalesforceRecordComparison> salesforceRecordComparisons =
 			SalesforceRecordComparisonUtil.compare(

@@ -1511,6 +1511,8 @@ public class ContractServiceTest {
 			).put(
 				"EndDate", "2027-01-31"
 			).put(
+				"Name", "Enterprise Renewal"
+			).put(
 				"StartDate", "2026-02-01T08:00:00Z"
 			));
 
@@ -1536,6 +1538,8 @@ public class ContractServiceTest {
 		Assertions.assertEquals(
 			"ACCNT-1",
 			jsonObject.getString("r_accountEntryToContract_accountEntryERC"));
+		Assertions.assertEquals(
+			"Enterprise Renewal", jsonObject.getString("name"));
 		Assertions.assertEquals(
 			"2026-02-01T08:00:00Z", jsonObject.getString("startDate"));
 		Assertions.assertFalse(jsonObject.has("opportunityId"));
@@ -1775,6 +1779,7 @@ public class ContractServiceTest {
 			).getString(
 				"key"
 			));
+		Assertions.assertFalse(jsonObject.has("name"));
 	}
 
 	@Test
