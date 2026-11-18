@@ -29,6 +29,7 @@ export function AccountProvider() {
 
 	const currentAccountId = Liferay.CommerceContext.account?.accountId;
 
+	const [failedAccountERC, setFailedAccountERC] = useState<string>();
 	const [switching, setSwitching] = useState(false);
 
 	const {data: currentAccount, isLoading: currentAccountLoading} =
@@ -54,19 +55,38 @@ export function AccountProvider() {
 
 	const needsSwitch = Boolean(currentAccountId && requestedAccount);
 
+	const switchFailed = Boolean(accountERC) && failedAccountERC === accountERC;
+
 	useEffect(() => {
 		if (!needsSwitch || !requestedAccount) {
 			return;
 		}
 
+		let cancelled = false;
+
 		setSwitching(true);
 
 		setCurrentAccount(String(requestedAccount.id))
-			.then(() => window.location.reload())
-			.catch(() => setSwitching(false));
-	}, [needsSwitch, requestedAccount]);
+			.then(() => {
+				if (!cancelled) {
+					window.location.reload();
+				}
+			})
+			.catch(() => {
+				if (!cancelled) {
+					setFailedAccountERC(accountERC);
+					setSwitching(false);
+				}
+			});
 
-	if (error) {
+		return () => {
+			cancelled = true;
+
+			setSwitching(false);
+		};
+	}, [accountERC, needsSwitch, requestedAccount]);
+
+	if (error || switchFailed) {
 		return (
 			<EmptyState
 				className="mt-5"

@@ -8,7 +8,9 @@ import {getSiteURL} from '~/utils/siteUtils';
 
 export default function routerPath() {
 	return {
-		ticketAttachments: () =>
-			`${Liferay.ThemeDisplay.getPortalURL()}${getSiteURL()}/support/ticket-attachments`,
+		ticketAttachments: (projectERC?: string) =>
+			`${Liferay.ThemeDisplay.getPortalURL()}${getSiteURL()}/support/ticket-attachments${
+				projectERC ? `/#/project/${encodeURIComponent(projectERC)}` : ''
+			}`,
 	};
 }

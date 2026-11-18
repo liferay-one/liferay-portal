@@ -30,6 +30,7 @@ import useIsSaasOnly from '~/pages/BusinessEvents/hooks/useIsSaasOnly';
 import useProjectTickets from '~/pages/BusinessEvents/hooks/useProjectTickets';
 import {IBusinessEvent} from '~/pages/BusinessEvents/types';
 import {containsOption} from '~/pages/BusinessEvents/utils/containsOption';
+import {getBusinessEventsPath} from '~/pages/BusinessEvents/utils/getBusinessEventsPath';
 import {getFormattedEventDateTime} from '~/pages/BusinessEvents/utils/getFormattedEventDateUtils';
 import getInitialEvent from '~/pages/BusinessEvents/utils/getInitialEvent';
 import getNewLiferayVersionOptions from '~/pages/BusinessEvents/utils/getNewLiferayVersionOptions';
@@ -43,7 +44,7 @@ import FormLayout from './components/FormLayout/FormLayout';
 const NAVIGATION_YEARS_RANGE = 2;
 
 const BusinessEventsAddPage: React.FC = () => {
-	const {projectERC} = useParams<{projectERC: string}>();
+	const {accountERC = '', projectERC = ''} = useParams();
 
 	const {
 		control,
@@ -205,7 +206,7 @@ const BusinessEventsAddPage: React.FC = () => {
 
 			await createBusinessEvent(updatedBusinessEvent, projectERC || '');
 
-			navigate(`/${projectERC}/business-events`);
+			navigate(getBusinessEventsPath(accountERC, projectERC));
 
 			Liferay.Util.openToast({
 				message: translate('business-event-created-successfully'),
@@ -340,7 +341,12 @@ const BusinessEventsAddPage: React.FC = () => {
 							<Button
 								displayType="secondary"
 								onClick={() => {
-									navigate(`/${projectERC}/business-events`);
+									navigate(
+										getBusinessEventsPath(
+											accountERC,
+											projectERC
+										)
+									);
 								}}
 							>
 								{translate('cancel')}
