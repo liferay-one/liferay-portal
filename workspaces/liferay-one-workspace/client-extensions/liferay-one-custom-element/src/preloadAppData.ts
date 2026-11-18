@@ -31,6 +31,9 @@ const PROJECT_LIST_ROUTES = new Set(['business-events', 'ticket-attachments']);
 
 const TICKET_ATTACHMENTS_PROJECT_LIST_PATHS = new Set(['', 'new']);
 
+const TICKET_ATTACHMENTS_PROJECT_PATH_PATTERN =
+	/^(project\/[^/]+|(?!(erc|id|new)\/)[^/]+\/project(\/.*)?)$/;
+
 const TICKET_ATTACHMENTS_ROUTE = 'ticket-attachments';
 
 const preloadedRoutes = new Set<string>();
@@ -56,9 +59,15 @@ function getHashPath() {
 }
 
 function hasProjectOrders(route: string) {
+	if (route !== TICKET_ATTACHMENTS_ROUTE) {
+		return true;
+	}
+
+	const hashPath = getHashPath();
+
 	return (
-		route !== TICKET_ATTACHMENTS_ROUTE ||
-		TICKET_ATTACHMENTS_PROJECT_LIST_PATHS.has(getHashPath())
+		TICKET_ATTACHMENTS_PROJECT_LIST_PATHS.has(hashPath) ||
+		TICKET_ATTACHMENTS_PROJECT_PATH_PATTERN.test(hashPath)
 	);
 }
 
