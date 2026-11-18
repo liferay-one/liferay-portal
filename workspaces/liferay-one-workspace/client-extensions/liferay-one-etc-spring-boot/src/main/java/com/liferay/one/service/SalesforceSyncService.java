@@ -405,8 +405,8 @@ public class SalesforceSyncService extends OneBaseService {
 	private static final List<String> _accountIdFieldNames = List.of(
 		"Id", "AccountId", "Account__c");
 	private static final List<String> _contractFields = List.of(
-		"AccountId", "ContractTerm", "EndDate", "Id", "SBQQ__Opportunity__c",
-		"SBQQ__RenewalOpportunity__c", "StartDate");
+		"AccountId", "ContractTerm", "EndDate", "Id", "Name",
+		"SBQQ__Opportunity__c", "SBQQ__RenewalOpportunity__c", "StartDate");
 	private static final List<String> _projectFields = List.of(
 		"AI_Hub_Account_Name__c", "Account__c", "Allowed_Email_Domains__c",
 		"Data_Center_Location__c", "Friendly_Workspace_URL__c", "Id",

@@ -16,6 +16,7 @@ public class SalesforceContract {
 		_accountId = jsonObject.optString("AccountId");
 		_endDate = jsonObject.optString("EndDate");
 		_id = jsonObject.optString("Id");
+		_name = jsonObject.optString("Name");
 		_opportunityId = jsonObject.optString("SBQQ__Opportunity__c");
 		_renewalOpportunityId = jsonObject.optString(
 			"SBQQ__RenewalOpportunity__c");
@@ -45,6 +46,10 @@ public class SalesforceContract {
 		return _id;
 	}
 
+	public String getName() {
+		return _name;
+	}
+
 	public String getOpportunityId() {
 		return _opportunityId;
 	}
@@ -61,6 +66,7 @@ public class SalesforceContract {
 	private final Integer _contractTerm;
 	private final String _endDate;
 	private final String _id;
+	private final String _name;
 	private final String _opportunityId;
 	private final String _renewalOpportunityId;
 	private final String _startDate;

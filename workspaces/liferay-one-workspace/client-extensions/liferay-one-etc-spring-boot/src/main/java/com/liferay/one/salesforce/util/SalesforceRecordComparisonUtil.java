@@ -40,7 +40,7 @@ public class SalesforceRecordComparisonUtil {
 			new TreeMap<>(
 				Map.of(
 					"contractTerm", "ContractTerm", "endDate", "EndDate",
-					"opportunityId", "SBQQ__Opportunity__c",
+					"name", "Name", "opportunityId", "SBQQ__Opportunity__c",
 					"renewalOpportunityId", "SBQQ__RenewalOpportunity__c",
 					"startDate", "StartDate")));
 	public static final SortedMap<String, String> projectFieldNames =
