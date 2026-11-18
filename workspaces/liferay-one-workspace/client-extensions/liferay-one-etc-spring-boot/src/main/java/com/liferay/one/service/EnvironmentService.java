@@ -60,36 +60,22 @@ public class EnvironmentService extends OneBaseService {
 			String projectExternalReferenceCode, String type)
 		throws Exception {
 
-		JSONObject environmentJSONObject = new JSONObject(
-		).put(
-			"activationCode", activationCode
-		).put(
-			"activationStatus", EnvironmentConstants.ACTIVATION_STATUS_PENDING
-		).put(
-			"offering", EnvironmentConstants.OFFERING_CLOUD_NATIVE
-		).put(
-			"r_accountEntryToEnvironment_accountEntryId", accountEntryId
-		).put(
-			"r_contractToEnvironment_c_contractERC",
-			contractExternalReferenceCode
-		).put(
-			"type", type
-		);
+		return _addCodeActivatedEnvironment(
+			accountEntryId, activationCode, contractExternalReferenceCode,
+			EnvironmentConstants.OFFERING_CLOUD_NATIVE,
+			projectExternalReferenceCode, type);
+	}
 
-		if (projectExternalReferenceCode != null) {
-			environmentJSONObject.put(
-				"r_projectToEnvironment_c_projectERC",
-				projectExternalReferenceCode);
-		}
+	public Environment addDXPEnvironment(
+			long accountEntryId, String activationCode,
+			String contractExternalReferenceCode,
+			String projectExternalReferenceCode, String type)
+		throws Exception {
 
-		String response = post(
-			getAuthorization(), environmentJSONObject.toString(),
-			UriComponentsBuilder.fromPath(
-				"/o/c/environments"
-			).build(
-			).toUri());
-
-		return new Environment(new JSONObject(response));
+		return _addCodeActivatedEnvironment(
+			accountEntryId, activationCode, contractExternalReferenceCode,
+			EnvironmentConstants.OFFERING_DXP, projectExternalReferenceCode,
+			type);
 	}
 
 	public Environment fetchActivationEnvironment(
@@ -114,6 +100,17 @@ public class EnvironmentService extends OneBaseService {
 				"(activationCode eq '", escapeODataString(activationCode),
 				"') and (offering eq '",
 				EnvironmentConstants.OFFERING_CLOUD_NATIVE, "')"));
+	}
+
+	public Environment fetchDXPEnvironmentByActivationCode(
+			String activationCode)
+		throws Exception {
+
+		return fetchEnvironment(
+			StringBundler.concat(
+				"(activationCode eq '", escapeODataString(activationCode),
+				"') and (offering eq '", EnvironmentConstants.OFFERING_DXP,
+				"')"));
 	}
 
 	public Environment fetchEnvironment(String filterString) throws Exception {
@@ -170,6 +167,30 @@ public class EnvironmentService extends OneBaseService {
 				escapeODataString(projectExternalReferenceCode), "')"));
 	}
 
+	public List<Environment> getDXPEnvironments(
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		return getEnvironments(
+			StringBundler.concat(
+				"(offering eq '", EnvironmentConstants.OFFERING_DXP,
+				"') and (r_projectToEnvironment_c_projectERC eq '",
+				escapeODataString(projectExternalReferenceCode), "')"));
+	}
+
+	public List<Environment> getDXPEnvironmentsByInstallationId(
+			String installationId)
+		throws Exception {
+
+		return getEnvironments(
+			StringBundler.concat(
+				"(activationStatus eq '",
+				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
+				"') and (externalEnvironmentId eq '",
+				escapeODataString(installationId), "') and (offering eq '",
+				EnvironmentConstants.OFFERING_DXP, "')"));
+	}
+
 	public List<Environment> getEnvironments(String filterString)
 		throws Exception {
 
@@ -206,6 +227,29 @@ public class EnvironmentService extends OneBaseService {
 					).buildAndExpand(
 						externalReferenceCode
 					).toUri())));
+	}
+
+	public void updateDXPEnvironmentActivation(
+			String activationMode, long id, String installationId,
+			String publicKey)
+		throws Exception {
+
+		JSONObject environmentJSONObject = new JSONObject(
+		).put(
+			"activationMode", activationMode
+		).put(
+			"activationStatus", EnvironmentConstants.ACTIVATION_STATUS_ACTIVE
+		).put(
+			"externalEnvironmentId", installationId
+		);
+
+		if (Validator.isNotNull(publicKey)) {
+			environmentJSONObject.put(
+				"publicKey",
+				CloudNativeSignatureValidator.toBase64PublicKey(publicKey));
+		}
+
+		_patchEnvironment(id, environmentJSONObject);
 	}
 
 	public void updateEnvironmentActivation(
@@ -291,6 +335,44 @@ public class EnvironmentService extends OneBaseService {
 
 			environmentJSONObject.put(
 				fieldName, fieldsJSONObject.optString(fieldName));
+		}
+
+		String response = post(
+			getAuthorization(), environmentJSONObject.toString(),
+			UriComponentsBuilder.fromPath(
+				"/o/c/environments"
+			).build(
+			).toUri());
+
+		return new Environment(new JSONObject(response));
+	}
+
+	private Environment _addCodeActivatedEnvironment(
+			long accountEntryId, String activationCode,
+			String contractExternalReferenceCode, String offering,
+			String projectExternalReferenceCode, String type)
+		throws Exception {
+
+		JSONObject environmentJSONObject = new JSONObject(
+		).put(
+			"activationCode", activationCode
+		).put(
+			"activationStatus", EnvironmentConstants.ACTIVATION_STATUS_PENDING
+		).put(
+			"offering", offering
+		).put(
+			"r_accountEntryToEnvironment_accountEntryId", accountEntryId
+		).put(
+			"r_contractToEnvironment_c_contractERC",
+			contractExternalReferenceCode
+		).put(
+			"type", type
+		);
+
+		if (projectExternalReferenceCode != null) {
+			environmentJSONObject.put(
+				"r_projectToEnvironment_c_projectERC",
+				projectExternalReferenceCode);
 		}
 
 		String response = post(

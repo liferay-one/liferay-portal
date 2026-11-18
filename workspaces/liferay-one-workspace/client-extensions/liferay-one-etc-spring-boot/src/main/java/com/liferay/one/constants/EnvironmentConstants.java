@@ -30,6 +30,8 @@ public class EnvironmentConstants {
 
 	public static final String OFFERING_DSR = "DSR";
 
+	public static final String OFFERING_DXP = "DXP";
+
 	public static final String OFFERING_PAAS = "PaaS";
 
 	public static final String OFFERING_SAAS = "SaaS";
@@ -40,12 +42,16 @@ public class EnvironmentConstants {
 
 	public static final String PROFILE_SAAS = "saas";
 
+	public static final String TYPE_BACKUP = "backup";
+
 	public static final String TYPE_NONPRODUCTION = "non-production";
 
 	public static final String TYPE_PRODUCTION = "production";
 
 	public static final String TYPE_UAT = "uat";
 
+	public static final List<String> dxpTypes = Collections.unmodifiableList(
+		Arrays.asList(TYPE_BACKUP, TYPE_NONPRODUCTION, TYPE_PRODUCTION));
 	public static final List<String> profiles = Collections.unmodifiableList(
 		Arrays.asList(PROFILE_ANALYTICS_CLOUD, PROFILE_PAAS, PROFILE_SAAS));
 	public static final List<String> types = Collections.unmodifiableList(
