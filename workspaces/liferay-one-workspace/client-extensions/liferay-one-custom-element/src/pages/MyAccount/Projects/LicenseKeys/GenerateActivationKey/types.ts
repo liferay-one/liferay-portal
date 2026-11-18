@@ -30,7 +30,9 @@ export type GenerateActivationKeyForm = {
 	bundleEntitlementIds: number[];
 	description: string;
 	domain: string;
+	dxpActivationCode: string;
 	environmentName: string;
+	installationId: string;
 	keyType: string;
 	maxClusterNodes: number;
 	notify: boolean;
@@ -53,6 +55,8 @@ export type GenerateActivationKeyStep =
 	| 'activation-codes'
 	| 'add-ons'
 	| 'complimentary'
+	| 'dxp-activation-codes'
+	| 'dxp-offline-package'
 	| 'environment'
 	| 'offline-package'
 	| 'offline-token'

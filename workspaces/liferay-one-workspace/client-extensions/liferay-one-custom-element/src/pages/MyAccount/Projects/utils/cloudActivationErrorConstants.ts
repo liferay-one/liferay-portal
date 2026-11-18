@@ -21,6 +21,13 @@ export const ACTIVATION_FORM_ERROR_MESSAGE_KEYS: Record<number, Word> = {
 	422: 'this-project-does-not-have-an-active-subscription-for-this-product-contact-your-liferay-sales-representative',
 };
 
+export const DXP_BUNDLE_ERROR_MESSAGE_KEYS: Record<number, Word> = {
+	400: 'the-selected-dxp-version-is-not-supported',
+	403: 'this-project-does-not-have-an-active-dxp-subscription-for-this-installation-type',
+	404: 'the-activation-code-was-not-found',
+	409: 'this-activation-code-is-already-used-by-another-installation',
+};
+
 export const BUNDLE_ERROR_MESSAGE_KEYS: Record<number, Word> = {
 	400: 'the-selected-dxp-version-is-not-supported',
 	403: 'one-or-more-selected-subscriptions-are-not-entitled-to-this-project',

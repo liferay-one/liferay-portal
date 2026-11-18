@@ -38,6 +38,16 @@ export const COMPLIMENTARY_PURPOSE_MAX_LENGTH = 255;
 
 export const COMPLIMENTARY_PURPOSE_OTHER = 'other';
 
+export const DXP_ACTIVATION_CODE_KEY_TYPES = [
+	'production',
+	'non-production',
+	'backup',
+];
+
+const DXP_ACTIVATION_CODE_YEAR = 2027;
+
+export const DXP_LICENSE_KEY_FAMILY = 'DXP';
+
 export const FREE_KEY_TYPE = 'free';
 
 const LEADING_LICENSE_KEY_FAMILY_LABELS: Record<string, string> = {
@@ -266,6 +276,32 @@ export function isLicensedForVersion(
 		!bundleProduct.licensedVersions.length ||
 		bundleProduct.licensedVersions.includes(version)
 	);
+}
+
+export function getDXPActivationCodeTypeRank(type: string): number {
+	const index = DXP_ACTIVATION_CODE_KEY_TYPES.indexOf(type);
+
+	return index === -1 ? DXP_ACTIVATION_CODE_KEY_TYPES.length : index;
+}
+
+export function isDXPActivationCodeKeyType(
+	keyType: string,
+	product?: GenerateFormProduct
+): boolean {
+	return (
+		product?.licenseKeyFamily === DXP_LICENSE_KEY_FAMILY &&
+		DXP_ACTIVATION_CODE_KEY_TYPES.includes(keyType)
+	);
+}
+
+export function isDXPActivationCodeVersion(version: string): boolean {
+	const match = /^(\d{4})\.Q[1-4]/i.exec(version);
+
+	if (!match) {
+		return false;
+	}
+
+	return Number(match[1]) >= DXP_ACTIVATION_CODE_YEAR;
 }
 
 export function isCloudNativeProduct(product?: GenerateFormProduct): boolean {
