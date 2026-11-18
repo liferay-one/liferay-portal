@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {render, screen, waitFor} from '@testing-library/react';
-import {MemoryRouter, Route, Routes} from 'react-router';
+import {act, render, screen, waitFor} from '@testing-library/react';
+import {MemoryRouter, Route, Routes, useNavigate} from 'react-router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useCurrentAccount} from '~/hooks/useAccounts';
 import {useFetch} from '~/hooks/useFetch';
@@ -175,7 +175,7 @@ describe('[CTX-ACCOUNTCONTEXT] AccountProvider', () => {
 		await waitFor(() => expect(reload).toHaveBeenCalledTimes(1));
 	});
 
-	it('clears the switching flag when the switch fails', async () => {
+	it('renders the no access empty state when the switch fails', async () => {
 		vi.mocked(setCurrentAccount).mockRejectedValue(new Error('failed'));
 		mockRequestedAccount({data: requestedAccount});
 
@@ -184,13 +184,57 @@ describe('[CTX-ACCOUNTCONTEXT] AccountProvider', () => {
 		expect(screen.getByTestId('full-screen-loading')).toBeInTheDocument();
 
 		await waitFor(() =>
-			expect(
-				screen.queryByTestId('full-screen-loading')
-			).not.toBeInTheDocument()
+			expect(screen.getByTestId('empty-state')).toHaveTextContent(
+				'NO_ACCESS you-do-not-have-access-to-this-account'
+			)
 		);
 
 		expect(reload).not.toHaveBeenCalled();
-		expect(accountValue.loading).toBe(true);
+		expect(
+			screen.queryByTestId('full-screen-loading')
+		).not.toBeInTheDocument();
+		expect(screen.queryByTestId('consumer')).not.toBeInTheDocument();
+	});
+
+	it('shows the outlet again when the URL leaves the account that failed to switch', async () => {
+		let navigate: ReturnType<typeof useNavigate>;
+
+		function Navigator() {
+			navigate = useNavigate();
+
+			return null;
+		}
+
+		vi.mocked(setCurrentAccount).mockRejectedValue(new Error('failed'));
+		vi.mocked(useFetch).mockImplementation(((key: null | string) => ({
+			data: key ? requestedAccount : undefined,
+			error: undefined,
+			isLoading: false,
+		})) as unknown as typeof useFetch);
+
+		render(
+			<MemoryRouter initialEntries={['/ACCNT-OTHER']}>
+				<Navigator />
+
+				<Routes>
+					<Route element={<AccountProvider />} path="/:accountERC">
+						<Route element={<AccountConsumer />} index />
+					</Route>
+				</Routes>
+			</MemoryRouter>
+		);
+
+		await waitFor(() =>
+			expect(screen.getByTestId('empty-state')).toHaveTextContent(
+				'NO_ACCESS you-do-not-have-access-to-this-account'
+			)
+		);
+
+		await act(async () => navigate('/ACCNT-CURRENT'));
+
+		expect(screen.getByTestId('consumer')).toBeInTheDocument();
+		expect(screen.queryByTestId('empty-state')).not.toBeInTheDocument();
+		expect(accountValue.loading).toBe(false);
 	});
 
 	it('renders the no access empty state when the request fails', () => {

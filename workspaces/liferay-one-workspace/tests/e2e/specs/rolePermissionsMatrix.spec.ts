@@ -257,7 +257,9 @@ const BUSINESS_EVENTS: Feature = {
 	goto: (page) =>
 		gotoAndExpectRender(
 			page,
-			sitePath(`/support/business-events#/${PROJECT_ERC}/business-events`)
+			sitePath(
+				`/support/business-events/#/${ACCOUNT_ERC}/project/${PROJECT_ERC}/business-events`
+			)
 		),
 	name: 'Business Events (view)',
 };
@@ -311,7 +313,7 @@ const TICKET_ATTACHMENTS: Feature = {
 			.getByRole('table')
 			.or(page.getByText('No ticket attachments were found.')),
 	goto: (page) =>
-		gotoAndExpectRender(page, sitePath('/support/ticket-attachments#/')),
+		gotoAndExpectRender(page, sitePath('/support/ticket-attachments/#/')),
 	name: 'Ticket Attachments (view)',
 };
 
