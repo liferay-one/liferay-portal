@@ -3,10 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import * as OAuth2 from '@liferay/oauth2-provider-web/client';
 import {useCallback, useEffect, useState} from 'react';
-
-const OAUTH2_APP = 'liferay-one-etc-spring-boot-oaua';
+import {fetchSpringBoot} from '~/services/spring-boot/OAuth2Client';
 
 const useCanViewTickets = (externalReferenceCode?: string, skip?: boolean) => {
 	const [canViewTickets, setCanViewTickets] = useState<boolean | undefined>(
@@ -22,12 +20,9 @@ const useCanViewTickets = (externalReferenceCode?: string, skip?: boolean) => {
 		setLoading(true);
 
 		try {
-			const oauth2Client =
-				await OAuth2.FromUserAgentApplication(OAUTH2_APP);
-
-			const data = await oauth2Client
-				.fetch(`/projects/${externalReferenceCode}/jira/object-key`)
-				.then((response: Response) => response.text());
+			const data = await fetchSpringBoot(
+				`/projects/${externalReferenceCode}/jira/object-key`
+			).then((response: Response) => response.text());
 
 			setCanViewTickets(Boolean(data));
 		}

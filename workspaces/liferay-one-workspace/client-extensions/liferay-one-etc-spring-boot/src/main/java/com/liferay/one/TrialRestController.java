@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.client.extension.util.spring.boot3.client.LiferayOAuth2AccessTokenManager;
 import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
@@ -68,7 +67,7 @@ import org.springframework.web.util.UriComponentsBuilder;
  */
 @RequestMapping("/trial")
 @RestController
-public class TrialRestController extends BaseRestController {
+public class TrialRestController extends OneBaseRestController {
 
 	@DeleteMapping("{orderId}")
 	public void deleteTrial(

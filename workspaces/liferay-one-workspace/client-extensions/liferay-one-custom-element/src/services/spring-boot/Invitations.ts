@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {fetchLiferay} from '~/utils/impersonationUtils';
+
 const OAUTH2_APPLICATION_EXTERNAL_REFERENCE_CODE =
 	'liferay-one-etc-spring-boot-oaua';
 
@@ -39,7 +41,7 @@ class Invitations {
 	}
 
 	private async fetchBaseURL(signal?: AbortSignal) {
-		const response = await fetch(
+		const response = await fetchLiferay(
 			`/o/oauth2/application?externalReferenceCode=${OAUTH2_APPLICATION_EXTERNAL_REFERENCE_CODE}`,
 			{signal}
 		);

@@ -5,6 +5,9 @@
 
 import * as OAuth2 from '@liferay/oauth2-provider-web/client';
 import FetcherError from '~/services/fetcher/FetcherError';
+import {appendDoAsUserId} from '~/utils/impersonationUtils';
+
+const SPRING_BOOT_AGENT_NAME = 'liferay-one-etc-spring-boot-oaua';
 
 type Options<T> = RequestInit & {
 	earlyReturn?: boolean;
@@ -75,7 +78,7 @@ class OAuth2Client {
 		const oAuth2Client = await this.getOAuth2Client();
 
 		const response = (await oAuth2Client
-			.fetch(`${this.basePath + resource}`, options)
+			.fetch(appendDoAsUserId(`${this.basePath + resource}`), options)
 			.catch(this.parseError.bind(this))) as Response;
 
 		if (options?.earlyReturn || !(response instanceof Response)) {
@@ -148,8 +151,19 @@ class OAuth2Client {
 
 export class OneSpringBootOAuth2 extends OAuth2Client {
 	constructor(resource: string) {
-		super('liferay-one-etc-spring-boot-oaua', resource);
+		super(SPRING_BOOT_AGENT_NAME, resource);
 	}
+}
+
+export async function fetchSpringBoot(
+	resource: string,
+	options?: RequestInit
+): Promise<Response> {
+	const oAuth2Client = await OAuth2.FromUserAgentApplication(
+		SPRING_BOOT_AGENT_NAME
+	);
+
+	return oAuth2Client.fetch(appendDoAsUserId(resource), options);
 }
 
 export default OAuth2Client;

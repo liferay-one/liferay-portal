@@ -5,6 +5,9 @@
 
 const path = require('path');
 
+const FETCH_MESSAGE =
+	'Call Liferay with the fetcher or fetchLiferay, and the Spring Boot service with OAuth2Client or fetchSpringBoot, so that the request keeps the impersonated user.';
+
 const config = {
 	env: {
 		browser: true,
@@ -28,6 +31,83 @@ const config = {
 			],
 			rules: {
 				'@liferay/no-absolute-import': 'off',
+			},
+		},
+		{
+			excludedFiles: [
+				'client-extensions/liferay-one-custom-element/src/**/*.test.ts?(x)',
+			],
+			files: [
+				'client-extensions/liferay-one-custom-element/src/**/*.ts?(x)',
+			],
+			rules: {
+				'no-restricted-globals': [
+					'error',
+					'event',
+					{
+						message: FETCH_MESSAGE,
+						name: 'fetch',
+					},
+				],
+				'no-restricted-properties': [
+					'error',
+					{
+						message: FETCH_MESSAGE,
+						object: 'globalThis',
+						property: 'fetch',
+					},
+					{
+						message: FETCH_MESSAGE,
+						object: 'self',
+						property: 'fetch',
+					},
+					{
+						message: FETCH_MESSAGE,
+						object: 'window',
+						property: 'fetch',
+					},
+				],
+				'no-restricted-imports': [
+					'error',
+					{
+						paths: [
+							{
+								message: FETCH_MESSAGE,
+								name: '@liferay/oauth2-provider-web/client',
+							},
+						],
+					},
+				],
+				'no-restricted-syntax': [
+					'error',
+					{
+						message: FETCH_MESSAGE,
+						selector:
+							"MemberExpression[object.object.name='Liferay'][object.property.name='Util'][property.name='fetch']",
+					},
+				],
+			},
+		},
+		{
+			files: [
+				'client-extensions/liferay-one-custom-element/src/services/spring-boot/OAuth2Client.ts',
+			],
+			rules: {
+				'no-restricted-imports': 'off',
+			},
+		},
+		{
+			files: [
+				'client-extensions/liferay-one-custom-element/src/pages/TicketAttachments/hooks/useGCSGetUploadOffset.ts',
+				'client-extensions/liferay-one-custom-element/src/pages/TicketAttachments/hooks/useGCSUploadFile.ts',
+				'client-extensions/liferay-one-custom-element/src/pages/TicketAttachments/hooks/useTicketAttachmentsDelete.ts',
+				'client-extensions/liferay-one-custom-element/src/services/fetcher/fetcher.ts',
+				'client-extensions/liferay-one-custom-element/src/services/spring-boot/Invitations.ts',
+				'client-extensions/liferay-one-custom-element/src/utils/impersonationUtils.ts',
+			],
+			rules: {
+				'no-restricted-globals': ['error', 'event'],
+				'no-restricted-properties': 'off',
 			},
 		},
 		{

@@ -4,6 +4,7 @@
  */
 
 import {Liferay} from '~/services/liferay/liferay';
+import {appendDoAsUserIdEncoded} from '~/utils/impersonationUtils';
 
 import FetcherError from './FetcherError';
 
@@ -74,10 +75,13 @@ const fetcher = async <T = unknown>(
 ): Promise<T> => {
 	const headers = getHeaders(options);
 
-	const response = await fetch(changeResource(resource), {
-		...options,
-		headers,
-	});
+	const response = await fetch(
+		appendDoAsUserIdEncoded(changeResource(resource).toString()),
+		{
+			...options,
+			headers,
+		}
+	);
 
 	if (!response.ok) {
 		const error = new FetcherError(FETCH_ERROR_MESSAGE);

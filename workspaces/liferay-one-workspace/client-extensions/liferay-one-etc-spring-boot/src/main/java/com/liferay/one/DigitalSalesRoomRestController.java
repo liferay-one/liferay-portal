@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.constants.EnvironmentConstants;
@@ -53,7 +52,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
  */
 @RequestMapping("/digital-sales-room")
 @RestController
-public class DigitalSalesRoomRestController extends BaseRestController {
+public class DigitalSalesRoomRestController extends OneBaseRestController {
 
 	@GetMapping("environments/{externalReferenceCode}/data-source-token")
 	public ResponseEntity<String> getEnvironmentsDataSourceToken(

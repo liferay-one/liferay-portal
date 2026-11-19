@@ -6,6 +6,7 @@
 import FetcherError from '~/services/fetcher/FetcherError';
 import fetcher from '~/services/fetcher/fetcher';
 import {Liferay} from '~/services/liferay/liferay';
+import {fetchLiferay} from '~/utils/impersonationUtils';
 
 import type {APIResponse} from '~/types/api';
 import type {Cart, CartItem} from '~/types/orders';
@@ -52,10 +53,15 @@ export default class HeadlessCommerceDeliveryCart {
 	}
 
 	static async getPaymentMethodURL(cartId: number, callbackURL: string) {
-		const response = await Liferay.Util.fetch(
+		const response = await fetchLiferay(
 			`/o/headless-commerce-delivery-cart/v1.0/carts/${cartId}/payment-url?callbackURL=${encodeURIComponent(
 				callbackURL
-			)}`
+			)}`,
+			{
+				headers: {
+					'x-csrf-token': Liferay.authToken,
+				},
+			}
 		);
 
 		if (!response.ok) {

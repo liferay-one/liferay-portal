@@ -4,13 +4,14 @@
  */
 
 import {Liferay} from '~/services/liferay/liferay';
+import {fetchLiferay} from '~/utils/impersonationUtils';
 
 export async function setCurrentAccount(accountId: string) {
 	const body = new FormData();
 
 	body.append('accountId', accountId);
 
-	await fetch(
+	await fetchLiferay(
 		`/o/commerce-ui/set-current-account?groupId=${Liferay.ThemeDisplay.getScopeGroupId()}&p_auth=${Liferay.authToken}`,
 		{
 			body,

@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import * as OAuth2 from '@liferay/oauth2-provider-web/client';
 import {useEffect, useState} from 'react';
 import {useParams} from 'react-router';
 import Loading from '~/components/Loading/Loading';
@@ -13,6 +12,7 @@ import ForbiddenAccessDownload from '~/pages/TicketAttachments/components/Ticket
 import InvalidTicketAttachment from '~/pages/TicketAttachments/components/TicketAttachmentsMessages/InvalidTicketAttachment';
 import UnexpectedError from '~/pages/TicketAttachments/components/TicketAttachmentsMessages/UnexpectedError';
 import useCheckAttachmentAccess from '~/pages/TicketAttachments/hooks/useCheckAttachmentAccess';
+import {fetchSpringBoot} from '~/services/spring-boot/OAuth2Client';
 
 import TicketAttachmentsDownloader from './TicketAttachmentsDownloader';
 
@@ -45,11 +45,7 @@ const TicketAttachmentsDownloaderOutlet = () => {
 					? `/ticket-attachments/by-id/${ticketAttachmentId}/download`
 					: `/ticket-attachments/by-external-reference-code/${ticketAttachmentERC}/download`;
 
-				const oauth2Client = await OAuth2.FromUserAgentApplication(
-					'liferay-one-etc-spring-boot-oaua'
-				);
-
-				const response = await oauth2Client.fetch(endpoint);
+				const response = await fetchSpringBoot(endpoint);
 
 				if (response.ok) {
 					setDownloadUrl(await response.text());
