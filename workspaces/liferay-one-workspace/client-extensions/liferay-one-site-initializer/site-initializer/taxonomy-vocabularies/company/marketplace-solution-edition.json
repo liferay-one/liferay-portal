@@ -1,0 +1,18 @@
+{
+	"assetTypes": [
+		{
+			"required": false,
+			"subtype": "AllAssetSubtypes",
+			"type": "Product"
+		}
+	],
+	"availableLanguages": [
+		"en-US",
+		"es-ES",
+		"ja-JP",
+		"pt-BR"
+	],
+	"externalReferenceCode": "MARKETPLACE_SOLUTION_EDITION",
+	"name": "marketplace-solution-edition",
+	"viewableBy": "Anyone"
+}

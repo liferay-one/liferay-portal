@@ -1,0 +1,29 @@
+{
+	"friendlyURL": "/next-steps",
+	"hidden": true,
+	"name": "Next Steps",
+	"name_i18n": {
+		"en_US": "Next Steps",
+		"es_ES": "Próximos Pasos",
+		"ja_JP": "次のステップ",
+		"pt_BR": "Próximos Passos"
+	},
+	"permissions": [
+		{
+			"actionIds": [
+			],
+			"roleName": "Guest",
+			"scope": 4
+		},
+		{
+			"actionIds": [
+				"VIEW"
+			],
+			"roleName": "User",
+			"scope": 4
+		}
+	],
+	"private": false,
+	"system": false,
+	"type": "Content"
+}

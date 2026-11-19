@@ -7,12 +7,12 @@
 		}
 	],
 	"availableLanguages": [
-		"en-US"
+		"en-US",
+		"es-ES",
+		"ja-JP",
+		"pt-BR"
 	],
 	"externalReferenceCode": "MARKETPLACE_LIFERAY_PLATFORM_OFFERING",
 	"name": "marketplace-liferay-platform-offering",
-	"name_i18n": {
-		"en_US": "Marketplace Liferay Platform Offering"
-	},
 	"viewableBy": "Anyone"
 }

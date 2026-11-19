@@ -1,0 +1,147 @@
+[#assign
+	catalogId = ""
+	email = ""
+	publisherName = ""
+	publisherProfileImageURL = ""
+	showContactForm = false
+/]
+
+[#assign infoItem = request.getAttribute("INFO_ITEM")! /]
+
+[#if infoItem?has_content]
+	[#attempt]
+		[#assign values = infoItem.getValues() /]
+
+		[#assign
+			catalogId = (values["catalogId"])!""
+			email = (values["email"])!""
+			publisherName = (values["publisherName"])!""
+			publisherProfileImageURL = (values["publisherProfileImageURL"])!""
+			showContactForm = (values["showContactForm"])!false
+		/]
+	[#recover]
+		<script>
+			console.error("DEBUG: Could not read publisher information");
+		</script>
+	[/#attempt]
+[/#if]
+
+[#assign channelId = "" /]
+
+[#if configuration.channelId?has_content]
+	[#assign channelId = configuration.channelId /]
+[#else]
+	[#attempt]
+		[#assign channel = restClient.get(
+			"/headless-commerce-delivery-catalog/v1.0/channels"
+		) /]
+
+		[#if channel?has_content && (channel.items![])?has_content]
+			[#assign siteChannels = channel.items?filter(
+				siteChannel ->
+					siteChannel.siteGroupId == themeDisplay.getSiteGroupId()
+			) /]
+
+			[#if siteChannels?has_content]
+				[#assign channelId = siteChannels[0].id /]
+			[/#if]
+		[/#if]
+	[#recover]
+		<script>
+			console.error("DEBUG: Could not retrieve channels");
+		</script>
+	[/#attempt]
+[/#if]
+
+[#assign
+	accountId = "-1"
+	appsCount = 0
+	commerceContext = request.getAttribute("COMMERCE_CONTEXT")!
+/]
+
+[#if commerceContext?has_content && commerceContext.getAccountEntry()??]
+	[#assign accountId = commerceContext.getAccountEntry().getAccountEntryId()?string /]
+[/#if]
+
+[#if catalogId?has_content && channelId?has_content]
+	[#attempt]
+		[#assign response = restClient.get(
+			"/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?accountId=${accountId}&filter=catalogId eq ${catalogId}&pageSize=1"
+		) /]
+
+		[#assign appsCount = response.totalCount!0 /]
+	[#recover]
+		<script>
+			console.error(
+				"DEBUG: Error retrieving or processing products. Check the Liferay server logs."
+			);
+		</script>
+	[/#attempt]
+[#else]
+	<script>
+		console.warn(
+			"DEBUG: Catalog ID or channel ID is empty",
+			{
+				catalogId: "${catalogId?js_string}",
+				channelId: "${channelId?js_string}"
+			}
+		);
+	</script>
+[/#if]
+
+[#assign imageURL = publisherProfileImageURL /]
+
+[#if imageURL?has_content && !imageURL?starts_with("/") && !imageURL?contains("://")]
+	[#assign imageURL = "/" + imageURL /]
+[/#if]
+
+<div class="publisher-profile-header">
+	<div class="align-items-center d-flex flex-wrap justify-content-between">
+		<div class="align-items-center d-flex">
+			<div class="d-flex flex-column">
+				<div class="align-items-center d-flex">
+
+					[#if imageURL?has_content]
+					<img alt="" class="publisher-image" src="${imageURL?html}" />
+					[#elseif publisherName?has_content]
+						<div class="publisher-image publisher-image-fallback">
+							${publisherName?substring(0, 1)?upper_case}
+						</div>
+					[/#if]
+
+					<div class="publisher-profile-header-info">
+						<h1 class="mb-1 publisher-profile-header-name">${publisherName?html}</h1>
+
+						<div class="align-items-center d-flex publisher-profile-header-stats">
+							<span>${appsCount} ${languageUtil.get(locale, "apps", "Apps")}</span>
+
+							[#if configuration.hideRatingInfo == false]
+								<span class="mx-2">&bull;</span>
+
+								<span class="stars">
+									[@clay["icon"] symbol="star" /]
+								</span>
+								<span class="ml-1">
+									4.9 ${languageUtil.get(locale, "average-rating", "Average Rating")}
+								</span>
+								<span class="mx-2">&bull;</span>
+
+								[@clay["icon"] symbol="download" /]
+
+								<span class="ml-1">
+									8.5k ${languageUtil.get(locale, "total-download", "Total Download")}
+								</span>
+							[/#if]
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		[#if showContactForm && email?has_content]
+		<a class="btn btn-primary publisher-profile-header-contact" href="mailto:${email?html}">
+				${languageUtil.get(locale, "contact", "Contact")}
+			</a>
+		[/#if]
+	</div>
+</div>

@@ -1,0 +1,38 @@
+.publisher-profile-header .publisher-image {
+	border-radius: 50%;
+	height: 72px;
+	object-fit: cover;
+	width: 72px;
+}
+
+.publisher-profile-header .publisher-profile-header-name {
+	font-size: 28px;
+	font-weight: 700;
+	line-height: 36px;
+}
+
+.publisher-profile-header .publisher-profile-header-stats {
+	color: #54555f;
+	font-size: 13px;
+	line-height: 16px;
+}
+
+.publisher-profile-header .stars {
+	color: var(--color-accent-6);
+}
+
+.publisher-image-fallback {
+	align-items: center;
+	background-color: #f1f2f5;
+	border-radius: 50%;
+	display: flex;
+	font-size: 28px;
+	font-weight: 600;
+	height: 72px;
+	justify-content: center;
+	width: 72px;
+}
+
+.publisher-profile-header-info {
+	margin-left: 16px;
+}

@@ -1,0 +1,20 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"dataType": "string",
+					"label": "Channel ID",
+					"name": "channelId",
+					"type": "text"
+				},
+				{
+					"defaultValue": true,
+					"label": "Hide Rating Info",
+					"name": "hideRatingInfo",
+					"type": "checkbox"
+				}
+			]
+		}
+	]
+}

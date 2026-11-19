@@ -1,0 +1,259 @@
+[#assign channelId = "" /]
+
+[#if configuration.channelId?has_content]
+[#assign channelId = configuration.channelId /]
+[#else]
+[#attempt]
+[#assign channel = restClient.get("/headless-commerce-delivery-catalog/v1.0/channels") /]
+
+[#if channel?has_content && (channel.items)?has_content]
+[#assign siteChannels = channel.items?filter(siteChannel -> siteChannel.siteGroupId == themeDisplay.getSiteGroupId()) /]
+
+[#if siteChannels?has_content]
+[#assign channelId = siteChannels[0].id /]
+[/#if]
+[/#if]
+[#recover]
+[/#attempt]
+[/#if]
+
+[#function langKey label]
+[#return label?lower_case?replace(" ", "-", "r")?replace("&", "and", "r")?replace(",", "", "r")?replace("/", "-", "r")
+/]
+[/#function]
+
+[#assign displaySectionTitle = configuration.sectionTitle /]
+[#assign displaySectionDescription = configuration.sectionDescription /]
+
+[#if locale?starts_with("ja")]
+	[#if configuration.sectionTitle == "What Is New"]
+		[#assign displaySectionTitle = "新着情報" /]
+		[#assign displaySectionDescription = "Marketplaceエコシステムを成長させる最新の機能と拡張機能。" /]
+	[#elseif configuration.sectionTitle == "Highlights"]
+		[#assign displaySectionTitle = "ハイライト" /]
+		[#assign displaySectionDescription = "Liferayを最大限に活用できるよう厳選されたアプリと拡張機能。" /]
+	[#elseif configuration.sectionTitle == "Most Popular"]
+		[#assign displaySectionTitle = "最も人気" /]
+		[#assign displaySectionDescription = "世界中の企業がデジタル体験を強化するために選んだ最も人気のあるアプリ。" /]
+	[/#if]
+[#elseif locale?starts_with("es")]
+	[#if configuration.sectionTitle == "What Is New"]
+		[#assign displaySectionTitle = "Novedades" /]
+		[#assign displaySectionDescription = "Las últimas funciones y extensiones que hacen crecer el ecosistema de Marketplace." /]
+	[#elseif configuration.sectionTitle == "Highlights"]
+		[#assign displaySectionTitle = "Destacados" /]
+		[#assign displaySectionDescription = "Estas aplicaciones y extensiones seleccionadas están diseñadas para ayudarte a aprovechar Liferay al máximo." /]
+	[#elseif configuration.sectionTitle == "Most Popular"]
+		[#assign displaySectionTitle = "Más populares" /]
+		[#assign displaySectionDescription = "Explora las aplicaciones más populares elegidas por empresas de todo el mundo para potenciar sus experiencias digitales." /]
+	[/#if]
+[#elseif locale?starts_with("pt")]
+	[#if configuration.sectionTitle == "What Is New"]
+		[#assign displaySectionTitle = "Novidades" /]
+		[#assign displaySectionDescription = "Os recursos e extensões mais recentes que expandem o ecossistema do Marketplace." /]
+	[#elseif configuration.sectionTitle == "Highlights"]
+		[#assign displaySectionTitle = "Destaques" /]
+		[#assign displaySectionDescription = "Esses aplicativos e extensões selecionados foram escolhidos para ajudar você a aproveitar ao máximo o Liferay." /]
+	[#elseif configuration.sectionTitle == "Most Popular"]
+		[#assign displaySectionTitle = "Mais populares" /]
+		[#assign displaySectionDescription = "Explore os aplicativos mais populares escolhidos por empresas em todo o mundo para impulsionar suas experiências digitais." /]
+	[/#if]
+[/#if]
+
+<div class="home-apps-display">
+	<div class="section-container">
+		<div id="section-header">
+			<div class="d-flex flex-row justify-content-between w-100">
+				<h1 class="mb-1">${displaySectionTitle}</h1>
+
+			<a class="btn btn-link" href="/marketplace/applications?our-selection=${configuration.specificationFilterValue}" target="_self">
+					<span class="language-caret-icon">
+						<span>${languageUtil.get(locale, "view-all")}</span>
+
+						<span>[@clay["icon"] symbol="order-arrow-right" /]</span>
+					</span>
+				</a>
+			</div>
+
+			<p class="lo-section-subtitle mb-5">${displaySectionDescription}</p>
+		</div>
+
+		[#assign products = [] /]
+
+		[#if configuration.specificationFilterValue?has_content && channelId?has_content]
+			[#attempt]
+				[#assign response =
+				restClient.get("/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?accountId=-1&nestedFields=categories,productSpecifications&pageSize=${configuration.pageSize}&filter=specificationValues/any(x:contains(x,'${configuration.specificationFilterValue}'))")
+				/]
+
+				[#if response?is_hash && response.items?has_content]
+					[#assign products = response.items /]
+				[/#if]
+			[#recover]
+			[/#attempt]
+		[/#if]
+
+		[#if products?has_content]
+		<div id="section-body">
+			<div class="apps-container d-flex flex-row flex-wrap mb-5">
+				[#list products as product]
+				[#if product?has_content]
+				[#assign
+				categoriesListSize=0
+				productCategories=[]
+				productTypes=[]
+				remainingCategoriesText=[]
+				/]
+
+				[#if product.categories?has_content]
+				[#assign productCategories=product.categories?filter(productCategory ->
+				productCategory.vocabulary?replace(" ", "-") == "marketplace-app-category")![] categoriesListSize =
+				productCategories?size-1 productTypes=product.categories?filter(productCategory ->
+				productCategory.vocabulary?replace(" ", "-") == "marketplace-category")![]/]
+				[/#if]
+
+				[#assign productType = productTypes[0]!"" /]
+
+				[#assign productSpecifications=product.productSpecifications![] /]
+
+				[#function getSpecificationValue key defaultValue=""]
+				[#local specification = productSpecifications?filter(productSpecification ->
+				stringUtil.equals(productSpecification.specificationKey, key)) /]
+
+				[#return (specification?first.value)!defaultValue /]
+				[/#function]
+
+				[#assign productDescription=stringUtil.shorten(htmlUtil.stripHtml(product.description!""), 140, "...")
+				/]
+
+				[#assign productImage=product.urlImage!"" /]
+
+				[#if productImage?contains("/o/")]
+				[#assign productImage="/o/" + productImage?keep_after("/o/") /]
+				[/#if]
+
+			<a class="d-flex flex-column mb-0 one-card position-relative product-card text-dark text-decoration-none [#if configuration.cardSize == 'large'] large [/#if] [#if configuration.cardSize == 'medium'] medium [/#if] [#if configuration.cardSize == 'small'] small [/#if]" href="/p/${product.slug}" target="_self">
+					<div class="card-image-title-container d-flex">
+						<div class="image-container mr-2 rounded">
+						<img alt="${product.name}" class="app-search-image" draggable="false" height="56" lazy="true" src="${productImage}" width="56" />
+						</div>
+
+						<div class="d-flex flex-column w-100">
+							[#if productType?has_content]
+							[#if configuration.cardSize != 'small']
+							<span class="d-flex justify-content-end">
+								[#if productType.title == 'Other']
+								<div class="app-type-badge"></div>
+								[#else]
+								[#assign badgeType = productType.name?lower_case?replace(" ", "-", "r")?replace("/",
+								"-", "r")]
+
+								<div class="app-type-badge ${badgeType} font-weight-semi-bold">
+									${languageUtil.get(locale, langKey(productType.title), productType.title)}
+								</div>
+								[/#if]
+							</span>
+							[/#if]
+							[/#if]
+
+							<div class="app-name font-weight-semi-bold mb-1">
+								${product.name}
+							</div>
+
+							<div class="catalog-name font-weight-normal mt-0 text-black-50">
+								${getSpecificationValue("developer-name")}
+							</div>
+
+							[#if configuration.cardSize == 'small']
+							<div class="d-flex justify-content-between w-100">
+								<div class="font-weight-semi-bold text-capitalize">
+									${getSpecificationValue("price-model")}
+								</div>
+
+								[#if configuration.hideRatingInfo == false]
+								<div class="align-items-center d-flex justify-content-center">
+									<span class="stars">
+										[@clay["icon"] symbol="star" /]
+									</span>
+
+									<p class="m-0 ml-1">4.85</p>
+								</div>
+								[/#if]
+							</div>
+							[/#if]
+						</div>
+					</div>
+
+					<div class="d-flex flex-column font-size-paragraph-small h-100 justify-content-between">
+						[#if configuration.cardSize != 'small']
+						<div class="app-card-description font-weight-normal my-3">
+							${productDescription}
+						</div>
+						[/#if]
+
+						[#if configuration.cardSize == 'large']
+						<div class="d-flex flex-column">
+							<div class="font-weight-semi-bold mb-3 text-capitalize">
+								${getSpecificationValue("price-model")}
+							</div>
+
+							[#if productCategories?has_content]
+							[#assign principalCategory=productCategories[0]
+							remainingCategories=productCategories?filter(category -> category.name !=
+							principalCategory.name) /]
+
+							[#list remainingCategories as category]
+							[#assign remainingCategoriesText=remainingCategoriesText + [languageUtil.get(locale,
+							langKey(category.title), category.title)] /]
+							[/#list]
+							[/#if]
+
+							[#if principalCategory?has_content]
+							[#assign principalCategoryTitle=languageUtil.get(locale, langKey(principalCategory.title),
+							principalCategory.title)
+							tagName=stringUtil.shorten(htmlUtil.stripHtml(principalCategoryTitle!""), 100, "...") /]
+
+							<div class="my-1 tags-container">
+							<span class="font-weight-normal mb-3 mr-3 product-tag px-2 py-1 rounded text-nowrap" title="${principalCategoryTitle}">
+									${tagName}
+								</span>
+
+								[#if categoriesListSize?has_content && remainingCategoriesText?has_content]
+							<span class="font-weight-normal mb-1 product-tag px-2 py-1 rounded text-nowrap" title="${remainingCategoriesText?join('\n')}">
+									+ ${categoriesListSize}
+								</span>
+								[/#if]
+							</div>
+							[/#if]
+
+							[#if configuration.hideRatingInfo == false]
+							<div class="d-flex flex-row justify-content-between mt-2">
+								<div class="align-items-center d-flex justify-content-center">
+									<span class="stars">
+										[@clay["icon"] symbol="star" /]
+										[@clay["icon"] symbol="star" /]
+										[@clay["icon"] symbol="star" /]
+										[@clay["icon"] symbol="star-half" /]
+										[@clay["icon"] symbol="star-o" /]
+									</span>
+
+									<p class="ml-1 m-0">4.85 (200)</p>
+								</div>
+
+								<div class="align-items-center d-flex justify-content-center">
+									[@clay["icon"] symbol="download" /]
+									<span class="m-0 ml-1">85k</span>
+								</div>
+							</div>
+							[/#if]
+						</div>
+						[/#if]
+					</div>
+				</a>
+				[/#if]
+				[/#list]
+			</div>
+		</div>
+		[/#if]
+	</div>
+</div>

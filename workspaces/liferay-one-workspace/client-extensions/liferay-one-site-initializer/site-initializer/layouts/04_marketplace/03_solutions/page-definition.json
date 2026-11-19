@@ -32,8 +32,8 @@
 												"siteKey": "[$GROUP_KEY$]"
 											},
 											"fragmentConfig": {
-												"homeLink": "/web/one/home",
-												"parentLink": "/web/one/marketplace"
+												"homeLink": "/home",
+												"parentLink": "/marketplace"
 											},
 											"fragmentFields": [
 												{
@@ -57,7 +57,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Solutions Catalog"
+																"en_US": "Solutions Catalog",
+																"es_ES": "Catálogo de soluciones",
+																"ja_JP": "ソリューションカタログ",
+																"pt_BR": "Catálogo de soluções"
 															}
 														}
 													}
@@ -67,7 +70,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Marketplace"
+																"en_US": "Marketplace",
+																"es_ES": "Marketplace",
+																"ja_JP": "Marketplace",
+																"pt_BR": "Marketplace"
 															}
 														}
 													}
@@ -77,7 +83,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Expand Liferay's portfolio through apps from our partner and developer ecosystems to enhance your digital transformation."
+																"en_US": "Business solutions from our partner ecosystem — reducing your time to market, increasing productivity and offering you endless possibilities on Liferay’s portfolio",
+																"es_ES": "Soluciones empresariales de nuestro ecosistema de socios: acorta los tiempos de lanzamiento, aumenta la productividad y disfruta de infinitas posibilidades en el catálogo de Liferay.",
+																"ja_JP": "パートナーエコシステムが提供するビジネスソリューション：市場投入までの時間を短縮し、生産性を向上させ、Liferayのポートフォリオで無限の可能性を提供します。",
+																"pt_BR": "Soluções de negócios do ecossistema de parceiros — reduzindo seu tempo de lançamento no mercado, aumentando a produtividade e oferecendo infinitas possibilidades no portfólio da Liferay."
 															}
 														}
 													}
@@ -87,7 +96,10 @@
 													"value": {
 														"text": {
 															"value_i18n": {
-																"en_US": "Solutions Catalog"
+																"en_US": "Solutions Catalog",
+																"es_ES": "Catálogo de soluciones",
+																"ja_JP": "ソリューションカタログ",
+																"pt_BR": "Catálogo de soluções"
 															}
 														}
 													}
@@ -224,9 +236,9 @@
 													"frequenciesVisible": "true",
 													"frequencyThreshold": "1",
 													"maxTerms": "20",
-													"order": "key:asc",
-													"parameterName": "Category",
-													"vocabularyIds": "[$TAXONOMY_VOCABULARY_ID:Marketplace Solution Category$]"
+													"order": "count:desc",
+													"parameterName": "Deployment Method",
+													"vocabularyIds": "[$TAXONOMY_VOCABULARY_ID:marketplace-liferay-platform-offering$]"
 												},
 												"widgetName": "com_liferay_portal_search_web_category_facet_portlet_CategoryFacetPortlet"
 											}
@@ -238,6 +250,33 @@
 											"fragmentStyle": {
 												"backgroundColor": "whiteColor",
 												"borderRadius": "10px",
+												"marginBottom": "2",
+												"overflow": "hidden",
+												"paddingLeft": "1"
+											},
+											"widgetInstance": {
+												"widgetConfig": {
+													"displayStyle": "ddmTemplate_SOLUTIONS_VOCABULARY_FACETS",
+													"displayStyleGroupId": "[$GROUP_ID$]",
+													"displayStyleGroupKey": "[$GROUP_ID$]",
+													"frequenciesVisible": "true",
+													"frequencyThreshold": "1",
+													"maxTerms": "20",
+													"order": "key:asc",
+													"parameterName": "Category",
+													"vocabularyIds": "[$TAXONOMY_VOCABULARY_ID:marketplace-solution-category$]"
+												},
+												"widgetName": "com_liferay_portal_search_web_category_facet_portlet_CategoryFacetPortlet"
+											}
+										},
+										"type": "Widget"
+									},
+									{
+										"definition": {
+											"fragmentStyle": {
+												"backgroundColor": "whiteColor",
+												"borderRadius": "10px",
+												"marginBottom": "2",
 												"overflow": "hidden",
 												"paddingLeft": "1"
 											},
@@ -251,9 +290,71 @@
 													"maxTerms": "100",
 													"order": "key:asc",
 													"parameterName": "Tag",
-													"vocabularyIds": "[$TAXONOMY_VOCABULARY_ID:Marketplace Solution Tags$]"
+													"vocabularyIds": "[$TAXONOMY_VOCABULARY_ID:marketplace-solution-tags$]"
 												},
 												"widgetName": "com_liferay_portal_search_web_category_facet_portlet_CategoryFacetPortlet"
+											}
+										},
+										"type": "Widget"
+									},
+									{
+										"definition": {
+											"fragmentStyle": {
+												"backgroundColor": "whiteColor",
+												"borderRadius": "10px",
+												"marginBottom": "2",
+												"overflow": "hidden",
+												"paddingLeft": "1"
+											},
+											"widgetInstance": {
+												"widgetConfig": {
+													"displayStyle": "ddmTemplate_SOLUTIONS_VOCABULARY_FACETS",
+													"displayStyleGroupId": "[$GROUP_ID$]",
+													"displayStyleGroupKey": "[$GROUP_ID$]",
+													"frequenciesVisible": "true",
+													"frequencyThreshold": "1",
+													"maxTerms": "20",
+													"order": "key:desc",
+													"parameterName": "DXP Versions",
+													"vocabularyIds": "[$TAXONOMY_VOCABULARY_ID:marketplace-liferay-version$]"
+												},
+												"widgetName": "com_liferay_portal_search_web_category_facet_portlet_CategoryFacetPortlet"
+											}
+										},
+										"type": "Widget"
+									},
+									{
+										"definition": {
+											"fragmentStyle": {
+												"backgroundColor": "whiteColor",
+												"borderRadius": "10px",
+												"marginBottom": "2",
+												"overflow": "hidden",
+												"paddingLeft": "1"
+											},
+											"widgetInstance": {
+												"widgetConfig": {
+													"displayStyle": "ddmTemplate_SOLUTIONS_VOCABULARY_FACETS",
+													"displayStyleGroupId": "[$GROUP_ID$]",
+													"displayStyleGroupKey": "[$GROUP_ID$]",
+													"frequenciesVisible": "true",
+													"frequencyThreshold": "1",
+													"maxTerms": "20",
+													"order": "key:asc",
+													"parameterName": "Availability",
+													"vocabularyIds": "[$TAXONOMY_VOCABULARY_ID:marketplace-availability$]"
+												},
+												"widgetName": "com_liferay_portal_search_web_category_facet_portlet_CategoryFacetPortlet"
+											}
+										},
+										"type": "Widget"
+									},
+									{
+										"definition": {
+											"widgetInstance": {
+												"widgetConfig": {
+												},
+												"widgetName": "com_liferay_commerce_product_content_search_web_internal_portlet_CPPriceRangeFacetsPortlet"
 											}
 										},
 										"type": "Widget"
@@ -286,29 +387,29 @@
 								"pageElements": [
 									{
 										"definition": {
+											"fragmentStyle": {
+												"marginBottom": "3"
+											},
 											"indexed": true,
 											"layout": {
-												"contentDisplay": "FlexColumn"
+												"align": "Center",
+												"contentDisplay": "FlexRow",
+												"justify": "SpaceBetween",
+												"marginBottom": 2
 											}
 										},
 										"pageElements": [
 											{
 												"definition": {
+													"fragmentStyle": {
+														"marginRight": "4"
+													},
 													"widgetInstance": {
 														"widgetConfig": {
 															"cpContentListRendererKey": "list-default",
-															"diagram--cpTypeListEntryRendererKey": "list-entry-diagram",
-															"displayStyle": "ddmTemplate_SOLUTIONS_SEARCH_RESULTS",
+															"displayStyle": "ddmTemplate_SOLUTIONS_SEARCH_RESULTS_COUNT",
 															"displayStyleGroupId": "[$GROUP_ID$]",
-															"displayStyleGroupKey": "[$GROUP_ID$]",
 															"grouped--cpTypeListEntryRendererKey": "list-entry-default",
-															"lfrAppShowShareWithFriendsLink": "false",
-															"lfrFacebookApiKey": "",
-															"lfrFacebookCanvasPageUrl": "",
-															"lfrFacebookShowAddAppLink": "false",
-															"lfrIgoogleShowAddAppLink": "false",
-															"lfrNetvibesShowAddAppLink": "false",
-															"lfrWidgetShowAddAppLink": "false",
 															"paginate": "false",
 															"paginationDelta": "15",
 															"selectionStyle": "adt",
@@ -319,23 +420,51 @@
 													}
 												},
 												"type": "Widget"
+											},
+											{
+												"definition": {
+													"fragmentStyle": {
+														"marginRight": "4",
+														"width": "200px"
+													},
+													"widgetInstance": {
+														"widgetConfig": {
+															"displayStyle": "ddmTemplate_MARKETPLACE_APPS_SORT",
+															"displayStyleGroupId": "[$GROUP_ID$]",
+															"fields": "[{\"field\": \"\", \"label\": \"relevance\"}, {\"field\": \"createDate-\", \"label\": \"Date Created (Newest First)\"}, {\"field\": \"createDate+\", \"label\": \"Date Created (Oldest first)\"}]"
+														},
+														"widgetName": "com_liferay_portal_search_web_internal_sort_portlet_SortPortlet"
+													}
+												},
+												"type": "Widget"
 											}
 										],
 										"type": "Section"
 									},
 									{
 										"definition": {
-											"fragmentStyle": {
-												"hidden": true
-											},
 											"widgetInstance": {
 												"widgetConfig": {
-													"displayStyle": "default",
+													"cpContentListRendererKey": "list-default",
+													"displayInDocumentForm": "false",
+													"displayStyle": "ddmTemplate_SOLUTIONS_SEARCH_RESULTS",
 													"displayStyleGroupId": "[$GROUP_ID$]",
-													"displayStyleGroupKey": "[$GROUP_ID$]",
-													"fields": "[{\"field\": \"createDate-\", \"label\": \"created\"}]"
+													"federatedSearchKey": "",
+													"fieldsToDisplay": "",
+													"grouped--cpTypeListEntryRendererKey": "list-entry-default",
+													"highlightEnabled": "true",
+													"paginate": "true",
+													"paginationDelta": "15",
+													"paginationDeltaParameterName": "delta",
+													"paginationStartParameterName": "start",
+													"selectionStyle": "adt",
+													"showEmptyResultMessage": "true",
+													"showPagination": "true",
+													"simple--cpTypeListEntryRendererKey": "list-entry-default",
+													"viewInContext": "true",
+													"virtual--cpTypeListEntryRendererKey": "list-entry-default"
 												},
-												"widgetName": "com_liferay_portal_search_web_internal_sort_portlet_SortPortlet"
+												"widgetName": "com_liferay_commerce_product_content_search_web_internal_portlet_CPSearchResultsPortlet"
 											}
 										},
 										"type": "Widget"
