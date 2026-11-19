@@ -1,17 +1,10 @@
-[#assign
-	catalogId = ""
-	publisherName = ""
-/]
+[#assign catalogId = "" /]
 
 [#assign infoItem = request.getAttribute("INFO_ITEM")! /]
 
 [#if infoItem?has_content]
 	[#attempt]
-		[#assign values = infoItem.getValues() /]
-		[#assign
-			catalogId = (values["catalogId"])!""
-			publisherName = (values["publisherName"])!""
-		/]
+		[#assign catalogId = (infoItem.getValues()["catalogId"])!"" /]
 	[#recover]
 	[/#attempt]
 [/#if]
@@ -35,19 +28,6 @@
 	[/#attempt]
 [/#if]
 
-[#function getPublisherName product]
-	[#if product.productSpecifications?has_content]
-		[#local specification = product.productSpecifications?filter(productSpecification ->
-			stringUtil.equals(productSpecification.specificationKey, "publisher-name")) /]
-
-		[#if specification?has_content]
-			[#return specification?first.value!"" /]
-		[/#if]
-	[/#if]
-
-	[#return "" /]
-[/#function]
-
 [#function langKey label]
 	[#return label?lower_case?replace(" ", "-", "r")?replace("&", "and", "r")?replace(",", "", "r")?replace("/", "-", "r") /]
 [/#function]
@@ -55,9 +35,9 @@
 <div class="publisher-profile-apps-fragment">
 	[#if catalogId?has_content && channelId?has_content]
 		[#assign response = restClient.get(
-			"/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?accountId=-1&nestedFields=categories,productSpecifications&filter=catalogId eq " + catalogId
+			"/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?accountId=-1&nestedFields=categories,productSpecifications&pageSize=200&filter=catalogId eq " + catalogId
 		) /]
-		[#assign publisherProducts = (response.items![])?filter(product -> getPublisherName(product) == publisherName) /]
+		[#assign publisherProducts = response.items![] /]
 
 		[#if publisherProducts?has_content]
 			<h4 class="font-weight-semi-bold mb-3 publisher-profile-apps-title">
