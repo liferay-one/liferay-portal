@@ -157,12 +157,6 @@ public class LicenseKeysRestControllerTest {
 		Project project = Mockito.mock(Project.class);
 
 		Mockito.when(
-			project.getAccountId()
-		).thenReturn(
-			_ACCOUNT_ID
-		);
-
-		Mockito.when(
 			_projectService.fetchProject(_PROJECT_ERC)
 		).thenReturn(
 			project
@@ -173,7 +167,7 @@ public class LicenseKeysRestControllerTest {
 		).when(
 			_environmentActivationPermission
 		).checkSelfProvisioning(
-			_ACCOUNT_ID, null
+			Mockito.any(), Mockito.any()
 		);
 
 		Mockito.when(
@@ -645,13 +639,7 @@ public class LicenseKeysRestControllerTest {
 			false, 1L
 		);
 
-		Mockito.verify(
-			_environmentActivationPermission
-		).checkSelfProvisioning(
-			_ACCOUNT_ID, null
-		);
-
-		Mockito.verifyNoMoreInteractions(_environmentActivationPermission);
+		Mockito.verifyNoInteractions(_environmentActivationPermission);
 	}
 
 	@Test
@@ -700,14 +688,31 @@ public class LicenseKeysRestControllerTest {
 		LicenseKeysRestController licenseKeysRestController =
 			_createController();
 
-		_mockGetLicenseKey(_createLicenseKey(1L));
+		LicenseKey licenseKey = _createLicenseKey(1L);
+
+		Mockito.when(
+			licenseKey.getProjectExternalReferenceCode()
+		).thenReturn(
+			_PROJECT_ERC
+		);
+
+		_mockGetLicenseKey(licenseKey);
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenReturn(
+			project
+		);
 
 		Mockito.doThrow(
 			new PrincipalException()
 		).when(
 			_environmentActivationPermission
 		).checkSelfProvisioning(
-			_ACCOUNT_ID, null
+			null, project
 		);
 
 		Assertions.assertThrows(

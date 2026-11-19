@@ -5,8 +5,6 @@
 
 package com.liferay.one.permission;
 
-import com.liferay.headless.admin.user.client.custom.field.CustomField;
-import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.admin.user.client.dto.v1_0.AccountBrief;
 import com.liferay.headless.admin.user.client.dto.v1_0.RoleBrief;
@@ -375,10 +373,53 @@ public class EnvironmentActivationPermissionTest {
 	}
 
 	@Test
-	public void testCheckSelfProvisioningThrowsWhenDisabled() throws Exception {
-		_stubAccountCustomFields(
-			_createCustomField("allowSelfProvisioning", false));
+	public void testCheckLicensingSettingsAllowsGlobalRoles() throws Exception {
+		for (String roleName :
+				new String[] {
+					RoleConstants.NAME_ADMINISTRATOR,
+					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR,
+					RoleConstants.NAME_PROVISIONING_WORKER
+				}) {
 
+			EnvironmentActivationPermission environmentActivationPermission =
+				_createPermission(
+					_createUserAccount(
+						new String[] {roleName}, null, new String[0]),
+					null, null);
+
+			Assertions.assertDoesNotThrow(
+				() -> environmentActivationPermission.checkLicensingSettings(
+					null),
+				roleName);
+		}
+	}
+
+	@Test
+	public void testCheckLicensingSettingsThrowsForOtherRoles()
+		throws Exception {
+
+		for (String roleName :
+				new String[] {RoleConstants.NAME_LIFERAY_STAFF, "User"}) {
+
+			EnvironmentActivationPermission environmentActivationPermission =
+				_createPermission(
+					_createUserAccount(
+						new String[] {roleName}, _ACCOUNT_ERC,
+						new String[] {
+							RoleConstants.NAME_ACCOUNT_ADMINISTRATOR
+						}),
+					null, null);
+
+			Assertions.assertThrows(
+				PrincipalException.class,
+				() -> environmentActivationPermission.checkLicensingSettings(
+					null),
+				roleName);
+		}
+	}
+
+	@Test
+	public void testCheckSelfProvisioningThrowsWhenDisabled() throws Exception {
 		EnvironmentActivationPermission environmentActivationPermission =
 			_createPermission(
 				_createUserAccount(
@@ -389,7 +430,7 @@ public class EnvironmentActivationPermissionTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> environmentActivationPermission.checkSelfProvisioning(
-				_ACCOUNT_ID, null));
+				null, _createProject(_ACCOUNT_ERC, false)));
 	}
 
 	@Test
@@ -502,10 +543,7 @@ public class EnvironmentActivationPermissionTest {
 	public void testContainsProvisioningDeniesProjectAdminWhenDisabled()
 		throws Exception {
 
-		_stubAccountCustomFields(
-			_createCustomField("allowSelfProvisioning", false));
-
-		Project project = _createProject(_ACCOUNT_ERC);
+		Project project = _createProject(_ACCOUNT_ERC, false);
 
 		EnvironmentActivationPermission environmentActivationPermission =
 			_createPermission(
@@ -521,10 +559,7 @@ public class EnvironmentActivationPermissionTest {
 	public void testContainsProvisioningDeniesProjectMemberWhenEnabled()
 		throws Exception {
 
-		_stubAccountCustomFields(
-			_createCustomField("allowSelfProvisioning", true));
-
-		Project project = _createProject(_ACCOUNT_ERC);
+		Project project = _createProject(_ACCOUNT_ERC, true);
 
 		EnvironmentActivationPermission environmentActivationPermission =
 			_createPermission(
@@ -540,10 +575,7 @@ public class EnvironmentActivationPermissionTest {
 	public void testContainsProvisioningGrantsProjectAdminWhenEnabled()
 		throws Exception {
 
-		_stubAccountCustomFields(
-			_createCustomField("allowSelfProvisioning", true));
-
-		Project project = _createProject(_ACCOUNT_ERC);
+		Project project = _createProject(_ACCOUNT_ERC, true);
 
 		EnvironmentActivationPermission environmentActivationPermission =
 			_createPermission(
@@ -556,7 +588,7 @@ public class EnvironmentActivationPermissionTest {
 	}
 
 	@Test
-	public void testContainsSelfProvisioningAllowsMissingAccount()
+	public void testContainsSelfProvisioningAllowsMissingProject()
 		throws Exception {
 
 		EnvironmentActivationPermission environmentActivationPermission =
@@ -566,32 +598,13 @@ public class EnvironmentActivationPermissionTest {
 
 		Assertions.assertTrue(
 			environmentActivationPermission.containsSelfProvisioning(
-				_ACCOUNT_ID, null));
-	}
-
-	@Test
-	public void testContainsSelfProvisioningAllowsMissingCustomField()
-		throws Exception {
-
-		_stubAccountCustomFields();
-
-		EnvironmentActivationPermission environmentActivationPermission =
-			_createPermission(
-				_createUserAccount(new String[0], null, new String[0]), null,
-				null);
-
-		Assertions.assertTrue(
-			environmentActivationPermission.containsSelfProvisioning(
-				_ACCOUNT_ID, null));
+				null, null));
 	}
 
 	@Test
 	public void testContainsSelfProvisioningAllowsWhenEnabled()
 		throws Exception {
 
-		_stubAccountCustomFields(
-			_createCustomField("allowSelfProvisioning", true));
-
 		EnvironmentActivationPermission environmentActivationPermission =
 			_createPermission(
 				_createUserAccount(new String[0], null, new String[0]), null,
@@ -599,15 +612,31 @@ public class EnvironmentActivationPermissionTest {
 
 		Assertions.assertTrue(
 			environmentActivationPermission.containsSelfProvisioning(
-				_ACCOUNT_ID, null));
+				null, _createProject(_ACCOUNT_ERC, true)));
+	}
+
+	@Test
+	public void testContainsSelfProvisioningAllowsWhenUnset() throws Exception {
+		EnvironmentActivationPermission environmentActivationPermission =
+			_createPermission(
+				_createUserAccount(
+					new String[0], _ACCOUNT_ERC,
+					new String[] {RoleConstants.NAME_ACCOUNT_ADMINISTRATOR}),
+				null, null);
+
+		Assertions.assertTrue(
+			environmentActivationPermission.containsSelfProvisioning(
+				null,
+				new Project(
+					new JSONObject(
+					).put(
+						"externalReferenceCode", _PROJECT_ERC
+					))));
 	}
 
 	@Test
 	public void testContainsSelfProvisioningDeniesWhenDisabled()
 		throws Exception {
-
-		_stubAccountCustomFields(
-			_createCustomField("allowSelfProvisioning", false));
 
 		EnvironmentActivationPermission environmentActivationPermission =
 			_createPermission(
@@ -618,15 +647,12 @@ public class EnvironmentActivationPermissionTest {
 
 		Assertions.assertFalse(
 			environmentActivationPermission.containsSelfProvisioning(
-				_ACCOUNT_ID, null));
+				null, _createProject(_ACCOUNT_ERC, false)));
 	}
 
 	@Test
 	public void testContainsSelfProvisioningGrantsGlobalRolesWhenDisabled()
 		throws Exception {
-
-		_stubAccountCustomFields(
-			_createCustomField("allowSelfProvisioning", false));
 
 		for (String roleName :
 				new String[] {
@@ -643,23 +669,9 @@ public class EnvironmentActivationPermissionTest {
 
 			Assertions.assertTrue(
 				environmentActivationPermission.containsSelfProvisioning(
-					_ACCOUNT_ID, null),
+					null, _createProject(_ACCOUNT_ERC, false)),
 				roleName);
 		}
-	}
-
-	private CustomField _createCustomField(String name, Object data) {
-		CustomField customField = new CustomField();
-
-		customField.setName(() -> name);
-
-		CustomValue customValue = new CustomValue();
-
-		customValue.setData(() -> data);
-
-		customField.setCustomValue(() -> customValue);
-
-		return customField;
 	}
 
 	private EnvironmentActivationPermission _createPermission(
@@ -730,8 +742,16 @@ public class EnvironmentActivationPermissionTest {
 	}
 
 	private Project _createProject(String accountExternalReferenceCode) {
+		return _createProject(accountExternalReferenceCode, true);
+	}
+
+	private Project _createProject(
+		String accountExternalReferenceCode, boolean allowSelfProvisioning) {
+
 		return new Project(
 			new JSONObject(
+			).put(
+				"allowSelfProvisioning", allowSelfProvisioning
 			).put(
 				"externalReferenceCode", _PROJECT_ERC
 			).put(
@@ -831,24 +851,6 @@ public class EnvironmentActivationPermissionTest {
 		);
 
 		return userAccount;
-	}
-
-	private void _stubAccountCustomFields(CustomField... customFields)
-		throws Exception {
-
-		Account account = Mockito.mock(Account.class);
-
-		Mockito.when(
-			account.getCustomFields()
-		).thenReturn(
-			customFields
-		);
-
-		Mockito.when(
-			_accountService.fetchAccount(_ACCOUNT_ID)
-		).thenReturn(
-			account
-		);
 	}
 
 	private static final String _ACCOUNT_ERC = "ACCOUNT-1";

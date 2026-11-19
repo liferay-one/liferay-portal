@@ -385,13 +385,6 @@ public class ActivationKeysRestControllerTest {
 		Account account = _stubAccount();
 
 		Mockito.when(
-			_environmentActivationPermission.containsSelfProvisioning(
-				_ACCOUNT_ID, null)
-		).thenReturn(
-			true
-		);
-
-		Mockito.when(
 			_appLicenseKeyGenerationService.getGenerateForm(_ACCOUNT_ID)
 		).thenReturn(
 			new JSONObject(
@@ -448,13 +441,6 @@ public class ActivationKeysRestControllerTest {
 			_createController();
 
 		Account account = _stubAccount();
-
-		Mockito.when(
-			_environmentActivationPermission.containsSelfProvisioning(
-				_ACCOUNT_ID, null)
-		).thenReturn(
-			true
-		);
 
 		Mockito.when(
 			_appLicenseKeyGenerationService.getGenerateForm(_ACCOUNT_ID)
@@ -575,56 +561,6 @@ public class ActivationKeysRestControllerTest {
 		).getGenerateForm(
 			false, account, true, "ACTVK-5"
 		);
-	}
-
-	@Test
-	public void testGetActivationKeysGenerateFormForAccountWithoutSelfProvisioningKeepsTheTrials()
-		throws Exception {
-
-		ActivationKeysRestController activationKeysRestController =
-			_createController();
-
-		Account account = _stubAccount();
-
-		Mockito.when(
-			_licenseKeyGenerateFormService.getGenerateForm(
-				false, account, true, null)
-		).thenReturn(
-			new JSONObject(
-			).put(
-				"bundleProducts", new JSONArray()
-			).put(
-				"products",
-				new JSONArray(
-				).put(
-					new JSONObject(
-					).put(
-						"externalReferenceCode", "PRDCT-DXP-TRIAL"
-					)
-				)
-			)
-		);
-
-		ResponseEntity<String> responseEntity =
-			activationKeysRestController.getActivationKeysGenerateForm(
-				_ACCOUNT_ERC, null, null, null);
-
-		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-
-		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
-
-		JSONArray productsJSONArray = jsonObject.getJSONArray("products");
-
-		Assertions.assertEquals(1, productsJSONArray.length());
-		Assertions.assertEquals(
-			"PRDCT-DXP-TRIAL",
-			productsJSONArray.getJSONObject(
-				0
-			).getString(
-				"externalReferenceCode"
-			));
-
-		Mockito.verifyNoInteractions(_appLicenseKeyGenerationService);
 	}
 
 	@Test
@@ -984,7 +920,7 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
-	public void testGetActivationKeysSummaryForAccountWithoutSelfProvisioningIsGeneratableByTheTrials()
+	public void testGetActivationKeysSummaryForAccountIsProvisionable()
 		throws Exception {
 
 		ActivationKeysRestController activationKeysRestController =
@@ -1012,7 +948,13 @@ public class ActivationKeysRestControllerTest {
 		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
 
 		Assertions.assertTrue(jsonObject.getBoolean("generatable"));
-		Assertions.assertFalse(jsonObject.getBoolean("provisionable"));
+		Assertions.assertTrue(jsonObject.getBoolean("provisionable"));
+
+		Mockito.verify(
+			_environmentActivationPermission, Mockito.never()
+		).containsSelfProvisioning(
+			Mockito.any(), Mockito.any()
+		);
 	}
 
 	@Test
@@ -1023,13 +965,6 @@ public class ActivationKeysRestControllerTest {
 			_createController();
 
 		Account account = _stubAccount();
-
-		Mockito.when(
-			_environmentActivationPermission.containsSelfProvisioning(
-				_ACCOUNT_ID, null)
-		).thenReturn(
-			true
-		);
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.getSummary(false, account, true)
@@ -1232,14 +1167,29 @@ public class ActivationKeysRestControllerTest {
 		ActivationKeysRestController activationKeysRestController =
 			_createController();
 
-		_stubActivationKey(78L);
+		ActivationKey activationKey = _stubActivationKey(78L);
+
+		Mockito.when(
+			activationKey.getProjectExternalReferenceCode()
+		).thenReturn(
+			_PROJECT_ERC
+		);
+
+		Project project = Mockito.mock(Project.class);
+
+		Mockito.when(
+			_environmentActivationPermission.checkLicenseKeyActivation(
+				null, _PROJECT_ERC)
+		).thenReturn(
+			project
+		);
 
 		Mockito.doThrow(
 			new PrincipalException()
 		).when(
 			_environmentActivationPermission
 		).checkSelfProvisioning(
-			_ACCOUNT_ID, null
+			null, project
 		);
 
 		Assertions.assertThrows(
@@ -1597,12 +1547,6 @@ public class ActivationKeysRestControllerTest {
 		Project project = Mockito.mock(Project.class);
 
 		Mockito.when(
-			project.getAccountId()
-		).thenReturn(
-			_ACCOUNT_ID
-		);
-
-		Mockito.when(
 			_environmentActivationPermission.checkLicenseKeyActivation(
 				null, _PROJECT_ERC)
 		).thenReturn(
@@ -1614,7 +1558,7 @@ public class ActivationKeysRestControllerTest {
 		).when(
 			_environmentActivationPermission
 		).checkSelfProvisioning(
-			_ACCOUNT_ID, null
+			null, project
 		);
 
 		Assertions.assertThrows(
@@ -1623,39 +1567,6 @@ public class ActivationKeysRestControllerTest {
 				null, _toGenerateJSON()));
 
 		Mockito.verifyNoInteractions(_licenseKeyGenerationService);
-	}
-
-	@Test
-	public void testPostActivationKeysGenerateForAccountChecksSelfProvisioning()
-		throws Exception {
-
-		ActivationKeysRestController activationKeysRestController =
-			_createController();
-
-		_stubAccount();
-
-		Mockito.doThrow(
-			new PrincipalException()
-		).when(
-			_environmentActivationPermission
-		).checkSelfProvisioning(
-			_ACCOUNT_ID, null
-		);
-
-		JSONObject generateJSONObject = new JSONObject(_toGenerateJSON());
-
-		generateJSONObject.put(
-			"accountExternalReferenceCode", _ACCOUNT_ERC
-		).remove(
-			"projectExternalReferenceCode"
-		);
-
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> activationKeysRestController.postActivationKeysGenerate(
-				null, generateJSONObject.toString()));
-
-		Mockito.verifyNoInteractions(_appLicenseKeyGenerationService);
 	}
 
 	@Test
@@ -1965,6 +1876,52 @@ public class ActivationKeysRestControllerTest {
 	}
 
 	@Test
+	public void testPostActivationKeysGenerateForAccountSkipsSelfProvisioning()
+		throws Exception {
+
+		ActivationKeysRestController activationKeysRestController =
+			_createController();
+
+		_stubAccount();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_environmentActivationPermission
+		).checkSelfProvisioning(
+			Mockito.any(), Mockito.any()
+		);
+
+		Mockito.when(
+			_appLicenseKeyGenerationService.generateActivationKey(
+				Mockito.any(), Mockito.any(), Mockito.eq(_EMAIL_ADDRESS))
+		).thenReturn(
+			new ActivationKey(
+				new JSONObject(
+				).put(
+					"externalReferenceCode", "ACTVK-2"
+				).put(
+					"id", 8L
+				))
+		);
+
+		activationKeysRestController.postActivationKeysGenerate(
+			null, _toAccountGenerateJSON());
+
+		Mockito.verify(
+			_appLicenseKeyGenerationService
+		).generateActivationKey(
+			Mockito.any(), Mockito.any(), Mockito.eq(_EMAIL_ADDRESS)
+		);
+
+		Mockito.verify(
+			_environmentActivationPermission, Mockito.never()
+		).checkSelfProvisioning(
+			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
 	public void testPostActivationKeysGenerateForAccountSkipsSelfProvisioningForATrial()
 		throws Exception {
 
@@ -1980,7 +1937,7 @@ public class ActivationKeysRestControllerTest {
 		).when(
 			_environmentActivationPermission
 		).checkSelfProvisioning(
-			_ACCOUNT_ID, null
+			Mockito.any(), Mockito.any()
 		);
 
 		Mockito.when(
@@ -2008,7 +1965,7 @@ public class ActivationKeysRestControllerTest {
 		Mockito.verify(
 			_environmentActivationPermission, Mockito.never()
 		).checkSelfProvisioning(
-			Mockito.anyLong(), Mockito.any()
+			Mockito.any(), Mockito.any()
 		);
 	}
 
@@ -2336,13 +2293,6 @@ public class ActivationKeysRestControllerTest {
 			_createController();
 
 		Account account = _stubAccount();
-
-		Mockito.when(
-			_environmentActivationPermission.containsSelfProvisioning(
-				_ACCOUNT_ID, null)
-		).thenReturn(
-			true
-		);
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.getSummary(false, account, true)

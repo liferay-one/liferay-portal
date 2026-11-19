@@ -130,6 +130,56 @@ public class AccountPermissionTest {
 	}
 
 	@Test
+	public void testCheckSyncToJSMAllowsAdministratorAndProvisioningRoles()
+		throws Exception {
+
+		for (String roleName :
+				new String[] {
+					RoleConstants.NAME_ADMINISTRATOR,
+					RoleConstants.NAME_PROVISIONING_ADMINISTRATOR,
+					RoleConstants.NAME_PROVISIONING_WORKER
+				}) {
+
+			UserAccount userAccount = _createUserAccount(null, null);
+
+			userAccount.setRoleBriefs(
+				new RoleBrief[] {_createRoleBrief(roleName)});
+
+			Mockito.when(
+				_userAccountService.getMyUserAccount(null)
+			).thenReturn(
+				userAccount
+			);
+
+			Assertions.assertDoesNotThrow(
+				() -> _accountPermission.checkSyncToJSM(null));
+		}
+	}
+
+	@Test
+	public void testCheckSyncToJSMRejectsLiferayStaffAndAccountAdministrator()
+		throws Exception {
+
+		UserAccount userAccount = _createUserAccount(
+			_EXTERNAL_REFERENCE_CODE, RoleConstants.NAME_ACCOUNT_ADMINISTRATOR);
+
+		userAccount.setRoleBriefs(
+			new RoleBrief[] {
+				_createRoleBrief(RoleConstants.NAME_LIFERAY_STAFF)
+			});
+
+		Mockito.when(
+			_userAccountService.getMyUserAccount(null)
+		).thenReturn(
+			userAccount
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _accountPermission.checkSyncToJSM(null));
+	}
+
+	@Test
 	public void testContainsAccountRoleAllowsAccountAdministrator() {
 		Assertions.assertTrue(
 			_accountPermission.containsAccountRole(

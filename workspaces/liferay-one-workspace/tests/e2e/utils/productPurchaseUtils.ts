@@ -98,6 +98,8 @@ export async function createTemporaryBuyer(
 
 		if (projectName) {
 			await adminAPI.post('/o/c/projects', {
+				allowPermanentLicenses: false,
+				allowSelfProvisioning: true,
 				externalReferenceCode: `${account.externalReferenceCode}-PROJECT`,
 				name: projectName,
 				r_accountEntryToProject_accountEntryId: account.id,

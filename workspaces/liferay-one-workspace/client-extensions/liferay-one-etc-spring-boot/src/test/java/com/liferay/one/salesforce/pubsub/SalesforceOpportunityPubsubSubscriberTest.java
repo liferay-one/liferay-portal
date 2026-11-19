@@ -194,7 +194,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		).when(
 			_accountService
 		).upsertAccount(
-			Mockito.any(), Mockito.any()
+			Mockito.any()
 		);
 
 		Message message = new Message(
@@ -288,7 +288,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		).when(
 			_accountService
 		).upsertAccount(
-			Mockito.any(), Mockito.any()
+			Mockito.any()
 		);
 
 		JSONObject recordJSONObject = _createNewBusinessRecordJSONObject();
@@ -1169,7 +1169,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		).when(
 			_accountService
 		).upsertAccount(
-			Mockito.any(), Mockito.any()
+			Mockito.any()
 		);
 
 		JSONObject firstRecordJSONObject = _createNewBusinessRecordJSONObject(
@@ -2504,7 +2504,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_accountService, Mockito.never()
 		).upsertAccount(
-			Mockito.any(), Mockito.any()
+			Mockito.any()
 		);
 
 		Mockito.verify(
@@ -2910,46 +2910,6 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 	}
 
 	@Test
-	public void testReceiveUpsertsAccountWithSoldByFromOpportunity()
-		throws Exception {
-
-		JSONObject opportunityJSONObject =
-			SalesforceModelTestUtil.createOpportunityJSONObject(
-				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "",
-				"SALES-REP-1", "Closed Won",
-				OpportunityConstants.TYPE_NEW_BUSINESS);
-
-		JSONObject lineItemJSONObject =
-			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
-				"USD", null, "LINE-1", "PROD-1", "Widget", "Subscription", 5,
-				null);
-
-		JSONObject recordJSONObject =
-			SalesforceModelTestUtil.createOpportunityRecordJSONObject(
-				SalesforceModelTestUtil.createAccountJSONObject(
-					_ACCOUNT_ID_SF, "Test Salesforce Account"),
-				opportunityJSONObject,
-				new JSONArray(
-				).put(
-					lineItemJSONObject
-				),
-				new JSONArray(), null);
-
-		_receiveOpportunityMessage(recordJSONObject);
-
-		ArgumentCaptor<String> soldByArgumentCaptor = ArgumentCaptor.forClass(
-			String.class);
-
-		Mockito.verify(
-			_accountService
-		).upsertAccount(
-			Mockito.any(), soldByArgumentCaptor.capture()
-		);
-
-		Assertions.assertEquals("SALES-REP-1", soldByArgumentCaptor.getValue());
-	}
-
-	@Test
 	public void testReceiveUpsertsEveryContractOfTheContractsArrayBeforeTheLookup()
 		throws Exception {
 
@@ -3061,6 +3021,9 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 				_ACCOUNT_ID_SF, "", false, _OPPORTUNITY_ID, "", "E", "", "",
 				"Closed Won", OpportunityConstants.TYPE_NEW_BUSINESS);
 
+		opportunityJSONObject.put(
+			"AccountAddress_Billing_Address__r.Country__c", "Ireland");
+
 		JSONObject lineItemJSONObject =
 			SalesforceModelTestUtil.createOpportunityLineItemJSONObject(
 				"USD", null, "LINE-1", "PROD-1", "Widget", "Subscription", 5,
@@ -3089,7 +3052,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_projectService
 		).upsertProject(
-			Mockito.eq(_ACCOUNT_ID_SF), Mockito.any()
+			Mockito.eq(_ACCOUNT_ID_SF), Mockito.eq("Ireland"), Mockito.any()
 		);
 
 		ArgumentCaptor<SalesforceProject> salesforceProjectArgumentCaptor =
@@ -4237,7 +4200,7 @@ public class SalesforceOpportunityPubsubSubscriberTest {
 		Mockito.verify(
 			_accountService, Mockito.never()
 		).upsertAccount(
-			Mockito.any(), Mockito.any()
+			Mockito.any()
 		);
 
 		Mockito.verify(

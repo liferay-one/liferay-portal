@@ -24,6 +24,7 @@ export type PersonaKey =
 	| 'PROJECT_REQUESTER'
 	| 'PROJECT_USER'
 	| 'PROVISIONING_ADMIN'
+	| 'PROVISIONING_WORKER'
 	| 'PUBLISHER'
 	| 'SOLUTION_PUBLISHER'
 	| 'SSA_USER';
@@ -74,6 +75,10 @@ const PERSONAS: Record<PersonaKey, {email: string; label: string}> = {
 	PROVISIONING_ADMIN: {
 		email: 'provisioning@liferay.com',
 		label: 'Provisioning Administrator',
+	},
+	PROVISIONING_WORKER: {
+		email: 'worker@liferay.com',
+		label: 'Provisioning Worker',
 	},
 	PUBLISHER: {email: 'admin@publisher.com', label: 'Publisher'},
 	SOLUTION_PUBLISHER: {

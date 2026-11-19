@@ -63,6 +63,40 @@ describe('[CLIENT-MODELS-USERACCOUNTMODEL] UserAccountModel', () => {
 		['Finance Administrator', false],
 		['Liferay Staff', false],
 		['Provisioning Administrator', true],
+		['Provisioning Worker', true],
+		['User', false],
+	] as const)(
+		'reads whether the %s regular role manages the account admin tab',
+		(roleName, canManageAccountAdmin) => {
+			expect(
+				createModel({roleBriefs: [{name: roleName}]})
+					.canManageAccountAdmin
+			).toBe(canManageAccountAdmin);
+		}
+	);
+
+	it.each([
+		['Administrator', true],
+		['Finance Administrator', false],
+		['Liferay Staff', true],
+		['Provisioning Administrator', true],
+		['Provisioning Worker', true],
+		['User', false],
+	] as const)(
+		'reads whether the %s regular role views the account admin tab',
+		(roleName, canViewAccountAdmin) => {
+			expect(
+				createModel({roleBriefs: [{name: roleName}]})
+					.canViewAccountAdmin
+			).toBe(canViewAccountAdmin);
+		}
+	);
+
+	it.each([
+		['Administrator', true],
+		['Finance Administrator', false],
+		['Liferay Staff', false],
+		['Provisioning Administrator', true],
 		['Provisioning Worker', false],
 		['User', false],
 	] as const)(

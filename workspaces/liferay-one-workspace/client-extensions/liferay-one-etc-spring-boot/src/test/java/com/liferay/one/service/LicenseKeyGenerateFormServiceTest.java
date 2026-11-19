@@ -5,8 +5,6 @@
 
 package com.liferay.one.service;
 
-import com.liferay.headless.admin.user.client.custom.field.CustomField;
-import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
@@ -353,7 +351,6 @@ public class LicenseKeyGenerateFormServiceTest {
 		account.setId(1L);
 		account.setName("Account One");
 
-		AccountService accountService = Mockito.mock(AccountService.class);
 		ActivationKeyService activationKeyService = Mockito.mock(
 			ActivationKeyService.class);
 
@@ -404,8 +401,6 @@ public class LicenseKeyGenerateFormServiceTest {
 			new LicenseKeyGenerateFormService();
 
 		ReflectionTestUtils.setField(
-			licenseKeyGenerateFormService, "_accountService", accountService);
-		ReflectionTestUtils.setField(
 			licenseKeyGenerateFormService, "_activationKeyService",
 			activationKeyService);
 		ReflectionTestUtils.setField(
@@ -426,6 +421,11 @@ public class LicenseKeyGenerateFormServiceTest {
 		ReflectionTestUtils.setField(
 			licenseKeyGenerateFormService, "_productVersionService",
 			Mockito.mock(ProductVersionService.class));
+
+		ProjectService projectService = Mockito.mock(ProjectService.class);
+
+		ReflectionTestUtils.setField(
+			licenseKeyGenerateFormService, "_projectService", projectService);
 
 		JSONObject jsonObject = licenseKeyGenerateFormService.getGenerateForm(
 			false, account, true);
@@ -481,8 +481,8 @@ public class LicenseKeyGenerateFormServiceTest {
 			Mockito.anyString()
 		);
 
-		Mockito.verifyNoInteractions(accountService);
 		Mockito.verifyNoInteractions(activationKeyService);
+		Mockito.verifyNoInteractions(projectService);
 	}
 
 	@Test
@@ -753,40 +753,6 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
-	public void testGetKeyTypesCarriesTheLicenseKeyDuration() {
-		Entitlement entitlement = new Entitlement(
-			new JSONObject(
-			).put(
-				"entitlementDefinitionToEntitlement",
-				new JSONObject(
-				).put(
-					"id", 1L
-				).put(
-					"licenseKeyDurationDays", 30
-				)
-			).put(
-				"id", 1L
-			).put(
-				"maxQuantity", 1.0
-			));
-
-		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(
-			true, entitlement, false);
-
-		Assertions.assertEquals(
-			30,
-			jsonArray.getJSONObject(
-				0
-			).getJSONArray(
-				"subscriptions"
-			).getJSONObject(
-				0
-			).getInt(
-				"licenseKeyDurationDays"
-			));
-	}
-
-	@Test
 	public void testGetKeyTypesGivesAnAppLicenseTheLicenseTypeOfItsKeyType() {
 		LicenseEntryService licenseEntryService = Mockito.mock(
 			LicenseEntryService.class);
@@ -814,7 +780,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", true, true,
-			true, true, false, false, Collections.emptyMap(), "DSR",
+			true, true, false, Collections.emptyMap(), "DSR",
 			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DSR",
 				(Map<String, List<Entitlement>>)HashMapBuilder.put(
@@ -887,6 +853,40 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testGetKeyTypesGivesComplimentaryTheComplimentaryDuration() {
+		Entitlement entitlement = new Entitlement(
+			new JSONObject(
+			).put(
+				"entitlementDefinitionToEntitlement",
+				new JSONObject(
+				).put(
+					"id", 1L
+				).put(
+					"licenseKeyDurationDays", 365
+				)
+			).put(
+				"id", 1L
+			).put(
+				"maxQuantity", 1.0
+			));
+
+		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(
+			true, false, entitlement, "DXP", "production");
+
+		Assertions.assertEquals(
+			30,
+			jsonArray.getJSONObject(
+				0
+			).getJSONArray(
+				"subscriptions"
+			).getJSONObject(
+				0
+			).getInt(
+				"licenseKeyDurationDays"
+			));
+	}
+
+	@Test
 	public void testGetKeyTypesKeepsASpentKeyType() {
 		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
 			LicenseKeyTypeService.class);
@@ -916,7 +916,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			false, false, false, false,
+			false, false, false,
 			HashMapBuilder.put(
 				entitlement.getEntitlementId(), 5
 			).build(),
@@ -962,7 +962,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			false, false, false, false, Collections.emptyMap(), "DXP",
+			false, false, false, Collections.emptyMap(), "DXP",
 			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
 				(Map<String, List<Entitlement>>)HashMapBuilder.put(
@@ -1047,7 +1047,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			false, false, false, false, Collections.emptyMap(), "DXP",
+			false, false, false, Collections.emptyMap(), "DXP",
 			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
 				(Map<String, List<Entitlement>>)HashMapBuilder.put(
@@ -1081,14 +1081,18 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
-	public void testGetKeyTypesOffersComplimentaryWhenTheProjectHasNone() {
-		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(true, false);
+	public void testGetKeyTypesOffersComplimentaryForADXPProductionEntitlement() {
+		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(
+			true, false, "DXP", "production");
 
 		Assertions.assertEquals(1, jsonArray.length());
 
-		JSONObject subscriptionJSONObject = jsonArray.getJSONObject(
-			0
-		).getJSONArray(
+		JSONObject keyTypeJSONObject = jsonArray.getJSONObject(0);
+
+		Assertions.assertEquals(
+			"complimentary", keyTypeJSONObject.getString("key"));
+
+		JSONObject subscriptionJSONObject = keyTypeJSONObject.getJSONArray(
 			"subscriptions"
 		).getJSONObject(
 			0
@@ -1097,8 +1101,21 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertEquals(
 			1, subscriptionJSONObject.getInt("availableCount"));
 		Assertions.assertEquals(
-			0, subscriptionJSONObject.getInt("licenseKeyDurationDays"));
+			"2027-01-01T00:00:00Z",
+			subscriptionJSONObject.getString("endDate"));
+		Assertions.assertEquals(
+			30, subscriptionJSONObject.getInt("licenseKeyDurationDays"));
+		Assertions.assertFalse(
+			subscriptionJSONObject.has("licenseKeyExpirationDate"));
 		Assertions.assertEquals(1, subscriptionJSONObject.getInt("totalCount"));
+	}
+
+	@Test
+	public void testGetKeyTypesOffersComplimentaryForAPortalProductionEntitlement() {
+		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(
+			true, false, "Portal", "production");
+
+		Assertions.assertEquals(1, jsonArray.length());
 	}
 
 	@Test
@@ -1134,17 +1151,41 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
-	public void testGetKeyTypesSkipsComplimentaryWhenNotAllowed() {
-		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(false, false);
+	public void testGetKeyTypesSkipsComplimentaryForAnAppLicense() {
+		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(
+			true, true, "DXP", "production");
 
 		Assertions.assertEquals(0, jsonArray.length());
 	}
 
 	@Test
-	public void testGetKeyTypesSkipsComplimentaryWhileTheProjectHasOne() {
-		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(true, true);
+	public void testGetKeyTypesSkipsComplimentaryForCloudNative() {
+		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(
+			true, false, "Cloud Native", "production");
 
 		Assertions.assertEquals(0, jsonArray.length());
+	}
+
+	@Test
+	public void testGetKeyTypesSkipsComplimentaryWhenNotAllowed() {
+		JSONArray jsonArray = _getComplimentaryKeyTypesJSONArray(
+			false, false, "DXP", "production");
+
+		Assertions.assertEquals(0, jsonArray.length());
+	}
+
+	@Test
+	public void testGetKeyTypesSkipsComplimentaryWithoutAProductionEntitlement() {
+		Assertions.assertEquals(
+			0,
+			_getComplimentaryKeyTypesJSONArray(
+				true, false, "DXP", "complimentary"
+			).length());
+		Assertions.assertEquals(
+			0,
+			_getComplimentaryKeyTypesJSONArray(
+				true, false, "DXP", "non-production"
+			).length());
 	}
 
 	@Test
@@ -1169,7 +1210,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		JSONArray jsonArray = ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false, true,
-			false, false, false, false, Collections.emptyMap(), "DXP",
+			false, false, false, Collections.emptyMap(), "DXP",
 			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
 				(Map<String, List<Entitlement>>)HashMapBuilder.put(
@@ -1198,80 +1239,6 @@ public class LicenseKeyGenerateFormServiceTest {
 			).getString(
 				"key"
 			));
-	}
-
-	@Test
-	public void testGetLicenseKeyDurationDaysFallsBackToTheDefinition() {
-		Assertions.assertEquals(
-			30,
-			LicenseKeyGenerateFormService.getLicenseKeyDurationDays(
-				_toLicenseKeyDurationDaysEntitlement(30, 0)));
-	}
-
-	@Test
-	public void testGetLicenseKeyDurationDaysPrefersTheEntitlementValue() {
-		Assertions.assertEquals(
-			90,
-			LicenseKeyGenerateFormService.getLicenseKeyDurationDays(
-				_toLicenseKeyDurationDaysEntitlement(30, 90)));
-	}
-
-	@Test
-	public void testGetLicenseKeyExpirationInstantEndsCloudNativeKeysWithTheGracePeriod() {
-		Assertions.assertEquals(
-			Instant.parse("2027-01-31T00:00:00Z"),
-			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
-				true,
-				_toSubscriptionEntitlement(
-					LicenseKeyGenerationConstants.
-						LICENSE_KEY_FAMILY_CLOUD_NATIVE),
-				LicenseConstants.TYPE_PRODUCTION));
-	}
-
-	@Test
-	public void testGetLicenseKeyExpirationInstantEndsKeysWithTheGracePeriodWithoutPermanentLicenses() {
-		Assertions.assertEquals(
-			Instant.parse("2027-01-31T00:00:00Z"),
-			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
-				false,
-				_toSubscriptionEntitlement(
-					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP),
-				LicenseConstants.TYPE_PRODUCTION));
-	}
-
-	@Test
-	public void testGetLicenseKeyExpirationInstantExtendsOtherKeysBeyondTheSubscription() {
-		Assertions.assertEquals(
-			Instant.parse("2027-06-30T00:00:00Z"),
-			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
-				true,
-				_toSubscriptionEntitlement(
-					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP),
-				LicenseConstants.TYPE_VIRTUAL_CLUSTER));
-	}
-
-	@Test
-	public void testGetLicenseKeyExpirationInstantMakesProductionKeysPermanent() {
-		Instant instant =
-			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
-				true,
-				_toSubscriptionEntitlement(
-					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP),
-				LicenseConstants.TYPE_PRODUCTION);
-
-		Assertions.assertEquals(Instant.parse("2125-12-08T00:00:00Z"), instant);
-
-		LicenseKey licenseKey = new LicenseKey(
-			new JSONObject(
-			).put(
-				"customExpirationDate", instant.toString()
-			).put(
-				"id", 1L
-			).put(
-				"startDate", "2026-01-01T00:00:00Z"
-			));
-
-		Assertions.assertTrue(licenseKey.isPermanent());
 	}
 
 	@Test
@@ -1432,6 +1399,80 @@ public class LicenseKeyGenerateFormServiceTest {
 		).getActiveLicenseKeyCounts(
 			Mockito.anyList(), Mockito.anyCollection(), Mockito.anyString()
 		);
+	}
+
+	@Test
+	public void testGetLicenseKeyDurationDaysFallsBackToTheDefinition() {
+		Assertions.assertEquals(
+			30,
+			LicenseKeyGenerateFormService.getLicenseKeyDurationDays(
+				_toLicenseKeyDurationDaysEntitlement(30, 0)));
+	}
+
+	@Test
+	public void testGetLicenseKeyDurationDaysPrefersTheEntitlementValue() {
+		Assertions.assertEquals(
+			90,
+			LicenseKeyGenerateFormService.getLicenseKeyDurationDays(
+				_toLicenseKeyDurationDaysEntitlement(30, 90)));
+	}
+
+	@Test
+	public void testGetLicenseKeyExpirationInstantEndsCloudNativeKeysWithTheGracePeriod() {
+		Assertions.assertEquals(
+			Instant.parse("2027-01-31T00:00:00Z"),
+			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
+				true,
+				_toSubscriptionEntitlement(
+					LicenseKeyGenerationConstants.
+						LICENSE_KEY_FAMILY_CLOUD_NATIVE),
+				LicenseConstants.TYPE_PRODUCTION));
+	}
+
+	@Test
+	public void testGetLicenseKeyExpirationInstantEndsKeysWithTheGracePeriodWithoutPermanentLicenses() {
+		Assertions.assertEquals(
+			Instant.parse("2027-01-31T00:00:00Z"),
+			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
+				false,
+				_toSubscriptionEntitlement(
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP),
+				LicenseConstants.TYPE_PRODUCTION));
+	}
+
+	@Test
+	public void testGetLicenseKeyExpirationInstantExtendsOtherKeysBeyondTheSubscription() {
+		Assertions.assertEquals(
+			Instant.parse("2027-06-30T00:00:00Z"),
+			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
+				true,
+				_toSubscriptionEntitlement(
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP),
+				LicenseConstants.TYPE_VIRTUAL_CLUSTER));
+	}
+
+	@Test
+	public void testGetLicenseKeyExpirationInstantMakesProductionKeysPermanent() {
+		Instant instant =
+			LicenseKeyGenerateFormService.getLicenseKeyExpirationInstant(
+				true,
+				_toSubscriptionEntitlement(
+					LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP),
+				LicenseConstants.TYPE_PRODUCTION);
+
+		Assertions.assertEquals(Instant.parse("2125-12-08T00:00:00Z"), instant);
+
+		LicenseKey licenseKey = new LicenseKey(
+			new JSONObject(
+			).put(
+				"customExpirationDate", instant.toString()
+			).put(
+				"id", 1L
+			).put(
+				"startDate", "2026-01-01T00:00:00Z"
+			));
+
+		Assertions.assertTrue(licenseKey.isPermanent());
 	}
 
 	@Test
@@ -1740,72 +1781,66 @@ public class LicenseKeyGenerateFormServiceTest {
 
 	@Test
 	public void testIsAllowComplimentary() throws Exception {
-		AccountService accountService = Mockito.mock(AccountService.class);
-
-		Account allowedAccount = new Account();
-
-		allowedAccount.setCustomFields(
-			() -> new CustomField[] {
-				_toCustomField("allowComplimentary", true)
-			});
+		ProjectService projectService = Mockito.mock(ProjectService.class);
 
 		Mockito.when(
-			accountService.getAccount(1L)
+			projectService.getProject("PRJCT-1")
 		).thenReturn(
-			allowedAccount
+			new Project(
+				new JSONObject(
+				).put(
+					"allowComplimentary", true
+				))
 		);
 
 		Mockito.when(
-			accountService.getAccount(2L)
+			projectService.getProject("PRJCT-2")
 		).thenReturn(
-			new Account()
+			new Project(new JSONObject())
 		);
 
 		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
 			new LicenseKeyGenerateFormService();
 
 		ReflectionTestUtils.setField(
-			licenseKeyGenerateFormService, "_accountService", accountService);
+			licenseKeyGenerateFormService, "_projectService", projectService);
 
 		Assertions.assertTrue(
-			licenseKeyGenerateFormService.isAllowComplimentary(1L));
+			licenseKeyGenerateFormService.isAllowComplimentary("PRJCT-1"));
 		Assertions.assertFalse(
-			licenseKeyGenerateFormService.isAllowComplimentary(2L));
+			licenseKeyGenerateFormService.isAllowComplimentary("PRJCT-2"));
 	}
 
 	@Test
 	public void testIsAllowPermanentLicenses() throws Exception {
-		AccountService accountService = Mockito.mock(AccountService.class);
-
-		Account deniedAccount = new Account();
-
-		deniedAccount.setCustomFields(
-			() -> new CustomField[] {
-				_toCustomField("allowPermanentLicenses", false)
-			});
+		ProjectService projectService = Mockito.mock(ProjectService.class);
 
 		Mockito.when(
-			accountService.getAccount(1L)
+			projectService.getProject("PRJCT-1")
 		).thenReturn(
-			deniedAccount
+			new Project(
+				new JSONObject(
+				).put(
+					"allowPermanentLicenses", true
+				))
 		);
 
 		Mockito.when(
-			accountService.getAccount(2L)
+			projectService.getProject("PRJCT-2")
 		).thenReturn(
-			new Account()
+			new Project(new JSONObject())
 		);
 
 		LicenseKeyGenerateFormService licenseKeyGenerateFormService =
 			new LicenseKeyGenerateFormService();
 
 		ReflectionTestUtils.setField(
-			licenseKeyGenerateFormService, "_accountService", accountService);
+			licenseKeyGenerateFormService, "_projectService", projectService);
 
-		Assertions.assertFalse(
-			licenseKeyGenerateFormService.isAllowPermanentLicenses(1L));
 		Assertions.assertTrue(
-			licenseKeyGenerateFormService.isAllowPermanentLicenses(2L));
+			licenseKeyGenerateFormService.isAllowPermanentLicenses("PRJCT-1"));
+		Assertions.assertFalse(
+			licenseKeyGenerateFormService.isAllowPermanentLicenses("PRJCT-2"));
 	}
 
 	@Test
@@ -2216,16 +2251,8 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	private JSONArray _getComplimentaryKeyTypesJSONArray(
-		boolean allowComplimentary, boolean hasComplimentaryActivationKey) {
-
-		return _getComplimentaryKeyTypesJSONArray(
-			allowComplimentary, _toEntitlement(1.0),
-			hasComplimentaryActivationKey);
-	}
-
-	private JSONArray _getComplimentaryKeyTypesJSONArray(
-		boolean allowComplimentary, Entitlement entitlement,
-		boolean hasComplimentaryActivationKey) {
+		boolean allowComplimentary, boolean appLicense, Entitlement entitlement,
+		String licenseKeyFamily, String licenseKeyType) {
 
 		LicenseKeyTypeService licenseKeyTypeService = Mockito.mock(
 			LicenseKeyTypeService.class);
@@ -2243,17 +2270,43 @@ public class LicenseKeyGenerateFormServiceTest {
 			licenseKeyGenerateFormService, "_licenseKeyTypeService",
 			licenseKeyTypeService);
 
+		// The production entitlement has no activations left, which does not
+		// matter, because a complimentary key uses no activation
+
 		return ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", false,
-			allowComplimentary, false, false, hasComplimentaryActivationKey,
-			false, Collections.emptyMap(), "DXP",
+			allowComplimentary, false, appLicense, false,
+			HashMapBuilder.put(
+				entitlement.getEntitlementId(), 1
+			).build(),
+			licenseKeyFamily,
 			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
-				"DXP",
+				licenseKeyFamily,
 				(Map<String, List<Entitlement>>)HashMapBuilder.put(
-					"complimentary", Collections.singletonList(entitlement)
+					licenseKeyType, Collections.singletonList(entitlement)
 				).build()
 			).build(),
 			Collections.emptyList(), true, false);
+	}
+
+	private JSONArray _getComplimentaryKeyTypesJSONArray(
+		boolean allowComplimentary, boolean appLicense, String licenseKeyFamily,
+		String licenseKeyType) {
+
+		return _getComplimentaryKeyTypesJSONArray(
+			allowComplimentary, appLicense,
+			new Entitlement(
+				new JSONObject(
+				).put(
+					"endDate", "2027-01-01T00:00:00Z"
+				).put(
+					"id", 1L
+				).put(
+					"maxQuantity", 1.0
+				).put(
+					"startDate", "2026-01-01T00:00:00Z"
+				)),
+			licenseKeyFamily, licenseKeyType);
 	}
 
 	private List<Object> _getEntitledProducts(
@@ -2385,9 +2438,6 @@ public class LicenseKeyGenerateFormServiceTest {
 			_toLicenseKeyGenerateFormService(productVersions);
 
 		ReflectionTestUtils.setField(
-			licenseKeyGenerateFormService, "_accountService",
-			Mockito.mock(AccountService.class));
-		ReflectionTestUtils.setField(
 			licenseKeyGenerateFormService, "_activationKeyService",
 			Mockito.mock(ActivationKeyService.class));
 		ReflectionTestUtils.setField(
@@ -2451,8 +2501,7 @@ public class LicenseKeyGenerateFormServiceTest {
 
 		return ReflectionTestUtils.invokeMethod(
 			licenseKeyGenerateFormService, "_getKeyTypesJSONArray", admin,
-			false, false, false, false, true, new HashMap<Long, Integer>(),
-			"DXP",
+			false, false, false, true, new HashMap<Long, Integer>(), "DXP",
 			HashMapBuilder.<String, Map<String, List<Entitlement>>>put(
 				"DXP",
 				(Map<String, List<Entitlement>>)HashMapBuilder.put(
@@ -2503,20 +2552,6 @@ public class LicenseKeyGenerateFormServiceTest {
 		).put(
 			"skuExternalReferenceCode", skuExternalReferenceCode
 		);
-	}
-
-	private CustomField _toCustomField(String name, Object data) {
-		CustomField customField = new CustomField();
-
-		customField.setName(() -> name);
-
-		CustomValue customValue = new CustomValue();
-
-		customValue.setData(() -> data);
-
-		customField.setCustomValue(() -> customValue);
-
-		return customField;
 	}
 
 	private Object _toEntitledProduct(String licenseKeyFamily)

@@ -51,6 +51,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.mockito.Mockito;
 import org.mockito.invocation.Invocation;
 
@@ -74,6 +75,7 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService = new LicenseKeyGenerationService();
 		_licenseKeyGenerator = Mockito.mock(LicenseKeyGenerator.class);
 		_licenseKeyService = Mockito.mock(LicenseKeyService.class);
+		_projectService = Mockito.mock(ProjectService.class);
 
 		ReflectionTestUtils.setField(
 			_licenseKeyGenerationService, "_activationKeyService",
@@ -98,10 +100,12 @@ public class LicenseKeyGenerationServiceTest {
 		ReflectionTestUtils.setField(
 			_licenseKeyGenerationService, "_licenseKeyService",
 			_licenseKeyService);
+		ReflectionTestUtils.setField(
+			_licenseKeyGenerationService, "_projectService", _projectService);
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.isAllowComplimentary(
-				Mockito.anyLong())
+				Mockito.anyString())
 		).thenReturn(
 			true
 		);
@@ -427,7 +431,7 @@ public class LicenseKeyGenerationServiceTest {
 		throws Exception {
 
 		_stubEntitlements(
-			_toComplimentaryEntitlement(1L, 1.0), _toEntitlement(2L, 5.0));
+			_toProductionEntitlement(1L), _toEntitlement(2L, 5.0));
 
 		_stubLicensedProducts();
 
@@ -484,7 +488,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.isAllowComplimentary(
-				Mockito.anyLong())
+				Mockito.anyString())
 		).thenAnswer(
 			invocation -> {
 				events.add("isAllowComplimentary");
@@ -493,20 +497,21 @@ public class LicenseKeyGenerationServiceTest {
 			}
 		);
 
-		Mockito.when(
-			_activationKeyService.getActivationKeysCount(
-				Mockito.anyBoolean(), Mockito.anyString(), Mockito.anyString())
-		).thenAnswer(
+		Mockito.doAnswer(
 			invocation -> {
 				events.add(
-					"getActivationKeysCount " +
+					"updateLicensingSettings " +
 						Arrays.toString(invocation.getArguments()));
 
-				return 0;
+				return null;
 			}
+		).when(
+			_projectService
+		).updateLicensingSettings(
+			Mockito.anyString(), Mockito.any(JSONObject.class)
 		);
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
 
@@ -520,9 +525,42 @@ public class LicenseKeyGenerationServiceTest {
 		Assertions.assertEquals(
 			Arrays.asList(
 				"lock project-PROJ-1", "isAllowComplimentary",
-				"getActivationKeysCount [true, PROJ-1, complimentary]",
+				"updateLicensingSettings [PROJ-1, " +
+					"{\"allowComplimentary\":false}]",
 				"unlock project-PROJ-1"),
 			events);
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryDeactivatesTheKeyWhenTheProjectSettingFails()
+		throws Exception {
+
+		_stubEntitlements(_toProductionEntitlement(1L));
+
+		_stubLicensedProducts();
+
+		ActivationKey activationKey = _stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		Mockito.doThrow(
+			new RuntimeException("The project could not be updated")
+		).when(
+			_projectService
+		).updateLicensingSettings(
+			Mockito.eq("PROJ-1"), _eqAllowComplimentaryFalse()
+		);
+
+		Assertions.assertThrows(
+			RuntimeException.class,
+			() -> _licenseKeyGenerationService.generateActivationKey(
+				_toComplimentaryGenerateRequest(1)));
+
+		Mockito.verify(
+			_activationKeyService
+		).deactivatePartialActivationKey(
+			activationKey
+		);
 	}
 
 	@Test
@@ -532,8 +570,8 @@ public class LicenseKeyGenerationServiceTest {
 		Date endDate = _toDateDaysFromNow(10);
 
 		_stubEntitlements(
-			_toEntitlementOfKeyType(
-				1L, 1.0, "complimentary", 45,
+			_toProductionEntitlement(
+				1L,
 				endDate.toInstant(
 				).toString()));
 
@@ -551,35 +589,12 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
-	public void testGenerateActivationKeyComplimentaryExpiresAfterTheDefinitionDuration()
+	public void testGenerateActivationKeyComplimentaryIgnoresTheEntitlementDuration()
 		throws Exception {
 
 		_stubEntitlements(
-			_toEntitlementOfKeyType(
-				1L, 1.0, "complimentary", 45,
-				_toDateDaysFromNow(
-					90
-				).toInstant(
-				).toString()));
-
-		_stubLicensedProducts();
-
-		_stubActivationKey();
-
-		_licenseKeyGenerationService.generateActivationKey(
-			_toComplimentaryGenerateRequest(1));
-
-		Assertions.assertEquals(
-			TimeUnit.DAYS.toMillis(45), _getComplimentaryTermMillis());
-	}
-
-	@Test
-	public void testGenerateActivationKeyComplimentaryFallsBackToThirtyDaysWithoutADuration()
-		throws Exception {
-
-		_stubEntitlements(
-			_toEntitlementOfKeyType(
-				1L, 1.0, "complimentary", 0,
+			_toProductionEntitlement(
+				1L,
 				_toDateDaysFromNow(
 					90
 				).toInstant(
@@ -600,7 +615,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyComplimentaryIsFlaggedAndTimeBoxed()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
 
@@ -644,7 +659,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyComplimentaryIsSizing4()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
 
@@ -667,10 +682,65 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
-	public void testGenerateActivationKeyComplimentaryKeepsTheIssuedTermWhenTheDefinitionChanges()
+	public void testGenerateActivationKeyComplimentaryKeepsTheProjectSettingWhenTheRenewalFails()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
+
+		_stubLicensedProducts();
+
+		ActivationKey activationKey = _stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		Mockito.when(
+			_activationKeyService.fetchActivationKey("ACTVK-9")
+		).thenReturn(
+			new ActivationKey(
+				new JSONObject(
+				).put(
+					"id", 99L
+				).put(
+					"r_projectToActivationKey_c_projectERC", "PROJ-1"
+				))
+		);
+
+		Mockito.doThrow(
+			new RuntimeException("The renewed key could not be deactivated")
+		).when(
+			_activationKeyService
+		).updateActivationKeyActive(
+			99L, false
+		);
+
+		Assertions.assertThrows(
+			RuntimeException.class,
+			() -> _licenseKeyGenerationService.generateActivationKey(
+				new LicenseKeyGenerationService.GenerateRequest(
+					Collections.emptyList(), "Description", null, "Environment",
+					"complimentary", 0, null, null, _toProject(),
+					"Load testing", "ACTVK-9", _toServers(1), null, 1L,
+					"DXP 7.4", false)));
+
+		Mockito.verify(
+			_activationKeyService
+		).deactivatePartialActivationKey(
+			activationKey
+		);
+
+		Mockito.verify(
+			_projectService, Mockito.never()
+		).updateLicensingSettings(
+			Mockito.anyString(), Mockito.any(JSONObject.class)
+		);
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryOfAPortalEntitlement()
+		throws Exception {
+
+		_stubEntitlements(
+			_toLicenseKeyFamilyEntitlement(1L, null, "Portal", "production"));
 
 		_stubLicensedProducts();
 
@@ -681,73 +751,120 @@ public class LicenseKeyGenerationServiceTest {
 		_licenseKeyGenerationService.generateActivationKey(
 			_toComplimentaryGenerateRequest(1));
 
-		List<Object> issuedStartDates = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 33);
-		List<Object> issuedExpirationDates = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 10);
-		List<Object> issuedXMLs = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 13);
+		_verifyComplimentaryActivationKeyAdded();
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryReactivatesTheRenewedKeyWhenTheProjectSettingFails()
+		throws Exception {
+
+		_stubEntitlements(_toProductionEntitlement(1L));
+
+		_stubLicensedProducts();
+
+		ActivationKey activationKey = _stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		Mockito.when(
+			_activationKeyService.fetchActivationKey("ACTVK-9")
+		).thenReturn(
+			new ActivationKey(
+				new JSONObject(
+				).put(
+					"id", 99L
+				).put(
+					"r_projectToActivationKey_c_projectERC", "PROJ-1"
+				))
+		);
+
+		Mockito.doThrow(
+			new RuntimeException("The project could not be updated")
+		).when(
+			_projectService
+		).updateLicensingSettings(
+			Mockito.eq("PROJ-1"), _eqAllowComplimentaryFalse()
+		);
+
+		Assertions.assertThrows(
+			RuntimeException.class,
+			() -> _licenseKeyGenerationService.generateActivationKey(
+				new LicenseKeyGenerationService.GenerateRequest(
+					Collections.emptyList(), "Description", null, "Environment",
+					"complimentary", 0, null, null, _toProject(),
+					"Load testing", "ACTVK-9", _toServers(1), null, 1L,
+					"DXP 7.4", false)));
+
+		InOrder inOrder = Mockito.inOrder(_activationKeyService);
+
+		inOrder.verify(
+			_activationKeyService
+		).updateActivationKeyActive(
+			99L, false
+		);
+
+		inOrder.verify(
+			_activationKeyService
+		).deactivatePartialActivationKey(
+			activationKey
+		);
+
+		inOrder.verify(
+			_activationKeyService
+		).updateActivationKeyActive(
+			99L, true
+		);
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryRejectsACloudNativeEntitlement()
+		throws Exception {
 
 		_stubEntitlements(
-			_toEntitlementOfKeyType(1L, 1.0, "complimentary", 45, null));
+			_toLicenseKeyFamilyEntitlement(
+				1L, null, "Cloud Native", "production"));
 
-		_licenseKeyGenerationService.generateActivationKey(
-			_toComplimentaryGenerateRequest(1));
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toComplimentaryGenerateRequest(1)));
 
-		List<Object> startDates = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 33);
-		List<Object> expirationDates = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 10);
-		List<Object> xmls = _getInvocationArguments(
-			_licenseKeyService, "addLicenseKey", 13);
-
-		Date firstExpirationDate = (Date)expirationDates.get(0);
-		Date firstStartDate = (Date)startDates.get(0);
-		Date secondExpirationDate = (Date)expirationDates.get(1);
-		Date secondStartDate = (Date)startDates.get(1);
-
-		Assertions.assertEquals(2, startDates.size());
-		Assertions.assertEquals(issuedStartDates.get(0), firstStartDate);
 		Assertions.assertEquals(
-			issuedExpirationDates.get(0), firstExpirationDate);
-		Assertions.assertEquals(issuedXMLs.get(0), xmls.get(0));
+			"The selected entitlement does not grant a complimentary key",
+			licenseKeyEntitlementException.getMessage());
+
+		_verifyNoActivationKeyAdded();
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
+	}
+
+	@Test
+	public void testGenerateActivationKeyComplimentaryRejectsAComplimentaryEntitlement()
+		throws Exception {
+
+		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toComplimentaryGenerateRequest(1)));
+
 		Assertions.assertEquals(
-			TimeUnit.DAYS.toMillis(30),
-			firstExpirationDate.getTime() - firstStartDate.getTime());
-		Assertions.assertEquals(
-			TimeUnit.DAYS.toMillis(45),
-			secondExpirationDate.getTime() - secondStartDate.getTime());
+			"The selected entitlement does not grant a complimentary key",
+			licenseKeyEntitlementException.getMessage());
 
-		Mockito.verify(
-			_activationKeyService, Mockito.never()
-		).deactivatePartialActivationKey(
-			Mockito.any()
-		);
+		_verifyNoActivationKeyAdded();
 
-		Mockito.verify(
-			_activationKeyService, Mockito.never()
-		).updateActivationKeyActive(
-			Mockito.anyLong(), Mockito.anyBoolean()
-		);
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).updateLicenseKey(
-			Mockito.anyBoolean(), Mockito.anyBoolean(), Mockito.anyLong()
-		);
-
-		Mockito.verify(
-			_licenseKeyService, Mockito.never()
-		).updateLicenseKeyActive(
-			Mockito.anyBoolean(), Mockito.anyLong()
-		);
+		Mockito.verifyNoInteractions(_licenseKeyService);
 	}
 
 	@Test
 	public void testGenerateActivationKeyComplimentaryRejectsAMissingPurpose()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
 
@@ -769,10 +886,11 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
-	public void testGenerateActivationKeyComplimentaryRejectsAProductionEntitlement()
+	public void testGenerateActivationKeyComplimentaryRejectsANonproductionEntitlement()
 		throws Exception {
 
-		_stubEntitlements(_toEntitlementOfKeyType(1L, 5.0, "production"));
+		_stubEntitlements(
+			_toLicenseKeyFamilyEntitlement(1L, null, "DXP", "non-production"));
 
 		LicenseKeyEntitlementException licenseKeyEntitlementException =
 			Assertions.assertThrows(
@@ -793,7 +911,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyComplimentaryRejectsASecondServer()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 5.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
 
@@ -817,8 +935,8 @@ public class LicenseKeyGenerationServiceTest {
 		throws Exception {
 
 		_stubEntitlements(
-			_toEntitlementOfKeyType(
-				1L, 1.0, "complimentary", 0,
+			_toProductionEntitlement(
+				1L,
 				_toDateDaysFromNow(
 					60
 				).toInstant(
@@ -849,8 +967,8 @@ public class LicenseKeyGenerationServiceTest {
 		Date endDate = _toDateDaysFromNow(60);
 
 		_stubEntitlements(
-			_toEntitlementOfKeyType(
-				1L, 1.0, "complimentary", 0,
+			_toProductionEntitlement(
+				1L,
 				endDate.toInstant(
 				).toString()));
 
@@ -873,10 +991,46 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyComplimentaryRejectsAnAppEntitlement()
+		throws Exception {
+
+		_stubEntitlements(_toProductionEntitlement(1L));
+
+		Product product = _toProduct("Application", "PRDCT-APPLICATION");
+
+		product.setProductSpecifications(
+			new ProductSpecification[] {
+				_toProductSpecification(
+					ProductSpecificationConstants.KEY_PROJECT_ITEM_TYPE,
+					ProductSpecificationConstants.PROJECT_ITEM_TYPE_APPLICATION)
+			});
+
+		Mockito.when(
+			_licenseKeyGenerateFormService.fetchProduct(Mockito.any())
+		).thenReturn(
+			product
+		);
+
+		LicenseKeyEntitlementException licenseKeyEntitlementException =
+			Assertions.assertThrows(
+				LicenseKeyEntitlementException.class,
+				() -> _licenseKeyGenerationService.generateActivationKey(
+					_toComplimentaryGenerateRequest(1)));
+
+		Assertions.assertEquals(
+			"The selected entitlement does not grant a complimentary key",
+			licenseKeyEntitlementException.getMessage());
+
+		_verifyNoActivationKeyAdded();
+
+		Mockito.verifyNoInteractions(_licenseKeyService);
+	}
+
+	@Test
 	public void testGenerateActivationKeyComplimentaryRejectsAnExpiredTerm()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
 
@@ -898,7 +1052,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyComplimentaryRejectsAnOverLongPurpose()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
 
@@ -918,10 +1072,76 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyComplimentaryRethrowsTheOriginalExceptionWhenTheRollbackFails()
+		throws Exception {
+
+		_stubEntitlements(_toProductionEntitlement(1L));
+
+		_stubLicensedProducts();
+
+		ActivationKey activationKey = _stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		Mockito.when(
+			_activationKeyService.fetchActivationKey("ACTVK-9")
+		).thenReturn(
+			new ActivationKey(
+				new JSONObject(
+				).put(
+					"id", 99L
+				).put(
+					"r_projectToActivationKey_c_projectERC", "PROJ-1"
+				))
+		);
+
+		Mockito.doThrow(
+			new RuntimeException("The project could not be updated")
+		).when(
+			_projectService
+		).updateLicensingSettings(
+			Mockito.eq("PROJ-1"), _eqAllowComplimentaryFalse()
+		);
+
+		Mockito.doThrow(
+			new RuntimeException("The partial key could not be deactivated")
+		).when(
+			_activationKeyService
+		).deactivatePartialActivationKey(
+			activationKey
+		);
+
+		RuntimeException runtimeException = Assertions.assertThrows(
+			RuntimeException.class,
+			() -> _licenseKeyGenerationService.generateActivationKey(
+				new LicenseKeyGenerationService.GenerateRequest(
+					Collections.emptyList(), "Description", null, "Environment",
+					"complimentary", 0, null, null, _toProject(),
+					"Load testing", "ACTVK-9", _toServers(1), null, 1L,
+					"DXP 7.4", false)));
+
+		Assertions.assertEquals(
+			"The project could not be updated", runtimeException.getMessage());
+
+		Throwable[] suppressedThrowables = runtimeException.getSuppressed();
+
+		Assertions.assertEquals(1, suppressedThrowables.length);
+		Assertions.assertEquals(
+			"The partial key could not be deactivated",
+			suppressedThrowables[0].getMessage());
+
+		Mockito.verify(
+			_activationKeyService
+		).updateActivationKeyActive(
+			99L, true
+		);
+	}
+
+	@Test
 	public void testGenerateActivationKeyComplimentaryStoresThePurpose()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
 
@@ -938,10 +1158,32 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
+	public void testGenerateActivationKeyComplimentaryTurnsOffTheProjectSetting()
+		throws Exception {
+
+		_stubEntitlements(_toProductionEntitlement(1L));
+
+		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
+
+		_licenseKeyGenerationService.generateActivationKey(
+			_toComplimentaryGenerateRequest(1));
+
+		Mockito.verify(
+			_projectService
+		).updateLicensingSettings(
+			Mockito.eq("PROJ-1"), _eqAllowComplimentaryFalse()
+		);
+	}
+
+	@Test
 	public void testGenerateActivationKeyComplimentaryUsesTheRequestedStartDate()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
 
@@ -980,41 +1222,16 @@ public class LicenseKeyGenerationServiceTest {
 	}
 
 	@Test
-	public void testGenerateActivationKeyComplimentaryWhileTheProjectHasOne()
-		throws Exception {
-
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
-
-		_stubLicensedProducts();
-
-		Mockito.when(
-			_activationKeyService.getActivationKeysCount(
-				true, "PROJ-1", "complimentary")
-		).thenReturn(
-			1
-		);
-
-		LicenseKeyEntitlementException licenseKeyEntitlementException =
-			Assertions.assertThrows(
-				LicenseKeyEntitlementException.class,
-				() -> _licenseKeyGenerationService.generateActivationKey(
-					_toComplimentaryGenerateRequest(1)));
-
-		Assertions.assertEquals(
-			"The project already has a complimentary key that has not been " +
-				"deactivated",
-			licenseKeyEntitlementException.getMessage());
-
-		_verifyNoActivationKeyAdded();
-	}
-
-	@Test
 	public void testGenerateActivationKeyComplimentaryWithoutActivationsLeft()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
+
+		_stubActivationKey();
+
+		_stubAddLicenseKey();
 
 		Mockito.when(
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -1025,34 +1242,23 @@ public class LicenseKeyGenerationServiceTest {
 			).build()
 		);
 
-		LicenseKeyEntitlementException licenseKeyEntitlementException =
-			Assertions.assertThrows(
-				LicenseKeyEntitlementException.class,
-				() -> _licenseKeyGenerationService.generateActivationKey(
-					new LicenseKeyGenerationService.GenerateRequest(
-						Collections.singletonList(1L), "Description", null,
-						"Environment", "complimentary", 0, null, null,
-						_toProject(), "Load testing", null, _toServers(1), null,
-						1L, "DXP 7.4", false)));
+		_licenseKeyGenerationService.generateActivationKey(
+			_toComplimentaryGenerateRequest(1));
 
-		Assertions.assertTrue(
-			licenseKeyEntitlementException.getMessage(
-			).contains(
-				"0 activations left"
-			));
+		_verifyComplimentaryActivationKeyAdded();
 	}
 
 	@Test
 	public void testGenerateActivationKeyComplimentaryWithoutAllowComplimentary()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.isAllowComplimentary(
-				Mockito.anyLong())
+				Mockito.anyString())
 		).thenReturn(
 			false
 		);
@@ -1064,7 +1270,7 @@ public class LicenseKeyGenerationServiceTest {
 					_toComplimentaryGenerateRequest(1)));
 
 		Assertions.assertEquals(
-			"The account is not allowed to generate a complimentary key",
+			"The project is not allowed to generate a complimentary key",
 			licenseKeyEntitlementException.getMessage());
 
 		_verifyNoActivationKeyAdded();
@@ -1120,7 +1326,7 @@ public class LicenseKeyGenerationServiceTest {
 	public void testGenerateActivationKeyFlagsComplimentaryLicenseKeys()
 		throws Exception {
 
-		_stubEntitlements(_toComplimentaryEntitlement(1L, 1.0));
+		_stubEntitlements(_toProductionEntitlement(1L));
 
 		_stubLicensedProducts();
 
@@ -2172,7 +2378,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.isAllowPermanentLicenses(
-				Mockito.anyLong())
+				Mockito.anyString())
 		).thenReturn(
 			true
 		);
@@ -2479,7 +2685,7 @@ public class LicenseKeyGenerationServiceTest {
 
 		Mockito.when(
 			_licenseKeyGenerateFormService.isAllowPermanentLicenses(
-				Mockito.anyLong())
+				Mockito.anyString())
 		).thenReturn(
 			true
 		);
@@ -3426,6 +3632,15 @@ public class LicenseKeyGenerationServiceTest {
 			_getInvocationArguments(_licenseKeyGenerator, "generateKey", 6));
 	}
 
+	private JSONObject _eqAllowComplimentaryFalse() {
+		return Mockito.argThat(
+			jsonObject -> jsonObject.similar(
+				new JSONObject(
+				).put(
+					"allowComplimentary", false
+				)));
+	}
+
 	private long _getComplimentaryTermMillis() {
 		Date expirationDate = (Date)_getInvocationArguments(
 			_activationKeyService, "addActivationKey", 2
@@ -3967,6 +4182,43 @@ public class LicenseKeyGenerationServiceTest {
 			null, subscriptionEntitlementId, "DXP 2026.Q3", false);
 	}
 
+	private Entitlement _toLicenseKeyFamilyEntitlement(
+		long entitlementId, String endDate, String licenseKeyFamily,
+		String licenseKeyType) {
+
+		// The entitlement definition duration does not apply to a
+		// complimentary key, so it is set to a value that a test would notice
+
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"entitlementDefinitionToEntitlement",
+			new JSONObject(
+			).put(
+				"id", entitlementId
+			).put(
+				"licenseKeyDurationDays", 365
+			)
+		).put(
+			"generatesActivationKey", true
+		).put(
+			"id", entitlementId
+		).put(
+			"licenseKeyFamily", licenseKeyFamily
+		).put(
+			"licenseKeyType", licenseKeyType
+		).put(
+			"maxQuantity", 1.0
+		).put(
+			"name", "Entitlement " + entitlementId
+		);
+
+		if (endDate != null) {
+			jsonObject.put("endDate", endDate);
+		}
+
+		return new Entitlement(jsonObject);
+	}
+
 	private Entitlement _toNamedEntitlement(long entitlementId, String name) {
 		return new Entitlement(
 			new JSONObject(
@@ -4033,6 +4285,17 @@ public class LicenseKeyGenerationServiceTest {
 			).build());
 
 		return productSpecification;
+	}
+
+	private Entitlement _toProductionEntitlement(long entitlementId) {
+		return _toProductionEntitlement(entitlementId, null);
+	}
+
+	private Entitlement _toProductionEntitlement(
+		long entitlementId, String endDate) {
+
+		return _toLicenseKeyFamilyEntitlement(
+			entitlementId, endDate, "DXP", "production");
 	}
 
 	private Project _toProject() {
@@ -4144,6 +4407,15 @@ public class LicenseKeyGenerationServiceTest {
 			true);
 	}
 
+	private void _verifyComplimentaryActivationKeyAdded() throws Exception {
+		Mockito.verify(
+			_activationKeyService
+		).addActivationKey(
+			Mockito.anyLong(), Mockito.eq(true), Mockito.any(), Mockito.any(),
+			Mockito.any(), Mockito.any(), Mockito.eq("complimentary")
+		);
+	}
+
 	private void _verifyNoActivationKeyAdded() throws Exception {
 		Mockito.verify(
 			_activationKeyService, Mockito.never()
@@ -4176,5 +4448,6 @@ public class LicenseKeyGenerationServiceTest {
 	private LicenseKeyGenerationService _licenseKeyGenerationService;
 	private LicenseKeyGenerator _licenseKeyGenerator;
 	private LicenseKeyService _licenseKeyService;
+	private ProjectService _projectService;
 
 }
