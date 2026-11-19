@@ -63,7 +63,8 @@ describe('[HOOK-BUSINESSEVENTS-USECANVIEWTICKETS] useCanViewTickets', () => {
 			'liferay-one-etc-spring-boot-oaua'
 		);
 		expect(oauth2Fetch).toHaveBeenCalledWith(
-			'/projects/PRJCT-1/jira/object-key'
+			'/projects/PRJCT-1/jira/object-key',
+			undefined
 		);
 		expect(result.current.loading).toBe(false);
 	});

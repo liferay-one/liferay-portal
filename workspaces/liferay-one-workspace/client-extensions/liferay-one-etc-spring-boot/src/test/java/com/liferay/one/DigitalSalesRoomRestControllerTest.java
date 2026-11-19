@@ -121,11 +121,18 @@ public class DigitalSalesRoomRestControllerTest {
 			ActionKeys.VIEW, _jwt, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
 
-		Assertions.assertThrows(
+		PrincipalException principalException = Assertions.assertThrows(
 			PrincipalException.class,
 			() ->
 				_digitalSalesRoomRestController.getEnvironmentsDataSourceToken(
 					_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, _jwt));
+
+		ResponseEntity<?> responseEntity =
+			_digitalSalesRoomRestController.handleException(
+				null, principalException);
+
+		Assertions.assertEquals(
+			HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
 
 		Mockito.verify(
 			_analyticsCloudService, Mockito.never()

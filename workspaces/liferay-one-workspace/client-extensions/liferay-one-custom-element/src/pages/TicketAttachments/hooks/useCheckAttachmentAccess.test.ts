@@ -26,10 +26,9 @@ vi.mock('react-router', async (importOriginal) => ({
 	useParams: vi.fn(),
 }));
 
-vi.mock('~/services/liferay/liferay', () => ({
-	Liferay: {
-		Util: {fetch: liferayFetch},
-	},
+vi.mock('~/utils/impersonationUtils', () => ({
+	appendDoAsUserId: (url: string) => url,
+	fetchLiferay: liferayFetch,
 }));
 
 function errorResponse(body: string) {

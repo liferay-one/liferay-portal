@@ -5,8 +5,9 @@
 
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import FetcherError from '~/services/fetcher/FetcherError';
+import {Liferay} from '~/services/liferay/liferay';
 
-import OAuth2Client, {OneSpringBootOAuth2} from './OAuth2Client';
+import OAuth2Client, {OneSpringBootOAuth2, fetchSpringBoot} from './OAuth2Client';
 
 const {fromUserAgentApplication, getUserAgentApplication} = vi.hoisted(() => ({
 	fromUserAgentApplication: vi.fn(),
@@ -108,6 +109,45 @@ describe('[CLIENT-SPRING-BOOT-OAUTH2CLIENT] OAuth2Client', () => {
 			'/trial/availability',
 			undefined
 		);
+	});
+
+	it('fetches the Spring Boot service as the impersonated user', async () => {
+		fetchMock.mockResolvedValue(new Response('KEY'));
+
+		const themeDisplay = Liferay.ThemeDisplay;
+
+		Liferay.ThemeDisplay = {
+			...themeDisplay,
+			getRealUserId: () => '100',
+			getUserId: () => '200',
+		};
+
+		try {
+			const response = await fetchSpringBoot('/jira/object-key?a=1', {
+				method: 'GET',
+			});
+
+			expect(await response.text()).toBe('KEY');
+		}
+		finally {
+			Liferay.ThemeDisplay = themeDisplay;
+		}
+
+		expect(fromUserAgentApplication).toHaveBeenCalledWith(
+			'liferay-one-etc-spring-boot-oaua'
+		);
+		expect(fetchMock).toHaveBeenCalledWith(
+			'/jira/object-key?a=1&doAsUserId=200',
+			{method: 'GET'}
+		);
+	});
+
+	it('fetches the Spring Boot service without doAsUserId when not impersonating', async () => {
+		fetchMock.mockResolvedValue(new Response(''));
+
+		await fetchSpringBoot('/jira/object-key');
+
+		expect(fetchMock).toHaveBeenCalledWith('/jira/object-key', undefined);
 	});
 
 	it('honors parseResponse instead of parsing JSON', async () => {
