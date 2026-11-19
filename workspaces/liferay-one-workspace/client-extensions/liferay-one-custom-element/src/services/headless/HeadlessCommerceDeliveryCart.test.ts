@@ -7,6 +7,7 @@ import {afterEach, describe, expect, it, vi} from 'vitest';
 import FetcherError from '~/services/fetcher/FetcherError';
 import fetcher from '~/services/fetcher/fetcher';
 import {Liferay} from '~/services/liferay/liferay';
+import {fetchLiferay} from '~/utils/impersonationUtils';
 
 import HeadlessCommerceDeliveryCart from './HeadlessCommerceDeliveryCart';
 
@@ -16,6 +17,10 @@ vi.mock('~/services/fetcher/fetcher', () => ({
 		patch: vi.fn(),
 		post: vi.fn(),
 	}),
+}));
+
+vi.mock('~/utils/impersonationUtils', () => ({
+	fetchLiferay: vi.fn(),
 }));
 
 const BASE_URL = '/o/headless-commerce-delivery-cart/v1.0';
@@ -55,11 +60,9 @@ describe('[CLIENT-HEADLESS-HEADLESSCOMMERCEDELIVERYCART] HeadlessCommerceDeliver
 	});
 
 	it('encodes the callback URL and returns the payment URL text', async () => {
-		const liferayFetch = vi
-			.spyOn(Liferay.Util, 'fetch')
-			.mockResolvedValue(
-				new Response('https://pay.example.com', {status: 200})
-			);
+		vi.mocked(fetchLiferay).mockResolvedValue(
+			new Response('https://pay.example.com', {status: 200})
+		);
 
 		await expect(
 			HeadlessCommerceDeliveryCart.getPaymentMethodURL(
@@ -67,13 +70,14 @@ describe('[CLIENT-HEADLESS-HEADLESSCOMMERCEDELIVERYCART] HeadlessCommerceDeliver
 				'https://one.example.com/next-steps?orderId=7'
 			)
 		).resolves.toBe('https://pay.example.com');
-		expect(liferayFetch).toHaveBeenCalledWith(
-			`${BASE_URL}/carts/7/payment-url?callbackURL=https%3A%2F%2Fone.example.com%2Fnext-steps%3ForderId%3D7`
+		expect(fetchLiferay).toHaveBeenCalledWith(
+			`${BASE_URL}/carts/7/payment-url?callbackURL=https%3A%2F%2Fone.example.com%2Fnext-steps%3ForderId%3D7`,
+			{headers: {'x-csrf-token': Liferay.authToken}}
 		);
 	});
 
 	it('throws a FetcherError with the status when the payment URL response is not ok', async () => {
-		vi.spyOn(Liferay.Util, 'fetch').mockResolvedValue(
+		vi.mocked(fetchLiferay).mockResolvedValue(
 			new Response('', {status: 502})
 		);
 

@@ -7,7 +7,13 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
 import type {Cache} from 'swr/_internal';
 
-const STORAGE_KEY = '@liferay-one/swr';
+const {getUserId} = vi.hoisted(() => ({getUserId: vi.fn()}));
+
+vi.mock('~/services/liferay/liferay', () => ({
+	Liferay: {ThemeDisplay: {getUserId}},
+}));
+
+const STORAGE_KEY = '@liferay-one/swr/100';
 
 async function loadPersistSWRCache(): Promise<{
 	cache: Cache;
@@ -31,6 +37,8 @@ describe('[CLIENT-FETCHER-PERSISTSWRCACHE] persistSWRCache', () => {
 
 	beforeEach(() => {
 		sessionStorage.clear();
+
+		getUserId.mockReturnValue('100');
 
 		vi.spyOn(window, 'addEventListener').mockImplementation(
 			(type, listener) => {
@@ -77,6 +85,21 @@ describe('[CLIENT-FETCHER-PERSISTSWRCACHE] persistSWRCache', () => {
 		expect(cache.get('key')).toEqual({data: 'fetched'});
 	});
 
+	it('does not load the entries of another user', async () => {
+		sessionStorage.setItem(
+			STORAGE_KEY,
+			JSON.stringify([['key', {data: 'value'}]])
+		);
+
+		getUserId.mockReturnValue('200');
+
+		const {cache, persistSWRCache} = await loadPersistSWRCache();
+
+		persistSWRCache();
+
+		expect(cache.get('key')).toBeUndefined();
+	});
+
 	it('loads nothing for bad JSON', async () => {
 		sessionStorage.setItem(STORAGE_KEY, '{not json');
 
@@ -103,6 +126,23 @@ describe('[CLIENT-FETCHER-PERSISTSWRCACHE] persistSWRCache', () => {
 		listeners[0](new Event('beforeunload'));
 
 		expect(sessionStorage.getItem(STORAGE_KEY)).toBeNull();
+	});
+
+	it('removes the entries of other users and the unscoped key on beforeunload', async () => {
+		sessionStorage.setItem('@liferay-one/swr', '[]');
+		sessionStorage.setItem('@liferay-one/swr/200', '[]');
+		sessionStorage.setItem('unrelated', 'value');
+
+		const {persistSWRCache} = await loadPersistSWRCache();
+
+		persistSWRCache();
+
+		listeners[0](new Event('beforeunload'));
+
+		expect(sessionStorage.getItem('@liferay-one/swr')).toBeNull();
+		expect(sessionStorage.getItem('@liferay-one/swr/200')).toBeNull();
+		expect(sessionStorage.getItem(STORAGE_KEY)).toBe('[]');
+		expect(sessionStorage.getItem('unrelated')).toBe('value');
 	});
 
 	it('writes only fetched data, never the state of a request in flight', async () => {

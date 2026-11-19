@@ -142,10 +142,17 @@ public class LiferayDataPlatformRestControllerTest {
 			_ORDER_ID, _jwt
 		);
 
-		Assertions.assertThrows(
+		PrincipalException principalException = Assertions.assertThrows(
 			PrincipalException.class,
 			() -> _liferayDataPlatformRestController.postProvisioningOrder(
 				_jwt, _ORDER_ID));
+
+		ResponseEntity<?> responseEntity =
+			_liferayDataPlatformRestController.handleException(
+				null, principalException);
+
+		Assertions.assertEquals(
+			HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()

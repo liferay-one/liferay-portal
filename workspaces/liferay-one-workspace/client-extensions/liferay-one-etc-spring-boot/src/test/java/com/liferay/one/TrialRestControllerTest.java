@@ -268,9 +268,15 @@ public class TrialRestControllerTest {
 			_jwt
 		);
 
-		Assertions.assertThrows(
+		PrincipalException principalException = Assertions.assertThrows(
 			PrincipalException.class,
 			() -> _trialRestController.deleteTrial(_jwt, _ORDER_ID));
+
+		ResponseEntity<?> responseEntity = _trialRestController.handleException(
+			null, principalException);
+
+		Assertions.assertEquals(
+			HttpStatus.FORBIDDEN, responseEntity.getStatusCode());
 
 		Mockito.verify(
 			_commerceOrderService, Mockito.never()
