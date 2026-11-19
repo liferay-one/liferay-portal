@@ -682,6 +682,8 @@ public class LicenseKeyGenerateFormService {
 				licenseKeyTypeEntitlements, licenseKeyFamilyProductVersions,
 				provisionable, virtualClusterAllowed);
 
+			_setUnlimited(keyTypesJSONArray, activationKeyScope.isProject());
+
 			if (entitledProduct.isGeneratesActivationKey()) {
 				boolean licensable = false;
 
@@ -1263,6 +1265,10 @@ public class LicenseKeyGenerateFormService {
 				JSONObject keyTypeJSONObject = keyTypesJSONArray.getJSONObject(
 					j);
 
+				if (keyTypeJSONObject.optBoolean("unlimited")) {
+					return true;
+				}
+
 				if (!provisionable &&
 					!_isDownloadable(keyTypeJSONObject.optString("key"))) {
 
@@ -1320,6 +1326,21 @@ public class LicenseKeyGenerateFormService {
 				entitlement -> entitlement.getEndDateInstant() != null));
 
 		return orderedEntitlements;
+	}
+
+	private void _setUnlimited(JSONArray keyTypesJSONArray, boolean project) {
+
+		// A project downloads its developer keys without storing them, so they
+		// never spend an activation. Elsewhere they are stored and counted
+		// like any other key.
+
+		for (int i = 0; i < keyTypesJSONArray.length(); i++) {
+			JSONObject keyTypeJSONObject = keyTypesJSONArray.getJSONObject(i);
+
+			keyTypeJSONObject.put(
+				"unlimited",
+				project && _isDownloadable(keyTypeJSONObject.optString("key")));
+		}
 	}
 
 	private JSONObject _toBundleProductJSONObject(

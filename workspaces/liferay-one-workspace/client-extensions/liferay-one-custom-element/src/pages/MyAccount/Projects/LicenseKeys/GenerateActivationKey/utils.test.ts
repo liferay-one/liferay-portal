@@ -26,6 +26,7 @@ import {
 	getStepAfterSubscription,
 	getStepBeforeEnvironment,
 	hasAvailableKeyType,
+	hasRemainingKeyType,
 	hasServerInfo,
 	isCloudNativeProduct,
 	isComplimentaryKeyType,
@@ -56,11 +57,12 @@ function toBundleProduct(
 	} as GenerateFormBundleProduct;
 }
 
-function toKeyType(availableCounts: number[]) {
+function toKeyType(availableCounts: number[], unlimited = false) {
 	return {
 		subscriptions: availableCounts.map((availableCount) => ({
 			availableCount,
 		})),
+		unlimited,
 	} as GenerateFormKeyType;
 }
 
@@ -776,6 +778,32 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 					keyTypes: [toKeyType([0]), toKeyType([])],
 				} as GenerateFormProduct)
 			).toBe(false);
+		});
+
+		it('is true for an unlimited key type with every subscription used up', () => {
+			expect(
+				hasAvailableKeyType({
+					keyTypes: [toKeyType([0]), toKeyType([0], true)],
+				} as GenerateFormProduct)
+			).toBe(true);
+		});
+	});
+
+	describe('hasRemainingKeyType', () => {
+		it('ignores an unlimited key type with every subscription used up', () => {
+			expect(
+				hasRemainingKeyType({
+					keyTypes: [toKeyType([0]), toKeyType([0], true)],
+				} as GenerateFormProduct)
+			).toBe(false);
+		});
+
+		it('is true when a subscription has an available count above zero', () => {
+			expect(
+				hasRemainingKeyType({
+					keyTypes: [toKeyType([0], true), toKeyType([2])],
+				} as GenerateFormProduct)
+			).toBe(true);
 		});
 	});
 
