@@ -167,20 +167,39 @@ describe('[HOOK-USEPLACEDORDER] usePlacedOrder', () => {
 		expect(withoutOptional).toEqual({
 			accountId: 7,
 			params: {
-				nestedFields: 'placedOrderItems',
-				page: '2',
-				pageSize: '5',
-				sort: 'createDate:desc',
+				'nestedFields': 'placedOrderItems',
+				'page': '2',
+				'pageSize': '5',
+				'placedOrderItems.pageSize': '-1',
+				'sort': 'createDate:desc',
 			},
 		});
 		expect(withOptional.params).toEqual({
-			filter: 'orderStatus eq 0',
-			nestedFields: 'placedOrderItems',
-			page: '2',
-			pageSize: '5',
-			restrictFields: 'actions',
-			sort: 'createDate:desc',
+			'filter': 'orderStatus eq 0',
+			'nestedFields': 'placedOrderItems',
+			'page': '2',
+			'pageSize': '5',
+			'placedOrderItems.pageSize': '-1',
+			'restrictFields': 'actions',
+			'sort': 'createDate:desc',
 		});
+	});
+
+	it('asks for every item of each order on every page', async () => {
+		const getPlacedOrders = mockPages(30, () => []);
+
+		await placedOrdersQuery({
+			accountId: 7,
+			fetchAllPages: true,
+			page: 1,
+			pageSize: 10,
+		}).fetcher();
+
+		expect(
+			getPlacedOrders.mock.calls.map(([, , params]) =>
+				params?.get('placedOrderItems.pageSize')
+			)
+		).toEqual(['-1', '-1', '-1']);
 	});
 
 	it('builds a key from the query options, or null when shouldFetch is false', () => {
