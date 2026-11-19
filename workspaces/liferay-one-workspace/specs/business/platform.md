@@ -65,6 +65,15 @@ Terms used in this file:
 | --- | --- | --- | --- | --- |
 | REQ-PLATFORM-070 | The title of the One home page is "Home - Liferay One". The title does not name the web ID of the instance. A user who signs in with no redirect goes to the One home page and not to /web/guest. | P2 | LPD-115068 | `FLOW-SITE-IDENTITY` |
 
+## Impersonation
+
+| ID | Requirement | Priority | Tickets | Verified By |
+| --- | --- | --- | --- | --- |
+| REQ-PLATFORM-071 | When an administrator impersonates a user, every Liferay request from the custom element runs as the impersonated user. A request to another origin does not get the impersonated user ID. | P1 | LPD-116180 | `MOD-IMPERSONATIONUTILS`, `FLOW-IMPERSONATION` |
+| REQ-PLATFORM-072 | When an administrator impersonates a user, the Spring Boot service uses the impersonated user as the current user. The service refuses the request when the real user is not an administrator. A provisioning administrator cannot impersonate. The Liferay calls that the service makes with the token of the request still run as the administrator, so a page that reads Liferay data through those calls shows the data of the administrator. | P1 | LPD-116180 | `SVC-USERACCOUNTSERVICE`, `FLOW-IMPERSONATION-SPRING-BOOT` |
+| REQ-PLATFORM-073 | The data that the browser keeps between page loads belongs to one user. A page load as another user, or as an impersonated user, does not show it. | P1 | LPD-116180 | `CLIENT-FETCHER-PERSISTSWRCACHE`, `FLOW-IMPERSONATION` |
+| REQ-PLATFORM-074 | While an administrator impersonates a user, the Spring Boot service accepts POST, PUT, PATCH, and DELETE requests, so that support can do what the user did, and it logs each one with the real user, the impersonated user, the method, and the path. The service refuses with status 403 the requests that act outside Liferay or that cannot be undone: provisioning, a trial change, the completion of an order, the generation of an activation key, an entitlement, or a free license key, and a cloud environment activation or manifest. When the property `liferay.one.impersonation.write.enabled` is false, the service refuses every POST, PUT, PATCH, and DELETE request while an administrator impersonates a user. | P1 | LPD-116180 | `CLS-IMPERSONATIONINTERCEPTOR`, `FLOW-IMPERSONATION-SPRING-BOOT` |
+
 ## Not Yet Built
 
 | ID | Requirement | Priority | Tickets | Verified By |
