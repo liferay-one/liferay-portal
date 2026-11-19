@@ -147,8 +147,3 @@ export type PostalAddress = {
 	streetAddressLine2: string;
 	streetAddressLine3: string;
 };
-
-export type AccountProperties = {
-	allowPermanentLicenses: string;
-	allowSelfProvisioning: string;
-};

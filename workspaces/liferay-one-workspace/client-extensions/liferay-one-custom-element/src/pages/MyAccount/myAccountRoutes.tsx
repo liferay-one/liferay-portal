@@ -14,6 +14,7 @@ import ContractRedirect from './Projects/components/ContractRedirect/ContractRed
 import ProjectSectionRedirect from './Projects/components/ProjectSectionRedirect/ProjectSectionRedirect';
 import AccountTabsLayout from './components/AccountTabsLayout/AccountTabsLayout';
 
+const AccountAdmin = lazy(() => import('./AccountAdmin/AccountAdmin'));
 const AccountDetails = lazy(() => import('./AccountDetails/AccountDetails'));
 const AccountMembers = lazy(() => import('./AccountMembers/AccountMembers'));
 const OrderDetails = lazy(() => import('./Orders/OrderDetails/OrderDetails'));
@@ -109,6 +110,7 @@ export const accountRoutes: AppRoute[] = [
 			},
 			{element: <AccountMembers />, path: 'account-members'},
 			{element: <ProjectMembers />, path: 'project-members'},
+			{element: <AccountAdmin />, path: 'account-admin'},
 		],
 		element: <AccountTabsLayout />,
 	},

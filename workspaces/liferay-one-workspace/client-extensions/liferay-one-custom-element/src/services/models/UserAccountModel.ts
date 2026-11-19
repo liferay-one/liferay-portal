@@ -29,12 +29,24 @@ export class UserAccountModel {
 		return this.userAccount.type;
 	}
 
+	get canManageAccountAdmin() {
+		return Boolean(
+			this.isAdmin ||
+				this.isProvisioningAdministrator ||
+				this.isProvisioningWorker
+		);
+	}
+
 	get canManageAllAccountMembers() {
 		return Boolean(this.canManageAllAccounts || this.isProvisioningWorker);
 	}
 
 	get canManageAllAccounts() {
 		return Boolean(this.isAdmin || this.isProvisioningAdministrator);
+	}
+
+	get canViewAccountAdmin() {
+		return Boolean(this.canManageAccountAdmin || this.isLiferayStaff);
 	}
 
 	get canViewAllAccounts() {

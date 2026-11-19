@@ -17,12 +17,6 @@
 						"data": "Strategic Partner"
 					},
 					"name": "AccountType"
-				},
-				{
-					"customValue": {
-						"data": true
-					},
-					"name": "allowComplimentary"
 				}
 			],
 			"externalReferenceCode": "ACCNT-001",

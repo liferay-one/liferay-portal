@@ -5378,6 +5378,60 @@
 					"type": "String"
 				},
 				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"externalReferenceCode": "C_PROJECT_ALLOW_COMPLIMENTARY",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Allow Complimentary"
+					},
+					"name": "allowComplimentary",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Boolean"
+				},
+				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"externalReferenceCode": "C_PROJECT_ALLOW_PERMANENT_LICENSES",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Allow Permanent Licenses"
+					},
+					"name": "allowPermanentLicenses",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Boolean"
+				},
+				{
+					"DBType": "Boolean",
+					"businessType": "Boolean",
+					"externalReferenceCode": "C_PROJECT_ALLOW_SELF_PROVISIONING",
+					"indexed": true,
+					"indexedAsKeyword": false,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Allow Self Provisioning"
+					},
+					"name": "allowSelfProvisioning",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "Boolean"
+				},
+				{
 					"DBType": "String",
 					"businessType": "Text",
 					"externalReferenceCode": "C_PROJECT_ALLOWED_EMAIL_DOMAINS",

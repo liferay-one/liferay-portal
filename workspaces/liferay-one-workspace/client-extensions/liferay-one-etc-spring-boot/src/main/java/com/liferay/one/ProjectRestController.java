@@ -24,6 +24,7 @@ import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.model.SaaSUsageStrategy;
 import com.liferay.one.model.UsageDefinition;
+import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
@@ -56,6 +57,7 @@ import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -63,9 +65,11 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -260,6 +264,55 @@ public class ProjectRestController extends OneBaseRestController {
 				HttpStatus.BAD_REQUEST,
 				invalidUsageProductException.getMessage()),
 			HttpStatus.BAD_REQUEST);
+	}
+
+	@PatchMapping("/{externalReferenceCode}/licensing-settings")
+	public ResponseEntity<String> patchLicensingSettings(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@RequestBody String json)
+		throws Exception {
+
+		_environmentActivationPermission.checkLicensingSettings(jwt);
+
+		JSONObject jsonObject = new JSONObject(json);
+
+		JSONObject licensingSettingsJSONObject = new JSONObject();
+
+		for (String name : _LICENSING_SETTING_NAMES) {
+			if (!jsonObject.has(name)) {
+				continue;
+			}
+
+			licensingSettingsJSONObject.put(
+				name, getRequiredBoolean(jsonObject, name));
+		}
+
+		if (licensingSettingsJSONObject.isEmpty()) {
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "No licensing setting was given");
+		}
+
+		_getProject(externalReferenceCode);
+
+		Project project = _projectService.updateLicensingSettings(
+			externalReferenceCode, licensingSettingsJSONObject);
+
+		return ResponseEntity.ok(
+		).contentType(
+			MediaType.APPLICATION_JSON
+		).body(
+			new JSONObject(
+			).put(
+				"allowComplimentary", project.isAllowComplimentary()
+			).put(
+				"allowPermanentLicenses", project.isAllowPermanentLicenses()
+			).put(
+				"allowSelfProvisioning", project.isAllowSelfProvisioning()
+			).put(
+				"externalReferenceCode", externalReferenceCode
+			).toString()
+		);
 	}
 
 	@PostMapping(
@@ -773,6 +826,10 @@ public class ProjectRestController extends OneBaseRestController {
 
 	private static final String _GRANULARITY_MONTH = "month";
 
+	private static final String[] _LICENSING_SETTING_NAMES = {
+		"allowComplimentary", "allowPermanentLicenses", "allowSelfProvisioning"
+	};
+
 	private static final long _MAX_YEARS = 10;
 
 	private static final long _MAX_YEARS_DAY_GRANULARITY = 1;
@@ -797,6 +854,9 @@ public class ProjectRestController extends OneBaseRestController {
 
 	@Autowired
 	private EntitlementService _entitlementService;
+
+	@Autowired
+	private EnvironmentActivationPermission _environmentActivationPermission;
 
 	@Autowired
 	private ProjectContactRoleService _projectContactRoleService;

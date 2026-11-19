@@ -413,28 +413,30 @@ export default function SubscriptionStep({
 
 					{noActivationsAvailable && noActivationsAlert}
 
-					{selectedSubscription && !noActivationsAvailable && (
-						<ClayAlert
-							className="generate-activation-key-subscription-alert"
-							displayType="info"
-							role={null}
-							spritemap={getIconSpriteMap()}
-							symbol="info-circle"
-						>
-							{translate('activation-key-will-be-valid')}{' '}
-							<strong>
-								{`${formatDate(
-									selectedSubscription.startDate
-								)} - ${
-									selectedSubscriptionKeyPermanent
-										? translate('does-not-expire')
-										: formatDate(
-												selectedSubscriptionKeyExpirationDate
-											)
-								}`}
-							</strong>
-						</ClayAlert>
-					)}
+					{selectedSubscription &&
+						!complimentary &&
+						!noActivationsAvailable && (
+							<ClayAlert
+								className="generate-activation-key-subscription-alert"
+								displayType="info"
+								role={null}
+								spritemap={getIconSpriteMap()}
+								symbol="info-circle"
+							>
+								{translate('activation-key-will-be-valid')}{' '}
+								<strong>
+									{`${formatDate(
+										selectedSubscription.startDate
+									)} - ${
+										selectedSubscriptionKeyPermanent
+											? translate('does-not-expire')
+											: formatDate(
+													selectedSubscriptionKeyExpirationDate
+												)
+									}`}
+								</strong>
+							</ClayAlert>
+						)}
 				</div>
 			)}
 

@@ -514,8 +514,7 @@ public class SalesforceOpportunityPubsubSubscriber
 				null);
 		}
 
-		_accountService.upsertAccount(
-			salesforceAccount, salesforceOpportunity.getSoldBy());
+		_accountService.upsertAccount(salesforceAccount);
 
 		Account account = _accountService.fetchAccountByExternalReferenceCode(
 			salesforceAccount.getId());
@@ -559,7 +558,8 @@ public class SalesforceOpportunityPubsubSubscriber
 			salesforceProject = new SalesforceProject(projectJSONObject);
 
 			_projectService.upsertProject(
-				salesforceOpportunity.getAccountId(), salesforceProject);
+				salesforceOpportunity.getAccountId(),
+				salesforceAccount.getBillingCountry(), salesforceProject);
 		}
 
 		List<SalesforceContract> salesforceContracts = _getSalesforceContracts(

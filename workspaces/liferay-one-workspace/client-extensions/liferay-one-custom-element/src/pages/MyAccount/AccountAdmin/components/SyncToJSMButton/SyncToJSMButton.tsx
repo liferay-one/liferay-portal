@@ -5,8 +5,8 @@
 
 import {useState} from 'react';
 import Button from '~/components/Button/Button';
-import useAccountDetails from '~/hooks/useAccountDetails';
-import useHasAdminPermissions from '~/hooks/useHasAdminPermissions';
+import {useAccount} from '~/context/AccountContext';
+import {useOneContext} from '~/context/OneContextProvider';
 import i18n from '~/i18n';
 import {Liferay} from '~/services/liferay/liferay';
 import Accounts from '~/services/spring-boot/Accounts';
@@ -16,12 +16,12 @@ import type FetcherError from '~/services/fetcher/FetcherError';
 export default function SyncToJSMButton() {
 	const [syncing, setSyncing] = useState(false);
 
-	const {data} = useAccountDetails();
-	const {hasAdminPermissions} = useHasAdminPermissions();
+	const {account} = useAccount();
+	const {userAccountModel} = useOneContext();
 
-	const accountExternalReferenceCode = data?.account?.externalReferenceCode;
+	const accountExternalReferenceCode = account?.externalReferenceCode;
 
-	if (!hasAdminPermissions || !accountExternalReferenceCode) {
+	if (!accountExternalReferenceCode) {
 		return null;
 	}
 
@@ -56,7 +56,7 @@ export default function SyncToJSMButton() {
 
 	return (
 		<Button
-			disabled={syncing}
+			disabled={!userAccountModel?.canManageAccountAdmin || syncing}
 			displayType="secondary"
 			isLoading={syncing}
 			onClick={handleClick}

@@ -673,7 +673,7 @@ public class AccountsRestController extends OneBaseRestController {
 			@PathVariable("externalReferenceCode") String externalReferenceCode)
 		throws Exception {
 
-		_adminPermission.check(jwt);
+		_accountPermission.checkSyncToJSM(jwt);
 
 		_accountSynchronizer.syncAccount(
 			_accountService.getAccount(externalReferenceCode));

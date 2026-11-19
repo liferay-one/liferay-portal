@@ -11,183 +11,257 @@
 	},
 	"items": [
 		{
+			"allowComplimentary": true,
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-001",
 			"name": "Omni Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-001"
 		},
 		{
+			"allowComplimentary": true,
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-001-2",
 			"name": "Omni Project 2",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-001"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-002",
 			"name": "SaaS Experience Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-002"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-002-2",
 			"name": "SaaS Experience Project Without Entitlements",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-002"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-002-3",
 			"name": "Mixed Legacy And Business Plan Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-002"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-003",
 			"name": "SaaS Legacy Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-003"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-004",
 			"name": "PaaS Experience Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-004"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-005",
 			"name": "PaaS Legacy Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-005"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-006",
 			"name": "DXP Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-006"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-007",
 			"name": "Cloud Native Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-007"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-008",
 			"name": "Business Plan Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-008"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-009",
 			"name": "Pro Plan Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-009"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-010",
 			"name": "Enterprise Plan Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-010"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-011",
 			"name": "Self-Hosted Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-011"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-012",
 			"liferayVersion": "DXP 7.2",
 			"name": "Commerce Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-012"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-013",
 			"name": "Analytics Cloud Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-013"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-014",
 			"name": "Enterprise Search Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-014"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-015",
 			"name": "Portal Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-015"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-016",
 			"name": "Partner Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-016"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-017",
 			"name": "Partner FLS Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-017"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-018",
 			"name": "Partner OEM Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-018"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-019",
 			"name": "EWSA Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-019"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-019-2",
 			"name": "EWSA Project 2",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-019"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-019-3",
 			"name": "EWSA Project 3",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-019"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-020",
 			"name": "Liferay Supplier Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-020"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-021",
 			"name": "Test Supplier Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-021"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-023",
 			"liferayVersion": "DXP 7.4",
 			"name": "Commerce Cloud Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-023"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-025",
 			"name": "Multi Contract Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-025"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-026",
 			"name": "AI Hub Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-026"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-027",
 			"name": "Content Marketing Platform Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-027"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-028",
 			"name": "Data Platform Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-028"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-029",
 			"name": "Digital Sales Room Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-029"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-030",
 			"name": "No Contract Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-030"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-031",
 			"name": "Cloud Native Pending Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-031"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-032",
 			"name": "Cloud Native Offline Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-032"
 		},
 		{
+			"allowPermanentLicenses": false,
+			"allowSelfProvisioning": true,
 			"externalReferenceCode": "PRJCT-033",
 			"name": "Mixed Business Plan And PaaS Project",
 			"r_accountEntryToProject_accountEntryERC": "ACCNT-004"

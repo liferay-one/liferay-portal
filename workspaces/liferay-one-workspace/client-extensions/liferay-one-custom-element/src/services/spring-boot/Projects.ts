@@ -8,6 +8,11 @@ import {downloadFile} from '~/utils/downloadFileUtils';
 
 import {OneSpringBootOAuth2} from './OAuth2Client';
 
+import type {
+	ProjectLicensingSetting,
+	ProjectLicensingSettings,
+} from '~/types/projects';
+
 export type DXPActivationCode = {
 	activationCode: string;
 	activationMode: string;
@@ -135,6 +140,21 @@ class ProjectsOAuth2 extends OneSpringBootOAuth2 {
 			`/${projectExternalReferenceCode}/dxp/environments` +
 				`/${environmentExternalReferenceCode}/active`,
 			{active}
+		);
+	}
+
+	async patchLicensingSettings(
+		projectExternalReferenceCode: string,
+		licensingSettings: Partial<Record<ProjectLicensingSetting, boolean>>
+	) {
+		return this.patch<
+			Pick<
+				ProjectLicensingSettings,
+				ProjectLicensingSetting | 'externalReferenceCode'
+			>
+		>(
+			`/${projectExternalReferenceCode}/licensing-settings`,
+			licensingSettings
 		);
 	}
 

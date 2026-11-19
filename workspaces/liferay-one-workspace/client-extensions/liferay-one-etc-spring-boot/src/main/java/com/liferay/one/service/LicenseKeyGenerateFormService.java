@@ -21,7 +21,6 @@ import com.liferay.one.model.EntitlementDefinition;
 import com.liferay.one.model.LicenseKey;
 import com.liferay.one.model.ProductVersion;
 import com.liferay.one.model.Project;
-import com.liferay.one.util.AccountUtil;
 import com.liferay.one.util.CommerceProductUtil;
 import com.liferay.one.util.comparator.VersionComparator;
 import com.liferay.petra.string.CharPool;
@@ -189,6 +188,22 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		return maxQuantity.intValue();
+	}
+
+	public static boolean isComplimentaryLicenseKeyFamily(
+		String licenseKeyFamily) {
+
+		if (Objects.equals(
+				LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_DXP,
+				licenseKeyFamily) ||
+			Objects.equals(
+				LicenseKeyGenerationConstants.LICENSE_KEY_FAMILY_PORTAL,
+				licenseKeyFamily)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	public static boolean isLeadingLicenseKeyFamily(String licenseKeyFamily) {
@@ -375,12 +390,22 @@ public class LicenseKeyGenerateFormService {
 		return entitlement.isGeneratesActivationKey();
 	}
 
-	public boolean isAllowComplimentary(long accountId) throws Exception {
-		return _isAllowComplimentary(_accountService.getAccount(accountId));
+	public boolean isAllowComplimentary(String projectExternalReferenceCode)
+		throws Exception {
+
+		Project project = _projectService.getProject(
+			projectExternalReferenceCode);
+
+		return project.isAllowComplimentary();
 	}
 
-	public boolean isAllowPermanentLicenses(long accountId) throws Exception {
-		return _isAllowPermanentLicenses(_accountService.getAccount(accountId));
+	public boolean isAllowPermanentLicenses(String projectExternalReferenceCode)
+		throws Exception {
+
+		Project project = _projectService.getProject(
+			projectExternalReferenceCode);
+
+		return project.isAllowPermanentLicenses();
 	}
 
 	public boolean isLicensedForVersion(
@@ -512,6 +537,35 @@ public class LicenseKeyGenerateFormService {
 		return jsonArray;
 	}
 
+	private JSONArray _getComplimentarySubscriptionsJSONArray(
+		List<Entitlement> entitlements) {
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (Entitlement entitlement : entitlements) {
+			jsonArray.put(
+				new JSONObject(
+				).put(
+					"availableCount", 1
+				).put(
+					"endDate", toISO8601(entitlement.getEndDateInstant())
+				).put(
+					"entitlementId", entitlement.getEntitlementId()
+				).put(
+					"instanceSize", getInstanceSize(entitlement)
+				).put(
+					"licenseKeyDurationDays",
+					LicenseKeyGenerationConstants.COMPLIMENTARY_DURATION_DAYS
+				).put(
+					"startDate", toISO8601(entitlement.getStartDateInstant())
+				).put(
+					"totalCount", 1
+				));
+		}
+
+		return jsonArray;
+	}
+
 	private List<EntitledProduct> _getEntitledProducts(
 		List<Entitlement> entitlements,
 		Map<Long, ResolvedProduct> resolvedProducts) {
@@ -623,24 +677,11 @@ public class LicenseKeyGenerateFormService {
 		boolean allowPermanentLicenses = false;
 
 		if (activationKeyScope.isProject()) {
-			Account account = _accountService.getAccount(
-				activationKeyScope.getAccountId());
+			Project project = _projectService.getProject(
+				activationKeyScope.getProjectExternalReferenceCode());
 
-			allowComplimentary = _isAllowComplimentary(account);
-			allowPermanentLicenses = _isAllowPermanentLicenses(account);
-		}
-
-		boolean hasComplimentaryActivationKey = false;
-
-		if (allowComplimentary) {
-			int complimentaryActivationKeysCount =
-				_activationKeyService.getActivationKeysCount(
-					true, activationKeyScope.getProjectExternalReferenceCode(),
-					LicenseKeyGenerationConstants.KEY_TYPE_COMPLIMENTARY);
-
-			if (complimentaryActivationKeysCount > 0) {
-				hasComplimentaryActivationKey = true;
-			}
+			allowComplimentary = project.isAllowComplimentary();
+			allowPermanentLicenses = project.isAllowPermanentLicenses();
 		}
 
 		JSONArray bundleProductsJSONArray = new JSONArray();
@@ -676,9 +717,8 @@ public class LicenseKeyGenerateFormService {
 
 			JSONArray keyTypesJSONArray = _getKeyTypesJSONArray(
 				admin, allowComplimentary, allowPermanentLicenses,
-				entitledProduct.isAppLicense(), hasComplimentaryActivationKey,
-				hasLicenseEntries, licenseKeyCounts,
-				entitledProduct.getLicenseKeyFamily(),
+				entitledProduct.isAppLicense(), hasLicenseEntries,
+				licenseKeyCounts, entitledProduct.getLicenseKeyFamily(),
 				licenseKeyTypeEntitlements, licenseKeyFamilyProductVersions,
 				provisionable, virtualClusterAllowed);
 
@@ -784,8 +824,8 @@ public class LicenseKeyGenerateFormService {
 	private JSONArray _getKeyTypesJSONArray(
 		boolean admin, boolean allowComplimentary,
 		boolean allowPermanentLicenses, boolean appLicense,
-		boolean hasComplimentaryActivationKey, boolean hasLicenseEntries,
-		Map<Long, Integer> licenseKeyCounts, String licenseKeyFamily,
+		boolean hasLicenseEntries, Map<Long, Integer> licenseKeyCounts,
+		String licenseKeyFamily,
 		Map<String, Map<String, List<Entitlement>>> licenseKeyTypeEntitlements,
 		List<ProductVersion> productVersions, boolean provisionable,
 		boolean virtualClusterAllowed) {
@@ -817,13 +857,21 @@ public class LicenseKeyGenerateFormService {
 			}
 
 			if (complimentary &&
-				(!allowComplimentary || hasComplimentaryActivationKey)) {
+				(!allowComplimentary || appLicense ||
+				 !isComplimentaryLicenseKeyFamily(licenseKeyFamily))) {
 
 				continue;
 			}
 
+			String entitlementsKey = licenseKeyType.getKey();
+
+			if (complimentary) {
+				entitlementsKey =
+					LicenseKeyGenerationConstants.KEY_TYPE_PRODUCTION;
+			}
+
 			List<Entitlement> keyTypeEntitlements = entitlements.get(
-				licenseKeyType.getKey());
+				entitlementsKey);
 
 			if (ListUtil.isEmpty(keyTypeEntitlements)) {
 				continue;
@@ -867,9 +915,18 @@ public class LicenseKeyGenerateFormService {
 				}
 			}
 
-			JSONArray subscriptionsJSONArray = _getSubscriptionsJSONArray(
-				allowPermanentLicenses && !complimentary, keyTypeEntitlements,
-				licenseEntryType, licenseKeyCounts);
+			JSONArray subscriptionsJSONArray = null;
+
+			if (complimentary) {
+				subscriptionsJSONArray =
+					_getComplimentarySubscriptionsJSONArray(
+						keyTypeEntitlements);
+			}
+			else {
+				subscriptionsJSONArray = _getSubscriptionsJSONArray(
+					allowPermanentLicenses, keyTypeEntitlements,
+					licenseEntryType, licenseKeyCounts);
+			}
 
 			Entitlement entitlement = keyTypeEntitlements.get(0);
 
@@ -1230,20 +1287,6 @@ public class LicenseKeyGenerateFormService {
 		return jsonArray;
 	}
 
-	private boolean _isAllowComplimentary(Account account) {
-		return AccountUtil.getCustomFieldBoolean(
-			account, "allowComplimentary", false);
-	}
-
-	private boolean _isAllowPermanentLicenses(Account account) {
-
-		// The legacy provisioning system allows permanent licenses unless the
-		// account turns them off, so an account without a value allows them
-
-		return AccountUtil.getCustomFieldBoolean(
-			account, "allowPermanentLicenses", true);
-	}
-
 	private boolean _isDownloadable(String keyType) {
 		return LicenseKeyGenerationConstants.downloadableKeyTypes.contains(
 			keyType);
@@ -1530,9 +1573,6 @@ public class LicenseKeyGenerateFormService {
 		"\\bsizing[- ]?(\\d+)\\b", Pattern.CASE_INSENSITIVE);
 
 	@Autowired
-	private AccountService _accountService;
-
-	@Autowired
 	private ActivationKeyService _activationKeyService;
 
 	@Autowired
@@ -1555,6 +1595,9 @@ public class LicenseKeyGenerateFormService {
 
 	@Autowired
 	private ProductVersionService _productVersionService;
+
+	@Autowired
+	private ProjectService _projectService;
 
 	private final VersionComparator _versionComparator =
 		new VersionComparator();

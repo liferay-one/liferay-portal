@@ -85,6 +85,7 @@ export default {
 	'additional-apps-requested': 'Aplicaciones adicionales solicitadas',
 	'address': 'Dirección',
 	'address-name': 'Nombre de la dirección',
+	'admin': 'Administración',
 	'administration-email': 'Correo electrónico de administración',
 	'administrator': 'Administrador',
 	'administrator-dashboard': 'Panel de administración',
@@ -346,6 +347,7 @@ export default {
 		'Completar solicitud de cuenta de publicador',
 	'completed': 'Completado',
 	'complimentary': 'De cortesía',
+	'complimentary-key': 'Clave de cortesía',
 	'composite-app': 'Aplicación compuesta',
 	'confirm': 'Confirmar',
 	'confirm-deactivate-keys':
@@ -804,6 +806,9 @@ export default {
 		'Únete a una cuenta empresarial existente (p. ej., tu empresa) y obtén acceso total.',
 	'join-existing-business-account':
 		'Unirse a una cuenta empresarial existente',
+	'jsm-sync': 'Sincronización con JSM',
+	'jsm-sync-description':
+		'Sincronizar con JSM envía ahora esta cuenta, sus proyectos, sus usuarios y sus roles a Jira Service Management. Úselo cuando JSM no muestre un cambio reciente.',
 	'key-activations-available-x-of-x':
 		'Activaciones de claves disponibles: {0} de {1}.',
 	'key-activations-provisioned': 'Activaciones de claves entregadas',
@@ -834,6 +839,9 @@ export default {
 	'licenses': 'Licencias',
 	'licenses-list': 'Lista de licencias',
 	'licensing': 'Licenciamiento',
+	'licensing-settings': 'Configuración de licencias',
+	'licensing-settings-description':
+		'Cada proyecto de esta cuenta tiene su propia configuración de licencias. Un proyecto obtiene una clave de cortesía cada vez que Clave de cortesía está activada, y generar la clave la desactiva.',
 	'life-sciences': 'Ciencias de la vida',
 	'liferay-dsr-eula-disclaimer-prefix':
 		'Esta versión de Digital Sales Room (DSR) es una versión Beta. Usted reconoce que Liferay no está obligado a prestar servicios de soporte durante la versión Beta. Para mayor claridad, los beneficios de suscripción de cualquier suscripción activa que pueda tener para el software de Liferay no se extenderán a la versión Beta de DSR y la participación en la versión Beta no otorga acceso a ninguna versión futura disponible de forma general del producto. El uso de DSR está sujeto al Acuerdo de servicios empresariales (ESA) de Liferay, al apéndice correspondiente y al anexo de procesamiento de datos de Liferay, cada uno disponible en',
@@ -1148,6 +1156,7 @@ export default {
 	'pending': 'Pendiente',
 	'pending-payment': 'Pago pendiente',
 	'performance-management': 'Gestión del rendimiento',
+	'permanent-licenses': 'Licencias permanentes',
 	'permissions-successfully-updated': 'Permisos actualizados con éxito.',
 	'perpetual': 'Perpetua',
 	'personal': 'Persona',
@@ -1451,6 +1460,7 @@ export default {
 		'Selecciona el tipo de publicador que deseas',
 	'selected-project': 'Proyecto seleccionado',
 	'self-managed': 'Autogestionado',
+	'self-provisioning': 'Autoaprovisionamiento',
 	'self-service-portal': 'Portal de autoservicio',
 	'send-invitation': 'Enviar invitación',
 	'send-request': 'Enviar solicitud',

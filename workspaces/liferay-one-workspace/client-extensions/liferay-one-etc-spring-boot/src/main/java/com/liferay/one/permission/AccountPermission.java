@@ -57,6 +57,18 @@ public class AccountPermission {
 		}
 	}
 
+	public void checkSyncToJSM(Jwt jwt) throws Exception {
+		UserAccount userAccount = _userAccountService.getMyUserAccount(jwt);
+
+		if (!_isPortalManager(userAccount) &&
+			!_canAssignAllAccountMembers(userAccount)) {
+
+			throw new PrincipalException(
+				"Only an administrator, a Provisioning Administrator, or a " +
+					"Provisioning Worker can sync an account to JSM");
+		}
+	}
+
 	public boolean contains(
 			String accountExternalReferenceCode, String actionId, Jwt jwt,
 			UserAccount userAccount)
