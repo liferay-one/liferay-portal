@@ -24,6 +24,7 @@ export type GenerateFormKeyType = {
 	licenseEntryType: string;
 	productKey: string;
 	subscriptions: GenerateFormSubscription[];
+	unlimited?: boolean;
 	virtualCluster: boolean;
 };
 

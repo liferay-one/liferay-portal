@@ -395,13 +395,21 @@ export function getSelectableProducts(
 }
 
 export function hasAvailableActivations(keyType: GenerateFormKeyType): boolean {
+	return Boolean(keyType.unlimited) || hasRemainingActivations(keyType);
+}
+
+export function hasAvailableKeyType(product: GenerateFormProduct): boolean {
+	return product.keyTypes.some(hasAvailableActivations);
+}
+
+export function hasRemainingActivations(keyType: GenerateFormKeyType): boolean {
 	return keyType.subscriptions.some(
 		(subscription) => subscription.availableCount > 0
 	);
 }
 
-export function hasAvailableKeyType(product: GenerateFormProduct): boolean {
-	return product.keyTypes.some(hasAvailableActivations);
+export function hasRemainingKeyType(product: GenerateFormProduct): boolean {
+	return product.keyTypes.some(hasRemainingActivations);
 }
 
 export function getEnvironmentTypeRank(type: string): number {

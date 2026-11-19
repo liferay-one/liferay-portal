@@ -107,6 +107,51 @@ function toAppGenerateForm(availableCounts: number[]): GenerateForm {
 	};
 }
 
+function toUnlimitedDeveloperGenerateForm(
+	productionAvailableCount: number
+): GenerateForm {
+	return {
+		bundleProducts: [],
+		products: [
+			{
+				developerVersions: ['2026.Q3'],
+				entitlementId: 31,
+				externalReferenceCode: 'DXP',
+				keyTypes: [
+					{
+						entitlementId: 31,
+						key: 'developer',
+						licenseEntryType: '',
+						productKey: '',
+						subscriptions: [
+							{...toSubscription(31), availableCount: 0},
+						],
+						unlimited: true,
+						virtualCluster: false,
+					},
+					{
+						entitlementId: 32,
+						key: 'production',
+						licenseEntryType: '',
+						productKey: '',
+						subscriptions: [
+							{
+								...toSubscription(32),
+								availableCount: productionAvailableCount,
+							},
+						],
+						unlimited: false,
+						virtualCluster: false,
+					},
+				],
+				licenseKeyFamily: 'DXP',
+				name: 'Liferay DXP',
+				versions: ['2026.Q3'],
+			},
+		],
+	};
+}
+
 const PRODUCTION_DEFAULT_VALUES: Partial<GenerateActivationKeyForm> = {
 	keyType: 'production',
 	productExternalReferenceCode: 'DXP',
@@ -249,6 +294,45 @@ describe('SubscriptionStep', () => {
 		);
 
 		expect(screen.getByRole('button', {name: 'Download'})).toBeEnabled();
+	});
+
+	it('selects a key type with activations left before an unlimited developer key type', () => {
+		let form: UseFormReturn<GenerateActivationKeyForm> | undefined;
+
+		render(
+			<SubscriptionStepWrapper
+				defaultValues={{
+					keyType: '',
+					productExternalReferenceCode: 'DXP',
+				}}
+				generateForm={toUnlimitedDeveloperGenerateForm(1)}
+				onForm={(current) => {
+					form = current;
+				}}
+			/>
+		);
+
+		expect(form?.getValues('keyType')).toBe('production');
+	});
+
+	it('selects an unlimited developer key type when no other key type has activations left', () => {
+		let form: UseFormReturn<GenerateActivationKeyForm> | undefined;
+
+		render(
+			<SubscriptionStepWrapper
+				defaultValues={{
+					keyType: '',
+					productExternalReferenceCode: 'DXP',
+				}}
+				generateForm={toUnlimitedDeveloperGenerateForm(0)}
+				onForm={(current) => {
+					form = current;
+				}}
+			/>
+		);
+
+		expect(form?.getValues('keyType')).toBe('developer');
+		expect(screen.getByRole('option', {name: 'Developer'})).toBeEnabled();
 	});
 
 	it('shows that a permanent activation key does not expire', () => {
