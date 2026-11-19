@@ -53,39 +53,23 @@
 	[/#attempt]
 [/#if]
 
-[#function getPublisherName product]
-	[#if (product.productSpecifications![])?has_content]
-		[#local specification = product.productSpecifications?filter(
-			productSpecification ->
-				stringUtil.equals(
-					productSpecification.specificationKey,
-					"publisher-name"
-				)
-		) /]
+[#assign
+	accountId = "-1"
+	appsCount = 0
+	commerceContext = request.getAttribute("COMMERCE_CONTEXT")!
+/]
 
-		[#if specification?has_content]
-			[#return specification?first.value!"" /]
-		[/#if]
-	[/#if]
-
-	[#return "" /]
-[/#function]
-
-[#assign appsCount = 0 /]
+[#if commerceContext?has_content && commerceContext.getAccountEntry()??]
+	[#assign accountId = commerceContext.getAccountEntry().getAccountEntryId()?string /]
+[/#if]
 
 [#if catalogId?has_content && channelId?has_content]
 	[#attempt]
-
 		[#assign response = restClient.get(
-			"/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?accountId=-1&nestedFields=categories,productSpecifications&filter=catalogId eq " + catalogId
+			"/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products?accountId=${accountId}&filter=catalogId eq ${catalogId}&pageSize=1"
 		) /]
 
-		[#assign products = response.items![] /]
-
-		[#assign appsCount = (
-			products?filter(product -> getPublisherName(product) == publisherName)
-		)?size /]
-
+		[#assign appsCount = response.totalCount!0 /]
 	[#recover]
 		<script>
 			console.error(
