@@ -12,6 +12,7 @@ import com.liferay.one.constants.RoleConstants;
 import com.liferay.one.exception.DataOpsUnavailableException;
 import com.liferay.one.exception.InvalidUsageParameterException;
 import com.liferay.one.exception.InvalidUsageProductException;
+import com.liferay.one.exception.LicenseKeyValidationException;
 import com.liferay.one.exception.ProjectNotFoundException;
 import com.liferay.one.jira.service.AccountAssetService;
 import com.liferay.one.jira.synchronizer.AccountSynchronizer;
@@ -23,6 +24,7 @@ import com.liferay.one.model.LDPUsageStrategy;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.model.UsageDefinition;
+import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.ProjectPermission;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceSkuService;
@@ -50,6 +52,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.ArgumentCaptor;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
 
@@ -84,6 +87,9 @@ public class ProjectRestControllerTest {
 			_dataOpsUsageService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_entitlementService", _entitlementService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_environmentActivationPermission",
+			_environmentActivationPermission);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_projectContactRoleService",
 			_projectContactRoleService);
@@ -1333,6 +1339,111 @@ public class ProjectRestControllerTest {
 	}
 
 	@Test
+	public void testPatchLicensingSettingsChecksThePermission()
+		throws Exception {
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_environmentActivationPermission
+		).checkLicensingSettings(
+			null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _projectRestController.patchLicensingSettings(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				"{\"allowSelfProvisioning\": false}"));
+
+		Mockito.verify(
+			_projectService, Mockito.never()
+		).updateLicensingSettings(
+			Mockito.any(), Mockito.any()
+		);
+	}
+
+	@Test
+	public void testPatchLicensingSettingsRejectsABodyWithoutASetting() {
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> _projectRestController.patchLicensingSettings(
+					null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+					"{\"name\": \"Project\"}"));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testPatchLicensingSettingsRejectsANonbooleanSetting() {
+		Assertions.assertThrows(
+			LicenseKeyValidationException.class,
+			() -> _projectRestController.patchLicensingSettings(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				"{\"allowSelfProvisioning\": \"no\"}"));
+	}
+
+	@Test
+	public void testPatchLicensingSettingsRejectsAnUnknownProject() {
+		Assertions.assertThrows(
+			ProjectNotFoundException.class,
+			() -> _projectRestController.patchLicensingSettings(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE_UNKNOWN,
+				"{\"allowSelfProvisioning\": false}"));
+	}
+
+	@Test
+	public void testPatchLicensingSettingsUpdatesOnlyTheGivenSettings()
+		throws Exception {
+
+		ArgumentCaptor<JSONObject> jsonObjectArgumentCaptor =
+			ArgumentCaptor.forClass(JSONObject.class);
+
+		Mockito.when(
+			_projectService.updateLicensingSettings(
+				Mockito.eq(_PROJECT_EXTERNAL_REFERENCE_CODE),
+				jsonObjectArgumentCaptor.capture())
+		).thenReturn(
+			new Project(
+				new JSONObject(
+				).put(
+					"allowComplimentary", true
+				).put(
+					"allowPermanentLicenses", true
+				).put(
+					"allowSelfProvisioning", false
+				))
+		);
+
+		ResponseEntity<String> responseEntity =
+			_projectRestController.patchLicensingSettings(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE,
+				"{\"allowPermanentLicenses\": true, " +
+					"\"allowSelfProvisioning\": false}");
+
+		Assertions.assertTrue(
+			new JSONObject(
+			).put(
+				"allowPermanentLicenses", true
+			).put(
+				"allowSelfProvisioning", false
+			).similar(
+				jsonObjectArgumentCaptor.getValue()
+			));
+
+		JSONObject jsonObject = new JSONObject(responseEntity.getBody());
+
+		Assertions.assertTrue(jsonObject.getBoolean("allowComplimentary"));
+		Assertions.assertTrue(jsonObject.getBoolean("allowPermanentLicenses"));
+		Assertions.assertFalse(jsonObject.getBoolean("allowSelfProvisioning"));
+		Assertions.assertEquals(
+			_PROJECT_EXTERNAL_REFERENCE_CODE,
+			jsonObject.getString("externalReferenceCode"));
+	}
+
+	@Test
 	public void testPostProjectMembershipsChecksPermissionBeforeAssigning()
 		throws Exception {
 
@@ -2050,6 +2161,9 @@ public class ProjectRestControllerTest {
 		DataOpsUsageService.class);
 	private final EntitlementService _entitlementService = Mockito.mock(
 		EntitlementService.class);
+	private final EnvironmentActivationPermission
+		_environmentActivationPermission = Mockito.mock(
+			EnvironmentActivationPermission.class);
 	private final ProjectContactRoleService _projectContactRoleService =
 		Mockito.mock(ProjectContactRoleService.class);
 	private final ProjectMembershipService _projectMembershipService =

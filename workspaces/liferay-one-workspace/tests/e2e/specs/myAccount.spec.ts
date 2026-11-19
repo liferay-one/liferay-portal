@@ -335,7 +335,7 @@ test.describe('[FLOW-MY-ACCOUNT-OVERVIEW] account access', () => {
 });
 
 test.describe('[FLOW-MY-ACCOUNT-OVERVIEW] account details', () => {
-	test('[FLOW-MY-ACCOUNT-OVERVIEW] [ROUTE-MY-ACCOUNT-ACCOUNT-DETAILS] shows the account without a Security card and hides Sync to JSM from an account admin', async ({
+	test('[FLOW-MY-ACCOUNT-OVERVIEW] [ROUTE-MY-ACCOUNT-ACCOUNT-DETAILS] shows the account without a Security card and hides the Admin tab from an account admin', async ({
 		adminAPI,
 		page,
 		signIn,
@@ -374,12 +374,14 @@ test.describe('[FLOW-MY-ACCOUNT-OVERVIEW] account details', () => {
 
 		await expect(page.getByRole('tab', {name: 'Details'})).toBeVisible();
 
+		await expect(page.getByRole('tab', {name: 'Admin'})).toHaveCount(0);
+
 		await expect(
 			page.getByRole('button', {name: 'Sync to JSM'})
 		).toHaveCount(0);
 	});
 
-	test('[FLOW-MY-ACCOUNT-OVERVIEW] [ROUTE-MY-ACCOUNT-ACCOUNT-DETAILS] syncs the account to JSM as an administrator', async ({
+	test('[FLOW-MY-ACCOUNT-OVERVIEW] [ROUTE-MY-ACCOUNT-ACCOUNT-ADMIN] syncs the account to JSM from the Admin tab as an administrator', async ({
 		adminAPI,
 		page,
 		springBoot,
@@ -405,6 +407,12 @@ test.describe('[FLOW-MY-ACCOUNT-OVERVIEW] account details', () => {
 			);
 
 			await gotoMyAccount(page, `${ACCOUNT_ERC}/account-details`);
+
+			await page.getByRole('tab', {name: 'Admin'}).click();
+
+			await expect(page).toHaveURL(
+				new RegExp(`#/${ACCOUNT_ERC}/account-admin`)
+			);
 
 			const syncButton = page.getByRole('button', {name: 'Sync to JSM'});
 

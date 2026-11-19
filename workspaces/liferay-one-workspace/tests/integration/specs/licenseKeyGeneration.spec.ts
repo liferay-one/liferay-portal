@@ -24,7 +24,6 @@ const SERVER_HOST_NAME = 'license-key-generation.example.com';
 
 const DEFINITION_ERCS: Record<string, string> = {
 	'backup': 'C_ENT_DEF_DXP_BACKUP',
-	'complimentary': 'C_ENT_DEF_DXP_COMPLIMENTARY',
 	'developer': 'C_ENT_DEF_DXP_DEVELOPER',
 	'developer-cluster': 'C_ENT_DEF_DXP_DEVELOPER_CLUSTER',
 	'enterprise': `${ERC_PREFIX}DEF_ENTERPRISE`,
@@ -89,7 +88,7 @@ const activationKeyIds: number[] = [];
 const entitlementIds: Record<string, number> = {};
 
 let admin: APIHelpers;
-let originalAllowComplimentary: unknown;
+let originalAllowComplimentary: boolean;
 let token: string;
 let version: string;
 
@@ -194,6 +193,32 @@ async function getActivationKeyXML(activationKeyId: number): Promise<string> {
 	return response.text();
 }
 
+async function getAllowComplimentary(): Promise<boolean> {
+	const project = await admin.get<{allowComplimentary?: boolean}>(
+		`/o/c/projects/by-external-reference-code/${PROJECT_ERC}`
+	);
+
+	return project.allowComplimentary ?? false;
+}
+
+async function getComplimentaryKeyTypeCount(): Promise<number> {
+	const response = await sendAsUser(
+		'get',
+		`/activation-keys/generate-form?projectExternalReferenceCode=${PROJECT_ERC}`
+	);
+
+	expect(response.status(), await response.text()).toBe(200);
+
+	const {products} = (await response.json()) as {
+		products: {keyTypes: {key: string}[]; licenseKeyFamily: string}[];
+	};
+
+	return products
+		.filter((product) => product.licenseKeyFamily === 'DXP')
+		.flatMap((product) => product.keyTypes)
+		.filter((keyType) => keyType.key === 'complimentary').length;
+}
+
 async function getLicenseKeys(activationKeyId: number): Promise<ILicenseKey[]> {
 	const {items} = await admin.get<HeadlessPage<ILicenseKey>>(
 		`/o/c/licensekeys?filter=${encodeURIComponent(
@@ -218,18 +243,24 @@ function sendAsUser(
 	});
 }
 
-async function setAllowComplimentary(value: unknown): Promise<void> {
+async function setAllowComplimentary(
+	allowComplimentary: boolean
+): Promise<void> {
 	const response = await admin.send(
 		'patch',
-		`/o/headless-admin-user/v1.0/accounts/by-external-reference-code/${ACCOUNT_ERC}`,
-		{
-			customFields: [
-				{customValue: {data: value}, name: 'allowComplimentary'},
-			],
-		}
+		`/o/c/projects/by-external-reference-code/${PROJECT_ERC}`,
+		{allowComplimentary}
 	);
 
 	expect(response.ok(), await response.text()).toBeTruthy();
+}
+
+function toComplimentaryGenerateRequest(): Record<string, unknown> {
+	return toGenerateRequest('production', {
+		bundleEntitlementIds: [],
+		keyType: 'complimentary',
+		purpose: 'Load testing',
+	});
 }
 
 function toGenerateRequest(
@@ -335,16 +366,7 @@ test.describe('[FLOW-LICENSE-GENERATION] license key generation for each key typ
 		await upsertEntitlement('account-free', 'free', 1, '');
 		await upsertEntitlement('production-single', 'production', 1);
 
-		const account = await admin.get<{
-			customFields: {customValue: {data: unknown}; name: string}[];
-		}>(
-			`/o/headless-admin-user/v1.0/accounts/by-external-reference-code/${ACCOUNT_ERC}`
-		);
-
-		originalAllowComplimentary =
-			account.customFields.find(
-				(customField) => customField.name === 'allowComplimentary'
-			)?.customValue.data ?? false;
+		originalAllowComplimentary = await getAllowComplimentary();
 
 		await setAllowComplimentary(true);
 
@@ -522,12 +544,11 @@ test.describe('[FLOW-LICENSE-GENERATION] license key generation for each key typ
 		);
 	});
 
-	test('[FLOW-LICENSE-GENERATION] generates a complimentary key for 30 days', async () => {
+	test('[FLOW-LICENSE-GENERATION] generates a complimentary key for 30 days from a production entitlement', async () => {
+		expect(await getComplimentaryKeyTypeCount()).toBe(1);
+
 		const activationKeyId = await generateActivationKey(
-			toGenerateRequest('complimentary', {
-				bundleEntitlementIds: [],
-				purpose: 'Load testing',
-			})
+			toComplimentaryGenerateRequest()
 		);
 
 		const [licenseKey] = await getLicenseKeys(activationKeyId);
@@ -542,20 +563,28 @@ test.describe('[FLOW-LICENSE-GENERATION] license key generation for each key typ
 				licenseKey.startDate
 			)
 		).toBe(30);
+
+		expect(await getAllowComplimentary()).toBe(false);
+		expect(await getComplimentaryKeyTypeCount()).toBe(0);
 	});
 
-	test('[FLOW-LICENSE-GENERATION] refuses a second complimentary key while one is active', async () => {
-		const response = await generate(
-			toGenerateRequest('complimentary', {
-				bundleEntitlementIds: [],
-				purpose: 'Load testing',
-			})
-		);
+	test('[FLOW-LICENSE-GENERATION] refuses a second complimentary key after the project setting turns off', async () => {
+		const response = await generate(toComplimentaryGenerateRequest());
 
 		expect(response.status()).toBe(409);
 		expect(await response.text()).toContain(
-			'already has a complimentary key'
+			'The project is not allowed to generate a complimentary key'
 		);
+	});
+
+	test('[FLOW-LICENSE-GENERATION] generates a second complimentary key after the project setting turns on again', async () => {
+		await setAllowComplimentary(true);
+
+		expect(await getComplimentaryKeyTypeCount()).toBe(1);
+
+		await generateActivationKey(toComplimentaryGenerateRequest());
+
+		expect(await getAllowComplimentary()).toBe(false);
 	});
 
 	for (const {keyType, licenseName} of [

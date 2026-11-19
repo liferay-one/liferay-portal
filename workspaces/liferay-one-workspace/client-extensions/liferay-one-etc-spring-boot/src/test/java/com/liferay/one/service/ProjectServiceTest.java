@@ -18,10 +18,14 @@ import java.util.List;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import org.mockito.Mockito;
+
 import org.springframework.http.HttpHeaders;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 /**
@@ -30,9 +34,17 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 @DisplayName("[SVC-PROJECTSERVICE] ProjectService")
 public class ProjectServiceTest {
 
+	@BeforeEach
+	public void setUp() {
+		ReflectionTestUtils.setField(
+			_testProjectService, "_accountService", _accountService);
+	}
+
 	@Test
 	public void testFetchProject() throws Exception {
 		_testProjectService.fetchResponse = new JSONObject(
+		).put(
+			"allowComplimentary", true
 		).put(
 			"externalReferenceCode", "PRJ-1"
 		).put(
@@ -42,6 +54,9 @@ public class ProjectServiceTest {
 		Project project = _testProjectService.fetchProject("PRJ-1");
 
 		Assertions.assertEquals(5, project.getAccountId());
+		Assertions.assertTrue(project.isAllowComplimentary());
+		Assertions.assertFalse(project.isAllowPermanentLicenses());
+		Assertions.assertTrue(project.isAllowSelfProvisioning());
 
 		Assertions.assertEquals(
 			List.of("GET /o/c/projects/by-external-reference-code/PRJ-1"),
@@ -54,11 +69,91 @@ public class ProjectServiceTest {
 	}
 
 	@Test
+	public void testUpdateLicensingSettingsPatchesOnlyTheGivenSettings()
+		throws Exception {
+
+		_testProjectService.patchResponse = new JSONObject(
+		).put(
+			"allowComplimentary", true
+		).put(
+			"allowPermanentLicenses", false
+		).put(
+			"allowSelfProvisioning", true
+		).toString();
+
+		Project project = _testProjectService.updateLicensingSettings(
+			"PRJ-1",
+			new JSONObject(
+			).put(
+				"allowPermanentLicenses", false
+			));
+
+		Assertions.assertEquals(
+			List.of("PATCH /o/c/projects/by-external-reference-code/PRJ-1"),
+			_testProjectService.requests);
+		Assertions.assertEquals(
+			"{\"allowPermanentLicenses\":false}",
+			_testProjectService.bodies.get(0));
+		Assertions.assertTrue(project.isAllowComplimentary());
+		Assertions.assertFalse(project.isAllowPermanentLicenses());
+		Assertions.assertTrue(project.isAllowSelfProvisioning());
+	}
+
+	@Test
+	public void testUpsertProjectAllowsComplimentaryByBillingCountry()
+		throws Exception {
+
+		Mockito.when(
+			_accountService.fetchBillingCountry("ACCNT-1")
+		).thenReturn(
+			"United Kingdom"
+		);
+
+		Assertions.assertFalse(
+			_getCreatedJSONObject(
+				"Ireland"
+			).getBoolean(
+				"allowComplimentary"
+			));
+		Assertions.assertFalse(
+			_getCreatedJSONObject(
+				"United Kingdom"
+			).getBoolean(
+				"allowComplimentary"
+			));
+		Assertions.assertTrue(
+			_getCreatedJSONObject(
+				"Spain"
+			).getBoolean(
+				"allowComplimentary"
+			));
+		Assertions.assertFalse(
+			_getCreatedJSONObject(
+				null
+			).getBoolean(
+				"allowComplimentary"
+			));
+
+		Mockito.when(
+			_accountService.fetchBillingCountry("ACCNT-1")
+		).thenReturn(
+			null
+		);
+
+		Assertions.assertTrue(
+			_getCreatedJSONObject(
+				null
+			).getBoolean(
+				"allowComplimentary"
+			));
+	}
+
+	@Test
 	public void testUpsertProjectFallsBackToAccountExternalReferenceCode()
 		throws Exception {
 
 		_testProjectService.upsertProject(
-			"ACCNT-1",
+			"ACCNT-1", null,
 			new SalesforceProject(
 				new JSONObject(
 				).put(
@@ -82,11 +177,33 @@ public class ProjectServiceTest {
 	}
 
 	@Test
+	public void testUpsertProjectLeavesTheSettingsOfAnExistingProject()
+		throws Exception {
+
+		_testProjectService.upsertProject(
+			"ACCNT-1", "Ireland",
+			new SalesforceProject(
+				new JSONObject(
+				).put(
+					"Id", "PRJ-1"
+				).put(
+					"Name", "Project 1"
+				)));
+
+		JSONObject jsonObject = new JSONObject(
+			_testProjectService.bodies.get(0));
+
+		Assertions.assertFalse(jsonObject.has("allowComplimentary"));
+		Assertions.assertFalse(jsonObject.has("allowPermanentLicenses"));
+		Assertions.assertFalse(jsonObject.has("allowSelfProvisioning"));
+	}
+
+	@Test
 	public void testUpsertProjectPatchesWithEveryOptionalField()
 		throws Exception {
 
 		_testProjectService.upsertProject(
-			"ACCNT-IGNORED",
+			"ACCNT-IGNORED", null,
 			new SalesforceProject(
 				new JSONObject(
 				).put(
@@ -159,9 +276,28 @@ public class ProjectServiceTest {
 				"PATCH /o/c/projects/by-external-reference-code/PRJ-1",
 				"PUT /o/c/projects/by-external-reference-code/PRJ-1"),
 			_testProjectService.requests);
-		Assertions.assertEquals(
-			_testProjectService.bodies.get(0),
+
+		JSONObject patchJSONObject = new JSONObject(
+			_testProjectService.bodies.get(0));
+
+		Assertions.assertFalse(patchJSONObject.has("allowComplimentary"));
+		Assertions.assertFalse(patchJSONObject.has("allowPermanentLicenses"));
+		Assertions.assertFalse(patchJSONObject.has("allowSelfProvisioning"));
+
+		JSONObject putJSONObject = new JSONObject(
 			_testProjectService.bodies.get(1));
+
+		Assertions.assertTrue(putJSONObject.getBoolean("allowComplimentary"));
+		Assertions.assertFalse(
+			putJSONObject.getBoolean("allowPermanentLicenses"));
+		Assertions.assertTrue(
+			putJSONObject.getBoolean("allowSelfProvisioning"));
+
+		putJSONObject.remove("allowComplimentary");
+		putJSONObject.remove("allowPermanentLicenses");
+		putJSONObject.remove("allowSelfProvisioning");
+
+		Assertions.assertTrue(patchJSONObject.similar(putJSONObject));
 	}
 
 	@Test
@@ -197,14 +333,14 @@ public class ProjectServiceTest {
 					"Name", "Project 1"
 				)));
 		_testProjectService.upsertProject(
-			"ACCNT-1",
+			"ACCNT-1", null,
 			new SalesforceProject(
 				new JSONObject(
 				).put(
 					"Name", "Project 1"
 				)));
 		_testProjectService.upsertProject(
-			"ACCNT-1",
+			"ACCNT-1", null,
 			new SalesforceProject(
 				new JSONObject(
 				).put(
@@ -214,12 +350,51 @@ public class ProjectServiceTest {
 		Assertions.assertTrue(_testProjectService.requests.isEmpty());
 	}
 
+	@Test
+	public void testUpsertProjectTurnsOffComplimentaryOfANewProjectWhenALookupFails()
+		throws Exception {
+
+		Mockito.when(
+			_accountService.fetchBillingCountry("ACCNT-1")
+		).thenThrow(
+			new RuntimeException()
+		);
+
+		JSONObject jsonObject = _getCreatedJSONObject(null);
+
+		Assertions.assertFalse(jsonObject.getBoolean("allowComplimentary"));
+		Assertions.assertFalse(jsonObject.getBoolean("allowPermanentLicenses"));
+		Assertions.assertTrue(jsonObject.getBoolean("allowSelfProvisioning"));
+	}
+
 	private WebClientResponseException _createException(int statusCode) {
 		return WebClientResponseException.create(
 			statusCode, "Error", HttpHeaders.EMPTY,
 			"error".getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8);
 	}
 
+	private JSONObject _getCreatedJSONObject(String billingCountry)
+		throws Exception {
+
+		_testProjectService.bodies.clear();
+
+		_testProjectService.patchRuntimeException = _createException(404);
+
+		_testProjectService.upsertProject(
+			"ACCNT-1", billingCountry,
+			new SalesforceProject(
+				new JSONObject(
+				).put(
+					"Id", "PRJ-1"
+				).put(
+					"Name", "Project 1"
+				)));
+
+		return new JSONObject(_testProjectService.bodies.get(1));
+	}
+
+	private final AccountService _accountService = Mockito.mock(
+		AccountService.class);
 	private final TestProjectService _testProjectService =
 		new TestProjectService();
 
@@ -227,6 +402,7 @@ public class ProjectServiceTest {
 
 		public final List<String> bodies = new ArrayList<>();
 		public String fetchResponse;
+		public String patchResponse = "{}";
 		public RuntimeException patchRuntimeException;
 		public final List<String> requests = new ArrayList<>();
 
@@ -250,7 +426,7 @@ public class ProjectServiceTest {
 				throw patchRuntimeException;
 			}
 
-			return "{}";
+			return patchResponse;
 		}
 
 		@Override

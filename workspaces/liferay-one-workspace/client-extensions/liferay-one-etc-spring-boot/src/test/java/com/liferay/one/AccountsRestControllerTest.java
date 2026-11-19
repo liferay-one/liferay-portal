@@ -2196,14 +2196,16 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
-	public void testPostSyncToJSMRejectsNonadministrator() throws Exception {
+	public void testPostSyncToJSMRejectsUserWithoutSyncPermission()
+		throws Exception {
+
 		AccountsRestController accountsRestController = _createController();
 
 		Mockito.doThrow(
 			PrincipalException.class
 		).when(
-			_adminPermission
-		).check(
+			_accountPermission
+		).checkSyncToJSM(
 			Mockito.any()
 		);
 
@@ -2220,7 +2222,7 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
-	public void testPostSyncToJSMSyncsAccountForAdministrator()
+	public void testPostSyncToJSMSyncsAccountForUserWithSyncPermission()
 		throws Exception {
 
 		AccountsRestController accountsRestController = _createController();
@@ -2240,8 +2242,8 @@ public class AccountsRestControllerTest {
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
 		Mockito.verify(
-			_adminPermission
-		).check(
+			_accountPermission
+		).checkSyncToJSM(
 			Mockito.any()
 		);
 

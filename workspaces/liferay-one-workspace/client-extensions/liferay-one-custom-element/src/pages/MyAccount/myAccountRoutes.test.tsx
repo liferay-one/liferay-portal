@@ -14,6 +14,9 @@ import {accountRoutes, projectDetailRoutes} from './myAccountRoutes';
 
 import type {AppRoute} from '~/utils/routeUtils';
 
+vi.mock('./AccountAdmin/AccountAdmin', () => ({
+	default: () => 'AccountAdmin page',
+}));
 vi.mock('./AccountDetails/AccountDetails', () => ({
 	default: () => 'AccountDetails page',
 }));
@@ -388,15 +391,21 @@ describe('myAccountRoutes', () => {
 		});
 
 		describe('AccountTabsLayout', () => {
-			it('groups account-details, account-members, and project-members', () => {
+			it('groups account-details, account-members, project-members, and account-admin', () => {
 				expect(childPaths(accountTabsRoute)).toEqual([
 					'account-details',
 					'account-members',
 					'project-members',
+					'account-admin',
 				]);
 			});
 
 			it.each([
+				[
+					'ROUTE-MY-ACCOUNT-ACCOUNT-ADMIN',
+					'/account-admin',
+					'AccountAdmin page',
+				],
 				[
 					'ROUTE-MY-ACCOUNT-ACCOUNT-DETAILS',
 					'/account-details',

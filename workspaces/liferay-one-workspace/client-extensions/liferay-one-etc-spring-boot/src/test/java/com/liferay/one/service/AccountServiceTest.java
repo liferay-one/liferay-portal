@@ -5,15 +5,11 @@
 
 package com.liferay.one.service;
 
-import com.liferay.headless.admin.user.client.custom.field.CustomField;
-import com.liferay.headless.admin.user.client.custom.field.CustomValue;
 import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.one.exception.DuplicateAccountException;
 import com.liferay.one.util.KeyedLock;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.net.URI;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -88,42 +84,65 @@ public class AccountServiceTest {
 	}
 
 	@Test
-	public void testGetDefaultLicensingCustomFields() {
+	public void testFetchBillingCountry() throws Exception {
+		AccountService accountService = _createAccountService();
+
+		Account account = new Account();
+
+		account.setDefaultBillingAddressId(7L);
+
+		Mockito.doReturn(
+			account
+		).when(
+			accountService
+		).fetchAccountByExternalReferenceCode(
+			"ACC-101"
+		);
+
+		Mockito.doReturn(
+			"{\"addressCountry\": \"Ireland\", \"addressType\": \"billing\"}"
+		).when(
+			accountService
+		).fetch(
+			Mockito.any(),
+			Mockito.eq(
+				URI.create("/o/headless-admin-user/v1.0/postal-addresses/7"))
+		);
+
+		Mockito.doReturn(
+			null
+		).when(
+			accountService
+		).getAuthorization();
+
 		Assertions.assertEquals(
-			Map.of(
-				"allowComplimentary", true, "allowPermanentLicenses", true,
-				"allowSelfProvisioning", true),
-			_getDefaultLicensingCustomFields("Spain", "Liferay Inc."));
-		Assertions.assertEquals(
-			Map.of(
-				"allowComplimentary", true, "allowPermanentLicenses", true,
-				"allowSelfProvisioning", true),
-			_getDefaultLicensingCustomFields(null, null));
-		Assertions.assertEquals(
-			Map.of(
-				"allowComplimentary", false, "allowPermanentLicenses", true,
-				"allowSelfProvisioning", true),
-			_getDefaultLicensingCustomFields("Ireland", "Liferay Inc."));
-		Assertions.assertEquals(
-			Map.of(
-				"allowComplimentary", false, "allowPermanentLicenses", true,
-				"allowSelfProvisioning", true),
-			_getDefaultLicensingCustomFields("United Kingdom", "Liferay Inc."));
-		Assertions.assertEquals(
-			Map.of(
-				"allowComplimentary", true, "allowPermanentLicenses", false,
-				"allowSelfProvisioning", true),
-			_getDefaultLicensingCustomFields("Brazil", "Liferay Brazil"));
-		Assertions.assertEquals(
-			Map.of(
-				"allowComplimentary", true, "allowPermanentLicenses", false,
-				"allowSelfProvisioning", true),
-			_getDefaultLicensingCustomFields("China", "Liferay China"));
-		Assertions.assertEquals(
-			Map.of(
-				"allowComplimentary", true, "allowPermanentLicenses", false,
-				"allowSelfProvisioning", true),
-			_getDefaultLicensingCustomFields("India", "Liferay India"));
+			"Ireland", accountService.fetchBillingCountry("ACC-101"));
+	}
+
+	@Test
+	public void testFetchBillingCountryWithoutABillingAddress()
+		throws Exception {
+
+		AccountService accountService = _createAccountService();
+
+		Mockito.doReturn(
+			new Account()
+		).when(
+			accountService
+		).fetchAccountByExternalReferenceCode(
+			"ACC-101"
+		);
+
+		Mockito.doReturn(
+			null
+		).when(
+			accountService
+		).fetchAccountByExternalReferenceCode(
+			"ACC-102"
+		);
+
+		Assertions.assertNull(accountService.fetchBillingCountry("ACC-101"));
+		Assertions.assertNull(accountService.fetchBillingCountry("ACC-102"));
 	}
 
 	private AccountService _createAccountService() {
@@ -133,24 +152,6 @@ public class AccountServiceTest {
 			accountService, "_keyedLock", new KeyedLock());
 
 		return accountService;
-	}
-
-	private Map<String, Object> _getDefaultLicensingCustomFields(
-		String billingCountry, String soldBy) {
-
-		Map<String, Object> values = new HashMap<>();
-
-		List<CustomField> customFields = ReflectionTestUtils.invokeMethod(
-			new AccountService(), "_getDefaultLicensingCustomFields",
-			billingCountry, soldBy);
-
-		for (CustomField customField : customFields) {
-			CustomValue customValue = customField.getCustomValue();
-
-			values.put(customField.getName(), customValue.getData());
-		}
-
-		return values;
 	}
 
 }

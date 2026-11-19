@@ -218,6 +218,26 @@ describe('SubscriptionStep', () => {
 		);
 	});
 
+	it('leaves the validity of a complimentary key to its start date', () => {
+		render(
+			<SubscriptionStepWrapper
+				defaultValues={{
+					keyType: 'complimentary',
+					productExternalReferenceCode: 'DXP',
+					subscriptionEntitlementId: COMPLIMENTARY_ENTITLEMENT_ID,
+				}}
+				generateForm={toGenerateForm()}
+			/>
+		);
+
+		expect(
+			screen.queryByText(/Activation key will be valid/)
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByText(/days after its start date/)
+		).toBeInTheDocument();
+	});
+
 	it('selects the first app purchase with activations left without a contract term', () => {
 		let form: UseFormReturn<GenerateActivationKeyForm> | undefined;
 

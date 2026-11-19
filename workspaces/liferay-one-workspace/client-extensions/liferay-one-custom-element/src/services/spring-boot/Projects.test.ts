@@ -146,4 +146,26 @@ describe('[CLIENT-SPRING-BOOT-PROJECTS] Projects', () => {
 		expect(postError).toBeInstanceOf(FetcherError);
 		expect(postError.status).toBe(422);
 	});
+
+	it('patches only the licensing settings that it is given', async () => {
+		oAuth2Fetch.mockResolvedValue(
+			new Response(JSON.stringify({allowSelfProvisioning: false}), {
+				status: 200,
+			})
+		);
+
+		await Projects.patchLicensingSettings('PRJCT-1', {
+			allowSelfProvisioning: false,
+		});
+
+		const [resource, options] = oAuth2Fetch.mock.calls[0];
+
+		expect(resource).toBe('/projects/PRJCT-1/licensing-settings');
+		expect(options).toEqual(
+			expect.objectContaining({
+				body: '{"allowSelfProvisioning":false}',
+				method: 'PATCH',
+			})
+		);
+	});
 });
