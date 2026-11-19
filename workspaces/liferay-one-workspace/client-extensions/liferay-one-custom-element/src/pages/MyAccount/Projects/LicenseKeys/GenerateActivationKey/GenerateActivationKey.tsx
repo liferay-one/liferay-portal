@@ -54,6 +54,7 @@ import {
 	getStepAfterSubscription,
 	getStepBeforeEnvironment,
 	hasAvailableKeyType,
+	hasRemainingKeyType,
 	isCloudNativeProduct,
 	isComplimentaryKeyType,
 	isDeveloperKeyType,
@@ -261,6 +262,7 @@ export default function GenerateActivationKey() {
 					current.externalReferenceCode ===
 					preselectedExternalReferenceCode
 			) ??
+			generateForm.products.find(hasRemainingKeyType) ??
 			generateForm.products.find(hasAvailableKeyType) ??
 			generateForm.products[0];
 
