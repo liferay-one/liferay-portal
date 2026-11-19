@@ -8,6 +8,8 @@ import fetcher from '~/services/fetcher/fetcher';
 import type {APIResponse} from '~/types/api';
 import type {BillingAddress, PlacedOrder} from '~/types/orders';
 
+export const PLACED_ORDER_ITEMS_PAGE_SIZE = '-1';
+
 export default class HeadlessCommerceDeliveryOrder {
 	static getPlacedOrders(
 		channelId: number | string,
@@ -21,7 +23,12 @@ export default class HeadlessCommerceDeliveryOrder {
 
 	static async getPlacedOrder(orderId: number | string) {
 		return fetcher<PlacedOrder>(
-			`o/headless-commerce-delivery-order/v1.0/placed-orders/${orderId}?nestedFields=placedOrderItems`
+			`o/headless-commerce-delivery-order/v1.0/placed-orders/${orderId}?${new URLSearchParams(
+				{
+					'nestedFields': 'placedOrderItems',
+					'placedOrderItems.pageSize': PLACED_ORDER_ITEMS_PAGE_SIZE,
+				}
+			)}`
 		);
 	}
 
