@@ -5,7 +5,9 @@
 
 import useSWR, {SWRConfiguration} from 'swr';
 import {useDataQuery} from '~/hooks/useDataQuery';
-import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
+import HeadlessCommerceDeliveryOrder, {
+	PLACED_ORDER_ITEMS_PAGE_SIZE,
+} from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
 
 import type {APIResponse, DataQuery} from '~/types/api';
@@ -53,11 +55,12 @@ const placedOrdersQuery = ({
 				accountId,
 				new URLSearchParams({
 					...(filter && {filter}),
-					nestedFields: 'placedOrderItems',
-					page: currentPage.toString(),
-					pageSize: pageSize.toString(),
+					'nestedFields': 'placedOrderItems',
+					'page': currentPage.toString(),
+					'pageSize': pageSize.toString(),
+					'placedOrderItems.pageSize': PLACED_ORDER_ITEMS_PAGE_SIZE,
 					...(restrictFields && {restrictFields}),
-					sort: 'createDate:desc',
+					'sort': 'createDate:desc',
 				})
 			);
 
