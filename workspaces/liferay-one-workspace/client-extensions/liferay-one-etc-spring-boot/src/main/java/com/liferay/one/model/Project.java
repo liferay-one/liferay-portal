@@ -17,6 +17,11 @@ public class Project {
 			"r_accountEntryToProject_accountEntryERC");
 		_accountId = jsonObject.optLong(
 			"r_accountEntryToProject_accountEntryId");
+		_allowComplimentary = jsonObject.optBoolean("allowComplimentary");
+		_allowPermanentLicenses = jsonObject.optBoolean(
+			"allowPermanentLicenses");
+		_allowSelfProvisioning = jsonObject.optBoolean(
+			"allowSelfProvisioning", true);
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
 		_name = jsonObject.optString("name");
 		_projectId = jsonObject.optLong("id");
@@ -42,8 +47,23 @@ public class Project {
 		return _projectId;
 	}
 
+	public boolean isAllowComplimentary() {
+		return _allowComplimentary;
+	}
+
+	public boolean isAllowPermanentLicenses() {
+		return _allowPermanentLicenses;
+	}
+
+	public boolean isAllowSelfProvisioning() {
+		return _allowSelfProvisioning;
+	}
+
 	private final String _accountExternalReferenceCode;
 	private final long _accountId;
+	private final boolean _allowComplimentary;
+	private final boolean _allowPermanentLicenses;
+	private final boolean _allowSelfProvisioning;
 	private final String _externalReferenceCode;
 	private final String _name;
 	private final long _projectId;

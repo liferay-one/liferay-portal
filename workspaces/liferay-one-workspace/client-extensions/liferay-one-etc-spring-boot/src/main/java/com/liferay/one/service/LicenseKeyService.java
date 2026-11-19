@@ -786,8 +786,8 @@ public class LicenseKeyService extends OneBaseService {
 
 		// A complimentary key counts against nothing. That covers a key that
 		// Liferay gave for free in provisioning, such as a temporary or an
-		// upgrade key, and a key of the complimentary key type, which
-		// _checkComplimentary limits to one activation key per project.
+		// upgrade key, and a key of the complimentary key type, which a
+		// project can generate only while its complimentary setting is on.
 		// Inactive keys are dropped by the query and again by the loop, so
 		// the tally stays right whatever the query returns. Only the
 		// fields the tally reads are projected, since a project can hold

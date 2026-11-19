@@ -158,22 +158,13 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			_checkRenewedActivationKey(
 				account, renewedActivationKeyExternalReferenceCode);
 
-			JSONObject appGenerateFormJSONObject = null;
-
-			if (_environmentActivationPermission.containsSelfProvisioning(
-					account.getId(), jwt)) {
-
-				appGenerateFormJSONObject =
-					_appLicenseKeyGenerationService.getGenerateForm(
-						account.getId());
-			}
-
 			return ResponseEntity.ok(
 			).contentType(
 				MediaType.APPLICATION_JSON
 			).body(
 				_toGenerateFormJSONObject(
-					appGenerateFormJSONObject,
+					_appLicenseKeyGenerationService.getGenerateForm(
+						account.getId()),
 					_fetchSelfServiceTrialGenerateFormJSONObject(
 						account, jwt, renewedActivationKeyExternalReferenceCode)
 				).toString()
@@ -251,19 +242,13 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		throws Exception {
 
 		if (Validator.isNull(projectExternalReferenceCode)) {
-			Account account = _getAccount(accountExternalReferenceCode, jwt);
-
-			boolean provisionable =
-				_environmentActivationPermission.containsSelfProvisioning(
-					account.getId(), jwt);
-
 			return ResponseEntity.ok(
 			).contentType(
 				MediaType.APPLICATION_JSON
 			).body(
 				_toSummaryJSONObject(
-					_fetchSelfServiceTrialSummaryJSONObject(account, jwt),
-					provisionable
+					_fetchSelfServiceTrialSummaryJSONObject(
+						_getAccount(accountExternalReferenceCode, jwt), jwt)
 				).toString()
 			);
 		}
@@ -329,12 +314,11 @@ public class ActivationKeysRestController extends OneBaseRestController {
 				jwt);
 		}
 		else {
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				jwt, projectExternalReferenceCode);
+			_environmentActivationPermission.checkSelfProvisioning(
+				jwt,
+				_environmentActivationPermission.checkLicenseKeyActivation(
+					jwt, projectExternalReferenceCode));
 		}
-
-		_environmentActivationPermission.checkSelfProvisioning(
-			activationKey.getAccountEntryId(), jwt);
 
 		JSONObject jsonObject = new JSONObject(json);
 
@@ -404,9 +388,6 @@ public class ActivationKeysRestController extends OneBaseRestController {
 						account, generateRequest));
 			}
 
-			_environmentActivationPermission.checkSelfProvisioning(
-				account.getId(), jwt);
-
 			UserAccount userAccount = getMyUserAccount(jwt);
 
 			return _toResponseEntity(
@@ -422,8 +403,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			throw new ProjectNotFoundException(projectExternalReferenceCode);
 		}
 
-		_environmentActivationPermission.checkSelfProvisioning(
-			project.getAccountId(), jwt);
+		_environmentActivationPermission.checkSelfProvisioning(jwt, project);
 
 		String renewedActivationKeyExternalReferenceCode = jsonObject.optString(
 			"renewedActivationKeyExternalReferenceCode", null);
@@ -847,7 +827,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 	}
 
 	private JSONObject _toSummaryJSONObject(
-		JSONObject licenseKeySummaryJSONObject, boolean provisionable) {
+		JSONObject licenseKeySummaryJSONObject) {
 
 		if (licenseKeySummaryJSONObject == null) {
 			return new JSONObject(
@@ -856,7 +836,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 			).put(
 				"generatable", false
 			).put(
-				"provisionable", provisionable
+				"provisionable", true
 			);
 		}
 
@@ -867,7 +847,7 @@ public class ActivationKeysRestController extends OneBaseRestController {
 		).put(
 			"generatable", licenseKeySummaryJSONObject.getBoolean("generatable")
 		).put(
-			"provisionable", provisionable
+			"provisionable", true
 		);
 	}
 

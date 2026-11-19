@@ -9,7 +9,6 @@ import Loading from '~/components/Loading/Loading';
 import Page from '~/components/Page/Page';
 import useAccountDetails from '~/hooks/useAccountDetails';
 import i18n from '~/i18n';
-import SyncToJSMButton from '~/pages/MyAccount/AccountDetails/SyncToJSMButton/SyncToJSMButton';
 import usePrimaryContact from '~/pages/MyAccount/AccountDetails/hooks/usePrimaryContact';
 
 import './AccountDetails.css';
@@ -74,7 +73,6 @@ export default function AccountDetails() {
 				'manage-your-account-and-organization-details'
 			)}
 			pageRendererProps={{error, isLoading}}
-			rightButton={<SyncToJSMButton />}
 		>
 			<div className="account-details-grid mt-4">
 				<DetailedCard

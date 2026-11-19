@@ -84,6 +84,7 @@ export default {
 	'additional-apps-requested': 'リクエストされた追加アプリ',
 	'address': '住所',
 	'address-name': '住所の名前',
+	'admin': '管理',
 	'administration-email': '管理用メールアドレス',
 	'administrator': '管理者',
 	'administrator-dashboard': '管理者ダッシュボード',
@@ -342,6 +343,7 @@ export default {
 		'パブリッシャーアカウントのリクエストを完了',
 	'completed': '完了',
 	'complimentary': '無料',
+	'complimentary-key': '無償キー',
 	'composite-app': 'コンポジットアプリ',
 	'confirm': '確認',
 	'confirm-deactivate-keys': 'キーの無効化を確認',
@@ -787,6 +789,9 @@ export default {
 	'join-an-existing-business-account-e-g-your-company-and-gain-full-access':
 		'既存のビジネスアカウント（例: 自社）に参加して、完全なアクセス権を取得します。',
 	'join-existing-business-account': '既存のビジネスアカウントに参加',
+	'jsm-sync': 'JSM同期',
+	'jsm-sync-description':
+		'JSMに同期すると、このアカウント、そのプロジェクト、ユーザー、およびロールを今すぐJira Service Managementに送信します。JSMに最近の変更が表示されない場合に使用します。',
 	'key-activations-available-x-of-x':
 		'利用可能なキーのアクティベーション数: {0} / {1}。',
 	'key-activations-provisioned':
@@ -817,6 +822,9 @@ export default {
 	'licenses': 'ライセンス',
 	'licenses-list': 'ライセンス一覧',
 	'licensing': 'ライセンス',
+	'licensing-settings': 'ライセンス設定',
+	'licensing-settings-description':
+		'このアカウントの各プロジェクトには個別のライセンス設定があります。無償キーがオンのとき、プロジェクトは無償キーを1つ取得できます。キーを生成するとオフになります。',
 	'life-sciences': 'ライフサイエンス',
 	'liferay-dsr-eula-disclaimer-prefix':
 		'このDigital Sales Room（DSR）のリリースはベータ版です。ベータ期間中、Liferayはサポートサービスを提供する義務を負わないことを了承するものとします。明確にするために、お客様が保有するLiferayソフトウェアの有効なサブスクリプション特典はDSRのベータリリースには適用されず、ベータ版への参加によって将来のGAバージョンの製品へのアクセス権が付与されることはありません。DSRの使用には、Liferay Enterprise Services Agreement（ESA）、該当する付録、およびLiferayデータ処理追記条項が適用されます。それぞれ以下で確認できます: ',
@@ -1126,6 +1134,7 @@ export default {
 	'pending': '申請中',
 	'pending-payment': '保留中の支払い',
 	'performance-management': 'パフォーマンス管理',
+	'permanent-licenses': '永続ライセンス',
 	'permissions-successfully-updated': '権限が正常に更新されました。',
 	'perpetual': '永続',
 	'personal': '個人',
@@ -1424,6 +1433,7 @@ export default {
 		'希望するパブリッシャーの種類を選択してください',
 	'selected-project': '選択されたプロジェクト',
 	'self-managed': 'セルフマネージド',
+	'self-provisioning': 'セルフプロビジョニング',
 	'self-service-portal': 'セルフサービスポータル',
 	'send-invitation': '招待を送信',
 	'send-request': 'リクエストを送信',

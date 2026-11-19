@@ -16,7 +16,6 @@ import com.liferay.one.service.AccountService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.UserAccountService;
-import com.liferay.one.util.AccountUtil;
 import com.liferay.one.util.FindUtil;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -77,12 +76,20 @@ public class EnvironmentActivationPermission {
 		return _check(true, jwt, projectExternalReferenceCode);
 	}
 
-	public void checkSelfProvisioning(long accountEntryId, Jwt jwt)
+	public void checkLicensingSettings(Jwt jwt) throws Exception {
+		if (!_hasGlobalRole(_userAccountService.getMyUserAccount(jwt))) {
+			throw new PrincipalException(
+				"Only an administrator, a Provisioning Administrator, or a " +
+					"Provisioning Worker can change the licensing settings");
+		}
+	}
+
+	public void checkSelfProvisioning(Jwt jwt, Project project)
 		throws Exception {
 
-		if (!containsSelfProvisioning(accountEntryId, jwt)) {
+		if (!containsSelfProvisioning(jwt, project)) {
 			throw new PrincipalException(
-				"Account " + accountEntryId +
+				"Project " + project.getExternalReferenceCode() +
 					" does not allow self provisioning");
 		}
 	}
@@ -101,24 +108,19 @@ public class EnvironmentActivationPermission {
 			return false;
 		}
 
-		return containsSelfProvisioning(project.getAccountId(), jwt);
+		return containsSelfProvisioning(jwt, project);
 	}
 
-	public boolean containsSelfProvisioning(long accountEntryId, Jwt jwt)
+	public boolean containsSelfProvisioning(Jwt jwt, Project project)
 		throws Exception {
 
-		if (_hasGlobalRole(_userAccountService.getMyUserAccount(jwt))) {
+		if ((project == null) ||
+			_hasGlobalRole(_userAccountService.getMyUserAccount(jwt))) {
+
 			return true;
 		}
 
-		Account account = _accountService.fetchAccount(accountEntryId);
-
-		if (account == null) {
-			return true;
-		}
-
-		return AccountUtil.getCustomFieldBoolean(
-			account, "allowSelfProvisioning", true);
+		return project.isAllowSelfProvisioning();
 	}
 
 	private Project _check(

@@ -13,7 +13,6 @@ import com.liferay.petra.string.StringBundler;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
@@ -128,34 +127,6 @@ public class ActivationKeyService extends OneBaseService {
 
 		return getAllItems(
 			"/o/c/activationkeys", filterString, ActivationKey::new);
-	}
-
-	public int getActivationKeysCount(
-			boolean active, String projectExternalReferenceCode, String type)
-		throws Exception {
-
-		String filterString = StringBundler.concat(
-			"(active eq ", active,
-			") and (r_projectToActivationKey_c_projectERC eq '",
-			escapeODataString(projectExternalReferenceCode),
-			"') and (type eq '", escapeODataString(type), "')");
-
-		String response = get(
-			getAuthorization(),
-			UriComponentsBuilder.fromPath(
-				"/o/c/activationkeys"
-			).queryParam(
-				"filter", "{filter}"
-			).queryParam(
-				"pageSize", 1
-			).encode(
-			).buildAndExpand(
-				Collections.singletonMap("filter", filterString)
-			).toUri());
-
-		JSONObject jsonObject = new JSONObject(response);
-
-		return jsonObject.optInt("totalCount");
 	}
 
 	public List<ActivationKey> getExpiringActivationKeys(

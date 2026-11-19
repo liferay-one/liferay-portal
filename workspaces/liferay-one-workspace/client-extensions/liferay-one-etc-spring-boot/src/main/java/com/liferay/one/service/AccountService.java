@@ -27,10 +27,11 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+
+import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -248,6 +249,36 @@ public class AccountService extends OneBaseService {
 		}
 	}
 
+	public String fetchBillingCountry(String accountExternalReferenceCode)
+		throws Exception {
+
+		Account account = fetchAccountByExternalReferenceCode(
+			accountExternalReferenceCode);
+
+		if ((account == null) ||
+			(account.getDefaultBillingAddressId() == null) ||
+			(account.getDefaultBillingAddressId() <= 0)) {
+
+			return null;
+		}
+
+		String response = fetch(
+			getAuthorization(),
+			UriComponentsBuilder.fromPath(
+				"/o/headless-admin-user/v1.0/postal-addresses/{postalAddressId}"
+			).buildAndExpand(
+				account.getDefaultBillingAddressId()
+			).toUri());
+
+		if (Validator.isNull(response)) {
+			return null;
+		}
+
+		JSONObject jsonObject = new JSONObject(response);
+
+		return jsonObject.optString("addressCountry", null);
+	}
+
 	public Account getAccount(long accountEntryId) throws Exception {
 		return _getAccount(accountEntryId, null);
 	}
@@ -383,20 +414,6 @@ public class AccountService extends OneBaseService {
 		_upsertAccount(salesforceAccount);
 	}
 
-	public void upsertAccount(
-			SalesforceAccount salesforceAccount, String soldBy)
-		throws Exception {
-
-		Account account = _upsertAccount(salesforceAccount);
-
-		if (account == null) {
-			return;
-		}
-
-		_setDefaultLicensingCustomFields(
-			account, salesforceAccount.getBillingCountry(), soldBy);
-	}
-
 	private AccountResource _buildAccountResource(Jwt jwt) {
 		return AccountResource.builder(
 		).endpoint(
@@ -433,39 +450,6 @@ public class AccountService extends OneBaseService {
 
 			throw problemException;
 		}
-	}
-
-	/**
-	 * Returns the licensing custom fields that a new account starts with,
-	 * following the legacy provisioning system. The values are stored
-	 * explicitly, because the default value of a custom field applies only
-	 * where the site initializer set it. After the account is created, only
-	 * an administrator changes them.
-	 */
-	private List<CustomField> _getDefaultLicensingCustomFields(
-		String billingCountry, String soldBy) {
-
-		boolean allowComplimentary = true;
-
-		if (Objects.equals(billingCountry, "Ireland") ||
-			Objects.equals(billingCountry, "United Kingdom")) {
-
-			allowComplimentary = false;
-		}
-
-		boolean allowPermanentLicenses = true;
-
-		if (Objects.equals(soldBy, "Liferay Brazil") ||
-			Objects.equals(soldBy, "Liferay China") ||
-			Objects.equals(soldBy, "Liferay India")) {
-
-			allowPermanentLicenses = false;
-		}
-
-		return Arrays.asList(
-			_toCustomField("allowComplimentary", allowComplimentary),
-			_toCustomField("allowPermanentLicenses", allowPermanentLicenses),
-			_toCustomField("allowSelfProvisioning", true));
 	}
 
 	private void _setAccountContactInformation(
@@ -561,28 +545,6 @@ public class AccountService extends OneBaseService {
 		}
 
 		account.setCustomFields(() -> customFields.toArray(new CustomField[0]));
-	}
-
-	private void _setDefaultLicensingCustomFields(
-			Account account, String billingCountry, String soldBy)
-		throws Exception {
-
-		List<CustomField> customFields = _getDefaultLicensingCustomFields(
-			billingCountry, soldBy);
-
-		AccountResource accountResource = AccountResource.builder(
-		).endpoint(
-			getDXPEndpointAddress(), lxcDXPServerProtocol
-		).header(
-			HttpHeaders.AUTHORIZATION, getAuthorization()
-		).build();
-
-		Account patchAccount = new Account();
-
-		patchAccount.setCustomFields(
-			() -> customFields.toArray(new CustomField[0]));
-
-		accountResource.patchAccount(account.getId(), patchAccount);
 	}
 
 	private void _setPostalAddresses(

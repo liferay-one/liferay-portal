@@ -20,6 +20,7 @@ const TABS: AccountTab[] = [
 	{label: 'details', path: 'account-details'},
 	{label: 'members', path: 'account-members'},
 	{label: 'project-permissions', path: 'project-members'},
+	{label: 'admin', path: 'account-admin'},
 ];
 
 export default function AccountTabsLayout() {
@@ -29,11 +30,17 @@ export default function AccountTabsLayout() {
 
 	const {userAccountModel} = useOneContext();
 
-	const visibleTabs = TABS.filter(
-		(tab) =>
-			tab.path !== 'account-members' ||
-			canAccessAccountMembers(userAccountModel)
-	);
+	const visibleTabs = TABS.filter((tab) => {
+		if (tab.path === 'account-admin') {
+			return Boolean(userAccountModel?.canViewAccountAdmin);
+		}
+
+		if (tab.path === 'account-members') {
+			return canAccessAccountMembers(userAccountModel);
+		}
+
+		return true;
+	});
 
 	const showTabs = visibleTabs.some((tab) =>
 		pathname.endsWith(`/${tab.path}`)

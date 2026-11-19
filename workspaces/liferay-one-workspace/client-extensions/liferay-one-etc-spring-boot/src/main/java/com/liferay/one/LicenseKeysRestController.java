@@ -241,12 +241,11 @@ public class LicenseKeysRestController extends OneBaseRestController {
 				licenseKey.getAccountEntryId(), ActionKeys.UPDATE, jwt);
 		}
 		else {
-			_environmentActivationPermission.checkLicenseKeyActivation(
-				jwt, projectExternalReferenceCode);
+			_environmentActivationPermission.checkSelfProvisioning(
+				jwt,
+				_environmentActivationPermission.checkLicenseKeyActivation(
+					jwt, projectExternalReferenceCode));
 		}
-
-		_environmentActivationPermission.checkSelfProvisioning(
-			licenseKey.getAccountEntryId(), jwt);
 
 		JSONObject jsonObject = new JSONObject(json);
 

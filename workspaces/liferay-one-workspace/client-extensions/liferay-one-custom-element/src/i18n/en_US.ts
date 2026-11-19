@@ -99,6 +99,7 @@ export default {
 	'address': 'Address',
 	'address-name': 'Address Name',
 	'addresses': 'Addresses',
+	'admin': 'Admin',
 	'administration-email': 'Administration Email',
 	'administrator': 'Administrator',
 	'administrator-dashboard': 'Administrator Dashboard',
@@ -377,6 +378,7 @@ export default {
 	'completed-orders-have-items-with-no-entitlements':
 		'Completed orders have items with no entitlement. Make sure that the SKU of each item has an active entitlement definition.',
 	'complimentary': 'Complimentary',
+	'complimentary-key': 'Complimentary Key',
 	'composite-app': 'Composite App',
 	'confirm': 'Confirm',
 	'confirm-deactivate-keys': 'Confirm & Deactivate Keys',
@@ -941,6 +943,9 @@ export default {
 	'join-existing-business-account': 'Join Existing Business Account',
 	'jsm': 'JSM',
 	'jsm-object-key': 'JSM Object Key',
+	'jsm-sync': 'JSM Sync',
+	'jsm-sync-description':
+		'Sync to JSM sends this account, its projects, its users, and their roles to Jira Service Management now. Use it when JSM does not show a recent change.',
 	'key': 'Key',
 	'key-activations-available-x-of-x':
 		'Key activations available: {0} of {1}.',
@@ -984,6 +989,9 @@ export default {
 	'licenses': 'Licenses',
 	'licenses-list': 'Licenses List',
 	'licensing': 'Licensing',
+	'licensing-settings': 'Licensing Settings',
+	'licensing-settings-description':
+		'Each project of this account has its own licensing settings. A project gets one complimentary key each time Complimentary Key is on, and generating the key turns it off.',
 	'life-sciences': 'Life Sciences',
 	'liferay-dsr-eula-disclaimer-prefix':
 		'This release of the Digital Sales Room (DSR) is a Beta. You acknowledge that Liferay is not obligated to provide support services while in Beta. For clarity, the Subscription benefits of any active Subscriptions you may have for Liferay Software shall not extend to cover the Beta release of the DSR and participation in the Beta does not grant access to any future GA version of the product. Use of DSR is subject to the Liferay Enterprise Services Agreement (ESA), applicable Appendix, and the Liferay Data Processing Addendum, each as available at',
@@ -1369,6 +1377,7 @@ export default {
 	'pending-payment': 'Pending Payment',
 	'performance-management': 'Performance Management',
 	'period': 'Period',
+	'permanent-licenses': 'Permanent Licenses',
 	'permissions-successfully-updated': 'Permissions successfully updated.',
 	'perpetual': 'Perpetual',
 	'person': 'Person',
@@ -1728,6 +1737,7 @@ export default {
 	'select-your-desired-publisher-type': 'Select your desired publisher type',
 	'selected-project': 'Selected Project',
 	'self-managed': 'Self-Managed',
+	'self-provisioning': 'Self Provisioning',
 	'self-service-portal': 'Self-Service Portal',
 	'send-invitation': 'Send Invitation',
 	'send-request': 'Send Request',
