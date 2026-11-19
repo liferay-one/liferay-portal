@@ -26,6 +26,7 @@ import {
 	getComplimentaryExpiration,
 	hasAvailableActivations,
 	hasAvailableKeyType,
+	hasRemainingActivations,
 	isCloudNativeProduct,
 	isComplimentaryKeyType,
 	isDeveloperKeyType,
@@ -92,7 +93,9 @@ export default function SubscriptionStep({
 
 	useEffect(() => {
 		const selectableKeyType =
-			keyTypes.find(hasAvailableActivations) ?? keyTypes[0];
+			keyTypes.find(hasRemainingActivations) ??
+			keyTypes.find(hasAvailableActivations) ??
+			keyTypes[0];
 
 		if (
 			(!renewing || !keyType) &&

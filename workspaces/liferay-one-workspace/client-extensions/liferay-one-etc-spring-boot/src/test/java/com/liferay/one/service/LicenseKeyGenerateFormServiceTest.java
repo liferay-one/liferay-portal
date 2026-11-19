@@ -1819,6 +1819,44 @@ public class LicenseKeyGenerateFormServiceTest {
 	}
 
 	@Test
+	public void testIsGeneratableWithAnUnlimitedKeyType() {
+		Assertions.assertTrue(
+			_isGeneratable(
+				false,
+				_toProductJSONObject(
+					"DXP",
+					_toKeyTypeJSONObject(
+						"developer", 0, null, null
+					).put(
+						"unlimited", true
+					))));
+		Assertions.assertTrue(
+			_isGeneratable(
+				true,
+				_toProductJSONObject(
+					"DXP", _toKeyTypeJSONObject("production", 0, null, null),
+					_toKeyTypeJSONObject(
+						"developer-cluster", 0, null, null
+					).put(
+						"unlimited", true
+					))));
+	}
+
+	@Test
+	public void testIsGeneratableWithEveryDeveloperSubscriptionSpent() {
+		Assertions.assertFalse(
+			_isGeneratable(
+				false,
+				_toProductJSONObject(
+					"DXP",
+					_toKeyTypeJSONObject(
+						"developer", 0, null, null
+					).put(
+						"unlimited", false
+					))));
+	}
+
+	@Test
 	public void testIsGeneratableWithEverySubscriptionSpent() {
 		Assertions.assertFalse(
 			_isGeneratable(
@@ -1922,6 +1960,54 @@ public class LicenseKeyGenerateFormServiceTest {
 		Assertions.assertTrue(
 			licenseKeyGenerateFormService.isLicensedForVersion(
 				"DXP", null, "2025.Q2"));
+	}
+
+	@Test
+	public void testSetUnlimitedOnlyForDeveloperKeysOfAProject() {
+		JSONArray jsonArray = new JSONArray(
+		).put(
+			_toKeyTypeJSONObject("developer", 0, null, null)
+		).put(
+			_toKeyTypeJSONObject("developer-cluster", 0, null, null)
+		).put(
+			_toKeyTypeJSONObject("production", 0, null, null)
+		);
+
+		ReflectionTestUtils.invokeMethod(
+			new LicenseKeyGenerateFormService(), "_setUnlimited", jsonArray,
+			true);
+
+		Assertions.assertTrue(
+			jsonArray.getJSONObject(
+				0
+			).getBoolean(
+				"unlimited"
+			));
+		Assertions.assertTrue(
+			jsonArray.getJSONObject(
+				1
+			).getBoolean(
+				"unlimited"
+			));
+		Assertions.assertFalse(
+			jsonArray.getJSONObject(
+				2
+			).getBoolean(
+				"unlimited"
+			));
+
+		ReflectionTestUtils.invokeMethod(
+			new LicenseKeyGenerateFormService(), "_setUnlimited", jsonArray,
+			false);
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			Assertions.assertFalse(
+				jsonArray.getJSONObject(
+					i
+				).getBoolean(
+					"unlimited"
+				));
+		}
 	}
 
 	@Test
