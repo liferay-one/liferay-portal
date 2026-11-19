@@ -45,12 +45,14 @@ type ILiferay = {
 		getCompanyGroupId: () => string;
 		getCompanyId: () => string;
 		getDefaultLanguageId: () => string;
+		getDoAsUserIdEncoded?: () => string;
 		getLanguageId: () => string;
 		getLayoutRelativeURL: () => string;
 		getLayoutURL: () => string;
 		getPathContext: () => string;
 		getPathThemeImages: () => string;
 		getPortalURL: () => string;
+		getRealUserId?: () => string;
 		getScopeGroupId: () => number;
 		getURLHome: () => string;
 		getUserEmailAddress: () => string;
@@ -62,7 +64,7 @@ type ILiferay = {
 		Cookie?: ILiferayCookie;
 		LocalStorage: LiferayStorage;
 		SessionStorage: LiferayStorage;
-		fetch: typeof fetch;
+		fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
 		navigate: (path: string) => void;
 		openModal: (options?: {}) => void;
 		openToast: (options?: {

@@ -3,18 +3,15 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import * as OAuth2 from '@liferay/oauth2-provider-web/client';
+import {fetchSpringBoot} from '~/services/spring-boot/OAuth2Client';
 
-const OAUTH2_APP = 'liferay-one-etc-spring-boot-oaua';
 const BASE_PATH = '/jira';
 
 async function jiraFetch(
 	path: string,
 	options?: RequestInit
 ): Promise<Response> {
-	const oauth2Client = await OAuth2.FromUserAgentApplication(OAUTH2_APP);
-
-	return oauth2Client.fetch(`${BASE_PATH}${path}`, options);
+	return fetchSpringBoot(`${BASE_PATH}${path}`, options);
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

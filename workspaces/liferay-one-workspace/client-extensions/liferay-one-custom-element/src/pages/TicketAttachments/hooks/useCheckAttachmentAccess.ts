@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import * as OAuth2 from '@liferay/oauth2-provider-web/client';
 import {useEffect, useState} from 'react';
 import {useParams} from 'react-router';
 import {Liferay} from '~/services/liferay/liferay';
+import {fetchSpringBoot} from '~/services/spring-boot/OAuth2Client';
+import {fetchLiferay} from '~/utils/impersonationUtils';
 
 type ErrorCode =
 	| 'FORBIDDEN_ACCESS'
@@ -58,11 +59,12 @@ export default function useCheckAttachmentAccess(): IResponse {
 						? `/o/c/ticketattachments/${currentTicketAttachmentId}`
 						: `/o/c/ticketattachments/by-external-reference-code/${currentTicketAttachmentERC}`;
 
-					const ticketAttachmentResponse = await Liferay.Util.fetch(
+					const ticketAttachmentResponse = await fetchLiferay(
 						ticketAttachmentEndpoint,
 						{
 							headers: {
 								'Content-Type': 'application/json',
+								'x-csrf-token': Liferay.authToken,
 							},
 							method: 'GET',
 							signal: controller.signal,
@@ -87,11 +89,7 @@ export default function useCheckAttachmentAccess(): IResponse {
 					? `/tickets/${jiraIssueKey}/ticket-attachments/download-access-check`
 					: `/tickets/${jiraIssueKey}/ticket-attachments/upload-access-check`;
 
-				const oauth2Client = await OAuth2.FromUserAgentApplication(
-					'liferay-one-etc-spring-boot-oaua'
-				);
-
-				const response = await oauth2Client.fetch(endpoint, {
+				const response = await fetchSpringBoot(endpoint, {
 					headers: {
 						'Content-Type': 'application/json',
 					},

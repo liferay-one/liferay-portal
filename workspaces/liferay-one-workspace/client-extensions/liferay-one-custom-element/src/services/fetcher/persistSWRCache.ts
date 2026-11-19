@@ -4,6 +4,7 @@
  */
 
 import {cache} from 'swr/_internal';
+import {Liferay} from '~/services/liferay/liferay';
 
 import type {State} from 'swr/_internal';
 
@@ -11,13 +12,29 @@ const MAX_ENTRY_LENGTH = 65536;
 
 const MAX_STORAGE_LENGTH = 2097152;
 
-const STORAGE_KEY = '@liferay-one/swr';
+const STORAGE_KEY_PREFIX = '@liferay-one/swr';
+
+function getStorageKey() {
+	return `${STORAGE_KEY_PREFIX}/${Liferay.ThemeDisplay.getUserId()}`;
+}
 
 let persisted = false;
 
+function removeOtherStorageKeys() {
+	const storageKey = getStorageKey();
+
+	const otherStorageKeys = Object.keys(sessionStorage).filter(
+		(key) => key.startsWith(STORAGE_KEY_PREFIX) && key !== storageKey
+	);
+
+	for (const key of otherStorageKeys) {
+		sessionStorage.removeItem(key);
+	}
+}
+
 function readCacheEntries(): [string, State][] {
 	try {
-		return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || '[]');
+		return JSON.parse(sessionStorage.getItem(getStorageKey()) || '[]');
 	}
 	catch (error) {
 		return [];
@@ -76,13 +93,15 @@ export default function persistSWRCache(): void {
 
 	window.addEventListener('beforeunload', () => {
 		try {
+			removeOtherStorageKeys();
+
 			sessionStorage.setItem(
-				STORAGE_KEY,
+				getStorageKey(),
 				JSON.stringify(toStorableEntries())
 			);
 		}
 		catch (error) {
-			sessionStorage.removeItem(STORAGE_KEY);
+			sessionStorage.removeItem(getStorageKey());
 		}
 	});
 }

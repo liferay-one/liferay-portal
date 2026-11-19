@@ -12,9 +12,15 @@ import com.liferay.headless.admin.user.client.pagination.Page;
 import com.liferay.headless.admin.user.client.pagination.Pagination;
 import com.liferay.headless.admin.user.client.problem.Problem;
 import com.liferay.headless.admin.user.client.resource.v1_0.UserAccountResource;
+import com.liferay.one.constants.RoleConstants;
+import com.liferay.one.util.UserAccountUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,10 +29,16 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 /**
  * @author Amos Fong
@@ -132,7 +144,54 @@ public class UserAccountService extends OneBaseService {
 		UserAccountResource userAccountResource = _buildUserAccountResource(
 			jwt);
 
-		return userAccountResource.getMyUserAccount();
+		HttpServletRequest httpServletRequest = _getHttpServletRequest();
+
+		if (httpServletRequest == null) {
+			return userAccountResource.getMyUserAccount();
+		}
+
+		long doAsUserId = GetterUtil.getLong(
+			httpServletRequest.getParameter("doAsUserId"));
+
+		if (doAsUserId <= 0) {
+			return userAccountResource.getMyUserAccount();
+		}
+
+		UserAccount userAccount = (UserAccount)httpServletRequest.getAttribute(
+			_ATTRIBUTE_MY_USER_ACCOUNT);
+
+		if (userAccount != null) {
+			return userAccount;
+		}
+
+		userAccount = userAccountResource.getMyUserAccount();
+
+		if (!Objects.equals(doAsUserId, userAccount.getId())) {
+			if (!UserAccountUtil.hasRole(
+					userAccount, RoleConstants.NAME_ADMINISTRATOR)) {
+
+				throw new PrincipalException(
+					StringBundler.concat(
+						"User ", userAccount.getId(),
+						" does not have permission to impersonate user ",
+						doAsUserId));
+			}
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"User ", userAccount.getId(), " impersonates user ",
+						doAsUserId, " for ",
+						httpServletRequest.getRequestURI()));
+			}
+
+			userAccount = getUserAccount(doAsUserId);
+		}
+
+		httpServletRequest.setAttribute(
+			_ATTRIBUTE_MY_USER_ACCOUNT, userAccount);
+
+		return userAccount;
 	}
 
 	public List<UserAccount> getOrganizationUserAccounts(long organizationId)
@@ -324,6 +383,19 @@ public class UserAccountService extends OneBaseService {
 		return userAccounts;
 	}
 
+	private HttpServletRequest _getHttpServletRequest() {
+		RequestAttributes requestAttributes =
+			RequestContextHolder.getRequestAttributes();
+
+		if (requestAttributes instanceof
+				ServletRequestAttributes servletRequestAttributes) {
+
+			return servletRequestAttributes.getRequest();
+		}
+
+		return null;
+	}
+
 	private List<UserAccount> _getUserAccounts(
 			UserAccountResource userAccountResource, Collection<Long> userIds)
 		throws Exception {
@@ -355,8 +427,13 @@ public class UserAccountService extends OneBaseService {
 		return userAccounts;
 	}
 
+	private static final String _ATTRIBUTE_MY_USER_ACCOUNT =
+		UserAccountService.class.getName() + ".myUserAccount";
+
 	private static final int _FILTER_BATCH_SIZE = 100;
 
 	private static final int _PAGE_SIZE = 500;
+
+	private static final Log _log = LogFactory.getLog(UserAccountService.class);
 
 }

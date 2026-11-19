@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.client.extension.util.spring.boot3.BaseRestController;
 import com.liferay.headless.commerce.admin.order.client.dto.v1_0.Order;
 import com.liferay.one.constants.CommerceOrderConstants;
 import com.liferay.one.permission.CommerceOrderPermission;
@@ -43,7 +42,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
  */
 @RequestMapping("/liferay-data-platform")
 @RestController
-public class LiferayDataPlatformRestController extends BaseRestController {
+public class LiferayDataPlatformRestController extends OneBaseRestController {
 
 	@PostMapping("provisioning/{orderId}")
 	public ResponseEntity<Void> postProvisioningOrder(
