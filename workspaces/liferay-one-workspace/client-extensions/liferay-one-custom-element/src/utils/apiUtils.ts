@@ -6,6 +6,7 @@
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import fetcher from '~/services/fetcher/fetcher';
 import {Liferay} from '~/services/liferay/liferay';
+import {fetchLiferay} from '~/utils/impersonationUtils';
 
 import type {CommerceAccount, CommerceOption} from '~/types/commerce';
 import type {ContactSales} from '~/types/contactSales';
@@ -56,7 +57,7 @@ export async function getTierPrice(
 	productId: number | undefined,
 	accountId: number | undefined
 ) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-delivery-catalog/v1.0/channels/${channelId}/products/${productId}?accountId=${accountId}&skus.accountId=${accountId}&nestedFields=skus`,
 		{
 			headers,
@@ -76,10 +77,13 @@ export async function getTierPrice(
 }
 
 export async function getLicenseDescription() {
-	const response = await fetch(`${baseURL}/o/c/licensetypesdescriptions/`, {
-		headers,
-		method: 'GET',
-	});
+	const response = await fetchLiferay(
+		`${baseURL}/o/c/licensetypesdescriptions/`,
+		{
+			headers,
+			method: 'GET',
+		}
+	);
 
 	return response.json();
 }
@@ -91,7 +95,7 @@ export async function createAppSKU({
 	appProductId: number;
 	body: Object;
 }) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/${appProductId}/skus
 	  `,
 		{
@@ -105,7 +109,7 @@ export async function createAppSKU({
 }
 
 export async function createContactSales(formData: ContactSales) {
-	const response = await fetch(`${baseURL}/o/c/contactsaleses/`, {
+	const response = await fetchLiferay(`${baseURL}/o/c/contactsaleses/`, {
 		body: JSON.stringify(formData),
 		headers,
 		method: 'POST',
@@ -140,7 +144,7 @@ export function createImage({
 	body: Object;
 	externalReferenceCode: string;
 }) {
-	return fetch(
+	return fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/by-externalReferenceCode/${externalReferenceCode}/images`,
 		{
 			body: JSON.stringify(body),
@@ -157,7 +161,7 @@ export async function createProductSpecification({
 	body: Object;
 	id: number | string;
 }) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/${id}/productSpecifications`,
 		{
 			body: JSON.stringify(body),
@@ -172,7 +176,7 @@ export async function createProductSpecification({
 export async function getSpecification(
 	specificationKey: string
 ): Promise<Specification> {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/specifications?search=%7Bkey=${specificationKey}%7D`,
 		{headers, method: 'GET'}
 	);
@@ -185,7 +189,7 @@ export async function getSpecification(
 }
 
 export async function deleteTrialSKU(skuTrialId: number) {
-	await fetch(
+	await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/skus/${skuTrialId}`,
 		{
 			headers,
@@ -195,7 +199,7 @@ export async function deleteTrialSKU(skuTrialId: number) {
 }
 
 export async function getAccountInfoFromCommerce(accountId?: number) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-account/v1.0/accounts/${accountId}`,
 		{headers, method: 'GET'}
 	);
@@ -204,7 +208,7 @@ export async function getAccountInfoFromCommerce(accountId?: number) {
 }
 
 export async function getAccountAddressesFromCommerce(accountId: number) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-account/v1.0/accounts/${accountId}/accountAddresses`,
 		{headers, method: 'GET'}
 	);
@@ -223,7 +227,7 @@ export async function createCart({
 	currencyCode?: string;
 	orderTypeExternalReferenceCode: string;
 }) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-delivery-cart/v1.0/channels/${channelId}/carts`,
 		{
 			body: JSON.stringify({
@@ -240,7 +244,7 @@ export async function createCart({
 }
 
 export async function getCart(cartId: number | string) {
-	const cartResponse = await fetch(
+	const cartResponse = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-delivery-cart/v1.0/carts/${cartId}`,
 		{
 			headers,
@@ -252,7 +256,7 @@ export async function getCart(cartId: number | string) {
 }
 
 export async function getCartItems(cartId: number | string) {
-	const cartResponse = await fetch(
+	const cartResponse = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-delivery-cart/v1.0/carts/${cartId}/items`,
 		{
 			headers,
@@ -264,7 +268,7 @@ export async function getCartItems(cartId: number | string) {
 }
 
 export async function getCategories({vocabId}: {vocabId: number}) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-admin-taxonomy/v1.0/taxonomy-vocabularies/${vocabId}/taxonomy-categories`,
 		{
 			headers,
@@ -281,7 +285,7 @@ export async function getPaymentMethodURL(
 	orderId: number,
 	callbackURL: string
 ) {
-	const paymentResponse = await fetch(
+	const paymentResponse = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-delivery-cart/v1.0/carts/${orderId}/payment-url?callbackURL=${callbackURL}`,
 		{
 			headers,
@@ -293,7 +297,7 @@ export async function getPaymentMethodURL(
 }
 
 export async function getOptions() {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/options`,
 		{
 			headers,
@@ -318,7 +322,7 @@ export async function getProductById({
 	if (nestedFields) {
 		url = `${url}?nestedFields=${nestedFields}`;
 	}
-	const response = await fetch(url, {
+	const response = await fetchLiferay(url, {
 		headers,
 		method: 'GET',
 	});
@@ -327,7 +331,7 @@ export async function getProductById({
 }
 
 export async function getProductIdCategories({appId}: {appId: string}) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/${appId}/categories`,
 		{
 			headers,
@@ -339,7 +343,7 @@ export async function getProductIdCategories({appId}: {appId: string}) {
 }
 
 export async function getProductSKU({appProductId}: {appProductId?: number}) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/${appProductId}/skus`,
 		{
 			headers,
@@ -355,7 +359,7 @@ export async function getProductSpecifications({
 }: {
 	appProductId?: number;
 }) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/${appProductId}/productSpecifications`,
 		{
 			headers,
@@ -371,7 +375,7 @@ export async function getProductSpecifications({
 }
 
 export async function getProductIdSkusPage(productId: number) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/${productId}/skus`,
 		{
 			headers,
@@ -383,7 +387,7 @@ export async function getProductIdSkusPage(productId: number) {
 }
 
 export async function getPriceListByCatalogName(catalogName: string) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists?search=catalogName eq '${catalogName}'`,
 		{
 			headers,
@@ -395,7 +399,7 @@ export async function getPriceListByCatalogName(catalogName: string) {
 }
 
 export async function getPriceListIdPriceEntries(priceListId: number) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-pricing/v2.0/price-lists/${priceListId}/price-entries?pageSize=-1&nestedFields=sku,product`,
 		{
 			headers,
@@ -407,7 +411,7 @@ export async function getPriceListIdPriceEntries(priceListId: number) {
 }
 
 export async function getVocabularies() {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-admin-taxonomy/v1.0/sites/${Liferay.ThemeDisplay.getCompanyGroupId()}/taxonomy-vocabularies`,
 		{
 			headers,
@@ -419,7 +423,7 @@ export async function getVocabularies() {
 }
 
 export async function patchOrderByERC(erc: string, body: unknown) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-order/v1.0/orders/by-externalReferenceCode/${erc}`,
 		{
 			body: JSON.stringify(body),
@@ -438,7 +442,7 @@ export async function patchProductIdCategory({
 	appId: string;
 	body: unknown;
 }) {
-	await fetch(
+	await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/${appId}/categories`,
 		{
 			body: JSON.stringify(body),
@@ -449,7 +453,7 @@ export async function patchProductIdCategory({
 }
 
 export async function patchSKUById(skuId: number, body: unknown) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/skus/${skuId}`,
 		{
 			body: JSON.stringify(body),
@@ -468,7 +472,7 @@ export async function postCartByChannelId({
 	cartBody: unknown;
 	channelId: number;
 }) {
-	const cartResponse = await fetch(
+	const cartResponse = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-delivery-cart/v1.0/channels/${channelId}/carts`,
 		{
 			body: JSON.stringify(cartBody),
@@ -487,7 +491,7 @@ export async function postCheckoutCart({
 	body?: unknown;
 	cartId: number;
 }) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-delivery-cart/v1.0/carts/${cartId}/checkout`,
 		{
 			body: JSON.stringify(body),
@@ -501,7 +505,7 @@ export async function postCheckoutCart({
 
 export async function postOptionValue(optionBody: unknown, optionId: number) {
 	{
-		const response = await fetch(
+		const response = await fetchLiferay(
 			`${baseURL}/o/headless-commerce-admin-catalog/v1.0/productOptions/${optionId}/productOptionValues`,
 			{
 				body: JSON.stringify(optionBody),
@@ -520,7 +524,7 @@ export async function patchPriceEntry(
 	priceEntry: unknown,
 	priceEntryId: number
 ) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`/o/headless-commerce-admin-pricing/v2.0/price-entries/${priceEntryId}`,
 		{
 			body: JSON.stringify(priceEntry),
@@ -533,7 +537,7 @@ export async function patchPriceEntry(
 }
 
 export async function postPriceList(priceList: PriceList) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`/o/headless-commerce-admin-pricing/v2.0/price-lists`,
 		{
 			body: JSON.stringify(priceList),
@@ -549,7 +553,7 @@ export async function postPriceListEntry(
 	priceListId: number,
 	priceEntry: unknown
 ) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`/o/headless-commerce-admin-pricing/v1.0/priceLists/${priceListId}/priceEntries`,
 		{
 			body: JSON.stringify(priceEntry),
@@ -565,7 +569,7 @@ export async function postPriceEntryIdTierPrice(
 	priceEntryId: number,
 	tierPrice: unknown
 ) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`/o/headless-commerce-admin-pricing/v2.0/price-entries/${priceEntryId}/tier-prices`,
 		{
 			body: JSON.stringify(tierPrice),
@@ -578,7 +582,7 @@ export async function postPriceEntryIdTierPrice(
 }
 
 export async function postOption(optionBody: unknown) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/options`,
 		{
 			body: JSON.stringify(optionBody),
@@ -596,7 +600,7 @@ export async function postProductOption(
 	productId: number,
 	productOptionBody: unknown
 ) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/products/${productId}/productOptions`,
 		{
 			body: JSON.stringify([productOptionBody]),
@@ -619,7 +623,7 @@ export async function updateProductSpecification({
 	body: Object;
 	id: number | string;
 }) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-commerce-admin-catalog/v1.0/productSpecifications/${id}`,
 		{
 			body: JSON.stringify(body),
@@ -632,7 +636,7 @@ export async function updateProductSpecification({
 }
 
 export async function postEmailAppInformation(emailInformation: unknown) {
-	await fetch(`${baseURL}/o/c/getappinformations/`, {
+	await fetchLiferay(`${baseURL}/o/c/getappinformations/`, {
 		body: JSON.stringify(emailInformation),
 		headers,
 		method: 'POST',
@@ -647,7 +651,7 @@ export async function getSiteStructuredContentByFriendlyURLPath(
 		pageSize: '1',
 	});
 
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-delivery/v1.0/sites/${Liferay.ThemeDisplay.getScopeGroupId()}/structured-contents?${parameters.toString()}`,
 		{
 			headers,
@@ -660,7 +664,7 @@ export async function getSiteStructuredContentByFriendlyURLPath(
 }
 
 export async function getSiteStructuredContentByKey(key: string) {
-	const response = await fetch(
+	const response = await fetchLiferay(
 		`${baseURL}/o/headless-delivery/v1.0/sites/${Liferay.ThemeDisplay.getScopeGroupId()}/structured-contents/by-key/${key}`,
 		{
 			headers,

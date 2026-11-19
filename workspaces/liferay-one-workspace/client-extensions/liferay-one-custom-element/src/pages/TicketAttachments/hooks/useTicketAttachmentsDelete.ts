@@ -5,6 +5,7 @@
 
 import {useCallback, useState} from 'react';
 import {Liferay} from '~/services/liferay/liferay';
+import {fetchLiferay} from '~/utils/impersonationUtils';
 
 interface IParams {
 	gcsSessionURL: string;
@@ -25,7 +26,7 @@ const useTicketAttachmentsDelete = (): IProps => {
 		const {gcsSessionURL, ticketAttachmentId} = params;
 
 		try {
-			const ticketAttachmentResponse = await fetch(
+			const ticketAttachmentResponse = await fetchLiferay(
 				`${window.location.origin}/o/c/ticketattachments/${ticketAttachmentId}`,
 				{
 					headers: {

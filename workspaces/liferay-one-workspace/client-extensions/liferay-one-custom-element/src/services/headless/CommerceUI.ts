@@ -4,6 +4,7 @@
  */
 
 import {Liferay} from '~/services/liferay/liferay';
+import {fetchLiferay} from '~/utils/impersonationUtils';
 
 export default class CommerceUI {
 	static async selectAccount(accountId: string | number) {
@@ -11,7 +12,7 @@ export default class CommerceUI {
 
 		body.append('accountId', accountId as string);
 
-		return fetch(
+		return fetchLiferay(
 			`/o/commerce-ui/set-current-account?groupId=${Liferay.ThemeDisplay.getScopeGroupId()}&p_auth=${
 				Liferay.authToken
 			}`,
