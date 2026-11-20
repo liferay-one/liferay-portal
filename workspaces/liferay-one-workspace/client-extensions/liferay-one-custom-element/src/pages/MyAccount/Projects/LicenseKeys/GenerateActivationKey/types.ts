@@ -32,7 +32,6 @@ export type GenerateActivationKeyForm = {
 	domain: string;
 	dxpActivationCode: string;
 	environmentName: string;
-	installationId: string;
 	keyType: string;
 	maxClusterNodes: number;
 	notify: boolean;

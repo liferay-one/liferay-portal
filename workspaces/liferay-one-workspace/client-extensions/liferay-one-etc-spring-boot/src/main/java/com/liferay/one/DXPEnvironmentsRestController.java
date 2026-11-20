@@ -68,6 +68,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -503,18 +504,21 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		String activationCode = jsonObject.optString(
 			"activationCode"
 		).trim();
-		String dxpVersion = jsonObject.optString("dxpVersion");
-		String installationId = jsonObject.optString(
-			"installationId"
-		).trim();
+		String activationToken = jsonObject.optString(
+			"activationToken"
+		).replaceAll(
+			"\\s", ""
+		);
 
 		if (Validator.isNull(activationCode) ||
-			Validator.isNull(installationId)) {
+			Validator.isNull(activationToken)) {
 
 			return _toResponseEntity(
 				HttpStatus.BAD_REQUEST,
-				"The activation code and the installation ID are required");
+				"The activation code and the activation token are required");
 		}
+
+		String dxpVersion = jsonObject.optString("dxpVersion");
 
 		if (!_isEntitlementVersion(dxpVersion)) {
 			return _toResponseEntity(
@@ -522,16 +526,42 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 				"DXP version " + dxpVersion + " is not supported");
 		}
 
+		SignedJWT signedJWT = null;
+
+		try {
+			signedJWT = SignedJWT.parse(activationToken);
+		}
+		catch (ParseException parseException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(parseException);
+			}
+
+			throw new InvalidSignatureException(
+				"The activation token is not valid");
+		}
+
+		_jwtSignatureValidator.validateOfflineSignature(signedJWT);
+
+		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+
+		String installationId = jwtClaimsSet.getStringClaim("installationId");
+		String publicKey = jwtClaimsSet.getStringClaim("publicKey");
+
+		if (!_isInstallationPublicKey(installationId, publicKey)) {
+			throw new InvalidSignatureException(
+				"The installation ID does not match the public key");
+		}
+
 		return _keyedLock.withLock(
 			_getActivationCodeLockKey(activationCode),
 			() -> _activateOffline(
 				activationCode, dxpVersion, installationId,
-				projectExternalReferenceCode));
+				projectExternalReferenceCode, publicKey));
 	}
 
 	private ResponseEntity<?> _activateOffline(
 			String activationCode, String dxpVersion, String installationId,
-			String projectExternalReferenceCode)
+			String projectExternalReferenceCode, String publicKey)
 		throws Exception {
 
 		Environment environment =
@@ -557,14 +587,17 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			EnvironmentConstants.ACTIVATION_STATUS_PENDING);
 
 		if (!pending &&
-			!(Objects.equals(
-				environment.getActivationMode(),
-				EnvironmentConstants.ACTIVATION_MODE_OFFLINE) &&
-			  Objects.equals(
-				  environment.getExternalEnvironmentId(), installationId))) {
+			!_isActivatedOffline(environment, installationId, publicKey)) {
 
 			return _toResponseEntity(
 				HttpStatus.CONFLICT, "The activation code is already used");
+		}
+
+		if (pending && _isActivated(installationId, publicKey)) {
+			return _toResponseEntity(
+				HttpStatus.CONFLICT,
+				"The installation is already activated with another " +
+					"activation code");
 		}
 
 		JSONObject manifestJSONObject = _getManifestJSONObject(
@@ -582,7 +615,7 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			if (pending) {
 				_environmentService.updateDXPEnvironmentActivation(
 					EnvironmentConstants.ACTIVATION_MODE_OFFLINE,
-					environment.getId(), installationId, null);
+					environment.getId(), installationId, publicKey);
 
 				if (_log.isInfoEnabled()) {
 					_log.info(
@@ -1190,6 +1223,48 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		return false;
 	}
 
+	private boolean _isActivated(String installationId, String publicKey)
+		throws Exception {
+
+		for (String activationMode :
+				List.of(
+					EnvironmentConstants.ACTIVATION_MODE_OFFLINE,
+					EnvironmentConstants.ACTIVATION_MODE_ONLINE)) {
+
+			for (Environment environment :
+					_environmentService.getDXPEnvironmentsByInstallationId(
+						activationMode,
+						EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
+						installationId)) {
+
+				if (JWTSignatureValidator.equalsPublicKey(
+						environment.getPublicKey(), publicKey)) {
+
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _isActivatedOffline(
+		Environment environment, String installationId, String publicKey) {
+
+		if (Objects.equals(
+				environment.getActivationMode(),
+				EnvironmentConstants.ACTIVATION_MODE_OFFLINE) &&
+			Objects.equals(
+				environment.getExternalEnvironmentId(), installationId) &&
+			JWTSignatureValidator.equalsPublicKey(
+				environment.getPublicKey(), publicKey)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private boolean _isActivatedOnline(
 		Environment environment, String installationId, String publicKey) {
 
@@ -1229,6 +1304,21 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		}
 
 		return false;
+	}
+
+	private boolean _isInstallationPublicKey(
+		String installationId, String publicKey) {
+
+		if (Validator.isNull(installationId) || Validator.isNull(publicKey)) {
+			return false;
+		}
+
+		Base64.Decoder decoder = Base64.getDecoder();
+
+		UUID uuid = UUID.nameUUIDFromBytes(
+			decoder.decode(JWTSignatureValidator.toBase64PublicKey(publicKey)));
+
+		return installationId.equalsIgnoreCase(uuid.toString());
 	}
 
 	private boolean _isEntitlementVersion(String dxpVersion) {

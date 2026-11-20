@@ -60,12 +60,12 @@ class ProjectsOAuth2 extends OneSpringBootOAuth2 {
 	async downloadDXPOfflineActivationBundle(
 		projectExternalReferenceCode: string,
 		activationCode: string,
-		dxpVersion: string,
-		installationId: string
+		activationToken: string,
+		dxpVersion: string
 	) {
 		const response = await this.post<Response>(
 			`/${projectExternalReferenceCode}/dxp/offline-activation-bundle`,
-			{activationCode, dxpVersion, installationId},
+			{activationCode, activationToken, dxpVersion},
 			{earlyReturn: true}
 		);
 
@@ -73,10 +73,7 @@ class ProjectsOAuth2 extends OneSpringBootOAuth2 {
 			throw this.toFetcherError(response);
 		}
 
-		await downloadFile(
-			`${installationId}-${dxpVersion}-activation.zip`,
-			response
-		);
+		await downloadFile(`${dxpVersion}-activation.zip`, response);
 	}
 
 	async getDXPActivationCodes(projectExternalReferenceCode: string) {
