@@ -57,7 +57,13 @@ const generateForm = {
 	],
 } as GenerateForm;
 
-function Wrapper({bundleEntitlementIds}: {bundleEntitlementIds: number[]}) {
+function Wrapper({
+	bundleEntitlementIds,
+	dxpActivationCode,
+}: {
+	bundleEntitlementIds: number[];
+	dxpActivationCode?: boolean;
+}) {
 	const form = useForm<GenerateActivationKeyForm>({
 		defaultValues: {
 			bundleEntitlementIds,
@@ -69,6 +75,7 @@ function Wrapper({bundleEntitlementIds}: {bundleEntitlementIds: number[]}) {
 	return (
 		<AddOnStep
 			developer={false}
+			dxpActivationCode={dxpActivationCode}
 			form={form}
 			generateForm={generateForm}
 			onClickBack={() => {}}
@@ -109,6 +116,23 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] AddOnStep',
 
 		expect(getCheckbox('Liferay DXP').checked).toBe(true);
 		expect(getCheckbox('Add On').checked).toBe(false);
+	});
+
+	it('replaces the add-on choice with a note for a DXP activation code version', () => {
+		render(<Wrapper bundleEntitlementIds={[]} dxpActivationCode />);
+
+		expect(screen.queryByLabelText('Add On')).not.toBeInTheDocument();
+		expect(
+			screen.queryByText(translate('select-all'))
+		).not.toBeInTheDocument();
+		expect(
+			screen.getByText(
+				translate(
+					'dxp-2027-and-later-is-activated-with-an-activation-code-every-add-on-of-this-project-is-included-automatically'
+				)
+			)
+		).toBeInTheDocument();
+		expect(screen.getByTestId('next')).not.toBeDisabled();
 	});
 
 	it('lets the user toggle an add on after select all', () => {

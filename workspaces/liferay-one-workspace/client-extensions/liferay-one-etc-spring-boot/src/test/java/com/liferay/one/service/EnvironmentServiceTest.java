@@ -13,6 +13,8 @@ import com.liferay.petra.string.StringBundler;
 
 import java.net.URI;
 
+import java.util.List;
+
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
@@ -90,6 +92,33 @@ public class EnvironmentServiceTest {
 				"(activationCode eq 'x'') or (activationCode ne ''x') and ",
 				"(offering eq '", EnvironmentConstants.OFFERING_CLOUD_NATIVE,
 				"')")
+		);
+	}
+
+	@Test
+	public void testGetDXPEnvironmentsByInstallationId() throws Exception {
+		Mockito.doReturn(
+			List.of()
+		).when(
+			_environmentService
+		).getEnvironments(
+			Mockito.anyString()
+		);
+
+		_environmentService.getDXPEnvironmentsByInstallationId(
+			EnvironmentConstants.ACTIVATION_MODE_ONLINE,
+			EnvironmentConstants.ACTIVATION_STATUS_INACTIVE, "x'y");
+
+		Mockito.verify(
+			_environmentService
+		).getEnvironments(
+			StringBundler.concat(
+				"(activationMode eq '",
+				EnvironmentConstants.ACTIVATION_MODE_ONLINE,
+				"') and (activationStatus eq '",
+				EnvironmentConstants.ACTIVATION_STATUS_INACTIVE,
+				"') and (externalEnvironmentId eq 'x''y') and (offering eq '",
+				EnvironmentConstants.OFFERING_DXP, "')")
 		);
 	}
 

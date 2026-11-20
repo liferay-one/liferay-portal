@@ -6,6 +6,7 @@
 package com.liferay.one.util;
 
 import com.liferay.one.exception.ExpiredActivationTokenException;
+import com.liferay.one.exception.InvalidSignatureException;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
@@ -24,8 +25,10 @@ import java.security.PublicKey;
 import java.time.Duration;
 import java.time.Instant;
 
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -35,10 +38,8 @@ import org.junit.jupiter.api.Test;
 /**
  * @author Ryan Schuhler
  */
-@DisplayName(
-	"[CLS-CLOUDNATIVESIGNATUREVALIDATOR] CloudNativeSignatureValidator"
-)
-public class CloudNativeSignatureValidatorTest {
+@DisplayName("[CLS-JWTSIGNATUREVALIDATOR] JWTSignatureValidator")
+public class JWTSignatureValidatorTest {
 
 	@BeforeAll
 	public static void setUpClass() throws Exception {
@@ -59,16 +60,67 @@ public class CloudNativeSignatureValidatorTest {
 			).getEncoded());
 
 		Assertions.assertTrue(
-			CloudNativeSignatureValidator.equalsPublicKey(
-				base64, base64 + "\n"));
+			JWTSignatureValidator.equalsPublicKey(base64, base64 + "\n"));
 		Assertions.assertTrue(
-			CloudNativeSignatureValidator.equalsPublicKey(
+			JWTSignatureValidator.equalsPublicKey(
 				_toPEM(_keyPair.getPublic()), base64));
 		Assertions.assertFalse(
-			CloudNativeSignatureValidator.equalsPublicKey(
+			JWTSignatureValidator.equalsPublicKey(
 				base64, _toPEM(_otherKeyPair.getPublic())));
 		Assertions.assertFalse(
-			CloudNativeSignatureValidator.equalsPublicKey(base64, null));
+			JWTSignatureValidator.equalsPublicKey(base64, null));
+	}
+
+	@Test
+	public void testGetSigningPublicKey() throws Exception {
+		String otherPublicKey = _toPEM(_otherKeyPair.getPublic());
+		String publicKey = _toPEM(_keyPair.getPublic());
+
+		Assertions.assertSame(
+			publicKey,
+			_jwtSignatureValidator.getSigningPublicKey(
+				Arrays.asList(null, otherPublicKey, publicKey),
+				_createSignedJWT(_getFutureDate())));
+	}
+
+	@Test
+	public void testGetSigningPublicKeyRejectsPastExpiration()
+		throws Exception {
+
+		SignedJWT signedJWT = _createSignedJWT(
+			Date.from(
+				Instant.now(
+				).minus(
+					Duration.ofMinutes(5)
+				)));
+
+		Assertions.assertThrows(
+			ExpiredActivationTokenException.class,
+			() -> _jwtSignatureValidator.getSigningPublicKey(
+				List.of(_toPEM(_keyPair.getPublic())), signedJWT));
+	}
+
+	@Test
+	public void testGetSigningPublicKeyRejectsUnknownPublicKeys()
+		throws Exception {
+
+		SignedJWT signedJWT = _createSignedJWT(_getFutureDate());
+
+		for (List<String> publicKeys :
+				List.of(
+					List.<String>of(),
+					List.of(_toPEM(_otherKeyPair.getPublic())))) {
+
+			InvalidSignatureException invalidSignatureException =
+				Assertions.assertThrows(
+					InvalidSignatureException.class,
+					() -> _jwtSignatureValidator.getSigningPublicKey(
+						publicKeys, signedJWT));
+
+			Assertions.assertEquals(
+				"The signature does not match the installation",
+				invalidSignatureException.getMessage());
+		}
 	}
 
 	@Test
@@ -80,27 +132,67 @@ public class CloudNativeSignatureValidatorTest {
 			).getEncoded());
 
 		Assertions.assertEquals(
-			base64,
-			CloudNativeSignatureValidator.toBase64PublicKey(base64 + "\n"));
+			base64, JWTSignatureValidator.toBase64PublicKey(base64 + "\n"));
 
 		Assertions.assertEquals(
 			base64,
-			CloudNativeSignatureValidator.toBase64PublicKey(
+			JWTSignatureValidator.toBase64PublicKey(
 				_toPEM(_keyPair.getPublic())));
 
-		Assertions.assertNull(
-			CloudNativeSignatureValidator.toBase64PublicKey(null));
+		Assertions.assertNull(JWTSignatureValidator.toBase64PublicKey(null));
+	}
+
+	@Test
+	public void testValidateOfflineSignatureAcceptsMissingExpiration()
+		throws Exception {
+
+		_jwtSignatureValidator.validateOfflineSignature(_createSignedJWT(null));
+	}
+
+	@Test
+	public void testValidateOfflineSignatureRejectsPastExpiration()
+		throws Exception {
+
+		SignedJWT signedJWT = _createSignedJWT(
+			Date.from(
+				Instant.now(
+				).minus(
+					Duration.ofMinutes(5)
+				)));
+
+		Assertions.assertThrows(
+			ExpiredActivationTokenException.class,
+			() -> _jwtSignatureValidator.validateOfflineSignature(signedJWT));
+	}
+
+	@Test
+	public void testValidateOfflineSignatureRejectsTamperedSignature()
+		throws Exception {
+
+		SignedJWT signedJWT = new SignedJWT(
+			new JWSHeader(JWSAlgorithm.RS256),
+			new JWTClaimsSet.Builder(
+			).claim(
+				"publicKey", _toPEM(_keyPair.getPublic())
+			).build());
+
+		signedJWT.sign(new RSASSASigner(_otherKeyPair.getPrivate()));
+
+		Assertions.assertThrows(
+			InvalidSignatureException.class,
+			() -> _jwtSignatureValidator.validateOfflineSignature(
+				SignedJWT.parse(signedJWT.serialize())));
 	}
 
 	@Test
 	public void testValidateSignatureAcceptsPEMPublicKey() throws Exception {
-		_cloudNativeSignatureValidator.validateSignature(
+		_jwtSignatureValidator.validateSignature(
 			_toPEM(_keyPair.getPublic()), _createSignedJWT(_getFutureDate()));
 	}
 
 	@Test
 	public void testValidateSignatureAcceptsPublicKeyClaim() throws Exception {
-		_cloudNativeSignatureValidator.validateSignature(
+		_jwtSignatureValidator.validateSignature(
 			_createSignedJWT(_getFutureDate()));
 	}
 
@@ -110,8 +202,7 @@ public class CloudNativeSignatureValidatorTest {
 
 		Assertions.assertThrows(
 			PrincipalException.class,
-			() -> _cloudNativeSignatureValidator.validateSignature(
-				"", signedJWT));
+			() -> _jwtSignatureValidator.validateSignature("", signedJWT));
 	}
 
 	@Test
@@ -122,7 +213,7 @@ public class CloudNativeSignatureValidatorTest {
 
 		Assertions.assertThrows(
 			PrincipalException.class,
-			() -> _cloudNativeSignatureValidator.validateSignature(
+			() -> _jwtSignatureValidator.validateSignature(
 				"not-a-public-key", signedJWT));
 	}
 
@@ -134,7 +225,7 @@ public class CloudNativeSignatureValidatorTest {
 
 		Assertions.assertThrows(
 			PrincipalException.class,
-			() -> _cloudNativeSignatureValidator.validateSignature(
+			() -> _jwtSignatureValidator.validateSignature(
 				_toPEM(_keyPair.getPublic()), signedJWT));
 	}
 
@@ -149,7 +240,7 @@ public class CloudNativeSignatureValidatorTest {
 
 		Assertions.assertThrows(
 			ExpiredActivationTokenException.class,
-			() -> _cloudNativeSignatureValidator.validateSignature(
+			() -> _jwtSignatureValidator.validateSignature(
 				_toPEM(_keyPair.getPublic()), signedJWT));
 	}
 
@@ -161,7 +252,7 @@ public class CloudNativeSignatureValidatorTest {
 
 		Assertions.assertThrows(
 			PrincipalException.class,
-			() -> _cloudNativeSignatureValidator.validateSignature(
+			() -> _jwtSignatureValidator.validateSignature(
 				_toPEM(_otherKeyPair.getPublic()), signedJWT));
 	}
 
@@ -204,7 +295,7 @@ public class CloudNativeSignatureValidatorTest {
 	private static KeyPair _keyPair;
 	private static KeyPair _otherKeyPair;
 
-	private final CloudNativeSignatureValidator _cloudNativeSignatureValidator =
-		new CloudNativeSignatureValidator();
+	private final JWTSignatureValidator _jwtSignatureValidator =
+		new JWTSignatureValidator();
 
 }

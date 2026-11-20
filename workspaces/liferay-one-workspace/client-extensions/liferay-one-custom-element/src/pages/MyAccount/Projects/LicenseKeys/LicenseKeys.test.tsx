@@ -3,9 +3,9 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {render, screen} from '@testing-library/react';
+import {render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import {MemoryRouter, useLocation} from 'react-router';
+import {MemoryRouter, Route, Routes, useLocation} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 import LicenseKeys from './LicenseKeys';
@@ -14,14 +14,28 @@ import type {ProjectActivationKey} from '~/hooks/useProjectActivationKeys';
 
 const mocks = vi.hoisted(() => ({
 	handleNewKey: vi.fn(),
+	mutateDXPActivationCodes: vi.fn(),
+	openModal: vi.fn(),
+	patchDXPEnvironmentActive: vi.fn(),
 	useActivationKeyActions: vi.fn(),
 	useActivationKeyScope: vi.fn(),
 	useActivationKeySummary: vi.fn(),
+	useDXPActivationCodes: vi.fn(),
 	useHasAdminPermission: vi.fn(),
 	useHasLicenseKeyPermission: vi.fn(),
 	useProject: vi.fn(),
 	useProjectActivationKeys: vi.fn(),
 	useProjectEnvironments: vi.fn(),
+}));
+
+vi.mock('~/hooks/useConfirmationModal', () => ({
+	useConfirmationModal: () => ({openModal: mocks.openModal}),
+}));
+
+vi.mock('~/services/spring-boot/Projects', () => ({
+	default: {
+		patchDXPEnvironmentActive: mocks.patchDXPEnvironmentActive,
+	},
 }));
 
 vi.mock('~/context/ProjectContext', () => ({
@@ -38,6 +52,10 @@ vi.mock('../hooks/useCanRenewVirtualCluster', () => ({
 
 vi.mock('../hooks/useHasAdminPermission', () => ({
 	useHasAdminPermission: () => mocks.useHasAdminPermission(),
+}));
+
+vi.mock('./GenerateActivationKey/hooks/useDXPActivationCodes', () => ({
+	default: () => mocks.useDXPActivationCodes(),
 }));
 
 vi.mock('./hooks/useActivationKeyActions', () => ({
@@ -84,6 +102,62 @@ function mockSummary({
 	});
 }
 
+function getLocationSearch() {
+	return new URLSearchParams(
+		screen.getByTestId('location-search').textContent ?? ''
+	);
+}
+
+function LocationDisplay() {
+	const location = useLocation();
+
+	return (
+		<span data-testid="location">
+			{location.pathname + location.search}
+		</span>
+	);
+}
+
+function LocationSearch() {
+	const {search} = useLocation();
+
+	return <output data-testid="location-search">{search}</output>;
+}
+
+function mockDXPActivationCodes(
+	activationCodes: {
+		activationStatus: string;
+		installationId: string;
+		lastHeartbeatAt?: string;
+		productVersion?: string;
+	}[]
+) {
+	mocks.useDXPActivationCodes.mockReturnValue({
+		environmentTypes: [
+			{
+				activationCodes: activationCodes.map(
+					(activationCode, index) => ({
+						...activationCode,
+						activationCode: `CODE-${index}`,
+						activationMode: 'online',
+						environmentId: `ENV-${index}`,
+					})
+				),
+				availableCount: 0,
+				endDate: '2027-12-31T00:00:00Z',
+				maxClusterNodes: 2,
+				startDate: '2027-01-01T00:00:00Z',
+				totalCount: activationCodes.length,
+				type: 'production',
+				unlimited: false,
+				usedCount: activationCodes.length,
+			},
+		],
+		loading: false,
+		mutate: mocks.mutateDXPActivationCodes,
+	});
+}
+
 function toActivationKey(
 	id: string,
 	productName: string,
@@ -108,24 +182,23 @@ function toActivationKey(
 	};
 }
 
-function LocationSearch() {
-	const {search} = useLocation();
-
-	return <output data-testid="location-search">{search}</output>;
-}
-
-function getLocationSearch() {
-	return new URLSearchParams(
-		screen.getByTestId('location-search').textContent ?? ''
-	);
-}
-
-function renderLicenseKeys(initialEntry = '/') {
+function renderLicenseKeys(initialEntry = '/activation') {
 	render(
 		<MemoryRouter initialEntries={[initialEntry]}>
-			<LicenseKeys />
+			<Routes>
+				<Route
+					element={
+						<>
+							<LicenseKeys />
 
-			<LocationSearch />
+							<LocationSearch />
+						</>
+					}
+					path="/activation"
+				/>
+
+				<Route element={<LocationDisplay />} path="*" />
+			</Routes>
 		</MemoryRouter>
 	);
 }
@@ -146,6 +219,10 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 		});
 		mocks.useProjectEnvironments.mockReturnValue({
 			environments: [],
+			loading: false,
+		});
+		mocks.useDXPActivationCodes.mockReturnValue({
+			environmentTypes: [],
 			loading: false,
 		});
 		mocks.useActivationKeyActions.mockReturnValue({
@@ -225,6 +302,215 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 		).toHaveAttribute('title', 'No licenses available');
 	});
 
+	it('renders the active DXP installations with their activation codes', () => {
+		mockGeneratePermission(true);
+		mockSummary({generatable: true});
+		mockDXPActivationCodes([
+			{activationStatus: 'active', installationId: 'INSTALLATION-ACTIVE'},
+		]);
+
+		renderLicenseKeys();
+
+		const row = screen.getByText('INSTALLATION-ACTIVE').closest('tr');
+
+		expect(
+			within(row as HTMLElement).getByText('CODE-0')
+		).toBeInTheDocument();
+		expect(screen.getByText('Liferay DXP')).toBeInTheDocument();
+		expect(screen.getByText('Online')).toBeInTheDocument();
+		expect(
+			screen.getByText('Jan 1, 2027 - Dec 31, 2027')
+		).toBeInTheDocument();
+		expect(screen.getAllByRole('row')).toHaveLength(2);
+	});
+
+	it('renders the DXP check-in to an admin', () => {
+		mockGeneratePermission(true);
+		mockSummary({generatable: true});
+		mockDXPActivationCodes([
+			{
+				activationStatus: 'active',
+				installationId: 'INSTALLATION-ACTIVE',
+				lastHeartbeatAt: '2026-11-19T20:00:00Z',
+				productVersion: '2027.Q1.0',
+			},
+		]);
+
+		renderLicenseKeys();
+
+		const row = screen.getByText('INSTALLATION-ACTIVE').closest('tr');
+
+		expect(
+			within(row as HTMLElement).getByText(
+				/^2027\.Q1\.0 · Last check-in /
+			)
+		).toBeInTheDocument();
+	});
+
+	it('does not render the DXP check-in to a customer', () => {
+		mocks.useHasAdminPermission.mockReturnValue(false);
+
+		mockGeneratePermission(true);
+		mockSummary({generatable: true});
+		mockDXPActivationCodes([
+			{
+				activationStatus: 'active',
+				installationId: 'INSTALLATION-ACTIVE',
+				lastHeartbeatAt: '2026-11-19T20:00:00Z',
+				productVersion: '2027.Q1.0',
+			},
+		]);
+
+		renderLicenseKeys();
+
+		expect(screen.queryByText(/2027\.Q1\.0/)).not.toBeInTheDocument();
+		expect(screen.queryByText(/Last check-in/)).not.toBeInTheDocument();
+	});
+
+	it('renders an unused DXP activation code as pending', () => {
+		mockGeneratePermission(true);
+		mockSummary({generatable: true});
+		mockDXPActivationCodes([
+			{activationStatus: 'pending', installationId: ''},
+		]);
+
+		renderLicenseKeys();
+
+		const row = screen.getByText('CODE-0').closest('tr') as HTMLElement;
+
+		expect(within(row).getByText('Not Activated')).toBeInTheDocument();
+		expect(within(row).getByTitle('Pending')).toBeInTheDocument();
+		expect(
+			within(row).getByRole('button', {name: 'Copy Activation Code'})
+		).toBeInTheDocument();
+	});
+
+	it('copies an unused DXP activation code', async () => {
+		const user = userEvent.setup();
+
+		const writeText = vi
+			.spyOn(navigator.clipboard, 'writeText')
+			.mockResolvedValue();
+
+		mockGeneratePermission(true);
+		mockSummary({generatable: true});
+		mockDXPActivationCodes([
+			{activationStatus: 'pending', installationId: ''},
+		]);
+
+		renderLicenseKeys();
+
+		await user.click(
+			screen.getByRole('button', {name: 'Copy Activation Code'})
+		);
+
+		expect(writeText).toHaveBeenCalledWith('CODE-0');
+	});
+
+	it('opens the offline activation of an unused DXP activation code', async () => {
+		const user = userEvent.setup();
+
+		mockGeneratePermission(true);
+		mockSummary({generatable: true});
+		mockDXPActivationCodes([
+			{activationStatus: 'pending', installationId: ''},
+		]);
+
+		renderLicenseKeys();
+
+		const row = screen.getByText('CODE-0').closest('tr') as HTMLElement;
+
+		await user.click(
+			within(row).getAllByRole('button').at(-1) as HTMLElement
+		);
+		await user.click(screen.getByText('Offline Activation'));
+
+		expect(screen.getByTestId('location')).toHaveTextContent(
+			'/activation/generate?dxpOffline=ENV-0'
+		);
+	});
+
+	it('deactivates an unused DXP activation code', async () => {
+		const user = userEvent.setup();
+
+		mockGeneratePermission(true);
+		mockSummary({generatable: true});
+		mockDXPActivationCodes([
+			{activationStatus: 'pending', installationId: ''},
+		]);
+
+		renderLicenseKeys();
+
+		const row = screen.getByText('CODE-0').closest('tr') as HTMLElement;
+
+		await user.click(
+			within(row).getAllByRole('button').at(-1) as HTMLElement
+		);
+		await user.click(screen.getByText('Deactivate'));
+
+		expect(mocks.openModal).toHaveBeenCalledWith(
+			expect.objectContaining({header: 'Deactivate Activation Code'})
+		);
+
+		await mocks.openModal.mock.calls[0][0].onConfirm();
+
+		expect(mocks.patchDXPEnvironmentActive).toHaveBeenCalledWith(
+			'PRJCT-001',
+			'ENV-0',
+			false
+		);
+	});
+
+	it('deactivates an active DXP installation', async () => {
+		const user = userEvent.setup();
+
+		mockGeneratePermission(true);
+		mockSummary({generatable: true});
+		mockDXPActivationCodes([
+			{activationStatus: 'active', installationId: 'INSTALLATION-ACTIVE'},
+		]);
+
+		renderLicenseKeys();
+
+		const row = screen.getByText('INSTALLATION-ACTIVE').closest('tr');
+
+		await user.click(within(row as HTMLElement).getByRole('button'));
+		await user.click(screen.getByText('Deactivate'));
+
+		expect(mocks.openModal).toHaveBeenCalledTimes(1);
+
+		await mocks.openModal.mock.calls[0][0].onConfirm();
+
+		expect(mocks.patchDXPEnvironmentActive).toHaveBeenCalledWith(
+			'PRJCT-001',
+			'ENV-0',
+			false
+		);
+		expect(mocks.mutateDXPActivationCodes).toHaveBeenCalledTimes(1);
+	});
+
+	it('renders a deactivated DXP installation as inactive without actions', () => {
+		mockGeneratePermission(true);
+		mockSummary({generatable: true});
+		mockDXPActivationCodes([
+			{
+				activationStatus: 'inactive',
+				installationId: 'INSTALLATION-INACTIVE',
+			},
+		]);
+
+		renderLicenseKeys();
+
+		const row = screen.getByText('INSTALLATION-INACTIVE').closest('tr');
+
+		expect(
+			within(row as HTMLElement).queryByRole('button')
+		).not.toBeInTheDocument();
+		expect(
+			within(row as HTMLElement).getByTitle('Inactive')
+		).toBeInTheDocument();
+	});
+
 	it('renders the filter button as an icon only', () => {
 		mockGeneratePermission(true);
 		mockSummary({generatable: true});
@@ -253,7 +539,7 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 		});
 
 		it('applies the filters of the URL on the first render', () => {
-			renderLicenseKeys('/?status=expired');
+			renderLicenseKeys('/activation?status=expired');
 
 			expect(screen.getByText('Portal Environment')).toBeInTheDocument();
 			expect(screen.queryByText('DXP Environment')).toBeNull();
@@ -261,7 +547,7 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 		});
 
 		it('applies the search of the URL on the first render', () => {
-			renderLicenseKeys('/?search=dxp');
+			renderLicenseKeys('/activation?search=dxp');
 
 			expect(screen.getByPlaceholderText('Search')).toHaveValue('dxp');
 			expect(screen.getByText('DXP Environment')).toBeInTheDocument();
@@ -269,7 +555,7 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 		});
 
 		it('ignores a date filter of the URL that has no bound', () => {
-			renderLicenseKeys('/?startDate=2026-01-01');
+			renderLicenseKeys('/activation?startDate=2026-01-01');
 
 			expect(screen.getByText('DXP Environment')).toBeInTheDocument();
 			expect(screen.getByText('Portal Environment')).toBeInTheDocument();
@@ -279,7 +565,7 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 		it('keeps the text when the user types before the search of the URL', async () => {
 			const user = userEvent.setup();
 
-			renderLicenseKeys('/?search=dxp');
+			renderLicenseKeys('/activation?search=dxp');
 
 			await user.type(screen.getByPlaceholderText('Search'), 'my ', {
 				initialSelectionEnd: 0,
@@ -293,7 +579,7 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 		it('writes the search to the URL and keeps the other parameters', async () => {
 			const user = userEvent.setup();
 
-			renderLicenseKeys('/?status=active');
+			renderLicenseKeys('/activation?status=active');
 
 			await user.type(screen.getByPlaceholderText('Search'), 'dxp');
 
@@ -306,7 +592,7 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 		it('removes a filter from the URL when the user removes its tag', async () => {
 			const user = userEvent.setup();
 
-			renderLicenseKeys('/?status=active&status=expired');
+			renderLicenseKeys('/activation?status=active&status=expired');
 
 			const tag = screen.getByText('Status: Expired');
 

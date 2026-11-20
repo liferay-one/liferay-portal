@@ -10,6 +10,7 @@ import com.liferay.portal.ee.license.shared.LicenseConstants;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -189,6 +190,37 @@ public class LicenseKeyExporterTest {
 		JSONObject licenseJSONObject = jsonObject.getJSONObject("license");
 
 		Assertions.assertFalse(licenseJSONObject.has("instance-size"));
+	}
+
+	@Test
+	public void testToXMLWritesAVersion7ProductionLicense() throws Exception {
+		Map<String, String> properties = new LicenseKeyGenerator(
+		).getProperties(
+			"Acme Corp", "DXP Production", LicenseConstants.TYPE_PRODUCTION, 7,
+			"DXP Production", LicenseConstants.PRODUCT_ID_PORTAL, "2027.Q1",
+			"Acme Corp", 3, 0, 0, 0L, 0L, "Sizing 4", "", "", "", "", "", "",
+			new Date(1000000000000L), new Date(2000000000000L)
+		);
+
+		properties.put("installationId", "INSTALLATION-ID");
+
+		JSONObject jsonObject = XML.toJSONObject(
+			_licenseKeyExporter.toXML("TESTKEY", properties));
+
+		JSONObject licenseJSONObject = jsonObject.getJSONObject("license");
+
+		Assertions.assertEquals(
+			"INSTALLATION-ID", licenseJSONObject.getString("installation-id"));
+		Assertions.assertEquals(
+			LicenseConstants.TYPE_PRODUCTION,
+			licenseJSONObject.getString("license-type"));
+		Assertions.assertEquals(7, licenseJSONObject.getInt("license-version"));
+		Assertions.assertEquals(
+			3, licenseJSONObject.getInt("max-cluster-nodes"));
+		Assertions.assertFalse(licenseJSONObject.has("host-names"));
+		Assertions.assertFalse(licenseJSONObject.has("ip-addresses"));
+		Assertions.assertFalse(licenseJSONObject.has("mac-addresses"));
+		Assertions.assertFalse(licenseJSONObject.has("max-servers"));
 	}
 
 	@Test

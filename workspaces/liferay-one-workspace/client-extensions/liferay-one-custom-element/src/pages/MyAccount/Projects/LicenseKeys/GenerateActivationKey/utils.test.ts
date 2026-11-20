@@ -15,6 +15,7 @@ import {
 	getComplimentaryDurationDays,
 	getComplimentaryExpiration,
 	getComplimentaryPurpose,
+	getDXPActivationCodeTypeRank,
 	getDefaultBundleEntitlementIds,
 	getEnvironmentTypeRank,
 	getGenerateBundleEntitlementIds,
@@ -30,6 +31,8 @@ import {
 	hasServerInfo,
 	isCloudNativeProduct,
 	isComplimentaryKeyType,
+	isDXPActivationCodeKeyType,
+	isDXPActivationCodeVersion,
 	isDeveloperKeyType,
 	isLicensedForVersion,
 	isServerlessKeyType,
@@ -837,6 +840,42 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 			expect(isComplimentaryKeyType('production')).toBe(false);
 			expect(isDeveloperKeyType('developer-cluster')).toBe(true);
 			expect(isDeveloperKeyType('production')).toBe(false);
+		});
+
+		it('sends a self-hosted DXP production, non-production, or backup key of 2027 or later to an activation code', () => {
+			const dxpProduct = toProduct('PRDCT-DXP', 'DXP');
+
+			expect(isDXPActivationCodeKeyType('production', dxpProduct)).toBe(
+				true
+			);
+			expect(
+				isDXPActivationCodeKeyType('non-production', dxpProduct)
+			).toBe(true);
+			expect(isDXPActivationCodeKeyType('backup', dxpProduct)).toBe(true);
+			expect(isDXPActivationCodeKeyType('developer', dxpProduct)).toBe(
+				false
+			);
+			expect(
+				isDXPActivationCodeKeyType(
+					'production',
+					toProduct('PRDCT-PORTAL', 'Portal')
+				)
+			).toBe(false);
+			expect(isDXPActivationCodeKeyType('production', undefined)).toBe(
+				false
+			);
+			expect(isDXPActivationCodeVersion('2027.Q1')).toBe(true);
+			expect(isDXPActivationCodeVersion('2028.q3')).toBe(true);
+			expect(isDXPActivationCodeVersion('2026.Q4')).toBe(false);
+			expect(isDXPActivationCodeVersion('7.4')).toBe(false);
+			expect(isDXPActivationCodeVersion('')).toBe(false);
+		});
+
+		it('ranks the DXP activation code types and places unknown types last', () => {
+			expect(getDXPActivationCodeTypeRank('production')).toBe(0);
+			expect(getDXPActivationCodeTypeRank('non-production')).toBe(1);
+			expect(getDXPActivationCodeTypeRank('backup')).toBe(2);
+			expect(getDXPActivationCodeTypeRank('uat')).toBe(3);
 		});
 
 		it('labels the generate button for renewing', () => {

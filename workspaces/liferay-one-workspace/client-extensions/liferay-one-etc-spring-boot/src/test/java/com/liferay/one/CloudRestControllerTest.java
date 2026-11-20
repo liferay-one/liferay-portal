@@ -37,7 +37,7 @@ import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
 import com.liferay.one.service.ProductVersionService;
-import com.liferay.one.util.CloudNativeSignatureValidator;
+import com.liferay.one.util.JWTSignatureValidator;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
@@ -122,8 +122,7 @@ public class CloudRestControllerTest {
 			_environmentService);
 
 		_licenseKeyExporter = Mockito.mock(LicenseKeyExporter.class);
-		_cloudNativeSignatureValidator = Mockito.mock(
-			CloudNativeSignatureValidator.class);
+		_jwtSignatureValidator = Mockito.mock(JWTSignatureValidator.class);
 		_licenseKeyGenerator = Mockito.mock(LicenseKeyGenerator.class);
 
 		_productVersionService = Mockito.mock(ProductVersionService.class);
@@ -169,8 +168,8 @@ public class CloudRestControllerTest {
 		ReflectionTestUtils.setField(
 			_cloudRestController, "_adminPermission", _adminPermission);
 		ReflectionTestUtils.setField(
-			_cloudRestController, "_cloudNativeSignatureValidator",
-			_cloudNativeSignatureValidator);
+			_cloudRestController, "_jwtSignatureValidator",
+			_jwtSignatureValidator);
 		ReflectionTestUtils.setField(
 			_cloudRestController, "_cloudActivationRequestService",
 			_cloudActivationRequestService);
@@ -1081,7 +1080,7 @@ public class CloudRestControllerTest {
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 
 		Mockito.verify(
-			_cloudNativeSignatureValidator
+			_jwtSignatureValidator
 		).validateSignature(
 			Mockito.any(SignedJWT.class)
 		);
@@ -1224,7 +1223,7 @@ public class CloudRestControllerTest {
 		Mockito.doThrow(
 			new PrincipalException()
 		).when(
-			_cloudNativeSignatureValidator
+			_jwtSignatureValidator
 		).validateSignature(
 			Mockito.any(SignedJWT.class)
 		);
@@ -1248,7 +1247,7 @@ public class CloudRestControllerTest {
 				_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, "not-a-token"));
 
 		Mockito.verifyNoInteractions(
-			_cloudNativeSignatureValidator, _environmentService);
+			_jwtSignatureValidator, _environmentService);
 	}
 
 	@Test
@@ -1516,7 +1515,7 @@ public class CloudRestControllerTest {
 		Mockito.doThrow(
 			new PrincipalException()
 		).when(
-			_cloudNativeSignatureValidator
+			_jwtSignatureValidator
 		).validateSignature(
 			Mockito.any(), Mockito.any(SignedJWT.class)
 		);
@@ -1579,7 +1578,7 @@ public class CloudRestControllerTest {
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
 
 		Mockito.verifyNoInteractions(
-			_cloudNativeSignatureValidator, _entitlementService);
+			_jwtSignatureValidator, _entitlementService);
 	}
 
 	@Test
@@ -1620,7 +1619,7 @@ public class CloudRestControllerTest {
 			jsonObject.getString("dxpTerminationStatus"));
 
 		Mockito.verify(
-			_cloudNativeSignatureValidator
+			_jwtSignatureValidator
 		).validateSignature(
 			Mockito.eq(environment.getPublicKey()), Mockito.any(SignedJWT.class)
 		);
@@ -1912,7 +1911,7 @@ public class CloudRestControllerTest {
 		Mockito.doThrow(
 			new ExpiredActivationTokenException()
 		).when(
-			_cloudNativeSignatureValidator
+			_jwtSignatureValidator
 		).validateSignature(
 			Mockito.any(SignedJWT.class)
 		);
@@ -2003,7 +2002,7 @@ public class CloudRestControllerTest {
 		Mockito.doThrow(
 			new ExpiredActivationTokenException()
 		).when(
-			_cloudNativeSignatureValidator
+			_jwtSignatureValidator
 		).validateSignature(
 			Mockito.any(SignedJWT.class)
 		);
@@ -2021,7 +2020,7 @@ public class CloudRestControllerTest {
 		Mockito.doThrow(
 			new PrincipalException()
 		).when(
-			_cloudNativeSignatureValidator
+			_jwtSignatureValidator
 		).validateSignature(
 			Mockito.any(SignedJWT.class)
 		);
@@ -2102,7 +2101,7 @@ public class CloudRestControllerTest {
 		Mockito.doThrow(
 			new PrincipalException()
 		).when(
-			_cloudNativeSignatureValidator
+			_jwtSignatureValidator
 		).validateSignature(
 			Mockito.any(), Mockito.any(SignedJWT.class)
 		);
@@ -2175,7 +2174,7 @@ public class CloudRestControllerTest {
 			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
 
 		Mockito.verifyNoInteractions(
-			_cloudNativeSignatureValidator, _environmentService);
+			_jwtSignatureValidator, _environmentService);
 
 		_assertVirtualEntryNotServed();
 	}
@@ -2973,7 +2972,7 @@ public class CloudRestControllerTest {
 	private AccountService _accountService;
 	private AdminPermission _adminPermission;
 	private CloudActivationRequestService _cloudActivationRequestService;
-	private CloudNativeSignatureValidator _cloudNativeSignatureValidator;
+	private JWTSignatureValidator _jwtSignatureValidator;
 	private CloudRestController _cloudRestController;
 	private CommerceProductService _commerceProductService;
 	private CommerceProductVirtualSettingsService
