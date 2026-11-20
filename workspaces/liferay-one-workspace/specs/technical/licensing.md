@@ -445,7 +445,7 @@ erDiagram
 
 ## Findings
 
-1. **OData filter injection on the unauthenticated activation endpoint.** `sb/CloudRestController.java:789` builds `(activationCode eq '<code>')` with the raw `activationCode` claim and does not call `escapeODataString`. `/cloud/environments/*/activation` needs no OAuth token, and the JWT is verified with a public key that the caller puts in the same JWT (`sb/util/CloudNativeSignatureValidator.java:37`). A caller can send a code that closes the quote and widens the filter, which matches a pending Cloud Native environment of another account. The server then stores the caller's public key on it (`sb/CloudRestController.java:805`), and the caller can fetch the manifest with that account's license XML.
+1. **OData filter injection on the unauthenticated activation endpoint.** `sb/CloudRestController.java:789` builds `(activationCode eq '<code>')` with the raw `activationCode` claim and does not call `escapeODataString`. `/cloud/environments/*/activation` needs no OAuth token, and the JWT is verified with a public key that the caller puts in the same JWT (`sb/util/JWTSignatureValidator.java:75`). A caller can send a code that closes the quote and widens the filter, which matches a pending Cloud Native environment of another account. The server then stores the caller's public key on it (`sb/CloudRestController.java:805`), and the caller can fetch the manifest with that account's license XML.
 
 1. **The free key endpoint trusts any order ID.** `sb/LicenseKeysRestController.java:247` takes no `Jwt` and checks no permission. It reads the order with the service account, creates a free key on the order's account, and completes the order with payment status "not required" (`:279`). It does not check the order type or the product. `CommerceOrderService.completeOrder` also provisions AI Hub when the order type is `AI_HUB` (`sb/service/CommerceOrderService.java:146`). Any holder of a token from the six accepted OAuth applications, including `external-dxp`, can complete another customer's unpaid order.
 
@@ -455,7 +455,7 @@ erDiagram
 
 1. **Trial endpoints have no ownership check.** `TrialRestController` extends `BaseRestController` and reads no `Jwt` (`sb/TrialRestController.java:67`). The browser calls `DELETE /trial/{orderId}`, `POST /trial/expire/{orderId}`, and `POST /trial/provisioning/{orderId}` with the user token (`ce/services/spring-boot/Trial.ts:21`). Any signed in user can delete or expire another user's trial, or provision any order as a trial.
 
-1. **A Cloud Native JWT has no maximum lifetime.** `sb/util/CloudNativeSignatureValidator.java:55` checks only that `exp` exists and is in the future. The environment chooses `exp`, so a captured manifest request can be replayed until that date.
+1. **A Cloud Native JWT has no maximum lifetime.** `sb/util/JWTSignatureValidator.java:133` checks only that `exp` exists and is in the future. The environment chooses `exp`, so a captured manifest request can be replayed until that date.
 
 1. **A failed generation leaves records behind.** The activation key is created before `LicenseKeyValidator` runs (`sb/service/LicenseKeyGenerationService.java:614`, `sb/service/LicenseKeyService.java:73`). On failure, `deactivatePartialActivationKey` deactivates the records and does not delete them (`sb/service/ActivationKeyService.java:74`). If that call also fails, it only logs, and the partial keys stay active.
 
