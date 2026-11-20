@@ -305,7 +305,7 @@ public class LicenseKeyService extends OneBaseService {
 
 		Map<Long, Integer> counts = _getActiveLicenseKeyCounts(
 			excludedActivationKeyIds,
-			_getProjectFilterString(projectExternalReferenceCode),
+			_getProjectFilterString(projectExternalReferenceCode), false,
 			unlinkedLicenseKeys);
 
 		for (LicenseKey licenseKey : unlinkedLicenseKeys) {
@@ -321,7 +321,7 @@ public class LicenseKeyService extends OneBaseService {
 
 		return _getActiveLicenseKeyCounts(
 			Collections.emptyList(),
-			_getProjectFilterString(projectExternalReferenceCode), null);
+			_getProjectFilterString(projectExternalReferenceCode), false, null);
 	}
 
 	public Map<Long, Integer> getActiveUnassignedLicenseKeyCounts(
@@ -334,7 +334,7 @@ public class LicenseKeyService extends OneBaseService {
 				"(r_accountEntryToLicenseKey_accountEntryId eq '",
 				accountEntryId,
 				"') and (r_projectToLicenseKey_c_projectId eq '0')"),
-			null);
+			true, null);
 	}
 
 	public List<LicenseKey> getAssetReceiptLicenseLicenseKeys(
@@ -779,7 +779,7 @@ public class LicenseKeyService extends OneBaseService {
 
 	private Map<Long, Integer> _getActiveLicenseKeyCounts(
 			Collection<Long> excludedActivationKeyIds, String filterString,
-			List<LicenseKey> unlinkedLicenseKeys)
+			boolean includePermanent, List<LicenseKey> unlinkedLicenseKeys)
 		throws Exception {
 
 		Map<Long, Integer> counts = new HashMap<>();
@@ -798,7 +798,11 @@ public class LicenseKeyService extends OneBaseService {
 		// entitlement is returned to the caller, which counts it against an
 		// entitlement of its definition whose dates overlap the dates of the
 		// key. That covers a migrated key that no entitlement granted. Such a
-		// key counts only until it expires.
+		// key counts only until it expires. A permanent key of a project
+		// counts against nothing, because a perpetual license does not use
+		// an activation of the subscription. A Marketplace app key of an
+		// account still counts, because the purchase of a perpetual app
+		// limits the number of its keys.
 
 		Instant nowInstant = Instant.now();
 
@@ -809,6 +813,7 @@ public class LicenseKeyService extends OneBaseService {
 					LicenseKey::new)) {
 
 			if (!licenseKey.isActive() || licenseKey.isComplimentary() ||
+				(!includePermanent && licenseKey.isPermanent()) ||
 				excludedActivationKeyIds.contains(
 					licenseKey.getActivationKeyId())) {
 
