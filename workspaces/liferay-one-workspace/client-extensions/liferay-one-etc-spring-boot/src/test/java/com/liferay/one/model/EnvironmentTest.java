@@ -82,6 +82,8 @@ public class EnvironmentTest {
 			).put(
 				"offering", "saas"
 			).put(
+				"productVersion", "2027.Q1.0"
+			).put(
 				"publicKey", "KEY"
 			).put(
 				"r_accountEntryToEnvironment_accountEntryId", 2L
@@ -112,6 +114,7 @@ public class EnvironmentTest {
 			environment.getLastHeartbeatAtInstant());
 		Assertions.assertEquals("Production", environment.getName());
 		Assertions.assertEquals("saas", environment.getOffering());
+		Assertions.assertEquals("2027.Q1.0", environment.getProductVersion());
 		Assertions.assertEquals(
 			"PROJECT_ERC", environment.getProjectExternalReferenceCode());
 		Assertions.assertEquals("KEY", environment.getPublicKey());

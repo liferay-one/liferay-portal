@@ -55,6 +55,23 @@ public class LicenseKeyGeneratorTest {
 	}
 
 	@Test
+	public void testGetPropertiesBindsAVersion7ProductionLicenseToClusterNodes() {
+		Map<String, String> properties = _licenseKeyGenerator.getProperties(
+			"Acme Corp", "DXP Production", LicenseConstants.TYPE_PRODUCTION, 7,
+			"DXP Production", LicenseConstants.PRODUCT_ID_PORTAL, "2027.Q1",
+			"Acme Corp", 3, 2, 0, 0L, 0L, "Sizing 4", "Test license", "",
+			"host.example.com", "127.0.0.1", "00:11:22:33:44:55", "srv-1",
+			new Date(1000000000000L), new Date(2000000000000L));
+
+		Assertions.assertEquals("3", properties.get("maxClusterNodes"));
+		Assertions.assertFalse(properties.containsKey("hostNames"));
+		Assertions.assertFalse(properties.containsKey("ipAddresses"));
+		Assertions.assertFalse(properties.containsKey("macAddresses"));
+		Assertions.assertFalse(properties.containsKey("maxServers"));
+		Assertions.assertFalse(properties.containsKey("serverIds"));
+	}
+
+	@Test
 	public void testGetPropertiesNormalizesVersion2ServerIds() {
 		Map<String, String> properties = _getProperties(
 			LicenseConstants.TYPE_PRODUCTION, 2, "00-11-22-AA-BB-CC");
@@ -71,6 +88,17 @@ public class LicenseKeyGeneratorTest {
 			LicenseConstants.TYPE_PRODUCTION, 5, "srv-1");
 
 		Assertions.assertFalse(properties.containsKey("instanceSize"));
+	}
+
+	@Test
+	public void testGetPropertiesServerBindsAVersion6ProductionLicense() {
+		Map<String, String> properties = _getProperties(
+			LicenseConstants.TYPE_PRODUCTION, 6, "srv-1");
+
+		Assertions.assertEquals(
+			"host.example.com", properties.get("hostNames"));
+		Assertions.assertEquals("2", properties.get("maxServers"));
+		Assertions.assertFalse(properties.containsKey("maxClusterNodes"));
 	}
 
 	private String _generateKey() throws Exception {

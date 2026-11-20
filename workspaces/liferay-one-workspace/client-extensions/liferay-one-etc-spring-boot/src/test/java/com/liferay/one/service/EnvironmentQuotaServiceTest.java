@@ -42,6 +42,72 @@ public class EnvironmentQuotaServiceTest {
 	}
 
 	@Test
+	public void testGetDXPEnvironmentQuotaAddsAnAddOnThatEndsWithTheTerm()
+		throws Exception {
+
+		_whenDXPProject(
+			Arrays.asList(
+				_createDXPEntitlement(1L, "2027-08-09T00:00:00Z", 1.0),
+				_createDXPEntitlement(1L, "2027-08-09T00:00:00Z", 2.0)));
+
+		EnvironmentQuota environmentQuota =
+			_environmentQuotaService.getDXPEnvironmentQuota(
+				"PRJCT-1", EnvironmentConstants.TYPE_PRODUCTION);
+
+		Assertions.assertEquals(3, environmentQuota.getTotalCount());
+	}
+
+	@Test
+	public void testGetDXPEnvironmentQuotaAddsEveryDefinition()
+		throws Exception {
+
+		_whenDXPProject(
+			Arrays.asList(
+				_createDXPEntitlement(1L, "2027-08-09T00:00:00Z", 1.0),
+				_createDXPEntitlement(2L, "2027-08-09T00:00:00Z", 1.0),
+				_createDXPEntitlement(0L, "2027-08-09T00:00:00Z", 1.0),
+				_createDXPEntitlement(0L, "2027-08-09T00:00:00Z", 1.0)));
+
+		EnvironmentQuota environmentQuota =
+			_environmentQuotaService.getDXPEnvironmentQuota(
+				"PRJCT-1", EnvironmentConstants.TYPE_PRODUCTION);
+
+		Assertions.assertEquals(4, environmentQuota.getTotalCount());
+	}
+
+	@Test
+	public void testGetDXPEnvironmentQuotaCountsARenewalOnce()
+		throws Exception {
+
+		_whenDXPProject(
+			Arrays.asList(
+				_createDXPEntitlement(1L, "2027-08-09T00:00:00Z", 1.0),
+				_createDXPEntitlement(1L, "2028-08-09T00:00:00Z", 1.0)));
+
+		EnvironmentQuota environmentQuota =
+			_environmentQuotaService.getDXPEnvironmentQuota(
+				"PRJCT-1", EnvironmentConstants.TYPE_PRODUCTION);
+
+		Assertions.assertEquals(1, environmentQuota.getTotalCount());
+	}
+
+	@Test
+	public void testGetDXPEnvironmentQuotaPrefersAnEntitlementWithoutAnEndDate()
+		throws Exception {
+
+		_whenDXPProject(
+			Arrays.asList(
+				_createDXPEntitlement(1L, "2027-08-09T00:00:00Z", 5.0),
+				_createDXPEntitlement(1L, null, 2.0)));
+
+		EnvironmentQuota environmentQuota =
+			_environmentQuotaService.getDXPEnvironmentQuota(
+				"PRJCT-1", EnvironmentConstants.TYPE_PRODUCTION);
+
+		Assertions.assertEquals(2, environmentQuota.getTotalCount());
+	}
+
+	@Test
 	public void testGetEnvironmentQuotaCountsActivationCodesOfTheType()
 		throws Exception {
 
@@ -210,6 +276,29 @@ public class EnvironmentQuotaServiceTest {
 			).getTotalCount());
 	}
 
+	private Entitlement _createDXPEntitlement(
+		long entitlementDefinitionId, String effectiveEndDate,
+		Double maxQuantity) {
+
+		return new Entitlement(
+			new JSONObject(
+			).put(
+				"effectiveEndDate", effectiveEndDate
+			).put(
+				"id", ++_entitlementId
+			).put(
+				"licenseKeyFamily", "DXP"
+			).put(
+				"licenseKeyType", EnvironmentConstants.TYPE_PRODUCTION
+			).put(
+				"maxQuantity", maxQuantity
+			).put(
+				"r_entitlementDefinitionToEntitlement_c_" +
+					"entitlementDefinitionId",
+				entitlementDefinitionId
+			));
+	}
+
 	private Entitlement _createEntitlement(
 		long contractId, String grantType, Double maxQuantity, String name) {
 
@@ -259,6 +348,22 @@ public class EnvironmentQuotaServiceTest {
 			_environmentService.getCloudNativeEnvironments("PRJCT-1")
 		).thenReturn(
 			environments
+		);
+	}
+
+	private void _whenDXPProject(List<Entitlement> entitlements)
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements("PRJCT-1")
+		).thenReturn(
+			entitlements
+		);
+
+		Mockito.when(
+			_environmentService.getDXPEnvironments("PRJCT-1")
+		).thenReturn(
+			List.of()
 		);
 	}
 
