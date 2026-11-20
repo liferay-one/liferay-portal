@@ -165,7 +165,7 @@ function wait_for_log_marker {
 	echo "Waiting for ${description}."
 
 	until docker logs --since "${SINCE}" "${CONTAINER_NAME}" 2>&1 |
-		grep --quiet --extended-regexp "${pattern}"
+		grep --count --extended-regexp "${pattern}" > /dev/null
 	do
 		if [ "${elapsed}" -ge "${timeout}" ]
 		then
