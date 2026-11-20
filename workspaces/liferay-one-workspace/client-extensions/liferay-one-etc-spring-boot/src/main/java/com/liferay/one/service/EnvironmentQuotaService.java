@@ -14,10 +14,13 @@ import com.liferay.one.model.EnvironmentQuota;
 import com.liferay.one.util.ClusterNodesUtil;
 import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 
+import java.time.Instant;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -119,7 +122,8 @@ public class EnvironmentQuotaService {
 		String type) {
 
 		Set<Long> contractIds = new HashSet<>();
-		int totalCount = 0;
+		Map<Long, List<Entitlement>> definitionEntitlements =
+			new LinkedHashMap<>();
 		boolean unlimited = false;
 
 		for (Entitlement entitlement : entitlements) {
@@ -142,13 +146,78 @@ public class EnvironmentQuotaService {
 				continue;
 			}
 
-			totalCount += LicenseKeyGenerateFormService.getTotalCount(
-				entitlement);
+			// An entitlement without a definition is its own group, so it is
+			// never merged with an unrelated entitlement.
+
+			long key = entitlement.getEntitlementDefinitionId();
+
+			if (key <= 0) {
+				key = -entitlement.getEntitlementId();
+			}
+
+			definitionEntitlements.computeIfAbsent(
+				key, curKey -> new ArrayList<>()
+			).add(
+				entitlement
+			);
+		}
+
+		int totalCount = 0;
+
+		for (List<Entitlement> curEntitlements :
+				definitionEntitlements.values()) {
+
+			totalCount += _getCurrentTermTotalCount(curEntitlements);
 		}
 
 		return _toEnvironmentQuota(
 			_getContractId(contractIds), entitlements, environments, totalCount,
 			type, unlimited);
+	}
+
+	private int _getCurrentTermTotalCount(List<Entitlement> entitlements) {
+
+		// A renewal is a new entitlement of the same definition. While its
+		// dates overlap the old term, both are active, so adding every
+		// entitlement would double the quota. Only the entitlements that end
+		// last are added, which keeps the renewal and an add-on that ends with
+		// it, and drops the term that the renewal replaces.
+
+		Instant latestEndDateInstant = null;
+
+		for (Entitlement entitlement : entitlements) {
+			Instant endDateInstant = _getEndDateInstant(entitlement);
+
+			if ((latestEndDateInstant == null) ||
+				endDateInstant.isAfter(latestEndDateInstant)) {
+
+				latestEndDateInstant = endDateInstant;
+			}
+		}
+
+		int totalCount = 0;
+
+		for (Entitlement entitlement : entitlements) {
+			if (Objects.equals(
+					latestEndDateInstant, _getEndDateInstant(entitlement))) {
+
+				totalCount += LicenseKeyGenerateFormService.getTotalCount(
+					entitlement);
+			}
+		}
+
+		return totalCount;
+	}
+
+	private Instant _getEndDateInstant(Entitlement entitlement) {
+		Instant effectiveEndDateInstant =
+			entitlement.getEffectiveEndDateInstant();
+
+		if (effectiveEndDateInstant == null) {
+			return Instant.MAX;
+		}
+
+		return effectiveEndDateInstant;
 	}
 
 	private EnvironmentQuota _getEnvironmentQuota(
