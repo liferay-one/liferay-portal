@@ -54,6 +54,7 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 
 import java.text.ParseException;
 
@@ -80,6 +81,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -95,7 +97,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 /**
@@ -415,14 +416,9 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			"attachment", externalReferenceCode + ".lpkg");
 		httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
-		StreamingResponseBody streamingResponseBody = outputStream -> {
-			try (InputStream inputStream = httpResponse.body()) {
-				inputStream.transferTo(outputStream);
-			}
-		};
-
 		return new ResponseEntity<>(
-			streamingResponseBody, httpHeaders, HttpStatus.OK);
+			new InputStreamResource(httpResponse.body()), httpHeaders,
+			HttpStatus.OK);
 	}
 
 	@PostMapping(
@@ -646,17 +642,10 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		httpHeaders.setContentLength(Files.size(path));
 		httpHeaders.setContentType(MediaType.APPLICATION_OCTET_STREAM);
 
-		StreamingResponseBody streamingResponseBody = outputStream -> {
-			try {
-				Files.copy(path, outputStream);
-			}
-			finally {
-				Files.deleteIfExists(path);
-			}
-		};
-
 		return new ResponseEntity<>(
-			streamingResponseBody, httpHeaders, HttpStatus.OK);
+			new InputStreamResource(
+				Files.newInputStream(path, StandardOpenOption.DELETE_ON_CLOSE)),
+			httpHeaders, HttpStatus.OK);
 	}
 
 	private ResponseEntity<?> _activateOnline(
