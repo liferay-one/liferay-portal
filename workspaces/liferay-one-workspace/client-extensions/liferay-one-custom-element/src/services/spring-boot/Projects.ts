@@ -12,8 +12,10 @@ export type DXPActivationCode = {
 	activationCode: string;
 	activationMode: string;
 	activationStatus: string;
+	dxpVersion?: string;
 	environmentId: string;
 	installationId: string;
+	lastHeartbeatAt?: string;
 };
 
 export type DXPActivationCodeType = {

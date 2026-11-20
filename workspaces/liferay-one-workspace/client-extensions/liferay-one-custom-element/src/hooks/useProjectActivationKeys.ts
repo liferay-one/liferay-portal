@@ -32,10 +32,12 @@ export type ProjectActivationKey = {
 	complimentary: boolean;
 	description: string;
 	dxp?: boolean;
+	dxpVersion?: string;
 	environmentId?: string;
 	expirationDate: string;
 	expirationDateValue: string;
 	id: string;
+	lastHeartbeatAt?: string;
 	licenseKeyFamily: string;
 	licenseKeyId?: string;
 	name: string;

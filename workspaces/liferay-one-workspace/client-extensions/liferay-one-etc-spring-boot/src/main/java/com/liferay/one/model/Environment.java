@@ -37,6 +37,7 @@ public final class Environment {
 			"r_contractToEnvironment_c_contractId");
 		_currentEntitlementHash = jsonObject.optString(
 			"currentEntitlementHash");
+		_dxpVersion = jsonObject.optString("dxpVersion");
 		_externalEnvironmentId = jsonObject.optString("externalEnvironmentId");
 		_externalReferenceCode = jsonObject.optString("externalReferenceCode");
 		_id = jsonObject.getLong("id");
@@ -85,6 +86,10 @@ public final class Environment {
 
 	public String getCurrentEntitlementHash() {
 		return _currentEntitlementHash;
+	}
+
+	public String getDXPVersion() {
+		return _dxpVersion;
 	}
 
 	public String getExternalEnvironmentId() {
@@ -170,6 +175,7 @@ public final class Environment {
 	private final List<Long> _bundledEntitlementIds;
 	private final long _contractId;
 	private final String _currentEntitlementHash;
+	private final String _dxpVersion;
 	private final String _externalEnvironmentId;
 	private final String _externalReferenceCode;
 	private final long _id;

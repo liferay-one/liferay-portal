@@ -53,7 +53,11 @@ import {useActivationKeySummary} from './hooks/useActivationKeySummary';
 
 import './LicenseKeys.css';
 
-import {formatUTCShortDate, toUTCDateString} from '~/utils/dateUtils';
+import {
+	formatDateTime,
+	formatUTCShortDate,
+	toUTCDateString,
+} from '~/utils/dateUtils';
 
 import type {ProjectEnvironment} from '~/hooks/useProjectEnvironments';
 import type {ActivationKeySummaryKeyType} from '~/services/spring-boot/ActivationKeys';
@@ -135,9 +139,11 @@ function toDXPActivationKey(
 		complimentary: false,
 		description: '',
 		dxp: true,
+		dxpVersion: activationCode.dxpVersion,
 		expirationDate: toActivationKeyDate(environmentType.endDate),
 		expirationDateValue: toActivationKeyDateValue(environmentType.endDate),
 		id: activationCode.environmentId,
+		lastHeartbeatAt: activationCode.lastHeartbeatAt,
 		licenseKeyFamily: DXP_LICENSE_KEY_FAMILY,
 		name: activationCode.installationId,
 		offlineActivated:
@@ -153,6 +159,22 @@ function toDXPActivationKey(
 
 function isPendingDXPRow(row: ProjectActivationKey): boolean {
 	return Boolean(row.dxp) && row.status === ACTIVATION_STATUS_PENDING;
+}
+
+function getCheckIn(row: ProjectActivationKey): string {
+	const checkIn = [];
+
+	if (row.dxpVersion) {
+		checkIn.push(row.dxpVersion);
+	}
+
+	if (row.lastHeartbeatAt) {
+		checkIn.push(
+			sub('last-check-in-x', formatDateTime(row.lastHeartbeatAt))
+		);
+	}
+
+	return checkIn.join(' · ');
 }
 
 function getRowKind(row: ProjectActivationKey): Word {
@@ -587,6 +609,12 @@ export default function LicenseKeys() {
 							{!!row.activationCode && (
 								<span className="license-keys-environment-id">
 									{row.activationCode}
+								</span>
+							)}
+
+							{admin && !!getCheckIn(row) && (
+								<span className="license-keys-environment-id">
+									{getCheckIn(row)}
 								</span>
 							)}
 						</span>

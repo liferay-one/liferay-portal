@@ -14,6 +14,8 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.Validator;
 
+import java.time.Instant;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -252,6 +254,20 @@ public class EnvironmentService extends OneBaseService {
 		}
 
 		_patchEnvironment(id, environmentJSONObject);
+	}
+
+	public void updateDXPEnvironmentCheckIn(
+			String dxpVersion, long id, Instant lastHeartbeatAtInstant)
+		throws Exception {
+
+		_patchEnvironment(
+			id,
+			new JSONObject(
+			).put(
+				"dxpVersion", dxpVersion
+			).put(
+				"lastHeartbeatAt", lastHeartbeatAtInstant.toString()
+			));
 	}
 
 	public void updateEnvironmentActivation(
