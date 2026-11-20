@@ -3,6 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {ClayButtonWithIcon} from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
 import {ClayTooltipProvider} from '@clayui/tooltip';
 import {MouseEvent, useEffect, useMemo, useRef} from 'react';
@@ -16,7 +17,7 @@ import {
 	useProjectActivationKeys,
 } from '~/hooks/useProjectActivationKeys';
 import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
-import i18n, {Word, translate} from '~/i18n';
+import i18n, {Word, sub, translate} from '~/i18n';
 import {filterEnvironmentsByProject} from '~/pages/MyAccount/Projects/utils/filterEnvironmentsByProject';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
 import {isDownloadableKey} from '~/pages/MyAccount/Projects/utils/isDownloadableKey';
@@ -26,6 +27,7 @@ import {
 	isRenewableKey,
 } from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
+import {Liferay, getIconSpriteMap} from '~/services/liferay/liferay';
 import Projects from '~/services/spring-boot/Projects';
 
 import FilterableListCard, {
@@ -40,6 +42,7 @@ import useDXPActivationCodes from './GenerateActivationKey/hooks/useDXPActivatio
 import {
 	ACTIVATION_STATUS_ACTIVE,
 	ACTIVATION_STATUS_INACTIVE,
+	ACTIVATION_STATUS_PENDING,
 	CLOUD_NATIVE_LICENSE_KEY_FAMILY,
 	DXP_LICENSE_KEY_FAMILY,
 	getLicenseKeyFamilyLabel,
@@ -62,6 +65,12 @@ import type {
 const ACTIVATION_MODE_OFFLINE = 'offline';
 
 const CLOUD_NATIVE_OFFERING = 'Cloud Native';
+
+const DXP_ACTIVATION_STATUSES = [
+	ACTIVATION_STATUS_ACTIVE,
+	ACTIVATION_STATUS_INACTIVE,
+	ACTIVATION_STATUS_PENDING,
+];
 
 function getCloudNativeKeyType(
 	cloudNativeKeyTypes: ActivationKeySummaryKeyType[],
@@ -117,11 +126,12 @@ function toDXPActivationKey(
 	activationCode: DXPActivationCode,
 	environmentType: DXPActivationCodeType
 ): ProjectActivationKey {
-	const active = activationCode.activationStatus === ACTIVATION_STATUS_ACTIVE;
+	const {activationStatus} = activationCode;
 
 	return {
+		activationCode: activationCode.activationCode,
 		activationKeyId: '',
-		active,
+		active: activationStatus === ACTIVATION_STATUS_ACTIVE,
 		complimentary: false,
 		description: '',
 		dxp: true,
@@ -136,12 +146,20 @@ function toDXPActivationKey(
 		productVersion: '',
 		startDate: toActivationKeyDate(environmentType.startDate),
 		startDateValue: toActivationKeyDateValue(environmentType.startDate),
-		status: active ? ACTIVATION_STATUS_ACTIVE : ACTIVATION_STATUS_INACTIVE,
+		status: activationStatus as Word,
 		type: environmentType.type,
 	};
 }
 
+function isPendingDXPRow(row: ProjectActivationKey): boolean {
+	return Boolean(row.dxp) && row.status === ACTIVATION_STATUS_PENDING;
+}
+
 function getRowKind(row: ProjectActivationKey): Word {
+	if (isPendingDXPRow(row)) {
+		return 'not-activated';
+	}
+
 	if (row.cloudNative || row.dxp) {
 		return row.offlineActivated ? 'offline' : 'online';
 	}
@@ -155,6 +173,7 @@ function getRowKind(row: ProjectActivationKey): Word {
 
 function matchesSearch(row: ProjectActivationKey, search: string): boolean {
 	return (
+		(row.activationCode ?? '').toLowerCase().includes(search) ||
 		row.name.toLowerCase().includes(search) ||
 		row.description.toLowerCase().includes(search) ||
 		row.productName.toLowerCase().includes(search)
@@ -294,10 +313,18 @@ function KebabActions({
 }
 
 type DXPKebabActionsProps = {
+	onCopy: () => void;
 	onDeactivate: () => void;
+	onOfflineActivation: () => void;
+	pending: boolean;
 };
 
-function DXPKebabActions({onDeactivate}: DXPKebabActionsProps) {
+function DXPKebabActions({
+	onCopy,
+	onDeactivate,
+	onOfflineActivation,
+	pending,
+}: DXPKebabActionsProps) {
 	return (
 		<ClayDropDown
 			trigger={
@@ -311,6 +338,20 @@ function DXPKebabActions({onDeactivate}: DXPKebabActionsProps) {
 			}
 		>
 			<ClayDropDown.ItemList>
+				{pending && (
+					<>
+						<ClayDropDown.Item onClick={stopAnd(onCopy)}>
+							{translate('copy-activation-code')}
+						</ClayDropDown.Item>
+
+						<ClayDropDown.Item
+							onClick={stopAnd(onOfflineActivation)}
+						>
+							{translate('offline-activation')}
+						</ClayDropDown.Item>
+					</>
+				)}
+
 				<ClayDropDown.Item
 					className="text-danger"
 					onClick={stopAnd(onDeactivate)}
@@ -320,6 +361,24 @@ function DXPKebabActions({onDeactivate}: DXPKebabActionsProps) {
 			</ClayDropDown.ItemList>
 		</ClayDropDown>
 	);
+}
+
+async function copyActivationCode(activationCode: string) {
+	try {
+		await navigator.clipboard.writeText(activationCode);
+	}
+	catch (error) {
+		Liferay.Util.openToast({
+			message: translate('an-unexpected-error-occurred'),
+			type: 'danger',
+		});
+
+		return;
+	}
+
+	Liferay.Util.openToast({
+		message: sub('copied-x-to-the-clipboard', 'activation code'),
+	});
 }
 
 type CloudNativeKebabActionsProps = {
@@ -398,12 +457,10 @@ export default function LicenseKeys() {
 				),
 			...dxpEnvironmentTypes.flatMap((environmentType) =>
 				environmentType.activationCodes
-					.filter(
-						(activationCode) =>
-							activationCode.activationStatus ===
-								ACTIVATION_STATUS_ACTIVE ||
-							activationCode.activationStatus ===
-								ACTIVATION_STATUS_INACTIVE
+					.filter((activationCode) =>
+						DXP_ACTIVATION_STATUSES.includes(
+							activationCode.activationStatus
+						)
 					)
 					.map((activationCode) =>
 						toDXPActivationKey(activationCode, environmentType)
@@ -444,9 +501,19 @@ export default function LicenseKeys() {
 	}, [navigate, newKeyExternalReferenceCode]);
 
 	function handleDeactivateDXPInstallation(row: ProjectActivationKey) {
+		const pending = isPendingDXPRow(row);
+
 		openModal({
-			body: translate('deactivate-dxp-installation-confirmation'),
-			header: translate('deactivate-dxp-installation'),
+			body: translate(
+				pending
+					? 'deactivate-activation-code-confirmation'
+					: 'deactivate-dxp-installation-confirmation'
+			),
+			header: translate(
+				pending
+					? 'deactivate-activation-code'
+					: 'deactivate-dxp-installation'
+			),
 			onConfirm: async () => {
 				await Projects.patchDXPEnvironmentActive(
 					projectId,
@@ -484,17 +551,60 @@ export default function LicenseKeys() {
 		{
 			heading: 'environment-name',
 			key: 'environment-name',
-			render: (row) => (
-				<span className="d-flex flex-column">
-					<span>{row.name || '-'}</span>
+			render: (row) => {
+				if (isPendingDXPRow(row)) {
+					return (
+						<span className="align-items-center d-flex">
+							<span className="license-keys-activation-code">
+								{row.activationCode}
+							</span>
 
-					{!!row.environmentId && (
-						<span className="license-keys-environment-id">
-							{row.environmentId}
+							<ClayButtonWithIcon
+								aria-label={translate('copy-activation-code')}
+								className="ml-2 text-neutral-7"
+								displayType="unstyled"
+								onClick={(event) => {
+									event.stopPropagation();
+
+									copyActivationCode(
+										row.activationCode ?? ''
+									);
+								}}
+								size="sm"
+								spritemap={getIconSpriteMap()}
+								symbol="copy"
+								title={translate('copy-activation-code')}
+							/>
 						</span>
-					)}
-				</span>
-			),
+					);
+				}
+
+				if (row.dxp) {
+					return (
+						<span className="d-flex flex-column">
+							<span>{row.name || '-'}</span>
+
+							{!!row.activationCode && (
+								<span className="license-keys-environment-id">
+									{row.activationCode}
+								</span>
+							)}
+						</span>
+					);
+				}
+
+				return (
+					<span className="d-flex flex-column">
+						<span>{row.name || '-'}</span>
+
+						{!!row.environmentId && (
+							<span className="license-keys-environment-id">
+								{row.environmentId}
+							</span>
+						)}
+					</span>
+				);
+			},
 			width: '25%',
 		},
 		{
@@ -526,15 +636,28 @@ export default function LicenseKeys() {
 			key: 'action',
 			render: (row) => {
 				if (row.dxp) {
-					if (!hasActivationPermission || !row.active) {
+					const pending = isPendingDXPRow(row);
+
+					if (!hasActivationPermission || (!row.active && !pending)) {
 						return null;
 					}
 
 					return (
 						<DXPKebabActions
+							onCopy={() =>
+								copyActivationCode(row.activationCode ?? '')
+							}
 							onDeactivate={() =>
 								handleDeactivateDXPInstallation(row)
 							}
+							onOfflineActivation={() =>
+								navigate(
+									`generate?dxpOffline=${encodeURIComponent(
+										row.id
+									)}`
+								)
+							}
+							pending={pending}
 						/>
 					);
 				}

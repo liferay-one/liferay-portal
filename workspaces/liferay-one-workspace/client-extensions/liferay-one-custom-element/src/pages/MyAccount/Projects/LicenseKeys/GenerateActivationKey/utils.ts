@@ -24,6 +24,8 @@ export const ACTIVATION_STATUS_ACTIVE = 'active';
 
 export const ACTIVATION_STATUS_INACTIVE = 'inactive';
 
+export const ACTIVATION_STATUS_PENDING = 'pending';
+
 export const CLOUD_NATIVE_ENVIRONMENT_TYPES = [
 	'production',
 	'uat',

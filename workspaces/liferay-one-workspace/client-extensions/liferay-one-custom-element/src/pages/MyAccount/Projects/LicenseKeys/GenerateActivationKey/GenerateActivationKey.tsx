@@ -39,6 +39,7 @@ import OfflinePackageStep from './OfflinePackageStep/OfflinePackageStep';
 import OfflineTokenStep from './OfflineTokenStep/OfflineTokenStep';
 import SubscriptionStep from './SubscriptionStep/SubscriptionStep';
 import useCloudNativeOfflineEnvironments from './hooks/useCloudNativeOfflineEnvironments';
+import useDXPActivationCodes from './hooks/useDXPActivationCodes';
 import useGenerateActivationKeyForm from './hooks/useGenerateActivationKeyForm';
 import useRenewSource from './hooks/useRenewSource';
 import {
@@ -48,7 +49,9 @@ import {
 	GenerateActivationKeyStep,
 } from './types';
 import {
+	ACTIVATION_STATUS_PENDING,
 	CLOUD_NATIVE_LICENSE_KEY_FAMILY,
+	DXP_LICENSE_KEY_FAMILY,
 	buildEmptyServer,
 	findMatchingVersion,
 	getBundleProducts,
@@ -165,6 +168,28 @@ export default function GenerateActivationKey() {
 			),
 		[modifyEnvironmentId, offlineEnvironments]
 	);
+
+	const dxpOfflineEnvironmentId = searchParams.get('dxpOffline');
+
+	const {environmentTypes: dxpEnvironmentTypes} = useDXPActivationCodes(
+		dxpOfflineEnvironmentId ? projectId : ''
+	);
+
+	const dxpOfflineActivationCode = useMemo(() => {
+		for (const environmentType of dxpEnvironmentTypes) {
+			const activationCode = environmentType.activationCodes.find(
+				(current) =>
+					current.environmentId === dxpOfflineEnvironmentId &&
+					current.activationStatus === ACTIVATION_STATUS_PENDING
+			);
+
+			if (activationCode) {
+				return {...activationCode, type: environmentType.type};
+			}
+		}
+
+		return undefined;
+	}, [dxpEnvironmentTypes, dxpOfflineEnvironmentId]);
 
 	useEffect(() => {
 		setOfflineTokenError(null);
@@ -374,6 +399,39 @@ export default function GenerateActivationKey() {
 	}, [generateForm, getValues, modifyEnvironment, setValue]);
 
 	useEffect(() => {
+		if (!dxpOfflineActivationCode || getValues('dxpActivationCode')) {
+			return;
+		}
+
+		const dxpProduct =
+			generateForm?.products.find(
+				(current) =>
+					current.licenseKeyFamily === DXP_LICENSE_KEY_FAMILY &&
+					current.keyTypes.some(
+						(keyType) =>
+							keyType.key === dxpOfflineActivationCode.type
+					)
+			) ??
+			generateForm?.products.find(
+				(current) => current.licenseKeyFamily === DXP_LICENSE_KEY_FAMILY
+			);
+
+		if (!dxpProduct) {
+			return;
+		}
+
+		setValue('dxpActivationCode', dxpOfflineActivationCode.activationCode);
+		setValue('installationId', '');
+		setValue('keyType', dxpOfflineActivationCode.type);
+		setValue(
+			'productExternalReferenceCode',
+			dxpProduct.externalReferenceCode
+		);
+
+		setStep('dxp-offline-package');
+	}, [dxpOfflineActivationCode, generateForm, getValues, setValue]);
+
+	useEffect(() => {
 		const [firstVersion] = versions;
 
 		if (
@@ -384,6 +442,23 @@ export default function GenerateActivationKey() {
 			setValue('version', firstVersion);
 		}
 	}, [renewing, setValue, version, versions]);
+
+	useEffect(() => {
+		if (
+			step !== 'dxp-offline-package' ||
+			isDXPActivationCodeVersion(version)
+		) {
+			return;
+		}
+
+		const dxpActivationCodeVersion = versions.find(
+			isDXPActivationCodeVersion
+		);
+
+		if (dxpActivationCodeVersion) {
+			setValue('version', dxpActivationCodeVersion);
+		}
+	}, [setValue, step, version, versions]);
 
 	useEffect(() => {
 		if (!modifyEnvironment) {
@@ -729,7 +804,8 @@ export default function GenerateActivationKey() {
 
 	if (
 		!hasGeneratePermission ||
-		((renewing || modifyEnvironmentId) && !hasActivationPermission)
+		((renewing || modifyEnvironmentId || dxpOfflineEnvironmentId) &&
+			!hasActivationPermission)
 	) {
 		return <Navigate replace to=".." />;
 	}
@@ -874,7 +950,11 @@ export default function GenerateActivationKey() {
 					{step === 'dxp-offline-package' && (
 						<DXPOfflinePackageStep
 							form={form}
-							onClickBack={() => goTo('dxp-activation-codes')}
+							onClickBack={() =>
+								dxpOfflineEnvironmentId
+									? navigate('..')
+									: goTo('dxp-activation-codes')
+							}
 							onClickCancel={onClickCancel}
 							onClickDownload={onClickDownloadDXPPackage}
 							submitting={submitting}

@@ -422,6 +422,7 @@ export default {
 	'copied-to-the-clipboard': 'Copied to the clipboard.',
 	'copied-x-to-the-clipboard': 'Copied {0} to the clipboard.',
 	'copy': 'Copy',
+	'copy-activation-code': 'Copy Activation Code',
 	'copy-external-reference-code': 'Copy External Reference Code',
 	'copy-id': 'Copy ID',
 	'copy-this-token-to-your-liferay-dxp-instance':
@@ -492,6 +493,9 @@ export default {
 	'date-to': 'Date To',
 	'day': 'Day',
 	'deactivate': 'Deactivate',
+	'deactivate-activation-code': 'Deactivate Activation Code',
+	'deactivate-activation-code-confirmation':
+		'Are you sure you want to deactivate this activation code? It cannot be used to activate DXP, and its subscription becomes available again.',
 	'deactivate-activation-key': 'Deactivate Activation Key',
 	'deactivate-activation-key-confirmation':
 		'Are you sure you want to deactivate this activation key?',

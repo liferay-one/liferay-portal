@@ -24,6 +24,7 @@ import {formatUTCShortDate, toUTCDateString} from '~/utils/dateUtils';
 import escapeODataString from '~/utils/escapeODataString';
 
 export type ProjectActivationKey = {
+	activationCode?: string;
 	activationKeyId: string;
 	active: boolean;
 	badge?: Word;
