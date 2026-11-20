@@ -34,9 +34,11 @@ import FilterableListCard, {
 import {useHasLicenseKeyPermission} from '../hooks/useHasActivationPermission';
 import {useHasAdminPermission} from '../hooks/useHasAdminPermission';
 import {useRenewableKeyOptions} from '../hooks/useRenewableKeyOptions';
+import useDXPActivationCodes from './GenerateActivationKey/hooks/useDXPActivationCodes';
 import {
 	ACTIVATION_STATUS_ACTIVE,
 	CLOUD_NATIVE_LICENSE_KEY_FAMILY,
+	DXP_LICENSE_KEY_FAMILY,
 	getLicenseKeyFamilyLabel,
 } from './GenerateActivationKey/utils';
 import useActivationKeyActions from './hooks/useActivationKeyActions';
@@ -49,6 +51,10 @@ import {formatUTCShortDate, toUTCDateString} from '~/utils/dateUtils';
 
 import type {ProjectEnvironment} from '~/hooks/useProjectEnvironments';
 import type {ActivationKeySummaryKeyType} from '~/services/spring-boot/ActivationKeys';
+import type {
+	DXPActivationCode,
+	DXPActivationCodeType,
+} from '~/services/spring-boot/Projects';
 
 const ACTIVATION_MODE_OFFLINE = 'offline';
 
@@ -104,8 +110,34 @@ function toCloudNativeActivationKey(
 	};
 }
 
+function toDXPActivationKey(
+	activationCode: DXPActivationCode,
+	environmentType: DXPActivationCodeType
+): ProjectActivationKey {
+	return {
+		activationKeyId: '',
+		active: true,
+		complimentary: false,
+		description: '',
+		dxp: true,
+		expirationDate: toActivationKeyDate(environmentType.endDate),
+		expirationDateValue: toActivationKeyDateValue(environmentType.endDate),
+		id: activationCode.environmentId,
+		licenseKeyFamily: DXP_LICENSE_KEY_FAMILY,
+		name: activationCode.installationId,
+		offlineActivated:
+			activationCode.activationMode === ACTIVATION_MODE_OFFLINE,
+		productName: getLicenseKeyFamilyLabel(DXP_LICENSE_KEY_FAMILY),
+		productVersion: '',
+		startDate: toActivationKeyDate(environmentType.startDate),
+		startDateValue: toActivationKeyDateValue(environmentType.startDate),
+		status: 'active',
+		type: environmentType.type,
+	};
+}
+
 function getRowKind(row: ProjectActivationKey): Word {
-	if (row.cloudNative) {
+	if (row.cloudNative || row.dxp) {
 		return row.offlineActivated ? 'offline' : 'online';
 	}
 
@@ -312,6 +344,10 @@ export default function LicenseKeys() {
 		[summary]
 	);
 
+	const {environmentTypes: dxpEnvironmentTypes} = useDXPActivationCodes(
+		isUnassignedProject(projectId) ? '' : projectId
+	);
+
 	const rows = useMemo(
 		() => [
 			...activationKeys,
@@ -324,8 +360,25 @@ export default function LicenseKeys() {
 				.map((environment) =>
 					toCloudNativeActivationKey(environment, cloudNativeKeyTypes)
 				),
+			...dxpEnvironmentTypes.flatMap((environmentType) =>
+				environmentType.activationCodes
+					.filter(
+						(activationCode) =>
+							activationCode.activationStatus ===
+							ACTIVATION_STATUS_ACTIVE
+					)
+					.map((activationCode) =>
+						toDXPActivationKey(activationCode, environmentType)
+					)
+			),
 		],
-		[activationKeys, cloudNativeKeyTypes, environments, projectId]
+		[
+			activationKeys,
+			cloudNativeKeyTypes,
+			dxpEnvironmentTypes,
+			environments,
+			projectId,
+		]
 	);
 
 	const {
@@ -417,6 +470,10 @@ export default function LicenseKeys() {
 		{
 			key: 'action',
 			render: (row) => {
+				if (row.dxp) {
+					return null;
+				}
+
 				if (row.cloudNative) {
 					if (!row.offlineActivated) {
 						return null;
