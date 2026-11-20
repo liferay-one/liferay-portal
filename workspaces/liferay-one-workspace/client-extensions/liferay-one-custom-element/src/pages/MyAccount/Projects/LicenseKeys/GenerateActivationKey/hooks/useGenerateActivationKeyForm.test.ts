@@ -99,7 +99,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATE
 		);
 	});
 
-	it('keeps the leading product of a new key and its CMP', async () => {
+	it('keeps every leading product of a new key and its CMP', async () => {
 		mocks.getGenerateForm.mockResolvedValue({
 			bundleProducts: [],
 			products: [PRODUCT_COMMERCE, PRODUCT_PORTAL, PRODUCT_DXP],
@@ -113,6 +113,7 @@ describe('[HOOK-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY-USEGENERATE
 
 		expect(result.current.generateForm?.products).toEqual([
 			PRODUCT_DXP,
+			PRODUCT_PORTAL,
 			PRODUCT_COMMERCE,
 		]);
 	});
