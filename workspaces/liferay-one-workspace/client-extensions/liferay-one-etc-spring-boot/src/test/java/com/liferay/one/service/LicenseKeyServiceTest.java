@@ -284,7 +284,8 @@ public class LicenseKeyServiceTest {
 		throws Exception {
 
 		_whenGetAllProjectedItems(
-			_createPermanentLicenseKey(1L, true, 5L, 7L, 1L));
+			_createTermLicenseKey(
+				false, 5L, 7L, "2027-01-01", 1L, "2026-01-01"));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -310,83 +311,6 @@ public class LicenseKeyServiceTest {
 
 		Assertions.assertEquals(1, counts.get(8L));
 		Assertions.assertNull(counts.get(20L));
-	}
-
-	@Test
-	public void testGetActiveLicenseKeyCountsCountsPermanentKeyAgainstItsActiveEntitlement()
-		throws Exception {
-
-		_whenGetAllProjectedItems(
-			_createPermanentLicenseKey(1L, true, 5L, 10L, 1L));
-
-		Map<Long, Integer> counts =
-			_licenseKeyService.getActiveLicenseKeyCounts(
-				Arrays.asList(
-					_createEntitlement(5L, "2026-12-31", 10L, 2D),
-					_createEntitlement(5L, "2027-12-31", 20L, 2D)),
-				Collections.emptyList(), "PRJCT-1");
-
-		Assertions.assertEquals(1, counts.get(10L));
-		Assertions.assertNull(counts.get(20L));
-	}
-
-	@Test
-	public void testGetActiveLicenseKeyCountsCountsPermanentKeyAgainstItsDefinition()
-		throws Exception {
-
-		_whenGetAllProjectedItems(
-			_createLicenseKey(1L, true, false, 10L, 1L),
-			_createPermanentLicenseKey(2L, true, 5L, 0L, 2L));
-
-		Map<Long, Integer> counts =
-			_licenseKeyService.getActiveLicenseKeyCounts(
-				Arrays.asList(_createEntitlement(5L, "2027-12-31", 10L, 3D)),
-				Collections.emptyList(), "PRJCT-1");
-
-		Assertions.assertEquals(2, counts.get(10L));
-	}
-
-	@Test
-	public void testGetActiveLicenseKeyCountsCountsPermanentKeysAgainstTheLatestEndingEntitlementFirst()
-		throws Exception {
-
-		_whenGetAllProjectedItems(
-			_createPermanentLicenseKey(1L, true, 5L, 0L, 1L),
-			_createPermanentLicenseKey(2L, true, 5L, 0L, 2L),
-			_createPermanentLicenseKey(3L, true, 5L, 0L, 3L));
-
-		Map<Long, Integer> counts =
-			_licenseKeyService.getActiveLicenseKeyCounts(
-				Arrays.asList(
-					_createEntitlement(5L, "2026-12-31", 10L, 2D),
-					_createEntitlement(5L, "2027-12-31", 20L, 2D)),
-				Collections.emptyList(), "PRJCT-1");
-
-		Assertions.assertEquals(1, counts.get(10L));
-		Assertions.assertEquals(2, counts.get(20L));
-	}
-
-	@Test
-	public void testGetActiveLicenseKeyCountsCountsPermanentKeysBeyondTheActivationsOnTheLatestEndingEntitlement()
-		throws Exception {
-
-		// More permanent keys than activations leave nothing to generate, so
-		// the surplus lands on one entitlement rather than being dropped.
-
-		_whenGetAllProjectedItems(
-			_createPermanentLicenseKey(1L, true, 5L, 0L, 1L),
-			_createPermanentLicenseKey(2L, true, 5L, 0L, 2L),
-			_createPermanentLicenseKey(3L, true, 5L, 0L, 3L));
-
-		Map<Long, Integer> counts =
-			_licenseKeyService.getActiveLicenseKeyCounts(
-				Arrays.asList(
-					_createEntitlement(5L, "2026-12-31", 10L, 1D),
-					_createEntitlement(5L, "2027-12-31", 20L, 1D)),
-				Collections.emptyList(), "PRJCT-1");
-
-		Assertions.assertEquals(1, counts.get(10L));
-		Assertions.assertEquals(2, counts.get(20L));
 	}
 
 	@Test
@@ -430,6 +354,55 @@ public class LicenseKeyServiceTest {
 
 		Assertions.assertNull(counts.get(10L));
 		Assertions.assertEquals(1, counts.get(20L));
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsCountsTermKeysAgainstTheLatestEndingEntitlementFirst()
+		throws Exception {
+
+		_whenGetAllProjectedItems(
+			_createTermLicenseKey(
+				false, 5L, 0L, "2099-01-01", 1L, "2020-01-01"),
+			_createTermLicenseKey(
+				false, 5L, 0L, "2099-01-01", 2L, "2020-01-01"),
+			_createTermLicenseKey(
+				false, 5L, 0L, "2099-01-01", 3L, "2020-01-01"));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				Arrays.asList(
+					_createEntitlement(5L, "2026-12-31", 10L, 2D),
+					_createEntitlement(5L, "2027-12-31", 20L, 2D)),
+				Collections.emptyList(), "PRJCT-1");
+
+		Assertions.assertEquals(1, counts.get(10L));
+		Assertions.assertEquals(2, counts.get(20L));
+	}
+
+	@Test
+	public void testGetActiveLicenseKeyCountsCountsTermKeysBeyondTheActivationsOnTheLatestEndingEntitlement()
+		throws Exception {
+
+		// More keys than activations leave nothing to generate, so the
+		// surplus lands on one entitlement rather than being dropped.
+
+		_whenGetAllProjectedItems(
+			_createTermLicenseKey(
+				false, 5L, 0L, "2099-01-01", 1L, "2020-01-01"),
+			_createTermLicenseKey(
+				false, 5L, 0L, "2099-01-01", 2L, "2020-01-01"),
+			_createTermLicenseKey(
+				false, 5L, 0L, "2099-01-01", 3L, "2020-01-01"));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveLicenseKeyCounts(
+				Arrays.asList(
+					_createEntitlement(5L, "2026-12-31", 10L, 1D),
+					_createEntitlement(5L, "2027-12-31", 20L, 1D)),
+				Collections.emptyList(), "PRJCT-1");
+
+		Assertions.assertEquals(1, counts.get(10L));
+		Assertions.assertEquals(2, counts.get(20L));
 	}
 
 	@Test
@@ -541,12 +514,13 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
-	public void testGetActiveLicenseKeyCountsSkipsInactiveAndRenewedPermanentKeys()
+	public void testGetActiveLicenseKeyCountsSkipsInactiveAndRenewedTermKeys()
 		throws Exception {
 
 		_whenGetAllProjectedItems(
-			_createPermanentLicenseKey(1L, false, 5L, 0L, 1L),
-			_createPermanentLicenseKey(2L, true, 5L, 0L, 2L));
+			_createLicenseKey(1L, false, false, 10L, 1L),
+			_createTermLicenseKey(
+				false, 5L, 0L, "2099-01-01", 2L, "2020-01-01"));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
@@ -578,18 +552,20 @@ public class LicenseKeyServiceTest {
 	}
 
 	@Test
-	public void testGetActiveLicenseKeyCountsSkipsPermanentKeysOfADefinitionWithoutAnEntitlement()
+	public void testGetActiveLicenseKeyCountsSkipsPermanentKeys()
 		throws Exception {
 
 		_whenGetAllProjectedItems(
-			_createPermanentLicenseKey(1L, true, 6L, 0L, 1L));
+			_createLicenseKey(1L, true, false, 10L, 1L),
+			_createPermanentLicenseKey(2L, true, 5L, 10L, 2L),
+			_createPermanentLicenseKey(3L, true, 5L, 0L, 3L));
 
 		Map<Long, Integer> counts =
 			_licenseKeyService.getActiveLicenseKeyCounts(
 				Arrays.asList(_createEntitlement(5L, "2027-12-31", 10L, 3D)),
 				Collections.emptyList(), "PRJCT-1");
 
-		Assertions.assertTrue(counts.isEmpty());
+		Assertions.assertEquals(1, counts.get(10L));
 	}
 
 	@Test
@@ -639,6 +615,20 @@ public class LicenseKeyServiceTest {
 			_licenseKeyService.getActiveLicenseKeyCounts(
 				"PRJCT-1"
 			).isEmpty());
+	}
+
+	@Test
+	public void testGetActiveUnassignedLicenseKeyCountsCountsPermanentKeys()
+		throws Exception {
+
+		_whenGetAllProjectedItems(
+			_createPermanentLicenseKey(1L, true, 5L, 10L, 1L));
+
+		Map<Long, Integer> counts =
+			_licenseKeyService.getActiveUnassignedLicenseKeyCounts(
+				77L, Collections.emptyList());
+
+		Assertions.assertEquals(1, counts.get(10L));
 	}
 
 	@Test
