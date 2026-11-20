@@ -304,13 +304,9 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 						environment.getExternalReferenceCode()));
 			}
 
-			JSONObject jsonObject = new JSONObject(
-			).put(
-				"add-ons", new JSONArray()
-			).put(
+			JSONObject jsonObject = _getInactiveManifestJSONObject().put(
 				"dxpTerminationStatus",
-				EntitlementConstants.TERMINATION_STATUS_TERMINATED
-			);
+				EntitlementConstants.TERMINATION_STATUS_TERMINATED);
 
 			return ResponseEntity.ok(jsonObject.toString());
 		}
@@ -319,9 +315,20 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			dxpVersion, environment);
 
 		if (manifestJSONObject == null) {
-			return _toResponseEntity(
-				HttpStatus.FORBIDDEN,
-				"The installation does not have an active DXP entitlement");
+
+			// A lapsed subscription is a normal answer, so DXP can tell it
+			// from a request that failed.
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Serving an inactive manifest to environment ",
+						environment.getExternalReferenceCode(),
+						" without an active DXP entitlement"));
+			}
+
+			return ResponseEntity.ok(
+				_getInactiveManifestJSONObject().toString());
 		}
 
 		if (_log.isInfoEnabled()) {
@@ -1006,6 +1013,15 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		return dxpEntitlement;
 	}
 
+	private JSONObject _getInactiveManifestJSONObject() {
+		return new JSONObject(
+		).put(
+			"add-ons", new JSONArray()
+		).put(
+			"status", EnvironmentConstants.MANIFEST_STATUS_INACTIVE
+		);
+	}
+
 	private JSONObject _getManifestJSONObject(
 			String dxpVersion, Environment environment)
 		throws Exception {
@@ -1086,6 +1102,8 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			encoder.encodeToString(licenseXML.getBytes(StandardCharsets.UTF_8))
 		).put(
 			"maxClusterNodes", maxClusterNodes
+		).put(
+			"status", EnvironmentConstants.MANIFEST_STATUS_ACTIVE
 		);
 	}
 

@@ -24,6 +24,10 @@ public class EnvironmentConstants {
 
 	public static final String ACTIVATION_STATUS_PENDING = "pending";
 
+	public static final String MANIFEST_STATUS_ACTIVE = "active";
+
+	public static final String MANIFEST_STATUS_INACTIVE = "inactive";
+
 	public static final String OFFERING_AI_HUB = "AI Hub";
 
 	public static final String OFFERING_ANALYTICS_CLOUD = "Analytics Cloud";
