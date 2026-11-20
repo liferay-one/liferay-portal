@@ -179,13 +179,12 @@ public class EnvironmentService extends OneBaseService {
 	}
 
 	public List<Environment> getDXPEnvironmentsByInstallationId(
-			String installationId)
+			String activationStatus, String installationId)
 		throws Exception {
 
 		return getEnvironments(
 			StringBundler.concat(
-				"(activationStatus eq '",
-				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
+				"(activationStatus eq '", escapeODataString(activationStatus),
 				"') and (externalEnvironmentId eq '",
 				escapeODataString(installationId), "') and (offering eq '",
 				EnvironmentConstants.OFFERING_DXP, "')"));

@@ -495,6 +495,9 @@ export default {
 	'deactivate-activation-key': 'Deactivate Activation Key',
 	'deactivate-activation-key-confirmation':
 		'Are you sure you want to deactivate this activation key?',
+	'deactivate-dxp-installation': 'Deactivate DXP Installation',
+	'deactivate-dxp-installation-confirmation':
+		'Are you sure you want to deactivate this DXP installation? Its activation code cannot be used again.',
 	'deactivated': 'Deactivated',
 	'dear-x-based-on-our-records-you-have-already-completed-a-trial-therefore-currently-we-are-unable-to-start-your-trial-please-contact-our-sales-department-via-email':
 		'Dear {0}, based on our records, you have already completed a trial. Therefore currently we are unable to start your trial. Please contact our sales department via email',

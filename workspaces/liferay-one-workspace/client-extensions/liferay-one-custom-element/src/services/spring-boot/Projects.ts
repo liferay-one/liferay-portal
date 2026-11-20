@@ -127,6 +127,18 @@ class ProjectsOAuth2 extends OneSpringBootOAuth2 {
 		);
 	}
 
+	async patchDXPEnvironmentActive(
+		projectExternalReferenceCode: string,
+		environmentExternalReferenceCode: string,
+		active: boolean
+	) {
+		await this.patch(
+			`/${projectExternalReferenceCode}/dxp/environments` +
+				`/${environmentExternalReferenceCode}/active`,
+			{active}
+		);
+	}
+
 	async postContactRole(
 		projectExternalReferenceCode: string,
 		userId: number | string,

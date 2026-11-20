@@ -10,6 +10,7 @@ import {useNavigate, useSearchParams} from 'react-router';
 import Button from '~/components/Button/Button';
 import Page from '~/components/Page/Page';
 import {useProject} from '~/context/ProjectContext';
+import {useConfirmationModal} from '~/hooks/useConfirmationModal';
 import {
 	ProjectActivationKey,
 	useProjectActivationKeys,
@@ -25,6 +26,7 @@ import {
 	isRenewableKey,
 } from '~/pages/MyAccount/Projects/utils/isRenewableKey';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
+import Projects from '~/services/spring-boot/Projects';
 
 import FilterableListCard, {
 	FilterOption,
@@ -37,6 +39,7 @@ import {useRenewableKeyOptions} from '../hooks/useRenewableKeyOptions';
 import useDXPActivationCodes from './GenerateActivationKey/hooks/useDXPActivationCodes';
 import {
 	ACTIVATION_STATUS_ACTIVE,
+	ACTIVATION_STATUS_INACTIVE,
 	CLOUD_NATIVE_LICENSE_KEY_FAMILY,
 	DXP_LICENSE_KEY_FAMILY,
 	getLicenseKeyFamilyLabel,
@@ -114,9 +117,11 @@ function toDXPActivationKey(
 	activationCode: DXPActivationCode,
 	environmentType: DXPActivationCodeType
 ): ProjectActivationKey {
+	const active = activationCode.activationStatus === ACTIVATION_STATUS_ACTIVE;
+
 	return {
 		activationKeyId: '',
-		active: true,
+		active,
 		complimentary: false,
 		description: '',
 		dxp: true,
@@ -131,7 +136,7 @@ function toDXPActivationKey(
 		productVersion: '',
 		startDate: toActivationKeyDate(environmentType.startDate),
 		startDateValue: toActivationKeyDateValue(environmentType.startDate),
-		status: 'active',
+		status: active ? ACTIVATION_STATUS_ACTIVE : ACTIVATION_STATUS_INACTIVE,
 		type: environmentType.type,
 	};
 }
@@ -288,6 +293,35 @@ function KebabActions({
 	);
 }
 
+type DXPKebabActionsProps = {
+	onDeactivate: () => void;
+};
+
+function DXPKebabActions({onDeactivate}: DXPKebabActionsProps) {
+	return (
+		<ClayDropDown
+			trigger={
+				<Button
+					borderless
+					className="text-neutral-7"
+					displayType="unstyled"
+					onClick={(event) => event.stopPropagation()}
+					prependIcon="ellipsis-v"
+				/>
+			}
+		>
+			<ClayDropDown.ItemList>
+				<ClayDropDown.Item
+					className="text-danger"
+					onClick={stopAnd(onDeactivate)}
+				>
+					{translate('deactivate')}
+				</ClayDropDown.Item>
+			</ClayDropDown.ItemList>
+		</ClayDropDown>
+	);
+}
+
 type CloudNativeKebabActionsProps = {
 	onModify: () => void;
 };
@@ -344,9 +378,11 @@ export default function LicenseKeys() {
 		[summary]
 	);
 
-	const {environmentTypes: dxpEnvironmentTypes} = useDXPActivationCodes(
-		isUnassignedProject(projectId) ? '' : projectId
-	);
+	const {
+		environmentTypes: dxpEnvironmentTypes,
+		mutate: mutateDXPActivationCodes,
+	} = useDXPActivationCodes(isUnassignedProject(projectId) ? '' : projectId);
+	const {openModal} = useConfirmationModal();
 
 	const rows = useMemo(
 		() => [
@@ -365,7 +401,9 @@ export default function LicenseKeys() {
 					.filter(
 						(activationCode) =>
 							activationCode.activationStatus ===
-							ACTIVATION_STATUS_ACTIVE
+								ACTIVATION_STATUS_ACTIVE ||
+							activationCode.activationStatus ===
+								ACTIVATION_STATUS_INACTIVE
 					)
 					.map((activationCode) =>
 						toDXPActivationKey(activationCode, environmentType)
@@ -404,6 +442,23 @@ export default function LicenseKeys() {
 			{replace: true}
 		);
 	}, [navigate, newKeyExternalReferenceCode]);
+
+	function handleDeactivateDXPInstallation(row: ProjectActivationKey) {
+		openModal({
+			body: translate('deactivate-dxp-installation-confirmation'),
+			header: translate('deactivate-dxp-installation'),
+			onConfirm: async () => {
+				await Projects.patchDXPEnvironmentActive(
+					projectId,
+					row.id,
+					false
+				);
+
+				await mutateDXPActivationCodes();
+			},
+			status: 'danger',
+		});
+	}
 
 	const columns: ListColumn<ProjectActivationKey>[] = [
 		{
@@ -471,7 +526,17 @@ export default function LicenseKeys() {
 			key: 'action',
 			render: (row) => {
 				if (row.dxp) {
-					return null;
+					if (!hasActivationPermission || !row.active) {
+						return null;
+					}
+
+					return (
+						<DXPKebabActions
+							onDeactivate={() =>
+								handleDeactivateDXPInstallation(row)
+							}
+						/>
+					);
 				}
 
 				if (row.cloudNative) {

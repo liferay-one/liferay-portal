@@ -88,6 +88,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -178,6 +179,45 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			HttpStatus.BAD_REQUEST, "Unable to parse the signed JWT");
 	}
 
+	@PatchMapping(
+		"/projects/{projectExternalReferenceCode}/dxp/environments" +
+			"/{environmentExternalReferenceCode}/active"
+	)
+	public ResponseEntity<?> patchProjectsDXPEnvironmentsActive(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable String environmentExternalReferenceCode,
+			@PathVariable String projectExternalReferenceCode,
+			@RequestBody String json)
+		throws Exception {
+
+		_checkProject(jwt, projectExternalReferenceCode);
+
+		if (getRequiredBoolean(new JSONObject(json), "active")) {
+			return _toResponseEntity(
+				HttpStatus.BAD_REQUEST,
+				"A deactivated DXP environment cannot be reactivated");
+		}
+
+		Environment environment =
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				environmentExternalReferenceCode);
+
+		if ((environment == null) ||
+			!Objects.equals(
+				EnvironmentConstants.OFFERING_DXP, environment.getOffering()) ||
+			!Objects.equals(
+				projectExternalReferenceCode,
+				environment.getProjectExternalReferenceCode())) {
+
+			return _toResponseEntity(
+				HttpStatus.NOT_FOUND, "The DXP environment was not found");
+		}
+
+		return _keyedLock.withLock(
+			_getActivationCodeLockKey(environment.getActivationCode()),
+			() -> _deactivate(environmentExternalReferenceCode));
+	}
+
 	@PostMapping("/dxp/installations/{installationId}/activation")
 	public ResponseEntity<?> postDXPInstallationsActivation(
 			@PathVariable String installationId, @RequestBody String body)
@@ -255,6 +295,26 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		if (environment == null) {
 			return _toResponseEntity(
 				HttpStatus.NOT_FOUND, "The installation is not activated");
+		}
+
+		if (_isDeactivated(environment)) {
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Serving a terminated manifest to deactivated ",
+						"environment ",
+						environment.getExternalReferenceCode()));
+			}
+
+			JSONObject jsonObject = new JSONObject(
+			).put(
+				"add-ons", new JSONArray()
+			).put(
+				"dxpTerminationStatus",
+				EntitlementConstants.TERMINATION_STATUS_TERMINATED
+			);
+
+			return ResponseEntity.ok(jsonObject.toString());
 		}
 
 		JSONObject manifestJSONObject = _getManifestJSONObject(
@@ -483,6 +543,11 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 				HttpStatus.NOT_FOUND, "The activation code was not found");
 		}
 
+		if (_isDeactivated(environment)) {
+			return _toResponseEntity(
+				HttpStatus.CONFLICT, "The activation code is deactivated");
+		}
+
 		boolean pending = Objects.equals(
 			environment.getActivationStatus(),
 			EnvironmentConstants.ACTIVATION_STATUS_PENDING);
@@ -578,6 +643,11 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 				HttpStatus.NOT_FOUND, "The activation code was not found");
 		}
 
+		if (_isDeactivated(environment)) {
+			return _toResponseEntity(
+				HttpStatus.CONFLICT, "The activation code is deactivated");
+		}
+
 		if (!Objects.equals(
 				environment.getActivationStatus(),
 				EnvironmentConstants.ACTIVATION_STATUS_PENDING)) {
@@ -601,6 +671,7 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		for (Environment activatedEnvironment :
 				_environmentService.getDXPEnvironmentsByInstallationId(
+					EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
 					installationId)) {
 
 			if (CloudNativeSignatureValidator.equalsPublicKey(
@@ -676,6 +747,32 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		}
 
 		return path;
+	}
+
+	private ResponseEntity<?> _deactivate(
+			String environmentExternalReferenceCode)
+		throws Exception {
+
+		Environment environment =
+			_environmentService.fetchEnvironmentByExternalReferenceCode(
+				environmentExternalReferenceCode);
+
+		if (!_isDeactivated(environment)) {
+			_environmentService.updateEnvironmentActivationStatus(
+				EnvironmentConstants.ACTIVATION_STATUS_INACTIVE, null,
+				environment.getId());
+
+			if (_log.isInfoEnabled()) {
+				_log.info(
+					StringBundler.concat(
+						"Deactivated DXP environment ",
+						environmentExternalReferenceCode,
+						" with installation ID ",
+						environment.getExternalEnvironmentId()));
+			}
+		}
+
+		return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 	}
 
 	private boolean _endsAfter(
@@ -1020,9 +1117,14 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			return null;
 		}
 
-		List<Environment> environments =
+		List<Environment> environments = new ArrayList<>(
 			_environmentService.getDXPEnvironmentsByInstallationId(
-				installationId);
+				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE, installationId));
+
+		environments.addAll(
+			_environmentService.getDXPEnvironmentsByInstallationId(
+				EnvironmentConstants.ACTIVATION_STATUS_INACTIVE,
+				installationId));
 
 		if (environments.isEmpty()) {
 			return null;
@@ -1107,6 +1209,12 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		}
 
 		return false;
+	}
+
+	private boolean _isDeactivated(Environment environment) {
+		return Objects.equals(
+			environment.getActivationStatus(),
+			EnvironmentConstants.ACTIVATION_STATUS_INACTIVE);
 	}
 
 	private boolean _isSignedInstallationId(
