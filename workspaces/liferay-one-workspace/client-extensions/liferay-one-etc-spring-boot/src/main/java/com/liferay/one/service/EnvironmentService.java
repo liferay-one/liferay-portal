@@ -68,12 +68,15 @@ public class EnvironmentService extends OneBaseService {
 
 	public Environment addDXPEnvironment(
 			long accountEntryId, String activationCode,
-			String contractExternalReferenceCode,
 			String projectExternalReferenceCode, String type)
 		throws Exception {
 
+		// A DXP environment links only to its account and project. A contract
+		// or an entitlement goes stale when the subscription renews, so the
+		// entitlements are read from the project on every request.
+
 		return _addCodeActivatedEnvironment(
-			accountEntryId, activationCode, contractExternalReferenceCode,
+			accountEntryId, activationCode, null,
 			EnvironmentConstants.OFFERING_DXP, projectExternalReferenceCode,
 			type);
 	}
@@ -362,11 +365,14 @@ public class EnvironmentService extends OneBaseService {
 		).put(
 			"r_accountEntryToEnvironment_accountEntryId", accountEntryId
 		).put(
-			"r_contractToEnvironment_c_contractERC",
-			contractExternalReferenceCode
-		).put(
 			"type", type
 		);
+
+		if (contractExternalReferenceCode != null) {
+			environmentJSONObject.put(
+				"r_contractToEnvironment_c_contractERC",
+				contractExternalReferenceCode);
+		}
 
 		if (projectExternalReferenceCode != null) {
 			environmentJSONObject.put(
