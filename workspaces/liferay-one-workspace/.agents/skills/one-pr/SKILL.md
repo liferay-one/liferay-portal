@@ -1,6 +1,6 @@
 ---
 
-allowed-tools: [AskUserQuestion, Bash, Glob, Grep, Read]
+allowed-tools: [AskUserQuestion, Bash, Glob, Grep, Read, mcp__atlassian]
 description: Create a GitHub pull request for the current branch, transition the corresponding Jira ticket to review, and record the PR link on the ticket. Use when the user asks to create a PR, send a PR, or invokes /pr.
 name: one-pr
 
@@ -133,6 +133,8 @@ bullet points.
 Present the proposed title and body to the user before submitting, and proceed once they approve.
 
 ### Transitioned Jira Ticket
+
+Do every Jira step with the Atlassian MCP tools, as `.claude/rules/jira.md` in the repository says: read tickets with `getJiraIssue`, transition them with `transitionJiraIssue`, and set fields with `editJiraIssue`. Do not use `curl`.
 
 Fetch the input ticket (issue type, status, subtasks) and resolve the **target ticket** — the one whose status reflects active work and on which the pull request URL is recorded:
 

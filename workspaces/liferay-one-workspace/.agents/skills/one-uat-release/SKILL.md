@@ -38,12 +38,12 @@ The date in the branch name is year, month, day, as in `one-release-2026-11-10`.
 
 The Release Date field of a ticket is `customfield_10233`, a date field that takes `yyyy-MM-dd`.
 
-Every Jira call is a `curl` call with `--user "${JIRA_API_USER}:${JIRA_API_TOKEN}"`, as `.claude/rules/jira.md` in the repository says.
+Every Jira call is an Atlassian MCP tool call with `cloudId` `liferay.atlassian.net`, as `.claude/rules/jira.md` in the repository says. Do not use `curl`.
 
 ## Prerequisites
 
 - `lcp auth token` prints a token. When it does not, ask the user to run `! lcp login`.
-- `JIRA_API_USER` and `JIRA_API_TOKEN` are set.
+- The Atlassian MCP server is connected and has the write tools `addCommentToJiraIssue` and `editJiraIssue`.
 - The `liferay-one-etc-spring-boot` build clones `liferay/liferay-release-tool-ee` over SSH, so the SSH key must have access to it.
 
 ## Workflow
@@ -102,16 +102,7 @@ git show --format= --name-only <sha> \
 	| sort --unique
 ```
 
-Get the summary, the status, the type, the assignee, the reporter, the description, and the comments of each ticket:
-
-```bash
-curl \
-	--silent \
-	--url "https://liferay.atlassian.net/rest/api/3/issue/<TICKET>?fields=assignee,comment,description,issuetype,reporter,status,summary" \
-	--user "${JIRA_API_USER}:${JIRA_API_TOKEN}"
-```
-
-The description and the comments are Atlassian Document Format (ADF). Flatten them to text with `jq '[.. | .text? | strings] | join(" ")'`.
+Get the summary, the status, the type, the assignee, the reporter, the description, and the comments of each ticket. Call `getJiraIssue` with `fields` `["assignee", "comment", "description", "issuetype", "reporter", "status", "summary"]` and `responseContentFormat` `markdown`.
 
 Show the user a table of the tickets with their commits, client extensions, status, and assignee before you deploy.
 
@@ -229,28 +220,11 @@ The release contains these commits for this ticket:
 <The manual steps done for this ticket, or no paragraph when there are none.>
 ```
 
-Convert the text to ADF and post it as `<test-ticket>/SKILL.md` Step 7 shows, with `<test-ticket>/scripts/adf.py`.
+Post the text with `addCommentToJiraIssue`, with `contentFormat` `markdown`, as `<test-ticket>/SKILL.md` Step 7 shows.
 
-Then set the Release Date of each ticket to `<date>`. Read the field first. Another person can set it before you do, so change it only when it is empty or has another date, and tell the user about each ticket that had another date:
+Then set the Release Date of each ticket to `<date>`. Read the field first. Another person can set it before you do, so change it only when it is empty or has another date, and tell the user about each ticket that had another date. Read the field with `getJiraIssue` and `fields` `["customfield_10233"]`. Set it with `editJiraIssue` and `fields` `{"customfield_10233": "<date>"}`.
 
-```bash
-curl \
-	--silent \
-	--url "https://liferay.atlassian.net/rest/api/3/issue/<TICKET>?fields=customfield_10233" \
-	--user "${JIRA_API_USER}:${JIRA_API_TOKEN}" \
-	| jq --raw-output .fields.customfield_10233
-
-curl \
-	--data '{"fields": {"customfield_10233": "<date>"}}' \
-	--header "Content-Type: application/json" \
-	--request PUT \
-	--silent \
-	--url "https://liferay.atlassian.net/rest/api/3/issue/<TICKET>" \
-	--user "${JIRA_API_USER}:${JIRA_API_TOKEN}" \
-	--write-out '%{http_code}\n'
-```
-
-A `204` means success. When the call fails, tell the user and continue with the next ticket.
+When the call fails, tell the user and continue with the next ticket.
 
 ### Step 7. Test Each Ticket
 
