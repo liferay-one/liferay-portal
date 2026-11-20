@@ -109,6 +109,10 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		_checkProject(jwt, projectExternalReferenceCode);
 
+		List<Entitlement> entitlements =
+			_entitlementService.getActiveEntitlements(
+				projectExternalReferenceCode);
+
 		JSONArray jsonArray = new JSONArray();
 
 		for (EnvironmentQuota environmentQuota :
@@ -122,23 +126,38 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 					_toActivationCodeJSONObject(environment));
 			}
 
-			jsonArray.put(
-				new JSONObject(
+			JSONObject environmentTypeJSONObject = new JSONObject(
+			).put(
+				"activationCodes", activationCodesJSONArray
+			).put(
+				"availableCount", environmentQuota.getAvailableCount()
+			).put(
+				"maxClusterNodes", environmentQuota.getMaxClusterNodes()
+			).put(
+				"totalCount", environmentQuota.getTotalCount()
+			).put(
+				"type", environmentQuota.getType()
+			).put(
+				"unlimited", environmentQuota.isUnlimited()
+			).put(
+				"usedCount", environmentQuota.getUsedCount()
+			);
+
+			Entitlement dxpEntitlement = _getDXPEntitlement(
+				entitlements, environmentQuota.getType());
+
+			if (dxpEntitlement != null) {
+				environmentTypeJSONObject.put(
+					"endDate",
+					Objects.toString(
+						dxpEntitlement.getEffectiveEndDateInstant(), null)
 				).put(
-					"activationCodes", activationCodesJSONArray
-				).put(
-					"availableCount", environmentQuota.getAvailableCount()
-				).put(
-					"maxClusterNodes", environmentQuota.getMaxClusterNodes()
-				).put(
-					"totalCount", environmentQuota.getTotalCount()
-				).put(
-					"type", environmentQuota.getType()
-				).put(
-					"unlimited", environmentQuota.isUnlimited()
-				).put(
-					"usedCount", environmentQuota.getUsedCount()
-				));
+					"startDate",
+					Objects.toString(dxpEntitlement.getStartDateInstant(), null)
+				);
+			}
+
+			jsonArray.put(environmentTypeJSONObject);
 		}
 
 		JSONObject jsonObject = new JSONObject(
@@ -890,6 +909,26 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		return contract.getExternalReferenceCode();
 	}
 
+	private Entitlement _getDXPEntitlement(
+		List<Entitlement> entitlements, String type) {
+
+		Entitlement dxpEntitlement = null;
+
+		for (Entitlement entitlement : entitlements) {
+			if (!EnvironmentQuotaService.isDXPEntitlement(entitlement, type)) {
+				continue;
+			}
+
+			if ((dxpEntitlement == null) ||
+				_endsAfter(entitlement, dxpEntitlement)) {
+
+				dxpEntitlement = entitlement;
+			}
+		}
+
+		return dxpEntitlement;
+	}
+
 	private JSONObject _getManifestJSONObject(
 			String dxpVersion, Environment environment)
 		throws Exception {
@@ -904,21 +943,8 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		List<Entitlement> entitlements = _getActiveEntitlements(environment);
 
-		Entitlement dxpEntitlement = null;
-
-		for (Entitlement entitlement : entitlements) {
-			if (!EnvironmentQuotaService.isDXPEntitlement(
-					entitlement, environment.getType())) {
-
-				continue;
-			}
-
-			if ((dxpEntitlement == null) ||
-				_endsAfter(entitlement, dxpEntitlement)) {
-
-				dxpEntitlement = entitlement;
-			}
-		}
+		Entitlement dxpEntitlement = _getDXPEntitlement(
+			entitlements, environment.getType());
 
 		if (dxpEntitlement == null) {
 			if (_log.isWarnEnabled()) {

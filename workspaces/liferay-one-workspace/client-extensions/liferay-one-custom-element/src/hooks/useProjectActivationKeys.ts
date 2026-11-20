@@ -30,6 +30,7 @@ export type ProjectActivationKey = {
 	cloudNative?: boolean;
 	complimentary: boolean;
 	description: string;
+	dxp?: boolean;
 	environmentId?: string;
 	expirationDate: string;
 	expirationDateValue: string;

@@ -19,7 +19,9 @@ export type DXPActivationCode = {
 export type DXPActivationCodeType = {
 	activationCodes: DXPActivationCode[];
 	availableCount: number;
+	endDate?: string;
 	maxClusterNodes: number;
+	startDate?: string;
 	totalCount: number;
 	type: string;
 	unlimited: boolean;
