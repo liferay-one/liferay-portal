@@ -15,7 +15,6 @@ import com.liferay.one.constants.ProductVersion;
 import com.liferay.one.exception.ExpiredActivationTokenException;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
-import com.liferay.one.model.Contract;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.Environment;
 import com.liferay.one.model.EnvironmentQuota;
@@ -25,7 +24,6 @@ import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceProductVirtualSettingsService;
 import com.liferay.one.service.CommerceSkuService;
-import com.liferay.one.service.ContractService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
@@ -454,8 +452,6 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 				return _environmentService.addDXPEnvironment(
 					project.getAccountId(), ActivationCodeUtil.generate(),
-					_getContractExternalReferenceCode(
-						environmentQuota.getContractId()),
 					projectExternalReferenceCode, type);
 			});
 
@@ -990,22 +986,6 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		return jsonArray;
 	}
 
-	private String _getContractExternalReferenceCode(long contractId)
-		throws Exception {
-
-		if (contractId <= 0) {
-			return null;
-		}
-
-		Contract contract = _contractService.fetchContract(contractId);
-
-		if (contract == null) {
-			return null;
-		}
-
-		return contract.getExternalReferenceCode();
-	}
-
 	private Entitlement _getDXPEntitlement(
 		List<Entitlement> entitlements, String type) {
 
@@ -1359,9 +1339,6 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 	@Autowired
 	private CommerceSkuService _commerceSkuService;
-
-	@Autowired
-	private ContractService _contractService;
 
 	@Autowired
 	private EntitlementService _entitlementService;
