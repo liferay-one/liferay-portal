@@ -349,24 +349,24 @@ export function getLicenseKeyFamilyRank(licenseKeyFamily: string): number {
 export function getProjectProducts(
 	products: GenerateFormProduct[]
 ): GenerateFormProduct[] {
-	let leadingProduct: GenerateFormProduct | undefined;
-	let leadingRank = LEADING_LICENSE_KEY_FAMILIES.length;
+	const leadingProducts = products
+		.filter(
+			(product) =>
+				getLicenseKeyFamilyRank(product.licenseKeyFamily) <
+				LEADING_LICENSE_KEY_FAMILIES.length
+		)
+		.sort(
+			(product1, product2) =>
+				getLicenseKeyFamilyRank(product1.licenseKeyFamily) -
+				getLicenseKeyFamilyRank(product2.licenseKeyFamily)
+		);
 
-	for (const product of products) {
-		const rank = getLicenseKeyFamilyRank(product.licenseKeyFamily);
-
-		if (rank < leadingRank) {
-			leadingProduct = product;
-			leadingRank = rank;
-		}
-	}
-
-	if (!leadingProduct) {
+	if (!leadingProducts.length) {
 		return products;
 	}
 
 	return [
-		leadingProduct,
+		...leadingProducts,
 		...products
 			.filter((product) => product.appLicense)
 			.sort((product1, product2) =>
