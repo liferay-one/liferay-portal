@@ -18,7 +18,7 @@ import Projects, {DXPActivationCode} from '~/services/spring-boot/Projects';
 
 import WizardFooter from '../../../CloudAppInstall/WizardFooter/WizardFooter';
 import useDXPActivationCodes from '../hooks/useDXPActivationCodes';
-import {ACTIVATION_STATUS_ACTIVE} from '../utils';
+import {ACTIVATION_STATUS_ACTIVE, ACTIVATION_STATUS_INACTIVE} from '../utils';
 
 type DXPActivationCodesStepProps = {
 	keyType: string;
@@ -49,7 +49,10 @@ export default function DXPActivationCodesStep({
 		(current) => current.type === keyType
 	);
 
-	const activationCodes = environmentType?.activationCodes ?? [];
+	const activationCodes = (environmentType?.activationCodes ?? []).filter(
+		(activationCode) =>
+			activationCode.activationStatus !== ACTIVATION_STATUS_INACTIVE
+	);
 
 	const unusedActivationCode = activationCodes.find(
 		(current) => current.activationStatus !== ACTIVATION_STATUS_ACTIVE

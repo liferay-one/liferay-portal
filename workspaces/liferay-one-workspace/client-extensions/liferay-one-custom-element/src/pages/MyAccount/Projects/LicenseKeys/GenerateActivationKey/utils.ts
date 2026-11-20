@@ -22,6 +22,8 @@ const DEVELOPER_KEY_TYPES = ['developer', 'developer-cluster'];
 
 export const ACTIVATION_STATUS_ACTIVE = 'active';
 
+export const ACTIVATION_STATUS_INACTIVE = 'inactive';
+
 export const CLOUD_NATIVE_ENVIRONMENT_TYPES = [
 	'production',
 	'uat',

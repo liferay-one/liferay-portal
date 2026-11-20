@@ -20,6 +20,8 @@ public class EnvironmentConstants {
 
 	public static final String ACTIVATION_STATUS_ACTIVE = "active";
 
+	public static final String ACTIVATION_STATUS_INACTIVE = "inactive";
+
 	public static final String ACTIVATION_STATUS_PENDING = "pending";
 
 	public static final String OFFERING_AI_HUB = "AI Hub";
