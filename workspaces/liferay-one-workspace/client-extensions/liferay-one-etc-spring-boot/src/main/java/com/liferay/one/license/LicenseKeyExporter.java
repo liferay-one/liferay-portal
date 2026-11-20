@@ -463,7 +463,16 @@ public class LicenseKeyExporter {
 			rootElement, "expiration-date",
 			longDateFormatDateTime.format(expirationDate));
 
-		if (licenseEntryType.equals(LicenseConstants.TYPE_FREE) ||
+		boolean installationProduction = false;
+
+		if ((licenseVersion >= 7) &&
+			licenseEntryType.equals(LicenseConstants.TYPE_PRODUCTION)) {
+
+			installationProduction = true;
+		}
+
+		if (installationProduction ||
+			licenseEntryType.equals(LicenseConstants.TYPE_FREE) ||
 			licenseEntryType.equals(LicenseConstants.TYPE_VIRTUAL_CLUSTER)) {
 
 			_addElement(
@@ -474,7 +483,8 @@ public class LicenseKeyExporter {
 		if (licenseEntryType.equals(LicenseConstants.TYPE_CLUSTER) ||
 			((licenseVersion >= 4) &&
 			 (licenseEntryType.equals(LicenseConstants.TYPE_LIMITED) ||
-			  licenseEntryType.equals(LicenseConstants.TYPE_PRODUCTION)))) {
+			  (!installationProduction &&
+			   licenseEntryType.equals(LicenseConstants.TYPE_PRODUCTION))))) {
 
 			_addElement(
 				rootElement, "max-servers", properties.get("maxServers"));
@@ -525,7 +535,8 @@ public class LicenseKeyExporter {
 			if (licenseEntryType.equals(LicenseConstants.TYPE_CLUSTER) ||
 				licenseEntryType.equals(LicenseConstants.TYPE_LIMITED) ||
 				licenseEntryType.equals(LicenseConstants.TYPE_PER_USER) ||
-				licenseEntryType.equals(LicenseConstants.TYPE_PRODUCTION)) {
+				(!installationProduction &&
+				 licenseEntryType.equals(LicenseConstants.TYPE_PRODUCTION))) {
 
 				exportServerToXML(rootElement, properties);
 			}

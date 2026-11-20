@@ -35,7 +35,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class EnvironmentQuotaService {
 
-	public static boolean isDXPEntitlement(
+	public static boolean isDXPEntitlementType(
 		Entitlement entitlement, String type) {
 
 		if (Objects.equals(
@@ -127,7 +127,7 @@ public class EnvironmentQuotaService {
 		boolean unlimited = false;
 
 		for (Entitlement entitlement : entitlements) {
-			if (!isDXPEntitlement(entitlement, type)) {
+			if (!isDXPEntitlementType(entitlement, type)) {
 				continue;
 			}
 
@@ -145,9 +145,6 @@ public class EnvironmentQuotaService {
 
 				continue;
 			}
-
-			// An entitlement without a definition is its own group, so it is
-			// never merged with an unrelated entitlement.
 
 			long key = entitlement.getEntitlementDefinitionId();
 
@@ -176,13 +173,6 @@ public class EnvironmentQuotaService {
 	}
 
 	private int _getCurrentTermTotalCount(List<Entitlement> entitlements) {
-
-		// A renewal is a new entitlement of the same definition. While its
-		// dates overlap the old term, both are active, so adding every
-		// entitlement would double the quota. Only the entitlements that end
-		// last are added, which keeps the renewal and an add-on that ends with
-		// it, and drops the term that the renewal replaces.
-
 		Instant latestEndDateInstant = null;
 
 		for (Entitlement entitlement : entitlements) {

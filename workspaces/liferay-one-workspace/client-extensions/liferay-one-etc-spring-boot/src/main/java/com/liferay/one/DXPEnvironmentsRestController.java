@@ -13,12 +13,14 @@ import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.constants.LicenseVersion;
 import com.liferay.one.constants.ProductVersion;
 import com.liferay.one.exception.ExpiredActivationTokenException;
+import com.liferay.one.exception.InvalidSignatureException;
 import com.liferay.one.license.LicenseKeyExporter;
 import com.liferay.one.license.LicenseKeyGenerator;
 import com.liferay.one.model.Entitlement;
 import com.liferay.one.model.Environment;
 import com.liferay.one.model.EnvironmentQuota;
 import com.liferay.one.model.Project;
+import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceProductService;
@@ -29,10 +31,11 @@ import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
 import com.liferay.one.service.LicenseKeyGenerateFormService;
 import com.liferay.one.util.ActivationCodeUtil;
-import com.liferay.one.util.CloudNativeSignatureValidator;
 import com.liferay.one.util.ClusterNodesUtil;
 import com.liferay.one.util.CommerceProductUtil;
+import com.liferay.one.util.JWTSignatureValidator;
 import com.liferay.one.util.KeyedLock;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
@@ -108,7 +111,7 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		_checkProject(jwt, projectExternalReferenceCode);
 
-		boolean global = _environmentActivationPermission.containsGlobal(jwt);
+		boolean admin = _adminPermission.contains(jwt);
 		List<Entitlement> entitlements =
 			_entitlementService.getActiveEntitlements(
 				projectExternalReferenceCode);
@@ -125,15 +128,13 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 				JSONObject activationCodeJSONObject =
 					_toActivationCodeJSONObject(environment);
 
-				// The check-in is for Liferay staff, not for customers.
-
-				if (global) {
+				if (admin) {
 					activationCodeJSONObject.put(
-						"dxpVersion", environment.getDXPVersion()
-					).put(
 						"lastHeartbeatAt",
 						Objects.toString(
 							environment.getLastHeartbeatAtInstant(), null)
+					).put(
+						"productVersion", environment.getProductVersion()
 					);
 				}
 
@@ -192,6 +193,17 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			HttpStatus.BAD_REQUEST, "Unable to parse the signed JWT");
 	}
 
+	@ExceptionHandler(
+		{ExpiredActivationTokenException.class, InvalidSignatureException.class}
+	)
+	public ResponseEntity<?> handleException(
+		PrincipalException principalException) {
+
+		return _toResponseEntity(
+			HttpStatus.UNAUTHORIZED, principalException.getMessage(),
+			principalException);
+	}
+
 	@PatchMapping(
 		"/projects/{projectExternalReferenceCode}/dxp/environments" +
 			"/{environmentExternalReferenceCode}/active"
@@ -238,14 +250,7 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		SignedJWT signedJWT = SignedJWT.parse(body);
 
-		try {
-			_cloudNativeSignatureValidator.validateSignature(signedJWT);
-		}
-		catch (PrincipalException principalException) {
-			return _toResponseEntity(
-				HttpStatus.UNAUTHORIZED, principalException.getMessage(),
-				principalException);
-		}
+		_jwtSignatureValidator.validateSignature(signedJWT);
 
 		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
 
@@ -294,16 +299,8 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 				"DXP version " + dxpVersion + " is not supported");
 		}
 
-		Environment environment;
-
-		try {
-			environment = _getSigningEnvironment(installationId, signedJWT);
-		}
-		catch (PrincipalException principalException) {
-			return _toResponseEntity(
-				HttpStatus.UNAUTHORIZED, principalException.getMessage(),
-				principalException);
-		}
+		Environment environment = _getSigningEnvironment(
+			installationId, signedJWT);
 
 		if (environment == null) {
 			return _toResponseEntity(
@@ -332,10 +329,6 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			dxpVersion, environment);
 
 		if (manifestJSONObject == null) {
-
-			// A lapsed subscription is a normal answer, so DXP can tell it
-			// from a request that failed.
-
 			if (_log.isInfoEnabled()) {
 				_log.info(
 					StringBundler.concat(
@@ -371,17 +364,8 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
 
-		Environment environment;
-
-		try {
-			environment = _getSigningEnvironment(
-				jwtClaimsSet.getStringClaim("installationId"), signedJWT);
-		}
-		catch (PrincipalException principalException) {
-			return _toResponseEntity(
-				HttpStatus.UNAUTHORIZED, principalException.getMessage(),
-				principalException);
-		}
+		Environment environment = _getSigningEnvironment(
+			jwtClaimsSet.getStringClaim("installationId"), signedJWT);
 
 		if (environment == null) {
 			return _toResponseEntity(
@@ -691,10 +675,11 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		for (Environment activatedEnvironment :
 				_environmentService.getDXPEnvironmentsByInstallationId(
+					EnvironmentConstants.ACTIVATION_MODE_ONLINE,
 					EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
 					installationId)) {
 
-			if (CloudNativeSignatureValidator.equalsPublicKey(
+			if (JWTSignatureValidator.equalsPublicKey(
 					activatedEnvironment.getPublicKey(), publicKey)) {
 
 				return _toResponseEntity(
@@ -851,21 +836,18 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 	}
 
 	private String _generateDXPLicenseXML(
-			String accountName, Date expirationDate, String installationId,
-			int maxClusterNodes, String owner, String productVersion,
-			Date startDate, String type)
+			String accountName, String environmentType, Date expirationDate,
+			String installationId, int maxClusterNodes, String owner,
+			String productVersion, String sizing, Date startDate)
 		throws Exception {
 
-		String productName = _productNames.get(type);
-
-		String licenseEntryName = productName + " (Virtual Cluster)";
+		String productName = _productNames.get(environmentType);
 
 		Map<String, String> properties = _licenseKeyGenerator.getProperties(
-			accountName, licenseEntryName,
-			LicenseConstants.TYPE_VIRTUAL_CLUSTER,
+			accountName, productName, LicenseConstants.TYPE_PRODUCTION,
 			LicenseVersion.getInstallationLicenseVersion(), productName,
 			LicenseConstants.PRODUCT_ID_PORTAL, productVersion, owner,
-			maxClusterNodes, 0, 0, 0, 0, "Sizing 4", "DXP Self-Hosted",
+			maxClusterNodes, 0, 0, 0, 0, sizing, "DXP Self-Hosted",
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
 			StringPool.BLANK, StringPool.BLANK, startDate, expirationDate);
 
@@ -1016,7 +998,9 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		Entitlement dxpEntitlement = null;
 
 		for (Entitlement entitlement : entitlements) {
-			if (!EnvironmentQuotaService.isDXPEntitlement(entitlement, type)) {
+			if (!EnvironmentQuotaService.isDXPEntitlementType(
+					entitlement, type)) {
+
 				continue;
 			}
 
@@ -1099,10 +1083,11 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		licenseXMLs.add(
 			_generateDXPLicenseXML(
-				accountName, expirationDate, installationId, maxClusterNodes,
+				accountName, environment.getType(), expirationDate,
+				installationId, maxClusterNodes,
 				environment.getExternalReferenceCode(),
-				ProductVersion.extractQuarterlyRelease(dxpVersion), startDate,
-				environment.getType()));
+				ProductVersion.extractQuarterlyRelease(dxpVersion),
+				_getSizing(entitlements, environment.getType()), startDate));
 
 		String licenseXML = _licenseKeyExporter.aggregateXMLs(
 			licenseXMLs.toArray(new String[0]));
@@ -1134,10 +1119,12 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		List<Environment> environments = new ArrayList<>(
 			_environmentService.getDXPEnvironmentsByInstallationId(
+				EnvironmentConstants.ACTIVATION_MODE_ONLINE,
 				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE, installationId));
 
 		environments.addAll(
 			_environmentService.getDXPEnvironmentsByInstallationId(
+				EnvironmentConstants.ACTIVATION_MODE_ONLINE,
 				EnvironmentConstants.ACTIVATION_STATUS_INACTIVE,
 				installationId));
 
@@ -1145,34 +1132,31 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			return null;
 		}
 
-		for (Environment environment : environments) {
-			if (!Objects.equals(
-					environment.getActivationMode(),
-					EnvironmentConstants.ACTIVATION_MODE_ONLINE)) {
+		List<String> publicKeys = TransformUtil.transform(
+			environments, Environment::getPublicKey);
 
-				continue;
-			}
+		return environments.get(
+			publicKeys.indexOf(
+				_jwtSignatureValidator.getSigningPublicKey(
+					publicKeys, signedJWT)));
+	}
 
-			try {
-				_cloudNativeSignatureValidator.validateSignature(
-					environment.getPublicKey(), signedJWT);
+	private String _getSizing(
+		List<Entitlement> entitlements, String environmentType) {
 
-				return environment;
-			}
-			catch (ExpiredActivationTokenException
-						expiredActivationTokenException) {
+		int instanceSize = 0;
 
-				throw expiredActivationTokenException;
-			}
-			catch (PrincipalException principalException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(principalException);
-				}
+		for (Entitlement entitlement : entitlements) {
+			if (EnvironmentQuotaService.isDXPEntitlementType(
+					entitlement, environmentType)) {
+
+				instanceSize = Math.max(
+					instanceSize,
+					LicenseKeyGenerateFormService.getInstanceSize(entitlement));
 			}
 		}
 
-		throw new PrincipalException(
-			"The signature does not match the installation");
+		return "Sizing " + instanceSize;
 	}
 
 	private int _getTerminationStatusRank(Entitlement entitlement) {
@@ -1217,7 +1201,7 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE) &&
 			Objects.equals(
 				environment.getExternalEnvironmentId(), installationId) &&
-			CloudNativeSignatureValidator.equalsPublicKey(
+			JWTSignatureValidator.equalsPublicKey(
 				environment.getPublicKey(), publicKey)) {
 
 			return true;
@@ -1308,12 +1292,9 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 	}
 
 	private void _updateCheckIn(String dxpVersion, Environment environment) {
-
-		// A check-in that cannot be saved must not stop the manifest.
-
 		try {
 			_environmentService.updateDXPEnvironmentCheckIn(
-				dxpVersion, environment.getId(), Instant.now());
+				environment.getId(), Instant.now(), dxpVersion);
 		}
 		catch (Exception exception) {
 			if (_log.isWarnEnabled()) {
@@ -1381,7 +1362,10 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 	private AccountService _accountService;
 
 	@Autowired
-	private CloudNativeSignatureValidator _cloudNativeSignatureValidator;
+	private AdminPermission _adminPermission;
+
+	@Autowired
+	private JWTSignatureValidator _jwtSignatureValidator;
 
 	@Autowired
 	private CommerceProductService _commerceProductService;

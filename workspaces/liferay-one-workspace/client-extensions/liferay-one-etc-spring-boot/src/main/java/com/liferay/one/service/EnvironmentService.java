@@ -8,7 +8,7 @@ package com.liferay.one.service;
 import com.liferay.one.constants.EnvironmentConstants;
 import com.liferay.one.exception.EnvironmentActivationAlreadyRequestedException;
 import com.liferay.one.model.Environment;
-import com.liferay.one.util.CloudNativeSignatureValidator;
+import com.liferay.one.util.JWTSignatureValidator;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -72,10 +72,6 @@ public class EnvironmentService extends OneBaseService {
 			long accountEntryId, String activationCode,
 			String projectExternalReferenceCode, String type)
 		throws Exception {
-
-		// A DXP environment links only to its account and project. A contract
-		// or an entitlement goes stale when the subscription renews, so the
-		// entitlements are read from the project on every request.
 
 		return _addCodeActivatedEnvironment(
 			accountEntryId, activationCode, null,
@@ -184,12 +180,15 @@ public class EnvironmentService extends OneBaseService {
 	}
 
 	public List<Environment> getDXPEnvironmentsByInstallationId(
-			String activationStatus, String installationId)
+			String activationMode, String activationStatus,
+			String installationId)
 		throws Exception {
 
 		return getEnvironments(
 			StringBundler.concat(
-				"(activationStatus eq '", escapeODataString(activationStatus),
+				"(activationMode eq '", escapeODataString(activationMode),
+				"') and (activationStatus eq '",
+				escapeODataString(activationStatus),
 				"') and (externalEnvironmentId eq '",
 				escapeODataString(installationId), "') and (offering eq '",
 				EnvironmentConstants.OFFERING_DXP, "')"));
@@ -250,23 +249,23 @@ public class EnvironmentService extends OneBaseService {
 		if (Validator.isNotNull(publicKey)) {
 			environmentJSONObject.put(
 				"publicKey",
-				CloudNativeSignatureValidator.toBase64PublicKey(publicKey));
+				JWTSignatureValidator.toBase64PublicKey(publicKey));
 		}
 
 		_patchEnvironment(id, environmentJSONObject);
 	}
 
 	public void updateDXPEnvironmentCheckIn(
-			String dxpVersion, long id, Instant lastHeartbeatAtInstant)
+			long id, Instant lastHeartbeatAtInstant, String productVersion)
 		throws Exception {
 
 		_patchEnvironment(
 			id,
 			new JSONObject(
 			).put(
-				"dxpVersion", dxpVersion
-			).put(
 				"lastHeartbeatAt", lastHeartbeatAtInstant.toString()
+			).put(
+				"productVersion", productVersion
 			));
 	}
 
@@ -288,8 +287,7 @@ public class EnvironmentService extends OneBaseService {
 			).put(
 				"name", name
 			).put(
-				"publicKey",
-				CloudNativeSignatureValidator.toBase64PublicKey(publicKey)
+				"publicKey", JWTSignatureValidator.toBase64PublicKey(publicKey)
 			));
 	}
 
