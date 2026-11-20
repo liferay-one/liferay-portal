@@ -959,6 +959,7 @@ Object name `Environment`. REST `/o/c/environments`. Title field `hostName`. Acc
 | `name` | Text | |
 | `offering` | Text | |
 | `ownerEmailAddress` | Text | |
+| `productVersion` | Text | |
 | `projectId` | Text | |
 | `publicKey` | LongText | |
 | `region` | Text | |

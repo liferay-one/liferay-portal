@@ -475,6 +475,7 @@ Not account restricted: `accountEntryToEnvironment` is `disassociate`, and Lifer
 | `activationStatus` | string | `active` · `deactivated` · `expired`. Named `activationStatus` because `status` is reserved |
 | `publicKey` | longtext | Registered by the environment on activation |
 | `requestedVersion` | string | Product version the environment asked for |
+| `productVersion` | string | Product version the environment last reported on check-in, such as the DXP version from the manifest request |
 | `bundledEntitlementIds` | longtext | Entitlement IDs the environment consumes, set by `CloudRestController` |
 | `lastHeartbeatAt` | datetime | Cloud only |
 | `currentEntitlementHash` | string | Identity hash; enables change detection on heartbeat |
