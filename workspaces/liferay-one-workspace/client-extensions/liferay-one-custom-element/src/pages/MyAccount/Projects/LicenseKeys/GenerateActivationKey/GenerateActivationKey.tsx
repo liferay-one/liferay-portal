@@ -122,7 +122,6 @@ export default function GenerateActivationKey() {
 			domain: '',
 			dxpActivationCode: '',
 			environmentName: '',
-			installationId: '',
 			keyType: '',
 			maxClusterNodes: 0,
 			notify: true,
@@ -421,7 +420,7 @@ export default function GenerateActivationKey() {
 		}
 
 		setValue('dxpActivationCode', dxpOfflineActivationCode.activationCode);
-		setValue('installationId', '');
+		setValue('activationToken', '');
 		setValue('keyType', dxpOfflineActivationCode.type);
 		setValue(
 			'productExternalReferenceCode',
@@ -608,8 +607,8 @@ export default function GenerateActivationKey() {
 			await Projects.downloadDXPOfflineActivationBundle(
 				projectId,
 				values.dxpActivationCode,
-				values.version,
-				values.installationId.trim()
+				values.activationToken.trim(),
+				values.version
 			);
 
 			navigate('..');
@@ -630,7 +629,7 @@ export default function GenerateActivationKey() {
 		setSubmitError('');
 
 		setValue('dxpActivationCode', activationCode);
-		setValue('installationId', '');
+		setValue('activationToken', '');
 
 		goTo('dxp-offline-package');
 	}
@@ -836,7 +835,7 @@ export default function GenerateActivationKey() {
 		'dxp-activation-codes':
 			'please-copy-and-paste-the-activation-code-for-the-installation-type-you-would-like-to-activate-into-dxp',
 		'dxp-offline-package':
-			'enter-the-installation-id-of-the-dxp-installation-to-download-its-offline-activation-package',
+			'paste-the-activation-token-of-the-dxp-installation-to-download-its-offline-activation-package',
 		'environment':
 			'fill-out-the-information-required-to-generate-the-activation-key',
 		'offline-package':

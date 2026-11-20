@@ -23,6 +23,7 @@ export const ACTIVATION_FORM_ERROR_MESSAGE_KEYS: Record<number, Word> = {
 
 export const DXP_BUNDLE_ERROR_MESSAGE_KEYS: Record<number, Word> = {
 	400: 'the-selected-dxp-version-is-not-supported',
+	401: 'we-couldn-t-verify-this-activation-token',
 	403: 'this-project-does-not-have-an-active-dxp-subscription-for-this-installation-type',
 	404: 'the-activation-code-was-not-found',
 	409: 'this-activation-code-is-already-used-by-another-installation',

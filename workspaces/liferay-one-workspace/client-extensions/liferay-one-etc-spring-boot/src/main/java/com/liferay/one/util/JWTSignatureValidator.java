@@ -72,6 +72,22 @@ public class JWTSignatureValidator {
 			"The signature does not match the installation");
 	}
 
+	public void validateOfflineSignature(SignedJWT signedJWT)
+		throws ParseException, PrincipalException {
+
+		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+
+		if (!_hasValidSignature(
+				jwtClaimsSet.getStringClaim("publicKey"), signedJWT)) {
+
+			throw new InvalidSignatureException();
+		}
+
+		if (jwtClaimsSet.getExpirationTime() != null) {
+			_validateExpirationTime(signedJWT);
+		}
+	}
+
 	public void validateSignature(SignedJWT signedJWT)
 		throws ParseException, PrincipalException {
 

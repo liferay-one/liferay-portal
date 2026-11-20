@@ -31,8 +31,8 @@ export default function DXPOfflinePackageStep({
 }: DXPOfflinePackageStepProps) {
 	const {register, watch} = form;
 
+	const activationToken = watch('activationToken');
 	const dxpActivationCode = watch('dxpActivationCode');
-	const installationId = watch('installationId');
 	const version = watch('version');
 
 	return (
@@ -51,17 +51,18 @@ export default function DXPOfflinePackageStep({
 			</div>
 
 			<div className="form-group">
-				<label className="ml-0" htmlFor="generateKeyInstallationId">
-					{translate('installation-id')}
+				<label className="ml-0" htmlFor="generateKeyDXPActivationToken">
+					{translate('activation-token')}
 				</label>
 
-				<input
+				<textarea
 					className="form-control"
-					id="generateKeyInstallationId"
+					id="generateKeyDXPActivationToken"
 					placeholder={translate(
-						'paste-the-installation-id-shown-on-the-dxp-activation-page'
+						'paste-the-activation-token-shown-on-the-dxp-activation-page'
 					)}
-					{...register('installationId')}
+					rows={3}
+					{...register('activationToken')}
 				/>
 			</div>
 
@@ -88,8 +89,8 @@ export default function DXPOfflinePackageStep({
 				continueButtonProps={{
 					children: translate('download'),
 					disabled:
+						!activationToken.trim() ||
 						!dxpActivationCode ||
-						!installationId.trim() ||
 						!version ||
 						submitting,
 					onClick: onClickDownload,
