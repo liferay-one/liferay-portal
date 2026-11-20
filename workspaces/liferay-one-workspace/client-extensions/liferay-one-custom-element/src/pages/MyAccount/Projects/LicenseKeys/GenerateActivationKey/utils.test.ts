@@ -526,17 +526,19 @@ describe('[MOD-MYACCOUNT-PROJECTS-LICENSEKEYS-GENERATEACTIVATIONKEY] utils', () 
 	});
 
 	describe('getProjectProducts', () => {
-		it('keeps only the highest ranked leading product', () => {
-			const portal = toProduct('PRDCT-PORTAL', 'Portal');
+		it('keeps every leading product, highest ranked first', () => {
+			const cloudNative = toProduct('PRDCT-CNE', 'Cloud Native');
 			const dxp = toProduct('PRDCT-DXP', 'DXP');
+			const portal = toProduct('PRDCT-PORTAL', 'Portal');
 
 			expect(
 				getProjectProducts([
 					toProduct('PRDCT-ADDON', 'Add-On'),
 					portal,
 					dxp,
+					cloudNative,
 				])
-			).toEqual([dxp]);
+			).toEqual([cloudNative, dxp, portal]);
 		});
 
 		it('keeps the app licenses next to the leading product by name', () => {
