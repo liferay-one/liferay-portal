@@ -952,6 +952,7 @@ export default {
 	'key-type': 'Key Type',
 	'knowledge-management': 'Knowledge Management',
 	'kpis': 'KPIs',
+	'last-check-in-x': 'Last check-in {0}',
 	'last-login': 'Last Login',
 	'last-name': 'Last Name',
 	'last-orders': 'Last Orders',

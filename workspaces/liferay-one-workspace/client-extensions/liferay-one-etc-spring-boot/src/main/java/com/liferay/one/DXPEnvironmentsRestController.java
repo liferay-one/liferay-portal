@@ -108,6 +108,7 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		_checkProject(jwt, projectExternalReferenceCode);
 
+		boolean global = _environmentActivationPermission.containsGlobal(jwt);
 		List<Entitlement> entitlements =
 			_entitlementService.getActiveEntitlements(
 				projectExternalReferenceCode);
@@ -121,8 +122,22 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			JSONArray activationCodesJSONArray = new JSONArray();
 
 			for (Environment environment : environmentQuota.getEnvironments()) {
-				activationCodesJSONArray.put(
-					_toActivationCodeJSONObject(environment));
+				JSONObject activationCodeJSONObject =
+					_toActivationCodeJSONObject(environment);
+
+				// The check-in is for Liferay staff, not for customers.
+
+				if (global) {
+					activationCodeJSONObject.put(
+						"dxpVersion", environment.getDXPVersion()
+					).put(
+						"lastHeartbeatAt",
+						Objects.toString(
+							environment.getLastHeartbeatAtInstant(), null)
+					);
+				}
+
+				activationCodesJSONArray.put(activationCodeJSONObject);
 			}
 
 			JSONObject environmentTypeJSONObject = new JSONObject(
@@ -294,6 +309,8 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			return _toResponseEntity(
 				HttpStatus.NOT_FOUND, "The installation is not activated");
 		}
+
+		_updateCheckIn(dxpVersion, environment);
 
 		if (_isDeactivated(environment)) {
 			if (_log.isInfoEnabled()) {
@@ -1288,6 +1305,24 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		}
 
 		return _toResponseEntity(httpStatus, detail);
+	}
+
+	private void _updateCheckIn(String dxpVersion, Environment environment) {
+
+		// A check-in that cannot be saved must not stop the manifest.
+
+		try {
+			_environmentService.updateDXPEnvironmentCheckIn(
+				dxpVersion, environment.getId(), Instant.now());
+		}
+		catch (Exception exception) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to save the check-in of environment " +
+						environment.getExternalReferenceCode(),
+					exception);
+			}
+		}
 	}
 
 	private void _writeAddOn(
