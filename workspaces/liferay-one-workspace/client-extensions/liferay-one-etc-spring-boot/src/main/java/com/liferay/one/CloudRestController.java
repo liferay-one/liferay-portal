@@ -46,9 +46,9 @@ import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
 import com.liferay.one.service.ProductVersionService;
 import com.liferay.one.util.ActivationCodeUtil;
-import com.liferay.one.util.CloudNativeSignatureValidator;
 import com.liferay.one.util.ClusterNodesUtil;
 import com.liferay.one.util.CommerceProductUtil;
+import com.liferay.one.util.JWTSignatureValidator;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -432,7 +432,7 @@ public class CloudRestController extends OneBaseRestController {
 
 		SignedJWT signedJWT = SignedJWT.parse(body);
 
-		_cloudNativeSignatureValidator.validateSignature(signedJWT);
+		_jwtSignatureValidator.validateSignature(signedJWT);
 
 		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
 
@@ -1349,7 +1349,7 @@ public class CloudRestController extends OneBaseRestController {
 				HttpStatus.NOT_FOUND, "The environment was not found");
 		}
 
-		_cloudNativeSignatureValidator.validateSignature(
+		_jwtSignatureValidator.validateSignature(
 			environment.getPublicKey(), SignedJWT.parse(body));
 
 		return environment;
@@ -1536,7 +1536,7 @@ public class CloudRestController extends OneBaseRestController {
 			Objects.equals(
 				environment.getActivationStatus(),
 				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE) &&
-			CloudNativeSignatureValidator.equalsPublicKey(
+			JWTSignatureValidator.equalsPublicKey(
 				environment.getPublicKey(), publicKey)) {
 
 			return true;
@@ -1612,7 +1612,7 @@ public class CloudRestController extends OneBaseRestController {
 				return HttpStatus.BAD_REQUEST;
 			}
 
-			_cloudNativeSignatureValidator.validateSignature(signedJWT);
+			_jwtSignatureValidator.validateSignature(signedJWT);
 		}
 		catch (ExpiredActivationTokenException
 					expiredActivationTokenException) {
@@ -1698,7 +1698,7 @@ public class CloudRestController extends OneBaseRestController {
 	private CloudActivationRequestService _cloudActivationRequestService;
 
 	@Autowired
-	private CloudNativeSignatureValidator _cloudNativeSignatureValidator;
+	private JWTSignatureValidator _jwtSignatureValidator;
 
 	@Autowired
 	private CommerceProductService _commerceProductService;

@@ -107,6 +107,18 @@ public class LicenseKeyGenerator {
 			properties.put("serverIds", serverIds);
 		}
 
+		if ((licenseVersion >= 7) &&
+			licenseType.equals(LicenseConstants.TYPE_PRODUCTION)) {
+
+			properties.remove("hostNames");
+			properties.remove("ipAddresses");
+			properties.remove("macAddresses");
+			properties.remove("maxServers");
+			properties.remove("serverIds");
+
+			properties.put("maxClusterNodes", String.valueOf(maxClusterNodes));
+		}
+
 		return properties;
 	}
 

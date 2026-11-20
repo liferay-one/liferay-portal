@@ -139,7 +139,7 @@ function toDXPActivationKey(
 		complimentary: false,
 		description: '',
 		dxp: true,
-		dxpVersion: activationCode.dxpVersion,
+		dxpVersion: activationCode.productVersion,
 		expirationDate: toActivationKeyDate(environmentType.endDate),
 		expirationDateValue: toActivationKeyDateValue(environmentType.endDate),
 		id: activationCode.environmentId,

@@ -87,10 +87,6 @@ public class EnvironmentActivationPermission {
 		}
 	}
 
-	public boolean containsGlobal(Jwt jwt) throws Exception {
-		return _hasGlobalRole(_userAccountService.getMyUserAccount(jwt));
-	}
-
 	public boolean containsLicenseKeyActivation(Jwt jwt, Project project)
 		throws Exception {
 

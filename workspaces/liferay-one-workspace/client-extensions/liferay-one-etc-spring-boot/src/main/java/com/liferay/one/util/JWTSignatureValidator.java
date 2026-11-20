@@ -6,6 +6,7 @@
 package com.liferay.one.util;
 
 import com.liferay.one.exception.ExpiredActivationTokenException;
+import com.liferay.one.exception.InvalidSignatureException;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -22,6 +23,7 @@ import java.text.ParseException;
 
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 import org.apache.commons.logging.Log;
@@ -34,7 +36,7 @@ import org.springframework.stereotype.Component;
  * @author Amos Fong
  */
 @Component
-public class CloudNativeSignatureValidator {
+public class JWTSignatureValidator {
 
 	public static boolean equalsPublicKey(
 		String publicKey1, String publicKey2) {
@@ -54,6 +56,22 @@ public class CloudNativeSignatureValidator {
 		return publicKey.replaceAll("\\s", "");
 	}
 
+	public String getSigningPublicKey(
+			List<String> publicKeys, SignedJWT signedJWT)
+		throws ParseException, PrincipalException {
+
+		for (String publicKey : publicKeys) {
+			if (_hasValidSignature(publicKey, signedJWT)) {
+				_validateExpirationTime(signedJWT);
+
+				return publicKey;
+			}
+		}
+
+		throw new InvalidSignatureException(
+			"The signature does not match the installation");
+	}
+
 	public void validateSignature(SignedJWT signedJWT)
 		throws ParseException, PrincipalException {
 
@@ -66,16 +84,10 @@ public class CloudNativeSignatureValidator {
 		throws ParseException, PrincipalException {
 
 		if (!_hasValidSignature(publicKey, signedJWT)) {
-			throw new PrincipalException();
+			throw new InvalidSignatureException();
 		}
 
-		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
-
-		Date expirationTime = jwtClaimsSet.getExpirationTime();
-
-		if ((expirationTime == null) || expirationTime.before(new Date())) {
-			throw new ExpiredActivationTokenException();
-		}
+		_validateExpirationTime(signedJWT);
 	}
 
 	private boolean _hasValidSignature(String publicKey, SignedJWT signedJWT) {
@@ -111,7 +123,19 @@ public class CloudNativeSignatureValidator {
 				decoder.decode(toBase64PublicKey(encodedPublicKey))));
 	}
 
+	private void _validateExpirationTime(SignedJWT signedJWT)
+		throws ParseException, PrincipalException {
+
+		JWTClaimsSet jwtClaimsSet = signedJWT.getJWTClaimsSet();
+
+		Date expirationTime = jwtClaimsSet.getExpirationTime();
+
+		if ((expirationTime == null) || expirationTime.before(new Date())) {
+			throw new ExpiredActivationTokenException();
+		}
+	}
+
 	private static final Log _log = LogFactory.getLog(
-		CloudNativeSignatureValidator.class);
+		JWTSignatureValidator.class);
 
 }

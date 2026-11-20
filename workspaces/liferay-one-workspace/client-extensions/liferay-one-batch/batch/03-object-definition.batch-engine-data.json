@@ -3301,24 +3301,6 @@
 				{
 					"DBType": "String",
 					"businessType": "Text",
-					"externalReferenceCode": "C_ENVIRONMENT_DXP_VERSION",
-					"indexed": true,
-					"indexedAsKeyword": true,
-					"indexedLanguageId": "",
-					"label": {
-						"en_US": "DXP Version"
-					},
-					"name": "dxpVersion",
-					"objectFieldSettings": [
-					],
-					"required": false,
-					"state": false,
-					"system": false,
-					"type": "String"
-				},
-				{
-					"DBType": "String",
-					"businessType": "Text",
 					"externalReferenceCode": "C_ENVIRONMENT_EXTERNAL_ENVIRONMENT_ID",
 					"indexed": true,
 					"indexedAsKeyword": true,
@@ -3493,6 +3475,24 @@
 						"en_US": "Owner Email Address"
 					},
 					"name": "ownerEmailAddress",
+					"objectFieldSettings": [
+					],
+					"required": false,
+					"state": false,
+					"system": false,
+					"type": "String"
+				},
+				{
+					"DBType": "String",
+					"businessType": "Text",
+					"externalReferenceCode": "C_ENVIRONMENT_PRODUCT_VERSION",
+					"indexed": true,
+					"indexedAsKeyword": true,
+					"indexedLanguageId": "",
+					"label": {
+						"en_US": "Product Version"
+					},
+					"name": "productVersion",
 					"objectFieldSettings": [
 					],
 					"required": false,
