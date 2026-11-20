@@ -77,7 +77,7 @@ A run's token cost is `turns × resident context`, not the size of what anyone r
 
 None of them trades accuracy for cost. That line was drawn deliberately: research depth, the number of gates, what a reviewer reads, and what a planner verifies for itself are all untouched, because the cheapest defect in this workflow is still far more expensive than the tokens that would have caught it.
 
-- **The coordinator orchestrates and nothing else.** Its writes are confined to `<TEAMDIR>`, its own control files (`run.lock` and its registry entry under `~/.claude/one-team/portal/`), and the Phase 0 worktree bootstrap. Its `Bash` use is confined to: the Phase 0 Jira fetches and path-resolution checks, `git fetch`, `git worktree add` and `git checkout -b`, the Phase 0 bootstrap commands (the `.env` copy, the store-DB clone, `bun install`), the branch-drift check, `git cherry` and `git reflog` during the resume check, the registry and generation reads at every gate, the Phase 6 `git log` and `git diff` verification, and read-only lookups it needs to arbitrate a dispute it has been asked to settle. The bootstrap is setup, not work product — it writes no file the ticket ships, which is why it does not breach the one-writer rule. It never builds, deploys, greps the codebase for its own answers, or edits a repository file. A measured run made 389 `Bash` and 66 `Edit` calls from this seat at ~440k context each — the most expensive habit in the workflow, and a violation of the coordinator's own mandate: work done here is work no charter governed and no role reviewed.
+- **The coordinator orchestrates and nothing else.** Its writes are confined to `<TEAMDIR>`, its own control files (`run.lock` and its registry entry under `~/.claude/one-team/portal/`), and the Phase 0 worktree bootstrap. Its Jira use is the Phase 0 Atlassian MCP reads. Its `Bash` use is confined to: the Phase 0 path-resolution checks, `git fetch`, `git worktree add` and `git checkout -b`, the Phase 0 bootstrap commands (the `.env` copy, the store-DB clone, `bun install`), the branch-drift check, `git cherry` and `git reflog` during the resume check, the registry and generation reads at every gate, the Phase 6 `git log` and `git diff` verification, and read-only lookups it needs to arbitrate a dispute it has been asked to settle. The bootstrap is setup, not work product — it writes no file the ticket ships, which is why it does not breach the one-writer rule. It never builds, deploys, greps the codebase for its own answers, or edits a repository file. A measured run made 389 `Bash` and 66 `Edit` calls from this seat at ~440k context each — the most expensive habit in the workflow, and a violation of the coordinator's own mandate: work done here is work no charter governed and no role reviewed.
 
 - **`PROGRESS` is log-only.** Append it to `team-log.md` and fold it into the next gate report. It never earns a relay turn or a user-facing line of its own.
 
@@ -115,7 +115,6 @@ The team directory is the run's only irreplaceable output. The code lives in git
 | `team-log.md` | coordinator | lane, roster, phase gate outcomes with turn counts, agreements, arbitrations, escalations, respawns |
 | `paths.md` | coordinator | the lane, `<TARGET>`, `<BASE>`, and the resolved absolute path of every context repo — the first thing every teammate reads after its charter |
 | `ticket-digest.md`, `initiative-digest.md` | coordinator | the Jira context teammates actually read — flattened ticket, one line per initiative issue |
-| `ticket.json`, `initiative.json` | coordinator | raw Jira responses, kept only for targeted `jq` lookups — never read whole |
 | `roles/` | coordinator | charter copies frozen at kickoff — what every spawn prompt points at (the ticket branch may predate the skill) |
 | `plan.md` | planner | the implementation plan (template in the planner charter) |
 | `dev-handoff.md` | developer | Phase 3 handoff: changes, per-AC verification hints for the tester, notes |
@@ -130,7 +129,7 @@ Two control files live beside the team directories rather than inside any one of
 
 Read-only. Never transition tickets or post comments from this workflow.
 
-The recipes live in `reference/jira.md` — ticket fetch and validation, the initiative pull with its pagination loop, the ticket's own issue graph, and the digest commands that make both readable. Read that file once in Phase 0 and work from the digests afterward.
+The recipes live in `reference/jira.md` — ticket fetch and validation, the initiative pull with its pagination loop, the ticket's own issue graph, and the digests that make both readable. Read that file once in Phase 0 and work from the digests afterward.
 
 ## Resolving the Repos
 

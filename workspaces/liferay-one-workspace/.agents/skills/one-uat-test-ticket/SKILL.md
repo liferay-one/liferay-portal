@@ -27,19 +27,18 @@ The user gave permission for this skill to add the comment, to close the ticket,
 | etc-spring-boot OAuth2 application | `liferay-one-etc-spring-boot-oaua` |
 | Upstream remote | `liferay-one` (branch `master-temp`) |
 
-Every Jira call is a `curl` call with `--user "${JIRA_API_USER}:${JIRA_API_TOKEN}"`, as `.claude/rules/jira.md` in the repository says.
+Every Jira call is an Atlassian MCP tool call with `cloudId` `liferay.atlassian.net`, as `.claude/rules/jira.md` in the repository says. Do not use `curl`.
 
 ## Step 1. Confirm That the Ticket Is Assigned to the User and Find the Reporter
 
-```bash
-ME=$(curl --silent --url "https://liferay.atlassian.net/rest/api/3/myself" --user "${JIRA_API_USER}:${JIRA_API_TOKEN}" | jq --raw-output .accountId)
+Call `atlassianUserInfo` and record its `account_id` as `ME`.
 
-curl \
-	--silent \
-	--url "https://liferay.atlassian.net/rest/api/3/issue/<TICKET>?fields=assignee,reporter,status,summary" \
-	--user "${JIRA_API_USER}:${JIRA_API_TOKEN}" \
-	| jq --arg me "${ME}" '{assignedToMe: (.fields.assignee.accountId == $me), assignee: .fields.assignee.displayName, reportedByMe: (.fields.reporter.accountId == $me), reporter: .fields.reporter.displayName, reporterAccountId: .fields.reporter.accountId, status: .fields.status.name, summary: .fields.summary}'
-```
+Call `getJiraIssue` for `<TICKET>` with `fields` `["assignee", "reporter", "status", "summary"]`. From the response, take:
+
+- `assignedToMe` — the assignee account ID equals `ME`.
+- `reportedByMe` — the reporter account ID equals `ME`.
+- `reporter` and `reporterAccountId` — the display name and the account ID of the reporter.
+- The status and the summary.
 
 Stop and tell the user when `assignedToMe` is `false` or the status is already `Closed`. Do not comment and do not test.
 
@@ -47,7 +46,7 @@ Record `reportedByMe`, `reporter`, and `reporterAccountId`. Step 8 uses them.
 
 ## Step 2. Read the Ticket
 
-Get `summary`, `description`, `status`, `issuelinks`, and every comment. The description is Atlassian Document Format (ADF). Flatten it to text with a short `jq` or Python step. Find these sections:
+Get `summary`, `description`, `status`, `issuelinks`, and every comment. Call `getJiraIssue` with `responseContentFormat` `markdown`, so the description and the comments come back as Markdown. Find these sections:
 
 - **Steps to Reproduce** — the test steps.
 - **Expected Behavior** — the pass condition.
@@ -229,20 +228,7 @@ Assigned to <reporter> to verify.
 
 For a failure, write `Result: failed.` and state the Actual Behavior that still occurs, with the evidence and any log error.
 
-Write the text to a file, convert it to ADF, and post it. The converter makes a paragraph from each block, an ordered list from `1.` lines, a bullet list from `-` lines, and inline code from backticks:
-
-```bash
-python3 -I <skill>/scripts/adf.py <scratchpad>/comment.txt > <scratchpad>/comment.json
-
-curl \
-	--data @<scratchpad>/comment.json \
-	--header "Content-Type: application/json" \
-	--request POST \
-	--silent \
-	--url "https://liferay.atlassian.net/rest/api/3/issue/<TICKET>/comment" \
-	--user "${JIRA_API_USER}:${JIRA_API_TOKEN}" \
-	| jq '{id, created, errorMessages}'
-```
+Post the text with `addCommentToJiraIssue`, with `contentFormat` `markdown`. Record the `id` of the new comment for the report.
 
 ## Step 8. Close the Ticket or Assign It to the Reporter
 
@@ -255,47 +241,25 @@ The reporter decides the action:
 
 ### Assign the Ticket to the Reporter
 
-When `reporterAccountId` is `null`, stop and ask the user who must verify the ticket. Otherwise, do not change the status. Set the assignee to the reporter:
+When `reporterAccountId` is `null`, stop and ask the user who must verify the ticket. Otherwise, do not change the status. Set the assignee to the reporter with `editJiraIssue` and `fields` `{"assignee": {"accountId": "<reporterAccountId>"}}`.
 
-```bash
-curl \
-	--data '{"accountId": "<reporterAccountId>"}' \
-	--header "Content-Type: application/json" \
-	--request PUT \
-	--silent \
-	--url "https://liferay.atlassian.net/rest/api/3/issue/<TICKET>/assignee" \
-	--user "${JIRA_API_USER}:${JIRA_API_TOKEN}" \
-	--write-out '%{http_code}\n'
-```
-
-A `204` means success. Get the ticket again and confirm that the assignee is the reporter. When the call fails, for example because the reporter cannot be assigned in the project, stop and tell the user. Do not assign the ticket to another person.
+Get the ticket again and confirm that the assignee is the reporter. When the call fails, for example because the reporter cannot be assigned in the project, stop and tell the user. Do not assign the ticket to another person.
 
 ### Close the Ticket
 
-Find the transition by name, because its ID can change with the status:
+Find the transition by name, because its ID can change with the status. Call `getTransitionsForJiraIssue` for `<TICKET>`, take the transition named `Closed`, and note its ID and its required fields.
 
-```bash
-curl \
-	--silent \
-	--url "https://liferay.atlassian.net/rest/api/3/issue/<TICKET>/transitions?expand=transitions.fields" \
-	--user "${JIRA_API_USER}:${JIRA_API_TOKEN}" \
-	| jq '.transitions[] | select(.name == "Closed") | {id, required: [.fields | to_entries[] | select(.value.required) | .key]}'
+The `Closed` transition requires `resolution` and `customfield_10979` (Cross Cutting Properties). Use `Fixed` and `None`. The transition also has a validator that requires a Fix version, and the transition metadata does not list it as required. The Fix version of a Liferay One ticket is `Master`. Call `transitionJiraIssue` with `transition` `{"id": "<id>"}` and these `fields`:
+
+```json
+{
+	"customfield_10979": [{"value": "None"}],
+	"fixVersions": [{"name": "Master"}],
+	"resolution": {"name": "Fixed"}
+}
 ```
 
-The `Closed` transition requires `resolution` and `customfield_10979` (Cross Cutting Properties). Use `Fixed` and `None`. The transition also has a validator that requires a Fix version, and the transition metadata does not list it as required. The Fix version of a Liferay One ticket is `Master`:
-
-```bash
-curl \
-	--data '{"fields": {"customfield_10979": [{"value": "None"}], "fixVersions": [{"name": "Master"}], "resolution": {"name": "Fixed"}}, "transition": {"id": "<id>"}}' \
-	--header "Content-Type: application/json" \
-	--request POST \
-	--silent \
-	--url "https://liferay.atlassian.net/rest/api/3/issue/<TICKET>/transitions" \
-	--user "${JIRA_API_USER}:${JIRA_API_TOKEN}" \
-	--write-out '%{http_code}\n'
-```
-
-A `204` means success. Get the ticket again and confirm that the status is `Closed`. When the transition requires other fields, or no `Closed` transition exists, stop and tell the user. Do not guess the values.
+Get the ticket again and confirm that the status is `Closed`. When the transition requires other fields, or no `Closed` transition exists, stop and tell the user. Do not guess the values.
 
 ## Step 9. Report to the User
 

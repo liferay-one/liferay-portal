@@ -4,64 +4,37 @@ Phase 0 reference for the coordinator. Read once, at kickoff, then work from the
 
 Read-only. Never transition tickets or post comments from this workflow.
 
+Every Jira call is an Atlassian MCP tool call with `cloudId` `liferay.atlassian.net`, as `.claude/rules/jira.md` in the repository says. Do not use `curl`.
+
 ## The Ticket
 
-```bash
-curl --silent --user "${JIRA_API_USER}:${JIRA_API_TOKEN}" \
-	"https://liferay.atlassian.net/rest/api/3/issue/<TICKET>" > ticket.json
-```
+Call `getJiraIssue` with `issueIdOrKey` `<TICKET>`, `responseContentFormat` `markdown`, and `fields` `["summary", "issuetype", "status", "description", "parent", "subtasks", "issuelinks"]`.
 
-Validate before digesting or briefing anyone: `ticket.json` must contain the requested issue key. When it does not, stop and tell the user which it is — credentials (`JIRA_API_USER`/`JIRA_API_TOKEN` unset or rejected) or an unknown ticket. A planner briefed on an error body plans garbage.
+Validate before digesting or briefing anyone: the response must carry the requested issue key. When it does not, stop and tell the user which it is — the Atlassian MCP server is not connected or not authorized, or the ticket is unknown. A planner briefed on an error body plans garbage.
 
 ## The Initiative
 
-Every ticket under the One Liferay initiative, for surrounding context. Fetch it whole: the planner is looking for work in flight that this ticket must not collide with, and a collision is exactly the thing nobody can search for in advance. The digest below reduces it thirteenfold, so the whole list is affordable to keep.
+Every ticket under the One Liferay initiative, for surrounding context. Fetch it whole: the planner is looking for work in flight that this ticket must not collide with, and a collision is exactly the thing nobody can search for in advance.
 
-```bash
-curl --silent --get --user "${JIRA_API_USER}:${JIRA_API_TOKEN}" \
-	--data-urlencode 'jql=issue in portfolioChildIssuesOf("LPD-87600") ORDER BY key' \
-	--data-urlencode 'fields=issuetype,status,summary' \
-	"https://liferay.atlassian.net/rest/api/3/search/jql"
-```
+Call `searchJiraIssuesUsingJql` with:
 
-The endpoint paginates — pass `maxResults` and follow `nextPageToken` until the list is exhausted. Build the token flag with an explicit branch, not `${TOKEN:+--data-urlencode "nextPageToken=${TOKEN}"}`, since zsh does not word-split that expansion and curl receives one malformed argument:
+- `jql`: `issue in portfolioChildIssuesOf("LPD-87600") ORDER BY key`
+- `fields`: `["issuetype", "status", "summary"]`
+- `maxResults`: `100`
 
-```bash
-TOKEN=""
-while :; do
-	if [ -n "${TOKEN}" ]; then RESP=$(curl <flags as above> --data-urlencode "nextPageToken=${TOKEN}" "<url>"); else RESP=$(curl <flags as above> "<url>"); fi
-	echo "${RESP}" >> pages.jsonl
-	TOKEN=$(echo "${RESP}" | jq -r '.nextPageToken // empty')
-	[ -z "${TOKEN}" ] && break
-done
-
-jq -s '{issues: [.[].issues[]]}' pages.jsonl > initiative.json
-```
+The search paginates. Call it again with the `nextPageToken` of the previous response until a response has no `nextPageToken`. Do not request a count. Ask for these three fields only: the default field set includes the description of each issue, which makes every page many times larger.
 
 When `portfolioChildIssuesOf` is unavailable, fall back to `parent = LPD-87600` and walk one level down.
 
-Also pull the ticket's own graph — parent, subtasks, and issue links — which is already in `ticket.json` and costs no extra call. Append it to the digest so the planner sees the direct relationships without hunting for them:
-
-```bash
-jq -r '[.fields.parent, .fields.subtasks[]?, (.fields.issuelinks[]? | .inwardIssue, .outwardIssue)]
-	| map(select(. != null))
-	| .[] | "\(.key) | \(.fields.status.name) | \(.fields.summary)"' ticket.json
-```
+Also take the ticket's own graph — parent, subtasks, and issue links — from the ticket response, which costs no extra call. Append it to the digest so the planner sees the direct relationships without hunting for them.
 
 ## The Digests
 
-The raw responses are far too large to read: a 584-issue initiative measured about a hundred and eighty thousand tokens, and one rich ticket about thirteen thousand. These recipes were run against exactly that data and reduced them to roughly fourteen thousand and four hundred tokens respectively — thirteenfold and thirtyfold — with the acceptance criteria, dev notes, and dependencies intact:
+Write the digests to `<TEAMDIR>` as you read the pages, so no teammate reads a raw response:
 
-```bash
-jq -r '.issues[] | "\(.key) | \(.fields.issuetype.name) | \(.fields.status.name) | \(.fields.summary)"' \
-	initiative.json > initiative-digest.md
+- `initiative-digest.md` — one line per issue: `<key> | <issue type> | <status> | <summary>`.
+- `ticket-digest.md` — a `# <key> — <summary>` heading, the type and the status, the description in Markdown, and then one line per related issue: `<key> | <status> | <summary>`.
 
-{
-	jq -r '"# \(.key) — \(.fields.summary)\n\nType: \(.fields.issuetype.name)\nStatus: \(.fields.status.name)\n"' ticket.json
-	jq -r '.fields.description | [.. | objects | select(.type == "text") | .text] | join(" ")' ticket.json
-} > ticket-digest.md
-```
+Verify that the acceptance criteria survived the Markdown conversion. When a ticket uses tables or panels that the conversion mangles, read it again with `responseContentFormat` `adf` and transcribe the affected section.
 
-The description is Atlassian Document Format, hence the text-node flatten — verify the acceptance criteria survived it, and fall back to reading `.fields.description` alone when a ticket uses tables or panels the flatten mangles.
-
-Brief teammates on the digests. The raw JSON stays on disk for targeted `jq` when someone needs a field a digest dropped; it is never read whole.
+Brief teammates on the digests. When someone needs a field that a digest dropped, the coordinator reads that one field again with `getJiraIssue` and a `fields` list, not the whole issue.

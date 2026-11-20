@@ -28,7 +28,7 @@ Read the full diff and the commit messages (`git log`) before writing anything.
 
 ## Explore Before Explaining
 
-Do not explain the diff in isolation. Read the surrounding code so the "Background" section is accurate: open the files the diff touches, follow the key types and callers, and understand the subsystem the change lives in. Where the workspace conventions matter (Objects, client extensions, site initializers, headless APIs), consult the relevant reference cards under `rules/`. If a Jira ticket is referenced, read it through the Jira REST API for the intended behavior and motivation.
+Do not explain the diff in isolation. Read the surrounding code so the "Background" section is accurate: open the files the diff touches, follow the key types and callers, and understand the subsystem the change lives in. Where the workspace conventions matter (Objects, client extensions, site initializers, headless APIs), consult the relevant reference cards under `rules/`. If a Jira ticket is referenced, read it through the Atlassian MCP server (`getJiraIssue`) for the intended behavior and motivation.
 
 ## Required Sections
 
