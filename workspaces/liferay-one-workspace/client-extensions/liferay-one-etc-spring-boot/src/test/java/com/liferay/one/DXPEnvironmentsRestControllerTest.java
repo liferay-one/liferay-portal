@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductVirtualSettingsFileEntry;
@@ -22,16 +21,17 @@ import com.liferay.one.model.Environment;
 import com.liferay.one.model.Project;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
-import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceProductVirtualSettingsService;
 import com.liferay.one.service.CommerceSkuService;
 import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
+import com.liferay.one.service.ProjectService;
 import com.liferay.one.util.JWTSignatureValidator;
 import com.liferay.one.util.KeyedLock;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.ee.license.shared.KeyGenerator;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -103,7 +103,6 @@ public class DXPEnvironmentsRestControllerTest {
 	public void setUp() throws Exception {
 		_dxpEnvironmentsRestController = new DXPEnvironmentsRestController();
 
-		_accountService = Mockito.mock(AccountService.class);
 		_adminPermission = Mockito.mock(AdminPermission.class);
 		_commerceProductService = Mockito.mock(CommerceProductService.class);
 		_commerceProductVirtualSettingsService = Mockito.mock(
@@ -113,6 +112,7 @@ public class DXPEnvironmentsRestControllerTest {
 		_environmentActivationPermission = Mockito.mock(
 			EnvironmentActivationPermission.class);
 		_environmentService = Mockito.mock(EnvironmentService.class);
+		_projectService = Mockito.mock(ProjectService.class);
 
 		EnvironmentQuotaService environmentQuotaService =
 			new EnvironmentQuotaService();
@@ -130,27 +130,27 @@ public class DXPEnvironmentsRestControllerTest {
 		ReflectionTestUtils.setField(
 			_licenseKeyExporter, "_licenseKeyGenerator", _licenseKeyGenerator);
 
-		Account account = new Account();
-
-		account.setName("Acme");
-
-		Mockito.when(
-			_accountService.fetchAccount(_ACCOUNT_ID)
-		).thenReturn(
-			account
-		);
+		Project project = new Project(
+			new JSONObject(
+			).put(
+				"externalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"name", _PROJECT_NAME
+			).put(
+				"r_accountEntryToProject_accountEntryId", _ACCOUNT_ID
+			));
 
 		Mockito.when(
 			_environmentActivationPermission.checkLicenseKeyActivation(
 				null, _PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
-			new Project(
-				new JSONObject(
-				).put(
-					"externalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
-				).put(
-					"r_accountEntryToProject_accountEntryId", _ACCOUNT_ID
-				))
+			project
+		);
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			project
 		);
 
 		Mockito.when(
@@ -161,8 +161,6 @@ public class DXPEnvironmentsRestControllerTest {
 			Collections.emptyList()
 		);
 
-		ReflectionTestUtils.setField(
-			_dxpEnvironmentsRestController, "_accountService", _accountService);
 		ReflectionTestUtils.setField(
 			_dxpEnvironmentsRestController, "_adminPermission",
 			_adminPermission);
@@ -199,6 +197,8 @@ public class DXPEnvironmentsRestControllerTest {
 		ReflectionTestUtils.setField(
 			_dxpEnvironmentsRestController, "_licenseKeyGenerator",
 			_licenseKeyGenerator);
+		ReflectionTestUtils.setField(
+			_dxpEnvironmentsRestController, "_projectService", _projectService);
 
 		_keyPair = _generateKeyPair();
 
@@ -1441,18 +1441,15 @@ public class DXPEnvironmentsRestControllerTest {
 			String licenseXML, String installationId)
 		throws Exception {
 
-		Map<String, String> properties = _licenseKeyGenerator.getProperties(
-			"Acme", "DXP Production", LicenseConstants.TYPE_PRODUCTION, 7,
-			"DXP Production", LicenseConstants.PRODUCT_ID_PORTAL, "2027.Q1",
-			_ENVIRONMENT_EXTERNAL_REFERENCE_CODE, 1, 0, 0, 0, 0, "Sizing 3",
-			"DXP Self-Hosted", StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			_getLicenseDate(licenseXML, "start-date"),
-			_getLicenseDate(licenseXML, "expiration-date"));
-
-		properties.put("installationId", installationId);
-
-		return _licenseKeyGenerator.encrypt(properties);
+		return KeyGenerator.encrypt(
+			KeyGenerator.getProperties(
+				_PROJECT_NAME, "DXP Self-Hosted", new String[0],
+				_getLicenseDate(licenseXML, "expiration-date"), new String[0],
+				installationId, "Sizing 3", new String[0], "DXP Production",
+				LicenseConstants.TYPE_PRODUCTION, "7", new String[0], 1, 0, 0,
+				0, 0, _ENVIRONMENT_EXTERNAL_REFERENCE_CODE, "DXP Production",
+				LicenseConstants.PRODUCT_ID_PORTAL, "2027.Q1", new String[0],
+				_getLicenseDate(licenseXML, "start-date")));
 	}
 
 	private KeyPair _generateKeyPair() throws Exception {
@@ -1755,6 +1752,8 @@ public class DXPEnvironmentsRestControllerTest {
 
 	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-005";
 
+	private static final String _PROJECT_NAME = "Acme Project";
+
 	private static final String _SKU_EXTERNAL_REFERENCE_CODE = "SKU-3000";
 
 	private static final long _VIRTUAL_ENTRY_ID = 6000L;
@@ -1765,7 +1764,6 @@ public class DXPEnvironmentsRestControllerTest {
 	private static final String _VIRTUAL_ENTRY_SRC =
 		"https://cdn.example.com/add-ons/addon-1.0.lpkg?signature=1";
 
-	private AccountService _accountService;
 	private AdminPermission _adminPermission;
 	private CommerceProductService _commerceProductService;
 	private CommerceProductVirtualSettingsService
@@ -1778,5 +1776,6 @@ public class DXPEnvironmentsRestControllerTest {
 	private KeyPair _keyPair;
 	private LicenseKeyExporter _licenseKeyExporter;
 	private LicenseKeyGenerator _licenseKeyGenerator;
+	private ProjectService _projectService;
 
 }
