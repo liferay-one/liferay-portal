@@ -5,7 +5,6 @@
 
 package com.liferay.one;
 
-import com.liferay.headless.admin.user.client.dto.v1_0.Account;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductVirtualSettingsFileEntry;
 import com.liferay.one.constants.EntitlementConstants;
@@ -22,7 +21,6 @@ import com.liferay.one.model.EnvironmentQuota;
 import com.liferay.one.model.Project;
 import com.liferay.one.permission.AdminPermission;
 import com.liferay.one.permission.EnvironmentActivationPermission;
-import com.liferay.one.service.AccountService;
 import com.liferay.one.service.CommerceProductService;
 import com.liferay.one.service.CommerceProductVirtualSettingsService;
 import com.liferay.one.service.CommerceSkuService;
@@ -30,6 +28,7 @@ import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.EnvironmentQuotaService;
 import com.liferay.one.service.EnvironmentService;
 import com.liferay.one.service.LicenseKeyGenerateFormService;
+import com.liferay.one.service.ProjectService;
 import com.liferay.one.util.ActivationCodeUtil;
 import com.liferay.one.util.ClusterNodesUtil;
 import com.liferay.one.util.CommerceProductUtil;
@@ -113,7 +112,6 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		_checkProject(jwt, projectExternalReferenceCode);
 
-		boolean admin = _adminPermission.contains(jwt);
 		List<Entitlement> entitlements =
 			_entitlementService.getActiveEntitlements(
 				projectExternalReferenceCode);
@@ -130,7 +128,7 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 				JSONObject activationCodeJSONObject =
 					_toActivationCodeJSONObject(environment);
 
-				if (admin) {
+				if (_adminPermission.contains(jwt)) {
 					activationCodeJSONObject.put(
 						"lastHeartbeatAt",
 						Objects.toString(
@@ -870,24 +868,12 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			LicenseVersion.getInstallationLicenseVersion(), productName,
 			LicenseConstants.PRODUCT_ID_PORTAL, productVersion, owner,
 			maxClusterNodes, 0, 0, 0, 0, sizing, "DXP Self-Hosted",
-			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, StringPool.BLANK, startDate, expirationDate);
-
-		properties.put("installationId", installationId);
+			StringPool.BLANK, StringPool.BLANK, installationId,
+			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK, startDate,
+			expirationDate);
 
 		return _licenseKeyExporter.toXML(
 			_licenseKeyGenerator.encrypt(properties), properties);
-	}
-
-	private String _getAccountName(Environment environment) throws Exception {
-		Account account = _accountService.fetchAccount(
-			environment.getAccountEntryId());
-
-		if (account == null) {
-			return StringPool.BLANK;
-		}
-
-		return account.getName();
 	}
 
 	private String _getActivationCodeLockKey(String activationCode) {
@@ -1082,7 +1068,7 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		Date startDate = _toDate(
 			dxpEntitlement.getStartDateInstant(), nowInstant);
 
-		String accountName = _getAccountName(environment);
+		String projectName = _getProjectName(environment);
 
 		JSONArray addOnsJSONArray = _getAddOnsJSONArray(
 			_getAddOns(entitlements),
@@ -1095,7 +1081,7 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 			licenseXMLs.add(
 				_generateAppLicenseXML(
-					accountName, expirationDate,
+					projectName, expirationDate,
 					addOnJSONObject.getString("productId"),
 					addOnJSONObject.getString("productName"), startDate));
 		}
@@ -1105,7 +1091,7 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		licenseXMLs.add(
 			_generateDXPLicenseXML(
-				accountName, environment.getType(), expirationDate,
+				projectName, environment.getType(), expirationDate,
 				installationId, maxClusterNodes,
 				environment.getExternalReferenceCode(),
 				ProductVersion.extractQuarterlyRelease(dxpVersion),
@@ -1129,6 +1115,24 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		).put(
 			"status", EnvironmentConstants.MANIFEST_STATUS_ACTIVE
 		);
+	}
+
+	private String _getProjectName(Environment environment) throws Exception {
+		String projectExternalReferenceCode =
+			environment.getProjectExternalReferenceCode();
+
+		if (Validator.isNull(projectExternalReferenceCode)) {
+			return StringPool.BLANK;
+		}
+
+		Project project = _projectService.fetchProject(
+			projectExternalReferenceCode);
+
+		if (project == null) {
+			return StringPool.BLANK;
+		}
+
+		return project.getName();
 	}
 
 	private Environment _getSigningEnvironment(
@@ -1438,9 +1442,6 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		EnvironmentConstants.TYPE_PRODUCTION, "DXP Production");
 
 	@Autowired
-	private AccountService _accountService;
-
-	@Autowired
 	private AdminPermission _adminPermission;
 
 	@Autowired
@@ -1476,6 +1477,9 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 	@Autowired
 	private LicenseKeyGenerator _licenseKeyGenerator;
+
+	@Autowired
+	private ProjectService _projectService;
 
 	private static class AddOn {
 

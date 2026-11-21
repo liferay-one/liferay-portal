@@ -10,7 +10,6 @@ import com.liferay.portal.ee.license.shared.LicenseConstants;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -194,18 +193,18 @@ public class LicenseKeyExporterTest {
 
 	@Test
 	public void testToXMLWritesAVersion7ProductionLicense() throws Exception {
-		Map<String, String> properties = new LicenseKeyGenerator(
-		).getProperties(
-			"Acme Corp", "DXP Production", LicenseConstants.TYPE_PRODUCTION, 7,
-			"DXP Production", LicenseConstants.PRODUCT_ID_PORTAL, "2027.Q1",
-			"Acme Corp", 3, 0, 0, 0L, 0L, "Sizing 4", "", "", "", "", "", "",
-			new Date(1000000000000L), new Date(2000000000000L)
-		);
-
-		properties.put("installationId", "INSTALLATION-ID");
+		LicenseKeyGenerator licenseKeyGenerator = new LicenseKeyGenerator();
 
 		JSONObject jsonObject = XML.toJSONObject(
-			_licenseKeyExporter.toXML("TESTKEY", properties));
+			_licenseKeyExporter.toXML(
+				"TESTKEY",
+				licenseKeyGenerator.getProperties(
+					"Acme Corp", "DXP Production",
+					LicenseConstants.TYPE_PRODUCTION, 7, "DXP Production",
+					LicenseConstants.PRODUCT_ID_PORTAL, "2027.Q1", "Acme Corp",
+					3, 0, 0, 0L, 0L, "Sizing 4", "", "", "", "INSTALLATION-ID",
+					"", "", "", new Date(1000000000000L),
+					new Date(2000000000000L))));
 
 		JSONObject licenseJSONObject = jsonObject.getJSONObject("license");
 

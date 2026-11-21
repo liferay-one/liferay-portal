@@ -51,6 +51,26 @@ public class LicenseKeyGenerator {
 		String productVersion, String owner, int maxClusterNodes,
 		int maxServers, int maxHttpSessions, long maxConcurrentUsers,
 		long maxUsers, String sizing, String description, String domains,
+		String hostNames, String installationId, String ipAddresses,
+		String macAddresses, String serverIds, Date startDate,
+		Date expirationDate) {
+
+		return KeyGenerator.getProperties(
+			accountName, description, StringUtil.split(domains), expirationDate,
+			StringUtil.split(hostNames), installationId, sizing,
+			StringUtil.split(ipAddresses), licenseEntryName, licenseType,
+			String.valueOf(licenseVersion), StringUtil.split(macAddresses),
+			maxClusterNodes, maxConcurrentUsers, maxHttpSessions, maxServers,
+			maxUsers, owner, productName, productId, productVersion,
+			new String[] {serverIds}, startDate);
+	}
+
+	public Map<String, String> getProperties(
+		String accountName, String licenseEntryName, String licenseType,
+		int licenseVersion, String productName, String productId,
+		String productVersion, String owner, int maxClusterNodes,
+		int maxServers, int maxHttpSessions, long maxConcurrentUsers,
+		long maxUsers, String sizing, String description, String domains,
 		String hostNames, String ipAddresses, String macAddresses,
 		String serverIds, Date startDate, Date expirationDate) {
 
@@ -105,18 +125,6 @@ public class LicenseKeyGenerator {
 					CharPool.DASH, CharPool.COLON));
 			properties.put("maxServers", String.valueOf(maxServers));
 			properties.put("serverIds", serverIds);
-		}
-
-		if ((licenseVersion >= 7) &&
-			licenseType.equals(LicenseConstants.TYPE_PRODUCTION)) {
-
-			properties.remove("hostNames");
-			properties.remove("ipAddresses");
-			properties.remove("macAddresses");
-			properties.remove("maxServers");
-			properties.remove("serverIds");
-
-			properties.put("maxClusterNodes", String.valueOf(maxClusterNodes));
 		}
 
 		return properties;
