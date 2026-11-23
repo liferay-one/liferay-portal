@@ -106,12 +106,12 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-USAGE-070 | A customer can buy Liferay tokens only for a project with a completed AI Hub order. The token order takes its contract from that AI Hub order. The system refuses a project without such an order. | P0 | LPD-90605 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBTOKEN`, `FLOW-AI-HUB-PURCHASE` |
+| REQ-USAGE-070 | A customer can buy Liferay tokens only for a project with a provisioned AI Hub environment. The token order takes its contract from that environment. The system refuses a project without one. | P0 | LPD-90605 | `CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBTOKEN`, `FLOW-AI-HUB-PURCHASE` |
 | REQ-USAGE-071 | When a token order completes, the system buys one prepaid quota block on the AI Hub of the project. The block size of each order item is the default quantity of the `aiTokenBlock` entitlement definition of its SKU, multiplied by its quantity. | P0 | LPD-90605 | `SVC-AIHUBSERVICE`, `FLOW-AI-HUB-PURCHASE`, `HOOK-USEAITOKENBLOCKSIZES` |
 | REQ-USAGE-072 | The system buys the quota block of an order only once. The order ID identifies the purchase to AI Hub. A repeated completion of the same order buys nothing more. | P0 | LPD-90605 | `SVC-AIHUBSERVICE`, `FLOW-AI-HUB-PURCHASE` |
 | REQ-USAGE-073 | The system does not complete a token order when the project has no AI Hub or the order has no token item. | P0 | LPD-90605 | `SVC-AIHUBSERVICE`, `FLOW-AI-HUB-PURCHASE` |
 | REQ-USAGE-074 | A token order never counts as the order of the AI Hub product on the product detail page. | P1 | — | `HOOK-USEPROJECTORDERS` |
-| REQ-USAGE-075 | The detail page of an AI Hub product shows the Buy Liferay Tokens action when the AI Hub order of the project is completed. The action opens the purchase page of the Liferay tokens product for that project. When the catalog has no Liferay tokens product, the page shows no action. | P1 | LPD-90603 | `HOOK-USEDELIVERYPRODUCTBYEXTERNALREFERENCECODE`, `FLOW-PROJECT-ITEM-HEADER` |
+| REQ-USAGE-075 | The detail page of an AI Hub product shows the Buy Liferay Tokens action when the project has a provisioned AI Hub environment and an AI Hub order that is completed, within its term, and neither canceled nor on hold. On the unassigned project only the orders without a project and the environment of the account count. The action opens the token purchase of the AI Hub product for that project. The token blocks are the purchasable SKUs of the AI Hub product that have an active `aiTokenBlock` entitlement definition. | P1 | LPD-90603, LPD-117095 | `FLOW-PROJECT-ITEM-HEADER`, `ROUTE-PRODUCT-PURCHASE-SUMMARY` |
 
 ## Not Yet Built
 
