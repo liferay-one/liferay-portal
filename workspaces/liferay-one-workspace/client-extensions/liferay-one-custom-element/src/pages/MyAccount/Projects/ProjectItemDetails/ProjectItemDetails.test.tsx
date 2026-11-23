@@ -3,12 +3,11 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {render, screen} from '@testing-library/react';
+import {fireEvent, render, screen} from '@testing-library/react';
 import {ReactNode} from 'react';
 import {useParams} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useProject} from '~/context/ProjectContext';
-import {useDeliveryProductByExternalReferenceCode} from '~/hooks/useDeliveryProductByExternalReferenceCode';
 import {
 	useActiveSkuExternalReferenceCodes,
 	useHasActiveExperienceOffering,
@@ -19,16 +18,13 @@ import {useProjectItems} from '~/hooks/useProjectItems';
 import {getProductOrder, useProjectOrders} from '~/hooks/useProjectOrders';
 import i18n from '~/i18n';
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
+import {Liferay} from '~/services/liferay/liferay';
 
 import ProjectItemDetails from './ProjectItemDetails';
 
 vi.mock('react-router', () => ({useParams: vi.fn()}));
 
 vi.mock('~/context/ProjectContext', () => ({useProject: vi.fn()}));
-
-vi.mock('~/hooks/useDeliveryProductByExternalReferenceCode', () => ({
-	useDeliveryProductByExternalReferenceCode: vi.fn(),
-}));
 
 vi.mock('~/hooks/useProjectCommerce', () => ({
 	useActiveSkuExternalReferenceCodes: vi.fn(),
@@ -114,12 +110,6 @@ describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 			placedOrders: [],
 		} as unknown as ReturnType<typeof useProjectOrders>);
 
-		vi.mocked(useDeliveryProductByExternalReferenceCode).mockReturnValue({
-			data: undefined,
-		} as unknown as ReturnType<
-			typeof useDeliveryProductByExternalReferenceCode
-		>);
-
 		vi.mocked(resolveProductTabConfig).mockReturnValue({
 			tabKeys: [],
 		} as unknown as ReturnType<typeof resolveProductTabConfig>);
@@ -138,12 +128,30 @@ describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 				environmentProfile: 'ai-hub',
 				tabKeys: [],
 			} as unknown as ReturnType<typeof resolveProductTabConfig>);
+		});
 
-			vi.mocked(
-				useDeliveryProductByExternalReferenceCode
-			).mockReturnValue({data: {productId: 55}} as unknown as ReturnType<
-				typeof useDeliveryProductByExternalReferenceCode
-			>);
+		it('opens the token purchase of the AI Hub product for the project', () => {
+			vi.mocked(getProductOrder).mockReturnValue({
+				orderStatusInfo: {code: 0, label: 'Completed', label_i18n: ''},
+			} as unknown as ReturnType<typeof getProductOrder>);
+
+			const navigate = vi
+				.spyOn(Liferay.Util, 'navigate')
+				.mockImplementation(() => {});
+
+			render(<ProjectItemDetails itemType="product" />);
+
+			fireEvent.click(
+				screen.getByText(i18n.translate('buy-liferay-tokens'))
+			);
+
+			expect(navigate).toHaveBeenCalledWith(
+				expect.stringContaining(
+					'/product-purchase?productId=101&projectExternalReferenceCode=PRJCT-1&aiHubTokens#/'
+				)
+			);
+
+			navigate.mockRestore();
 		});
 
 		it('shows the button when the AI Hub order is completed', () => {

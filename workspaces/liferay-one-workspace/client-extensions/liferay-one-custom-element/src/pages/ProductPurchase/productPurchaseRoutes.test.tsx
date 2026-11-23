@@ -189,13 +189,14 @@ describe('productPurchaseRoutes', () => {
 		});
 	});
 
-	describe('lr-tokens', () => {
+	describe('ai-hub tokens', () => {
 		it('[ROUTE-PRODUCT-PURCHASE-PAYMENT-METHOD] [ROUTE-PRODUCT-PURCHASE-SUMMARY] emits the token, payment method, and summary steps', () => {
 			expect(
 				toStepItems(
 					getProductPurchaseSteps({
+						isAIHubTokens: true,
 						isPaidApp: true,
-						product: solutionTypeProduct('lr-tokens'),
+						product: solutionTypeProduct('ai-hub'),
 					})
 				)
 			).toEqual([
