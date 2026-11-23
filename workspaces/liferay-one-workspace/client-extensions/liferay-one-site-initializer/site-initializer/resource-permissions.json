@@ -838,6 +838,7 @@
 	},
 	{
 		"actionIds": [
+			"ADD_COMMERCE_ORDER",
 			"VIEW_COMMERCE_ORDERS",
 			"VIEW_OPEN_COMMERCE_ORDERS"
 		],
@@ -848,6 +849,7 @@
 	},
 	{
 		"actionIds": [
+			"ADD_COMMERCE_ORDER",
 			"VIEW_COMMERCE_ORDERS",
 			"VIEW_OPEN_COMMERCE_ORDERS"
 		],
@@ -858,6 +860,7 @@
 	},
 	{
 		"actionIds": [
+			"ADD_COMMERCE_ORDER",
 			"VIEW_COMMERCE_ORDERS",
 			"VIEW_OPEN_COMMERCE_ORDERS"
 		],
@@ -868,6 +871,7 @@
 	},
 	{
 		"actionIds": [
+			"ADD_COMMERCE_ORDER",
 			"VIEW_COMMERCE_ORDERS",
 			"VIEW_OPEN_COMMERCE_ORDERS"
 		],
@@ -878,6 +882,7 @@
 	},
 	{
 		"actionIds": [
+			"ADD_COMMERCE_ORDER",
 			"VIEW_COMMERCE_ORDERS",
 			"VIEW_OPEN_COMMERCE_ORDERS"
 		],
@@ -888,6 +893,7 @@
 	},
 	{
 		"actionIds": [
+			"ADD_COMMERCE_ORDER",
 			"VIEW_COMMERCE_ORDERS",
 			"VIEW_OPEN_COMMERCE_ORDERS"
 		],

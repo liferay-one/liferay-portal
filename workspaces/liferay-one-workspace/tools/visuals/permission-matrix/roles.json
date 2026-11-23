@@ -150,27 +150,27 @@
 		},
 		"Partner Account Admin": {
 			"group": "partner",
-			"purpose": "Manages a partner account and its members."
+			"purpose": "Manages a partner account and its members, and buys in the commerce store for the account."
 		},
 		"Partner Manager": {
 			"group": "partner",
-			"purpose": "Manages a partner account and its members, manages its license keys, and reads its orders."
+			"purpose": "Manages a partner account and its members, manages its license keys, reads its orders, and buys in the commerce store for the account."
 		},
 		"Partner Marketing User": {
 			"group": "partner",
-			"purpose": "A partner user for marketing. It sees the projects of the account."
+			"purpose": "A partner user for marketing. It sees the projects of the account and buys in the commerce store for the account."
 		},
 		"Partner Member": {
 			"group": "partner",
-			"purpose": "The basic partner user. It sees the projects and the orders of the account."
+			"purpose": "The basic partner user. It sees the projects and the orders of the account and buys in the commerce store for the account."
 		},
 		"Partner Sales User": {
 			"group": "partner",
-			"purpose": "A partner user for sales. It sees the projects of the account."
+			"purpose": "A partner user for sales. It sees the projects of the account and buys in the commerce store for the account."
 		},
 		"Partner Technical User": {
 			"group": "partner",
-			"purpose": "A partner user for technical work. It sees the projects of the account."
+			"purpose": "A partner user for technical work. It sees the projects of the account and buys in the commerce store for the account."
 		},
 		"Primary Contact": {
 			"group": "employee",
