@@ -20,6 +20,7 @@ export type ProjectEnvironment = {
 	currentEntitlementHash: string;
 	disasterRecoveryRegion: string;
 	domains: string;
+	externalEnvironmentId: string;
 	externalReferenceCode: string;
 	friendlyURL: string;
 	githubUsername: string;
@@ -50,6 +51,7 @@ type EnvironmentNode = {
 	currentEntitlementHash?: string;
 	disasterRecoveryRegion?: string;
 	domains?: string;
+	externalEnvironmentId?: string;
 	externalReferenceCode: string;
 	friendlyURL?: string;
 	githubUsername?: string;
@@ -99,6 +101,7 @@ export function useProjectEnvironments() {
 				currentEntitlementHash: node.currentEntitlementHash ?? '',
 				disasterRecoveryRegion: node.disasterRecoveryRegion ?? '',
 				domains: node.domains ?? '',
+				externalEnvironmentId: node.externalEnvironmentId ?? '',
 				externalReferenceCode: node.externalReferenceCode,
 				friendlyURL: node.friendlyURL ?? '',
 				githubUsername: node.githubUsername ?? '',
