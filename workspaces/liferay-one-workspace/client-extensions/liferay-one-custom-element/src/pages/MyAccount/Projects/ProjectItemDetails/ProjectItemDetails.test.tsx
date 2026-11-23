@@ -14,9 +14,14 @@ import {
 	useProjectCommerce,
 	useProjectProducts,
 } from '~/hooks/useProjectCommerce';
+import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
 import {useProjectItems} from '~/hooks/useProjectItems';
-import {getProductOrder, useProjectOrders} from '~/hooks/useProjectOrders';
+import {
+	hasActiveProductOrder,
+	useProjectOrders,
+} from '~/hooks/useProjectOrders';
 import i18n from '~/i18n';
+import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
 import {Liferay} from '~/services/liferay/liferay';
 
@@ -33,12 +38,19 @@ vi.mock('~/hooks/useProjectCommerce', () => ({
 	useProjectProducts: vi.fn(),
 }));
 
+vi.mock('~/hooks/useProjectEnvironments', () => ({
+	useProjectEnvironments: vi.fn(),
+}));
+
 vi.mock('~/hooks/useProjectItems', () => ({useProjectItems: vi.fn()}));
 
 vi.mock('~/hooks/useProjectOrders', () => ({
 	getProductOrder: vi.fn(),
 	getProductOrderInfo: vi.fn(() => ({status: 'active'})),
 	getProductVirtualItems: vi.fn(() => []),
+	hasActiveProductOrder: vi.fn(() => false),
+	hasProject: (order: {customFields?: {salesforceProjectId?: string}}) =>
+		!!order.customFields?.salesforceProjectId,
 	useProjectOrders: vi.fn(),
 }));
 
@@ -61,7 +73,19 @@ const PRODUCT_DESCRIPTION = 'A description that no longer makes sense.';
 
 describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 	beforeEach(() => {
-		vi.mocked(useParams).mockReturnValue({productERC: 'PRDCT-1'});
+		vi.mocked(useParams).mockReturnValue({
+			accountERC: 'ACCNT-1',
+			productERC: 'PRDCT-1',
+		});
+
+		vi.mocked(useProjectEnvironments).mockReturnValue({
+			environments: [
+				{
+					externalEnvironmentId: '444',
+					externalReferenceCode: 'AI-HUB-PRJCT-1',
+				},
+			],
+		} as unknown as ReturnType<typeof useProjectEnvironments>);
 
 		vi.mocked(useProject).mockReturnValue({
 			project: undefined,
@@ -131,9 +155,7 @@ describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 		});
 
 		it('opens the token purchase of the AI Hub product for the project', () => {
-			vi.mocked(getProductOrder).mockReturnValue({
-				orderStatusInfo: {code: 0, label: 'Completed', label_i18n: ''},
-			} as unknown as ReturnType<typeof getProductOrder>);
+			vi.mocked(hasActiveProductOrder).mockReturnValue(true);
 
 			const navigate = vi
 				.spyOn(Liferay.Util, 'navigate')
@@ -154,32 +176,95 @@ describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 			navigate.mockRestore();
 		});
 
-		it('shows the button when the AI Hub order is completed', () => {
-			vi.mocked(getProductOrder).mockReturnValue({
-				orderStatusInfo: {code: 0, label: 'Completed', label_i18n: ''},
-			} as unknown as ReturnType<typeof getProductOrder>);
+		it('shows the button when the project has an active AI Hub order', () => {
+			vi.mocked(hasActiveProductOrder).mockReturnValue(true);
 
 			render(<ProjectItemDetails itemType="product" />);
 
 			expect(
 				screen.getByText(i18n.translate('buy-liferay-tokens'))
 			).toBeTruthy();
+			expect(hasActiveProductOrder).toHaveBeenCalledWith([], 101);
 		});
 
-		it('hides the button when the AI Hub order is not completed', () => {
-			vi.mocked(getProductOrder).mockReturnValue({
-				orderStatusInfo: {code: 1, label: 'Pending', label_i18n: ''},
-			} as unknown as ReturnType<typeof getProductOrder>);
+		it('hides the button when the project has no provisioned AI Hub environment', () => {
+			vi.mocked(hasActiveProductOrder).mockReturnValue(true);
+
+			for (const environments of [
+				[],
+				[
+					{
+						externalEnvironmentId: '444',
+						externalReferenceCode: 'AI-HUB-PRJCT-2',
+					},
+				],
+				[
+					{
+						externalEnvironmentId: '',
+						externalReferenceCode: 'AI-HUB-PRJCT-1',
+					},
+				],
+			]) {
+				vi.mocked(useProjectEnvironments).mockReturnValue({
+					environments,
+				} as unknown as ReturnType<typeof useProjectEnvironments>);
+
+				const {unmount} = render(
+					<ProjectItemDetails itemType="product" />
+				);
+
+				expect(
+					screen.queryByText(i18n.translate('buy-liferay-tokens'))
+				).toBeNull();
+
+				unmount();
+			}
+		});
+
+		it('looks only at the orders without a project and at the environment of the account on the unassigned project', () => {
+			const projectOrder = {
+				customFields: {salesforceProjectId: 'PRJCT-9'},
+				id: 1,
+				placedOrderItems: [{productId: 101}],
+			};
+			const unassignedOrder = {
+				customFields: {},
+				id: 2,
+				placedOrderItems: [{productId: 101}],
+			};
+
+			vi.mocked(useProject).mockReturnValue({
+				project: undefined,
+				projectId: ONE_TIME_PURCHASES,
+				selectedContractERC: undefined,
+			} as unknown as ReturnType<typeof useProject>);
+			vi.mocked(useProjectOrders).mockReturnValue({
+				loading: false,
+				placedOrders: [projectOrder, unassignedOrder],
+			} as unknown as ReturnType<typeof useProjectOrders>);
+			vi.mocked(useProjectEnvironments).mockReturnValue({
+				environments: [
+					{
+						externalEnvironmentId: '444',
+						externalReferenceCode: 'AI-HUB-ACCNT-1',
+					},
+				],
+			} as unknown as ReturnType<typeof useProjectEnvironments>);
+			vi.mocked(hasActiveProductOrder).mockReturnValue(true);
 
 			render(<ProjectItemDetails itemType="product" />);
 
 			expect(
-				screen.queryByText(i18n.translate('buy-liferay-tokens'))
-			).toBeNull();
+				screen.getByText(i18n.translate('buy-liferay-tokens'))
+			).toBeTruthy();
+			expect(hasActiveProductOrder).toHaveBeenCalledWith(
+				[unassignedOrder],
+				101
+			);
 		});
 
-		it('hides the button when the AI Hub product has no order', () => {
-			vi.mocked(getProductOrder).mockReturnValue(undefined);
+		it('hides the button when the project has no active AI Hub order', () => {
+			vi.mocked(hasActiveProductOrder).mockReturnValue(false);
 
 			render(<ProjectItemDetails itemType="product" />);
 

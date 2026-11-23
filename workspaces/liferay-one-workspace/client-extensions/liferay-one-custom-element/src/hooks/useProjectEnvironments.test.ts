@@ -86,6 +86,7 @@ describe('[HOOK-USEPROJECTENVIRONMENTS] useProjectEnvironments', () => {
 				currentEntitlementHash: '',
 				disasterRecoveryRegion: '',
 				domains: '',
+				externalEnvironmentId: '',
 				externalReferenceCode: 'ENV-1',
 				friendlyURL: '',
 				githubUsername: '',
