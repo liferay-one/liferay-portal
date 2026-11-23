@@ -100,6 +100,24 @@ Some lists carry no identity of their own. A repeated label is one case: the nar
 
 A list whose items hold a form is where this defect reaches a user. A person reorders or deletes an item, and React keeps the text of one item on the item that moves into that position. Give each item an `id` when it is created, and give a stored item an id when the browser reads it, so that no stored record needs a change.
 
+## A Page Under an Account Route Reads the Account From the Route
+
+`Liferay.CommerceContext.account` is the account that the user selected, and only an account member can select an account. An Administrator, a Provisioning Administrator, a Provisioning Worker, or Liferay Staff can open a page under `/:accountERC/` for an account that they are not a member of. For that user, `Liferay.CommerceContext.account` is empty, so a query keyed on it sends no request and the page shows no rows. The page reads as an account with no data, not as an error.
+
+```ts
+// Wrong. A Provisioning Worker who is not a member sees no projects.
+const accountId = Liferay.CommerceContext?.account?.accountId;
+
+// Correct. AccountProvider resolves the account of the route for every user.
+const {account} = useAccount();
+
+const accountId = account?.id;
+```
+
+`useAccount()` also returns `loading`. While it is true, `account` is undefined, so show the loading state, not the empty state.
+
+Test this as a global role that is not a member of the account. An administrator session that is a member of the account shows the correct rows.
+
 ## No `as unknown as`
 
 The double cast stops the compiler from checking that the two types are related. The next change to a field name compiles, and then fails when the code runs.
