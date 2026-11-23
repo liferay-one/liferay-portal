@@ -243,6 +243,54 @@ public class AccountsRestController extends OneBaseRestController {
 		);
 	}
 
+	@GetMapping("/{externalReferenceCode}/placed-orders")
+	public ResponseEntity<String> getPlacedOrders(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@RequestParam("channelId") long channelId,
+			@RequestParam(defaultValue = "1", value = "page") int page,
+			@RequestParam(defaultValue = "20", value = "pageSize") int pageSize,
+			@RequestParam(required = false, value = "restrictFields") String
+				restrictFields)
+		throws Exception {
+
+		_accountPermission.check(externalReferenceCode, ActionKeys.VIEW, jwt);
+
+		Account account = _accountService.getAccount(
+			externalReferenceCode, jwt);
+
+		return new ResponseEntity<>(
+			_commerceOrderService.getAccountPlacedOrders(
+				account.getId(), channelId, Math.max(page, 1),
+				Math.min(Math.max(pageSize, 1), _PLACED_ORDERS_PAGE_SIZE_MAX),
+				restrictFields),
+			HttpStatus.OK);
+	}
+
+	@GetMapping("/{externalReferenceCode}/placed-orders/{placedOrderId}")
+	public ResponseEntity<String> getPlacedOrdersByPlacedOrderId(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@PathVariable("placedOrderId") long placedOrderId)
+		throws Exception {
+
+		_accountPermission.check(externalReferenceCode, ActionKeys.VIEW, jwt);
+
+		Account account = _accountService.getAccount(
+			externalReferenceCode, jwt);
+
+		String placedOrder = _commerceOrderService.fetchAccountPlacedOrder(
+			account.getId(), placedOrderId);
+
+		if (placedOrder == null) {
+			throw new ResponseStatusException(
+				HttpStatus.NOT_FOUND,
+				"Unable to find placed order " + placedOrderId);
+		}
+
+		return new ResponseEntity<>(placedOrder, HttpStatus.OK);
+	}
+
 	@GetMapping("/{accountKey}/products/{productExternalReferenceCode}/usage")
 	public ResponseEntity<String> getProductUsage(
 			@AuthenticationPrincipal Jwt jwt,
@@ -1191,6 +1239,8 @@ public class AccountsRestController extends OneBaseRestController {
 
 	private static final MediaType _CONTENT_TYPE_CSV = MediaType.parseMediaType(
 		"text/csv");
+
+	private static final int _PLACED_ORDERS_PAGE_SIZE_MAX = 200;
 
 	private static final Log _log = LogFactory.getLog(
 		AccountsRestController.class);

@@ -10,7 +10,8 @@ import {Liferay} from '~/services/liferay/liferay';
 import type {Account} from '~/types/accounts';
 import type {APIResponse, DataQuery} from '~/types/api';
 
-const ACCOUNT_FIELDS = 'externalReferenceCode id logoURL name type';
+const ACCOUNT_FIELDS =
+	'externalReferenceCode id logoURL name organizationIds type';
 
 const ACCOUNTS_PAGE_SIZE = 20;
 

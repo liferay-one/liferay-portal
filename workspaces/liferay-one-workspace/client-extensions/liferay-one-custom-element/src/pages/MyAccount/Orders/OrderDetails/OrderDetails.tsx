@@ -9,6 +9,7 @@ import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import {PageRenderer} from '~/components/Page/Page';
 import Table from '~/components/Table/Table';
 import {useOrderDates} from '~/hooks/useOrderDates';
+import {useOrganizationAccess} from '~/hooks/useOrganizationAccess';
 import {usePlacedOrder} from '~/hooks/usePlacedOrder';
 import {getProjectName} from '~/hooks/useProjectOrders';
 import i18n, {Word, translate} from '~/i18n';
@@ -31,13 +32,27 @@ import type {PlacedOrder} from '~/types/orders';
 export default function OrderDetails() {
 	const {orderId} = useParams();
 
-	const {data: order, error, isLoading} = usePlacedOrder(orderId!);
+	const {accountExternalReferenceCode, loading: organizationAccessLoading} =
+		useOrganizationAccess();
+
+	const {
+		data: order,
+		error,
+		isLoading,
+	} = usePlacedOrder(
+		organizationAccessLoading ? '' : orderId!,
+		undefined,
+		accountExternalReferenceCode
+	);
 
 	return (
 		<div className="w-100">
 			<BackLink path="..">{i18n.translate('orders-list')}</BackLink>
 
-			<PageRenderer error={error} isLoading={isLoading}>
+			<PageRenderer
+				error={error}
+				isLoading={organizationAccessLoading || isLoading}
+			>
 				{order && <OrderDetailsContent order={order} />}
 			</PageRenderer>
 		</div>

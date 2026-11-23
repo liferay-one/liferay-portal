@@ -15,6 +15,7 @@ import type {
 } from '~/types/accountInspection';
 import type {Account} from '~/types/accounts';
 import type {APIResponse} from '~/types/api';
+import type {PlacedOrder} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
 
 import type {AccountInvitation} from './types';
@@ -62,6 +63,24 @@ class AccountsOAuth2 extends OneSpringBootOAuth2 {
 	async getJiraAssets(accountExternalReferenceCode: string) {
 		return this.get<JiraAssets>(
 			`/${accountExternalReferenceCode}/jira/assets`
+		);
+	}
+
+	async getPlacedOrders(
+		accountExternalReferenceCode: string,
+		params = new URLSearchParams()
+	) {
+		return this.get<APIResponse<PlacedOrder>>(
+			`/${accountExternalReferenceCode}/placed-orders?${params}`
+		);
+	}
+
+	async getPlacedOrdersByPlacedOrderId(
+		accountExternalReferenceCode: string,
+		placedOrderId: number | string
+	) {
+		return this.get<PlacedOrder>(
+			`/${accountExternalReferenceCode}/placed-orders/${placedOrderId}`
 		);
 	}
 

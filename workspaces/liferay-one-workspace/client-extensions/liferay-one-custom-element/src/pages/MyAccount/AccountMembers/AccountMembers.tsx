@@ -75,7 +75,11 @@ export default function AccountMembers() {
 
 	const {hasProject, loading: projectsLoading} = useHasProject();
 
-	const {loading: accountTypeLoading, roleNames} = useAccountType();
+	const {
+		hasActivePartnerSubscription,
+		loading: accountTypeLoading,
+		roleNames,
+	} = useAccountType();
 
 	const [keywords, setKeywords] = useState('');
 	const [page, setPage] = useState(1);
@@ -179,7 +183,12 @@ export default function AccountMembers() {
 		);
 	}
 
-	if (!projectsLoading && !hasProject) {
+	if (
+		!accountTypeLoading &&
+		!projectsLoading &&
+		!hasProject &&
+		!hasActivePartnerSubscription
+	) {
 		return (
 			<Page
 				description={i18n.translate(

@@ -4,6 +4,7 @@
  */
 
 import {useOneContext} from '~/context/OneContextProvider';
+import {useCurrentAccount} from '~/hooks/useAccounts';
 import {useDataQuery} from '~/hooks/useDataQuery';
 import {canViewAllAccountProjects} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
@@ -76,7 +77,15 @@ export function useUserProjects(): {
 
 	const {userAccountModel} = useOneContext();
 
-	const showAllAccountProjects = canViewAllAccountProjects(userAccountModel);
+	const {data: currentAccount} = useCurrentAccount();
+
+	const showAllAccountProjects =
+		canViewAllAccountProjects(userAccountModel) ||
+		Boolean(
+			userAccountModel?.isOrganizationMember(
+				currentAccount?.organizationIds
+			)
+		);
 
 	const enabled = Boolean(accountId && userId);
 

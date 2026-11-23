@@ -492,6 +492,16 @@
 	},
 	{
 		"actionIds": [
+			"VIEW",
+			"VIEW_USERS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.account.model.AccountEntry",
+		"roleName": "Organization User",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
 			"MANAGE_ADDRESSES",
 			"MANAGE_USERS",
 			"UPDATE",
@@ -1459,6 +1469,15 @@
 		"primKey": "0",
 		"resourceName": "com.liferay.portal.kernel.model.Group",
 		"roleName": "Site Content Reviewer",
+		"scope": "3"
+	},
+	{
+		"actionIds": [
+			"MANAGE_ACCOUNTS"
+		],
+		"primKey": "0",
+		"resourceName": "com.liferay.portal.kernel.model.Organization",
+		"roleName": "Organization User",
 		"scope": "3"
 	},
 	{

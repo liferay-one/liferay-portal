@@ -9,6 +9,7 @@ import HeadlessCommerceDeliveryOrder, {
 	PLACED_ORDER_ITEMS_PAGE_SIZE,
 } from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
+import Accounts from '~/services/spring-boot/Accounts';
 
 import type {APIResponse, DataQuery} from '~/types/api';
 import type {PlacedOrder} from '~/types/orders';
@@ -18,6 +19,7 @@ const channelId = Liferay.CommerceContext.commerceChannelId;
 const MAX_PAGES = 20;
 
 type Props = {
+	accountExternalReferenceCode?: string;
 	accountId: number | string;
 	fetchAllPages?: boolean;
 	filter?: string;
@@ -30,15 +32,27 @@ type Props = {
 
 const usePlacedOrder = (
 	orderId: number | string,
-	swrOptions?: SWRConfiguration
+	swrOptions?: SWRConfiguration,
+	accountExternalReferenceCode?: string
 ) =>
 	useSWR(
-		orderId ? `/placed-order/${orderId}` : null,
-		async () => HeadlessCommerceDeliveryOrder.getPlacedOrder(orderId),
+		orderId
+			? accountExternalReferenceCode
+				? `/placed-order/${accountExternalReferenceCode}/${orderId}`
+				: `/placed-order/${orderId}`
+			: null,
+		async () =>
+			accountExternalReferenceCode
+				? Accounts.getPlacedOrdersByPlacedOrderId(
+						accountExternalReferenceCode,
+						orderId
+					)
+				: HeadlessCommerceDeliveryOrder.getPlacedOrder(orderId),
 		swrOptions
 	);
 
 const placedOrdersQuery = ({
+	accountExternalReferenceCode,
 	accountId,
 	fetchAllPages = false,
 	filter,
@@ -50,19 +64,30 @@ const placedOrdersQuery = ({
 }: Props): DataQuery<APIResponse<PlacedOrder>> => ({
 	fetcher: async () => {
 		const getPage = (currentPage: number) =>
-			HeadlessCommerceDeliveryOrder.getPlacedOrders(
-				channelId,
-				accountId,
-				new URLSearchParams({
-					...(filter && {filter}),
-					'nestedFields': 'placedOrderItems',
-					'page': currentPage.toString(),
-					'pageSize': pageSize.toString(),
-					'placedOrderItems.pageSize': PLACED_ORDER_ITEMS_PAGE_SIZE,
-					...(restrictFields && {restrictFields}),
-					'sort': 'createDate:desc',
-				})
-			);
+			accountExternalReferenceCode
+				? Accounts.getPlacedOrders(
+						accountExternalReferenceCode,
+						new URLSearchParams({
+							channelId: String(channelId),
+							page: currentPage.toString(),
+							pageSize: pageSize.toString(),
+							...(restrictFields && {restrictFields}),
+						})
+					)
+				: HeadlessCommerceDeliveryOrder.getPlacedOrders(
+						channelId,
+						accountId,
+						new URLSearchParams({
+							...(filter && {filter}),
+							'nestedFields': 'placedOrderItems',
+							'page': currentPage.toString(),
+							'pageSize': pageSize.toString(),
+							'placedOrderItems.pageSize':
+								PLACED_ORDER_ITEMS_PAGE_SIZE,
+							...(restrictFields && {restrictFields}),
+							'sort': 'createDate:desc',
+						})
+					);
 
 		const response = await getPage(page);
 
@@ -97,7 +122,7 @@ const placedOrdersQuery = ({
 		} as APIResponse<PlacedOrder>;
 	},
 	key: shouldFetch
-		? `/placed-orders/${accountId}/${page}/${pageSize}/${fetchAllPages}/${filter ?? ''}/${restrictFields ?? ''}`
+		? `/placed-orders/${accountExternalReferenceCode ?? accountId}/${page}/${pageSize}/${fetchAllPages}/${filter ?? ''}/${restrictFields ?? ''}`
 		: null,
 });
 

@@ -4,6 +4,7 @@
  */
 
 import {useMemo} from 'react';
+import {useOrganizationAccess} from '~/hooks/useOrganizationAccess';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
 import {Liferay} from '~/services/liferay/liferay';
 import {OrderTypes} from '~/types/orders';
@@ -210,8 +211,12 @@ function getTierName(placedOrderItem: PlacedOrderItems): string {
 	);
 }
 
-function toProjectOrdersProps(accountId?: number | string | null) {
+function toProjectOrdersProps(
+	accountId?: number | string | null,
+	accountExternalReferenceCode?: string
+) {
 	return {
+		accountExternalReferenceCode,
 		accountId: accountId ?? -1,
 		fetchAllPages: true,
 		page: 1,
@@ -234,9 +239,19 @@ function hasProduct(order: PlacedOrder, productId: number): boolean {
 export function useProjectOrders(project?: OrderProject, productId?: number) {
 	const accountId = Liferay.CommerceContext.account?.accountId;
 
-	const {data, error, isLoading} = usePlacedOrders(
-		toProjectOrdersProps(accountId)
+	const {accountExternalReferenceCode, loading: organizationAccessLoading} =
+		useOrganizationAccess();
+
+	const projectOrdersProps = toProjectOrdersProps(
+		accountId,
+		accountExternalReferenceCode
 	);
+
+	const {data, error, isLoading} = usePlacedOrders({
+		...projectOrdersProps,
+		shouldFetch:
+			projectOrdersProps.shouldFetch && !organizationAccessLoading,
+	});
 
 	const placedOrders = useMemo(
 		() =>

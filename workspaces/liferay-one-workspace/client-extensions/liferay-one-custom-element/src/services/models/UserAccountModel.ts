@@ -118,6 +118,13 @@ export class UserAccountModel {
 		);
 	}
 
+	isOrganizationMember(organizationIds: number[] = []) {
+		return (this.userAccount?.organizationBriefs ?? []).some(
+			(organizationBrief) =>
+				organizationIds.includes(organizationBrief.id)
+		);
+	}
+
 	private hasAccountRole(roleName: AccountRoleType) {
 		return this.hasAccountRoleName(roleName);
 	}
