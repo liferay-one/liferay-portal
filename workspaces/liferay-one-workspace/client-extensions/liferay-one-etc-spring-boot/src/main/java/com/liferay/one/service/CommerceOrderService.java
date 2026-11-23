@@ -601,7 +601,8 @@ public class CommerceOrderService extends OneBaseService {
 	}
 
 	public String getAccountPlacedOrders(
-			long accountId, long channelId, int page, int pageSize,
+			long accountId, long channelId,
+			String orderTypeExternalReferenceCode, int page, int pageSize,
 			String restrictFields)
 		throws Exception {
 
@@ -620,6 +621,16 @@ public class CommerceOrderService extends OneBaseService {
 			).queryParam(
 				"sort", "createDate:desc"
 			);
+
+		// The caller sends only the order type, never an OData filter, so the
+		// filter stays on the account's orders of that one type
+
+		if (Validator.isNotNull(orderTypeExternalReferenceCode)) {
+			uriComponentsBuilder.queryParam(
+				"filter",
+				"orderTypeExternalReferenceCode eq '" +
+					escapeODataString(orderTypeExternalReferenceCode) + "'");
+		}
 
 		if (Validator.isNotNull(restrictFields)) {
 			uriComponentsBuilder.queryParam("restrictFields", restrictFields);

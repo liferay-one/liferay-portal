@@ -72,6 +72,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -248,11 +249,29 @@ public class AccountsRestController extends OneBaseRestController {
 			@AuthenticationPrincipal Jwt jwt,
 			@PathVariable("externalReferenceCode") String externalReferenceCode,
 			@RequestParam("channelId") long channelId,
+			@RequestParam(
+				required = false, value = "orderTypeExternalReferenceCode"
+			)
+			String orderTypeExternalReferenceCode,
 			@RequestParam(defaultValue = "1", value = "page") int page,
 			@RequestParam(defaultValue = "20", value = "pageSize") int pageSize,
 			@RequestParam(required = false, value = "restrictFields") String
 				restrictFields)
 		throws Exception {
+
+		// The order type goes into an OData filter, so only an external
+		// reference code made of letters, digits, hyphens, and underscores is
+		// accepted
+
+		if ((orderTypeExternalReferenceCode != null) &&
+			!_orderTypeExternalReferenceCodePattern.matcher(
+				orderTypeExternalReferenceCode
+			).matches()) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Invalid order type external reference code");
+		}
 
 		_accountPermission.check(externalReferenceCode, ActionKeys.VIEW, jwt);
 
@@ -261,7 +280,8 @@ public class AccountsRestController extends OneBaseRestController {
 
 		return new ResponseEntity<>(
 			_commerceOrderService.getAccountPlacedOrders(
-				account.getId(), channelId, Math.max(page, 1),
+				account.getId(), channelId, orderTypeExternalReferenceCode,
+				Math.max(page, 1),
 				Math.min(Math.max(pageSize, 1), _PLACED_ORDERS_PAGE_SIZE_MAX),
 				restrictFields),
 			HttpStatus.OK);
@@ -1244,6 +1264,9 @@ public class AccountsRestController extends OneBaseRestController {
 
 	private static final Log _log = LogFactory.getLog(
 		AccountsRestController.class);
+
+	private static final Pattern _orderTypeExternalReferenceCodePattern =
+		Pattern.compile("[A-Za-z0-9_-]+");
 
 	@Autowired
 	private AccountAssetService _accountAssetService;
