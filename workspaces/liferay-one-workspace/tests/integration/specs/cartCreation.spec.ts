@@ -16,6 +16,7 @@ const CHANNEL_ERC = 'LIFERAY_ONE_CHANNEL';
 const buyers = [
 	{email: 'admin@customer.com', roleName: 'Account Administrator'},
 	{email: 'buyer@customer.com', roleName: 'Account Buyer'},
+	{email: 'partneradmin@partner.com', roleName: 'Partner Account Admin'},
 ] as const;
 
 type AccountBrief = {
@@ -25,7 +26,7 @@ type AccountBrief = {
 
 test.describe('[AUTH-CART-CREATION] cart creation', () => {
 	for (const {email, roleName} of buyers) {
-		test(`[AUTH-CART-CREATION] an ${roleName} creates a cart with an order type in the account`, async ({
+		test(`[AUTH-CART-CREATION] a user with the ${roleName} role creates a cart with an order type in the account`, async ({
 			request,
 		}) => {
 			const administrator = new APIHelpers(request, {
