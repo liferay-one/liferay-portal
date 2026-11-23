@@ -35,7 +35,7 @@ The citations in this file use two prefixes. Every path is relative to the works
 | App license key | A license key for a Marketplace app, not for the portal product. An administrator creates it through `/app-license-keys`, or an account generates it from the One Time Purchases page. | `sb/AppLicenseKeysRestController.java:93`, `sb/service/AppLicenseKeyGenerationService.java:157` | `C_LICENSE_KEY` with `productExternalId` other than the portal product ID |
 | Cloud Native license file | The license XML that a Cloud Native environment receives in its manifest. The server builds it on each manifest call and does not store it. | `sb/CloudRestController.java:1263`, `sb/CloudRestController.java:1005` | Not stored |
 | Common license key | A license file that an administrator uploads once for a product family (Commerce or Enterprise Search). Every entitled customer downloads the same file. Liferay One does not sign it. | `sb/CommonLicenseKeysRestController.java:102` | `C_COMMON_LICENSE_KEY` |
-| Complimentary key | A short free key for one server, against an entitlement whose definition has `licenseKeyType` `complimentary`. | `sb/service/LicenseKeyGenerationService.java:536` | `C_LICENSE_KEY` with `complimentary` true, under an activation key of type `complimentary` |
+| Complimentary key | A short free key for one server, against an active DXP or Portal production entitlement, when the project field `allowComplimentary` is true. Generating it turns that field off. | `sb/service/LicenseKeyGenerationService.java` `_generateActivationKeyInLock` | `C_LICENSE_KEY` with `complimentary` true, under an activation key of type `complimentary` |
 | Developer key | A developer or developer cluster key for DXP 7.4 and later. The server signs it on download and does not store it. | `sb/service/LicenseKeyGenerationService.java:79` | Not stored |
 | DXP free key | A 365 day `free` key from the `free` license entry of `DXP Production` (`KOR-36354`), generated against an entitlement of key type `free`: the one that the free DXP purchase grants to the account, or one that staff grant to a project for New Key. On the account with no project, a free entitlement is offered only for a renewal (`sb/service/LicenseKeyGenerateFormService.java:569`). It matches the key of the legacy provisioning server: 3 cluster nodes, sizing `Sizing 4`, the name `Liferay Free Activation Key`, and the domains `<first domain>,localhost`. It is renewed from 90 days before it expires, and the renewal keeps its domains, owner, and order. | `sb/service/LicenseKeyService.java:183` | `C_LICENSE_KEY` with `licenseType` `free`, under an activation key of type `free`, on the project or on the account with no project. A key from the purchase flow before LPD-111041 has no activation key. |
 | License key | One signed license file for one product and one server. | `sb/service/LicenseKeyService.java:57` | `C_LICENSE_KEY` |
@@ -128,7 +128,7 @@ Each entitlement of a key type is its own subscription in the form, so a project
 
 A user who cannot provision (`provisionable` false) still sees the button when a developer key type has activations left, because `_isGeneratable` keeps the downloadable types (`sb/service/LicenseKeyGenerateFormService.java:959`). The hook gives `hasGeneratePermission` to every user of an assigned project (`ce/pages/MyAccount/Projects/hooks/useHasActivationPermission.ts:136`), so such a user can open the form and download only a developer key.
 
-For an account without a project (One Time Purchases), the summary comes from `AppLicenseKeyGenerationService.getSummary` (`sb/service/AppLicenseKeyGenerationService.java:105`). It is generatable when a paid, licensable app entitlement has activations left and the account allows self provisioning, or when a self service trial entitlement has activations left. The trial part ignores the self provisioning setting, and the generate form leaves out the app products when the account does not allow self provisioning.
+For an account without a project (One Time Purchases), the summary comes from `LicenseKeyGenerateFormService.getSummary` for the account (`sb/ActivationKeysRestController.java:570`). It uses the same rules as a project summary, with the entitlements of the account. The self provisioning setting is a setting of a project, so it does not apply here (REQ-LICENSING-003). The generate form always includes the app products of the account (`sb/ActivationKeysRestController.java:166`).
 
 ### (b) Server Side Generation
 
@@ -145,7 +145,7 @@ sequenceDiagram
 
     User->>SB: POST /activation-keys/generate {projectExternalReferenceCode, subscriptionEntitlementId, bundleEntitlementIds, keyType, version, servers, environmentName, description, startDate, purpose}
     SB->>Perm: checkLicenseKeyActivation(project)
-    SB->>Perm: checkSelfProvisioning(account)
+    SB->>Perm: checkSelfProvisioning(project)
     SB->>SB: Administrator only for an admin key type
     SB->>SB: Renewed key must be in the same project and not complimentary
     SB->>Gen: generateActivationKey(request)
@@ -326,8 +326,8 @@ These are the checks that the server applies before it issues a key. "Project pa
 | A complimentary key covers exactly one server | Project path | `sb/service/LicenseKeyGenerationService.java:370` |
 | A complimentary key has a purpose of 255 characters or fewer | Project path | `sb/service/LicenseKeyGenerationService.java:377` |
 | A complimentary key starts before the subscription end date, ends after now, and does not outlive the subscription | Project path | `sb/service/LicenseKeyGenerationService.java:554`, `:567`, `:573` |
-| A complimentary key lasts `licenseKeyDurationDays`, or 30 days when the value is 0 | Project path | `sb/service/LicenseKeyGenerationService.java:684` |
-| A complimentary key uses only an entitlement whose type is `complimentary`, and such an entitlement grants no other key | Project path | `sb/service/LicenseKeyGenerationService.java:346` |
+| A complimentary key lasts 30 days (`COMPLIMENTARY_DURATION_DAYS`) | Project path | `sb/service/LicenseKeyGenerationService.java` `_generateActivationKeyInLock` |
+| A complimentary key uses only a production entitlement of the DXP or Portal family that is not an app, and uses no activation of it. An entitlement whose type is `complimentary` grants no key | Project path | `sb/service/LicenseKeyGenerationService.java` `_checkComplimentaryEntitlement` |
 | A developer key needs a version of 7.4 or later | Developer download | `sb/service/LicenseKeyGenerationService.java:91` |
 | A developer key needs an entitlement whose `generatesActivationKey` is true and whose type equals the requested key type | Developer download | `sb/service/LicenseKeyGenerationService.java` `_fetchEntitledProductEntitlement` |
 | A developer key ends after `licenseKeyDurationDays`, or on the entitlement end date. With neither, the download is refused. | Developer download | `sb/service/LicenseKeyGenerationService.java:780` |
@@ -342,11 +342,11 @@ These are the checks that the server applies before it issues a key. "Project pa
 | A Marketplace app key ends on the entitlement end date, or 100 years after it starts | App path | `sb/service/AppLicenseKeyGenerationService.java:314` |
 | A Marketplace app key has the product version 1, as in the legacy Marketplace, which DXP compares with the `product-version-id` of the app | App path | `sb/service/AppLicenseKeyGenerationService.java:538` |
 | A Marketplace app entitlement allows its `maxQuantity`, or its `quantity` when `maxQuantity` is empty or 0 | App path | `sb/service/AppLicenseKeyGenerationService.java:367` |
-| A project has at most one active complimentary activation key | Project path | `sb/service/LicenseKeyGenerationService.java:334` |
+| Generating a complimentary key turns off `allowComplimentary` on the project, under the lock of the project | Project path | `sb/service/LicenseKeyGenerationService.java` `_generateActivationKeyInLock` |
 | A renewal names an activation key of the same project, not complimentary | Project path | `sb/ActivationKeysRestController.java:371`, `sb/service/LicenseKeyGenerationService.java:488` |
 | An admin key type (`enterprise` and `oem` by default) needs Administrator or Provisioning Administrator, also when the request asks for a virtual cluster. A virtual cluster key of another type needs Administrator, Provisioning Administrator, or Provisioning Worker | Both paths | `sb/ActivationKeysRestController.java:430` |
 | At least one server is given | Both paths | `sb/service/LicenseKeyGenerationService.java:67`, `sb/service/AppLicenseKeyGenerationService.java:55` |
-| Complimentary keys need the account custom field `allowComplimentary` true | Project path | `sb/service/LicenseKeyGenerationService.java:327`, `sb/service/LicenseKeyGenerateFormService.java:924` |
+| Complimentary keys need the project field `allowComplimentary` true. A new project gets false when the billing country of its account is Ireland or the United Kingdom, or when the billing country cannot be read, and true otherwise (`sb/service/ProjectService.java`) | Project path | `sb/service/LicenseKeyGenerationService.java` `_checkComplimentary`, `sb/service/LicenseKeyGenerateFormService.java` `isAllowComplimentary` |
 | Each entitlement is active: the start date is empty or past, and the end date is empty or future. `terminationStatus` is not read. | Both paths | `sb/service/EntitlementService.java:608` |
 | Each entitlement is in the project (project path) or in the account outside a project (app path) | Both paths | `sb/service/LicenseKeyGenerationService.java:515`, `sb/service/AppLicenseKeyGenerationService.java:262` |
 | Each selected entitlement has activations left for every server. Activations are `maxQuantity` (app path falls back to `quantity`) minus the active keys. | Both paths | `sb/service/LicenseKeyGenerationService.java:395`, `sb/service/AppLicenseKeyGenerationService.java:136` |
@@ -356,8 +356,8 @@ These are the checks that the server applies before it issues a key. "Project pa
 | The expiration date is not before the start date | Every stored key | `sb/license/LicenseKeyValidator.java:43` |
 | IP and MAC addresses are well formed and unique, and a backup, limited, per user, or production key names a server | Every stored key | `sb/license/LicenseKeyValidator.java:85`, `:139` |
 | A virtual cluster key has at least one cluster node | Every stored key | `sb/license/LicenseKeyValidator.java:77` |
-| The account allows self provisioning (`allowSelfProvisioning`, default true). A global role skips this check, and so does a key generated from a self service trial entitlement. | Generate, activate, deactivate | `sb/permission/EnvironmentActivationPermission.java:102` |
-| Expiration: when the account does not allow permanent licenses (`allowPermanentLicenses`, default true) or the family is Cloud Native, the key ends with the subscription. A production type entry gets 36,500 days. Any other type gets 180 days after the subscription. | Project path | `sb/service/LicenseKeyGenerateFormService.java:82` |
+| The project allows self provisioning (the project field `allowSelfProvisioning`). A global role skips this check, and so does a key that has no project. | Generate, activate, deactivate | `sb/permission/EnvironmentActivationPermission.java` `containsSelfProvisioning` |
+| Expiration: when the project does not allow permanent licenses (the project field `allowPermanentLicenses`) or the family is Cloud Native, the key ends with the subscription. A production type entry gets 36,500 days. Any other type gets 180 days after the subscription. | Project path | `sb/service/LicenseKeyGenerateFormService.java` `getLicenseKeyExpirationInstant` |
 
 ## Entity Diagram
 
@@ -433,9 +433,10 @@ erDiagram
 | `GET /common-license-keys`, `/{id}/download` | A global administrator role, or an active Commerce or Enterprise Search entitlement definition on any account of the user | By entitlement, not by account |
 | `GET /license-keys/{id}/download`, `GET /download`, `GET /subscriptions`, `PUT /subscriptions` | `LicenseKeyPermission` VIEW on each key's account; at most 100 IDs | Yes, by account |
 | `GET /license-keys/developer-download` | `ProjectPermission` VIEW | Yes, by project. No self provisioning check and no quota, by design (REQ-LICENSING-004, REQ-LICENSING-060). |
-| `PATCH /activation-keys/{id}/active` | Project: account administrator, Partner Manager, project administrator, or global role. No project: account administrator, Partner Manager, or an account role that manages license keys. Plus self provisioning. A complimentary key, or a free key with no project, needs an administrator. | Yes, but no quota check. See Finding 4. |
+| `PATCH /activation-keys/{id}/active` | Project: account administrator, Partner Manager, project administrator, or global role. No project: account administrator, Partner Manager, or an account role that manages license keys. Plus self provisioning for a key with a project. A complimentary key, or a free key with no project, needs an administrator. | Yes, but no quota check. See Finding 4. |
 | `PATCH /license-keys/{id}/active` | Refused for a key under an activation key. Otherwise the same as above, or `LicenseKeyPermission` UPDATE. | Yes, but no quota check |
-| `POST /activation-keys/generate` | `checkLicenseKeyActivation` (project) or `checkAccountLicenseKeyActivation` (account), self provisioning (not for a self service trial entitlement), admin key types | Yes. Entitlements are read from the project or the account, so a caller cannot name another project's entitlement. |
+| `PATCH /projects/{erc}/licensing-settings` | Administrator, Provisioning Administrator, or Provisioning Worker (`checkLicensingSettings`). The Admin tab of the account shows its toggles to the same roles, and to Liferay Staff with the toggles turned off. | Not applicable. The server patches the project with its own token. |
+| `POST /activation-keys/generate` | `checkLicenseKeyActivation` (project) or `checkAccountLicenseKeyActivation` (account), self provisioning (project only), admin key types | Yes. Entitlements are read from the project or the account, so a caller cannot name another project's entitlement. |
 | `POST /cloud/environments/{id}/activation` | None (no OAuth). The activation code and a self signed JWT. | No. See Finding 1. |
 | `POST /cloud/environments/{id}/manifest`, `POST /cloud/products/{erc}/virtual-entry/{id}/download` | None (no OAuth). A JWT signed by the stored environment key. | Yes, by the stored key |
 | `POST /common-license-keys` | Administrator or Provisioning Administrator | Not applicable |

@@ -85,8 +85,8 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 | Account Solution Publisher | `C_ACCOUNT_SOLUTION_PUBLISHER` | account | 23 | Manual. The Publisher Dashboard lets only this role start a solution submission. |
 | Account Supplier | `L_ACCOUNT_SUPPLIER` | account | 218 | Manual. Liferay shows the catalog of a supplier account only to this role, and gives the regular role Supplier with it. |
 | Article Administrator | `C_ARTICLE_ADMIN` | site | 28 | Manual |
-| Cloud Native Contact | `C_CLOUD_NATIVE_CONTACT` | account | 33 | A project contact designation (`ProjectRestController.java:298`). Its holders get the Okta Cloud Native app (`UserAssignmentService.java:119`). |
-| Critical Incident Contact | `C_CRITICAL_INCIDENT_CONTACT` | account | 38 | A project contact designation (`ProjectRestController.java:298`) or an invitation |
+| Cloud Native Contact | `C_CLOUD_NATIVE_CONTACT` | account | 33 | A project contact designation (`ProjectRestController.java:351`). Its holders get the Okta Cloud Native app (`UserAssignmentService.java:119`). |
+| Critical Incident Contact | `C_CRITICAL_INCIDENT_CONTACT` | account | 38 | A project contact designation (`ProjectRestController.java:351`) or an invitation |
 | Customer | `C_CUSTOMER` | regular | 43 | Membership in the Customers user group (`16-user-group.batch-engine-data.json:13`). No code adds users to the group. |
 | Customer Experience Manager | `C_CUSTOMER_EXPERIENCE_MANAGER` | account | 48 | A Salesforce contact role (`ProvisioningContactService.java:118`) |
 | Dashboard Viewer | `C_DASHBOARD_VIEWER` | regular | 53 | Manual. No code reads it. |
@@ -108,7 +108,7 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 | Partner Technical User | `C_PARTNER_TECHNICAL_USER` | account | 133 | An account manager or an invitation |
 | Primary Contact | `C_PRIMARY_CONTACT` | account | 138 | A Salesforce contact role |
 | Privacy Breach Contact | `C_PRIVACY_BREACH_CONTACT` | account | 143 | A project contact designation |
-| Project Admin | `C_PROJECT_ADMIN` | account | 148 | A project membership (`ProjectRestController.java:266`) or an invitation. The ERC is stored on the `ProjectMembership` entry. It is not assigned as a Liferay account role. |
+| Project Admin | `C_PROJECT_ADMIN` | account | 148 | A project membership (`ProjectRestController.java:319`) or an invitation. The ERC is stored on the `ProjectMembership` entry. It is not assigned as a Liferay account role. |
 | Project Requester | `C_PROJECT_REQUESTER` | account | 153 | The same as Project Admin |
 | Project User | `C_PROJECT_USER` | account | 158 | The same as Project Admin. Every Salesforce project contact gets it (`ProvisioningContactService.java:197`). |
 | Provisioning Administrator | `C_PROVISIONING_ADMIN` | regular | 163 | Manual |
@@ -323,18 +323,20 @@ All paths in this table are in `client-extensions/liferay-one-custom-element/src
 
 | Gate | Condition | Depends On |
 | --- | --- | --- |
-| `UserAccountModel.isAdmin`, `isFinanceAdministrator`, `isProvisioningAdministrator`, `isProvisioningWorker`, `isLiferayStaff` (`services/models/UserAccountModel.ts:52`) | The regular role is in `roleBriefs` | `roleBriefs` and the self `VIEW` grant |
-| `UserAccountModel.canManageAllAccounts` (`services/models/UserAccountModel.ts:32`) | Administrator or Provisioning Administrator | `roleBriefs` |
-| `UserAccountModel.canViewAllAccounts` (`services/models/UserAccountModel.ts:36`) | Administrator, Finance Administrator, Liferay Staff, Provisioning Administrator, or Provisioning Worker | `roleBriefs` |
-| `UserAccountModel.canViewAllOrders` (`services/models/UserAccountModel.ts:50`) | `canManageAllAccounts`, Finance Administrator, or Liferay Staff. These roles hold `VIEW_COMMERCE_ORDERS` at company scope in `resource-permissions.json`. Provisioning Worker does not, so the placed orders endpoint returns 404 for that role and the Orders list blocks it. | `roleBriefs` |
-| `UserAccountModel.hasAccountRoleName` (`services/models/UserAccountModel.ts:80`) | The account role is held in the current account | `accountBriefs` and `Liferay.CommerceContext.account` |
-| `UserAccountModel.isSSAAdmin`, `isSSAUser` (`services/models/UserAccountModel.ts:72`) | The SSA role in the SSA account. Administrator is also an SSA administrator. | `accountBriefs` |
-| `useHasAdminPermissions` (`hooks/useHasAdminPermissions.ts:21`), used by `SyncToJSMButton.tsx:20` and `PubSub.tsx:31` | Administrator or Provisioning Administrator | `roleBriefs` |
+| `UserAccountModel.isAdmin`, `isFinanceAdministrator`, `isProvisioningAdministrator`, `isProvisioningWorker`, `isLiferayStaff` (`services/models/UserAccountModel.ts:78`) | The regular role is in `roleBriefs` | `roleBriefs` and the self `VIEW` grant |
+| `UserAccountModel.canManageAccountAdmin` (`services/models/UserAccountModel.ts:32`), used by `SyncToJSMButton.tsx:59` and `LicensingSettings.tsx:32` | Administrator, Provisioning Administrator, or Provisioning Worker. The user can sync the account to JSM and change the licensing settings of its projects. | `roleBriefs` |
+| `UserAccountModel.canManageAllAccounts` (`services/models/UserAccountModel.ts:44`) | Administrator or Provisioning Administrator | `roleBriefs` |
+| `UserAccountModel.canViewAccountAdmin` (`services/models/UserAccountModel.ts:48`), used by `AccountTabsLayout.tsx:35` and `AccountAdmin.tsx:21` | `canManageAccountAdmin` or Liferay Staff. The user sees the Admin tab of the account. | `roleBriefs` |
+| `UserAccountModel.canViewAllAccounts` (`services/models/UserAccountModel.ts:52`) | Administrator, Finance Administrator, Liferay Staff, Provisioning Administrator, or Provisioning Worker | `roleBriefs` |
+| `UserAccountModel.canViewAllOrders` (`services/models/UserAccountModel.ts:62`) | `canManageAllAccounts`, Finance Administrator, or Liferay Staff. These roles hold `VIEW_COMMERCE_ORDERS` at company scope in `resource-permissions.json`. Provisioning Worker does not, so the placed orders endpoint returns 404 for that role and the Orders list blocks it. | `roleBriefs` |
+| `UserAccountModel.hasAccountRoleName` (`services/models/UserAccountModel.ts:110`) | The account role is held in the current account | `accountBriefs` and `Liferay.CommerceContext.account` |
+| `UserAccountModel.isSSAAdmin`, `isSSAUser` (`services/models/UserAccountModel.ts:102`) | The SSA role in the SSA account. Administrator is also an SSA administrator. | `accountBriefs` |
+| `useHasAdminPermissions` (`hooks/useHasAdminPermissions.ts:11`), used by `PubSub.tsx:31` | Administrator or Provisioning Administrator | `roleBriefs` |
 | `useHasAdminPermission` (`pages/MyAccount/Projects/hooks/useHasAdminPermission.ts:8`), used by `LicenseKeys.tsx:290` and `LicenseKeyDetails.tsx:41` | `canManageAllAccounts` | `roleBriefs` |
 | Admin routes (`pages/Admin/adminRoutes.tsx:42`, applied by `AdminRouter.tsx:35`) | Admin pages: Administrator. Finance pages: Administrator or Finance Administrator. Provisioning pages: Administrator or Provisioning Administrator. SSA pages: SSA Administrator or SSA User. | `roleBriefs`, `accountBriefs` |
 | `isAccountManager` (`pages/MyAccount/AccountMembers/accountRoles.ts:127`) | Account Administrator, Partner Account Admin, or Partner Manager in the current account, or `canManageAllAccounts` | `accountBriefs`, `roleBriefs` |
 | `canEditAccountDetails` (`accountRoles.ts:136`) | `isAccountManager` | — |
-| `canAccessAccountMembers` (`accountRoles.ts:142`), used by `AccountMembers.tsx:166` and `AccountTabsLayout.tsx:35` | An account manager, or any user who is not an Account Buyer without Account Member | `accountBriefs` |
+| `canAccessAccountMembers` (`accountRoles.ts:142`), used by `AccountMembers.tsx:166` and `AccountTabsLayout.tsx:39` | An account manager, or any user who is not an Account Buyer without Account Member | `accountBriefs` |
 | `canAccessOrders` (`accountRoles.ts:162`), used by `Orders.tsx:322` | An account manager, a user with one of the 9 manageable account roles, or `canViewAllOrders`. The order detail and order history routes have no gate. | `accountBriefs`, `roleBriefs` |
 | `canViewAllAccountProjects` (`accountRoles.ts:162`), used by `useUserProjects.ts:51` | Account Administrator, Account Member, a partner role, or `canManageAllAccounts`. Other users see only the projects where they have a membership. | `accountBriefs`, `/o/c/projectmemberships` |
 | `useHasProject` (`pages/MyAccount/Projects/hooks/useHasProject.ts:15`), used by `AccountMembers.tsx:76` | The current account has at least one project. The query counts the account's projects, not the user's memberships. | `/o/c/projects` read as the user |
@@ -383,19 +385,19 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 | `GET /accounts/{externalReferenceCode}/license-keys` | LicenseKeyPermission (VIEW) | yes | `AccountsRestController.java:165` |
 | `GET /accounts/{externalReferenceCode}/license-keys/export` | LicenseKeyPermission (VIEW) | yes | `AccountsRestController.java:180` |
 | `GET /accounts/{externalReferenceCode}/products` | AccountPermission (VIEW) | yes | `AccountsRestController.java:257` |
-| `POST /accounts/{externalReferenceCode}/sync-to-jsm` | AdminPermission | yes | `AccountsRestController.java:447` |
+| `POST /accounts/{externalReferenceCode}/sync-to-jsm` | AccountPermission (`checkSyncToJSM`: Administrator, Provisioning Administrator, or Provisioning Worker) | yes | `AccountsRestController.java:670` |
 | `POST /accounts/{externalReferenceCode}/user-accounts/by-email-address` | AdminPermission | yes | `AccountsRestController.java:461` |
 | `DELETE /accounts/{externalReferenceCode}/user-accounts/{userId}` | AccountPermission (ASSIGN_MEMBERS) | yes | `AccountsRestController.java:110` |
 | `PUT /accounts/{externalReferenceCode}/user-accounts/{userId}/account-roles` | AccountPermission (ASSIGN_MEMBERS) | yes | `AccountsRestController.java:538` |
 | `POST /accounts` | None. Any signed in user creates an account and becomes its Account Administrator. | yes | `AccountsRestController.java:247` |
-| `POST /activation-keys/generate` | AdminPermission, EnvironmentActivationPermission, LicenseKeyPermission (VIEW) | yes | `ActivationKeysRestController.java:290` |
+| `POST /activation-keys/generate` | AdminPermission, EnvironmentActivationPermission, LicenseKeyPermission (VIEW) | yes | `ActivationKeysRestController.java:275` |
 | `GET /activation-keys/generate-form` | AdminPermission, EnvironmentActivationPermission, LicenseKeyPermission, ProjectPermission (VIEW) | yes | `ActivationKeysRestController.java:128` |
 | `DELETE /activation-keys/subscriptions` | LicenseKeyPermission (VIEW) | yes | `ActivationKeysRestController.java:73` |
-| `GET /activation-keys/subscriptions` | LicenseKeyPermission (VIEW) | yes | `ActivationKeysRestController.java:219` |
-| `PUT /activation-keys/subscriptions` | LicenseKeyPermission (VIEW) | yes | `ActivationKeysRestController.java:341` |
-| `GET /activation-keys/summary` | AdminPermission, EnvironmentActivationPermission, ProjectPermission (VIEW) | yes | `ActivationKeysRestController.java:177` |
+| `GET /activation-keys/subscriptions` | LicenseKeyPermission (VIEW) | yes | `ActivationKeysRestController.java:210` |
+| `PUT /activation-keys/subscriptions` | LicenseKeyPermission (VIEW) | yes | `ActivationKeysRestController.java:325` |
+| `GET /activation-keys/summary` | AdminPermission, EnvironmentActivationPermission, ProjectPermission (VIEW) | yes | `ActivationKeysRestController.java:168` |
 | `GET /activation-keys/{activationKeyId}` | LicenseKeyPermission (VIEW) | yes | `ActivationKeysRestController.java:92` |
-| `PATCH /activation-keys/{activationKeyId}/active` | AdminPermission, EnvironmentActivationPermission | yes | `ActivationKeysRestController.java:245` |
+| `PATCH /activation-keys/{activationKeyId}/active` | AdminPermission, EnvironmentActivationPermission | yes | `ActivationKeysRestController.java:236` |
 | `GET /activation-keys/{activationKeyId}/download` | LicenseKeyPermission (VIEW) | yes | `ActivationKeysRestController.java:101` |
 | `POST /admin/jira/team-roles/sync` | AdminPermission | yes | `AdminRestController.java:83` |
 | `POST /admin/pubsub/dispatch` | AdminPermission | yes | `AdminRestController.java:101` |
@@ -448,9 +450,9 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 | `GET /license-keys/download` | LicenseKeyPermission (VIEW) | yes | `LicenseKeysRestController.java:153` |
 | `DELETE /license-keys/subscriptions` | None. Deletes only the caller's own subscriptions. | yes | `LicenseKeysRestController.java:67` |
 | `GET /license-keys/subscriptions` | LicenseKeyPermission (VIEW) | yes | `LicenseKeysRestController.java:181` |
-| `PUT /license-keys/subscriptions` | LicenseKeyPermission (VIEW) | yes | `LicenseKeysRestController.java:307` |
-| `POST /license-keys/type-free` | None | no | `LicenseKeysRestController.java:247` |
-| `POST /license-keys/type-free-domains-check` | None. Tells the caller if a free key exists for an owner and domain. | no | `LicenseKeysRestController.java:290` |
+| `PUT /license-keys/subscriptions` | LicenseKeyPermission (VIEW) | yes | `LicenseKeysRestController.java:306` |
+| `POST /license-keys/type-free` | None | no | `LicenseKeysRestController.java:256` |
+| `POST /license-keys/type-free-domains-check` | None. Tells the caller if a free key exists for an owner and domain. | no | `LicenseKeysRestController.java:289` |
 | `PATCH /license-keys/{licenseKeyId}/active` | EnvironmentActivationPermission, LicenseKeyPermission (UPDATE) | yes | `LicenseKeysRestController.java:207` |
 | `GET /license-keys/{licenseKeyId}/download` | LicenseKeyPermission (VIEW) | yes | `LicenseKeysRestController.java:125` |
 | `POST /liferay-data-platform/provisioning/{orderId}` | None | no | `LiferayDataPlatformRestController.java:45` |
@@ -460,16 +462,16 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 | `POST /organizations/{organizationId}/sync-to-jsm` | AdminPermission | yes | `OrganizationsRestController.java:180` |
 | `DELETE /organizations/{organizationId}/user-accounts/{userId}/organization-roles` | AdminPermission | yes | `OrganizationsRestController.java:66` |
 | `POST /organizations/{organizationId}/user-accounts/{userId}/organization-roles` | AdminPermission | yes | `OrganizationsRestController.java:192` |
-| `GET /projects/{externalReferenceCode}/jira/object-key` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:139` |
-| `POST /projects/{externalReferenceCode}/sync-to-jsm` | ProjectPermission (UPDATE) | yes | `ProjectRestController.java:284` |
-| `GET /projects/{externalReferenceCode}/usage` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:152` |
-| `GET /projects/{externalReferenceCode}/usage/event-history` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:183` |
-| `GET /projects/{externalReferenceCode}/usage/event-summary` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:208` |
-| `DELETE /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:82` |
-| `POST /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:266` |
-| `PUT /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:330` |
-| `DELETE /projects/{projectId}/user-accounts/{userId}/contact-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:113` |
-| `POST /projects/{projectId}/user-accounts/{userId}/contact-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:298` |
+| `GET /projects/{externalReferenceCode}/jira/object-key` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:143` |
+| `POST /projects/{externalReferenceCode}/sync-to-jsm` | ProjectPermission (UPDATE) | yes | `ProjectRestController.java:337` |
+| `GET /projects/{externalReferenceCode}/usage` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:156` |
+| `GET /projects/{externalReferenceCode}/usage/event-history` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:187` |
+| `GET /projects/{externalReferenceCode}/usage/event-summary` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:212` |
+| `DELETE /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:86` |
+| `POST /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:319` |
+| `PUT /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:383` |
+| `DELETE /projects/{projectId}/user-accounts/{userId}/contact-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:117` |
+| `POST /projects/{projectId}/user-accounts/{userId}/contact-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:351` |
 | `GET /ready` | None. Public path. | no | `ReadyRestController.java:21` |
 | `GET /ticket-attachments/by-external-reference-code/{externalReferenceCode}/download` | ProjectPermission (VIEW). Provisioning Worker skips it. | yes | `TicketAttachmentsRestController.java:113` |
 | `GET /ticket-attachments/by-id/{id}/download` | ProjectPermission (VIEW). Provisioning Worker skips it. | yes | `TicketAttachmentsRestController.java:125` |
@@ -516,13 +518,13 @@ Each finding names the file and line. The findings are ordered by risk.
 
 ### High
 
-1. **A user who can change an account or a project can invite an Account Administrator.** `POST /accounts/{erc}/invitations` checks `UPDATE`, not `ASSIGN_MEMBERS` (`AccountsRestController.java:356` and `:367`). The invitation can carry any account role ERC, including `L_ACCOUNT_ADMINISTRATOR` (`AccountsRestController.java:753`), and the acceptance assigns every role in it (`AccountInvitationAcceptanceService.java:93`). `UPDATE` passes for a Project Admin and a Project Requester on a project (`ProjectPermission.java:128`), and for every member of a linked organization (`AccountPermission.java:117`). This breaks REQ-ACCESS-061. Check `ASSIGN_MEMBERS` when the invitation carries account roles. The resend and delete paths have the same check (`AccountsRestController.java:411`, `:666`).
+1. **A user who can change an account or a project can invite an Account Administrator.** `POST /accounts/{erc}/invitations` checks `UPDATE`, not `ASSIGN_MEMBERS` (`AccountsRestController.java:356` and `:367`). The invitation can carry any account role ERC, including `L_ACCOUNT_ADMINISTRATOR` (`AccountsRestController.java:753`), and the acceptance assigns every role in it (`AccountInvitationAcceptanceService.java:93`). `UPDATE` passes for a Project Admin and a Project Requester on a project (`ProjectPermission.java:128`), and for every member of a linked organization (`AccountPermission.java:129`). This breaks REQ-ACCESS-061. Check `ASSIGN_MEMBERS` when the invitation carries account roles. The resend and delete paths have the same check (`AccountsRestController.java:411`, `:666`).
 
 1. **The trial, provisioning, free key, and entitlement endpoints trust the caller.** Any signed in user can call them from the browser, and the pages do (`services/spring-boot/Trial.ts:21`, `LicenseKeys.ts:32`, `LiferayDataPlatform.ts:10`, `DigitalSalesRoom.ts:10`). With the service token, they:
 
 	- delete the Cloud project of any trial order (`TrialRestController.java:69`) and complete and delete any order (`:165`);
 	- provision any trial order (`:241`), any Digital Sales Room order (`DigitalSalesRoomRestController.java:104`), and any LDP order (`LiferayDataPlatformRestController.java:45`);
-	- create a free license key on the account of any order and complete that order (`LicenseKeysRestController.java:247`);
+	- create a free license key on the account of any order and complete that order (`LicenseKeysRestController.java:256`);
 	- generate entitlements for any order item (`EntitlementsRestController.java:23`).
 
 	Add `CommerceOrderPermission.check` with the caller's token, as `DXPRestController.java:74` does, or limit these paths to the service's own application.
@@ -541,7 +543,7 @@ Each finding names the file and line. The findings are ordered by risk.
 
 1. **The restricted pages use two conditions.** REQ-ACCESS-091 asks for one shared condition, the account's projects. Account Members uses `useHasProject` (`AccountMembers.tsx:76`), and Project Members counts the account's projects with a placed order (`ProjectMembers.tsx:90`). Business Events and Ticket Attachments use the membership filtered `useProjectsWithOrders` (`BusinessEvents.tsx:437`, `TicketAttachmentsList.tsx:140`), and the attachment uploader uses the membership filtered `useUserProjects` (`TicketAttachmentsUploaderOutlet.tsx:65`). A user in an account with projects and no membership sees "not included in your current plan" on those pages.
 
-1. **The account manager differs between the pages and the service.** The pages count Partner Manager and Provisioning Administrator as account managers (`accountRoles.ts:127`), with no partner entitlement check. The service counts Account Administrator and SSA Administrator, and partner managers only with the partner entitlement (`AccountPermission.java:75`). REQ-ACCESS-070 names Account Administrator, Partner Account Admin, and Administrator. A Partner Manager in an account without the entitlement sees the member actions and gets 403.
+1. **The account manager differs between the pages and the service.** The pages count Partner Manager and Provisioning Administrator as account managers (`accountRoles.ts:127`), with no partner entitlement check. The service counts Account Administrator and SSA Administrator, and partner managers only with the partner entitlement (`AccountPermission.java:87`). REQ-ACCESS-070 names Account Administrator, Partner Account Admin, and Administrator. A Partner Manager in an account without the entitlement sees the member actions and gets 403.
 
 1. **An account restricted entry with no account is open to every user.** Liferay passes every action when the restricting field is `0` (`ObjectEntryModelResourcePermission.java:222` in `modules/apps/object/object-service`). Seed data or code that leaves the account field empty on Project, ProjectMembership, LicenseKey, or another of the 12 objects makes that entry readable and writable by every signed in user. Make the account relationship field required on these objects.
 

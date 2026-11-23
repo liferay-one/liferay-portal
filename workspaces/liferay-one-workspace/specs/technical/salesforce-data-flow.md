@@ -210,7 +210,7 @@ The order is written by `service/CommerceOrderService.java:673`. Its custom fiel
 | `Reseller__r.Name` | As is | `CommerceOrder.partnerAccount` (expando) | No | Keeps | `service/CommerceOrderService.java:1243` |
 | `SBQQ__AmendedContract__c` | Contract lookup by ERC, added to the contracts of the message | `CommerceOrderItem.contractId` (expando), through the contract that matches the end date of the line | No | Only the contracts of the message | `salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java` |
 | `SBQQ__AmendedContract__r.SBQQ__Opportunity__c` | As is. Also the parent family for the realignment trim. | `CommerceOrder.parentOpportunityId` (expando) | Only with realignment lines | Keeps | `service/CommerceOrderService.java:1235` |
-| `Sold_By__c` | As is. Also an input to the licensing defaults of a new account. | `CommerceOrder.opportunitySoldBy` (expando) | No | Keeps | `service/CommerceOrderService.java:1220` |
+| `Sold_By__c` | As is. | `CommerceOrder.opportunitySoldBy` (expando) | No | Keeps | `service/CommerceOrderService.java:1220` |
 | `StageName` | Gate. Also mapped to the item status. | `CommerceOrder.opportunityStageName` (expando) | Yes | Record skipped | `service/CommerceOrderService.java:1225` |
 | `Type` | Gate for renewals, project warnings, and contacts | `CommerceOrder.opportunityType` (expando) | No | Keeps | `service/CommerceOrderService.java:1230` |
 | line item `CurrencyIsoCode` | One code for all provisionable lines, else `USD` | `CommerceOrder.currencyCode` | No | **Overwrites** with `USD` | `salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java:141`, `service/CommerceOrderService.java:703` |
@@ -261,7 +261,8 @@ The opportunity path builds the account from the `account` block and takes the a
 | `Website` | Adds `https://` when no scheme. Dropped when it has a space or no period. Retried without it when Liferay rejects it. | `AccountEntry.accountContactInformation.webUrls` | No | See finding 9 | `service/AccountService.java:510`, `:671`, `:757` |
 | opportunity `AccountAddress_Billing_Address__r.*` (`Street__c`, `City__c`, `Postal_Code__c`, `State__c`, `Country__c`) | Sent only when street, city, and postal code are all present. City cut to 75 characters, street to 255. | Postal address `<Id>-billing`, and the default billing address | No | Keeps | `service/AccountService.java:594`, `:643` |
 | opportunity `AccountAddress_Shipping_Address__r.*` | Same as billing | Postal address `<Id>-shipping`, and the default shipping address | No | Keeps | `service/AccountService.java:608` |
-| opportunity `Sold_By__c` and billing country | New account only. `Ireland` or `United Kingdom` turns off complimentary licenses. `Liferay Brazil`, `Liferay China`, or `Liferay India` turns off permanent licenses. | `AccountEntry.allowComplimentary`, `allowPermanentLicenses`, `allowSelfProvisioning` (expando) | No | Written once, at create | `service/AccountService.java:444`, `:565` |
+| (constant) | New project only. The project starts with self provisioning on and permanent licenses off. A Provisioning Administrator or a Provisioning Worker turns permanent licenses on. | `C_PROJECT.allowPermanentLicenses`, `allowSelfProvisioning` | No | Written once, at create | `service/ProjectService.java` `upsertProject` |
+| opportunity billing country, else the default billing address of the account | New project only. `Ireland` or `United Kingdom` turns off complimentary keys. When the billing address lookup fails, the project starts without complimentary keys. | `C_PROJECT.allowComplimentary` | No | Written once, at create | `service/ProjectService.java` `upsertProject` |
 | (constant) | `APPROVED`, `business` | `AccountEntry.status`, `AccountEntry.type` | Yes | **Overwrites** on every upsert | `service/AccountService.java:733` |
 
 ### Project Block to C_PROJECT
@@ -561,7 +562,7 @@ The audit checked the Salesforce path against this change. Salesforce contact ro
 
 1. **An existing account member gets no access to a new project.** `service/ProvisioningContactService.java:95` returns when the user is already in the account. The user gets no `C_PROJECT_USER` membership on the project of the opportunity, no account role, and no welcome email. The one exception is a Security Incident Contact, who gets the designation and a project role.
 
-1. **An account that the object path creates never gets its licensing settings.** `service/AccountService.java:379` writes no licensing custom fields, and `:697` returns null on the `PATCH`, so a later opportunity does not write them either (`:391`). `allowComplimentary` has no default in `expando-columns.json`, and the "sold by" and country rules never apply to that account.
+1. **Resolved. An account that the object path creates gets no licensing settings.** The licensing settings are now on each project, not on the account. `service/ProjectService.java` `upsertProject` writes them when it creates the project, and applies the "sold by" and SKU rules on every opportunity, so the path that created the account no longer matters.
 
 1. **Every account upsert sets the status to approved and the type to business.** `service/AccountService.java:733` and `:734`. An account that an administrator deactivated in Liferay becomes active again on the next Salesforce message.
 

@@ -30,7 +30,7 @@
 | `availableCredit` | decimal | |
 | `creditStatus`, `holdReason` | string | |
 
-**Custom fields:** `accountTier` (text: Platinum / Gold / Silver / Bronze / Trial / Community; not the `LT_ACCOUNT_TIER` picklist), `accountCode` (migrated Koroneiki accountKey), `allowComplimentary` (boolean), `allowPermanentLicenses` (boolean), `allowSelfProvisioning` (boolean), `AccountType`, `contactEmail`, `industry`, `oktaSSO`, `passwordPolicy`, `twoFactorAuthentication`
+**Custom fields:** `accountTier` (text: Platinum / Gold / Silver / Bronze / Trial / Community; not the `LT_ACCOUNT_TIER` picklist), `accountCode` (migrated Koroneiki accountKey), `allowComplimentary`, `allowPermanentLicenses`, and `allowSelfProvisioning` (boolean, no longer read: the project fields replace them, LPD-115566), `AccountType`, `contactEmail`, `industry`, `oktaSSO`, `passwordPolicy`, `twoFactorAuthentication`
 
 **Object actions:** `AccountCreate`, `AccountUpdate`, and `AccountDelete` call `liferay-one-etc-spring-boot`.
 
@@ -343,7 +343,7 @@ Capability-level entitlement template. Many SKUs ↔ many EntitlementDefinitions
 | `defaultQuantity` | double | Default; overridden at order item level via `sizing` |
 | `grantType` | string | `fixed` · `rollover` · `metered` · `prepaid` |
 | `licenseKeyType` | string | The key type this SKU grants, e.g. `production`, `developer`, `backup`, `complimentary`; empty when the definition grants no key type of its own |
-| `licenseKeyDurationDays` | integer | How long a generated developer or complimentary key lasts, in days from its start date. Empty or 0 means no duration: a complimentary key then lasts 30 days after its start date, and a developer key expires on the entitlement end date. A complimentary key does not expire after the subscription end date. Liferay stores an empty value as 0, so the two are the same value, and the `C_ENTITLEMENT_DEFINITION_LICENSE_KEY_DURATION_RANGE` rule rejects a negative value. A key keeps the dates it was issued with. |
+| `licenseKeyDurationDays` | integer | How long a generated developer key lasts, in days from its start date. Empty or 0 means no duration: the key then expires on the entitlement end date. A complimentary key does not read this value. It always lasts 30 days after its start date, and it does not expire after the subscription end date. Liferay stores an empty value as 0, so the two are the same value, and the `C_ENTITLEMENT_DEFINITION_LICENSE_KEY_DURATION_RANGE` rule rejects a negative value. A key keeps the dates it was issued with. |
 | `licenseKeyFamily` | string | The LCS license entry family the SKU is licensed under, e.g. `DXP`, `Portal`, `CMP`, `DSR`, `Cloud Native`. Prefix of the license entry name the generate form groups key types by |
 | `generatesActivationKey` | boolean | Whether this SKU leads an activation key. A SKU carrying a `*-license-usage-type` option leads one regardless |
 | FK `usageDefinitionId` | long | Nullable; only for metered/usage-type entitlements |
@@ -604,6 +604,9 @@ A customer project inside an account, such as one DXP or cloud workspace. Most c
 | FK `organizationId` | long | `organizationToProject`, disassociate. The first line support organization, if any |
 | `name` | string | Required. Commerce Orders link to a project by this value (`projectName` custom field), so a rename breaks that link |
 | `aiHubAccountName`, `allowedEmailDomains`, `dataCenterLocation`, `friendlyWorkspaceURL`, `liferayVersion`, `securityContactEmailAddress` | string | |
+| `allowComplimentary` | boolean | The project may generate one complimentary key. Set at create from the billing country of the account, and turned off when the project generates the key. A project without a value reads as false |
+| `allowPermanentLicenses` | boolean | Keys from a production entry do not expire. False at create, and no Salesforce event changes it. A Provisioning Administrator or a Provisioning Worker turns it on. A project without a value reads as false |
+| `allowSelfProvisioning` | boolean | The project's own users manage its keys. Set to true at create. A project without a value reads as true |
 
 Parent of ActivationKey, Contract, Entitlement, Environment, and LicenseKey (all `disassociate`), and of ProjectMembership and UsageReport (both `cascade`).
 
