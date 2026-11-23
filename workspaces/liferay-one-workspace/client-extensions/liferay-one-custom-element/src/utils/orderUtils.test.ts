@@ -618,6 +618,21 @@ describe('[MOD-ORDERUTILS] orderUtils', () => {
 			);
 		});
 
+		it('leaves out a token order, which holds the product but is not its order', () => {
+			const tokenOrder = toContractPlacedOrder({
+				id: 4,
+				orderTypeExternalReferenceCode: 'AI_HUB_TOKEN',
+				placedOrderItems: [{customFields: {}, productId: 7}],
+			});
+
+			expect(
+				getContractProductOrders([tokenOrder, legacyOrder], 7)
+			).toEqual([legacyOrder]);
+			expect(getContractProductOrders([tokenOrder], 7, 38227564)).toEqual(
+				[]
+			);
+		});
+
 		it('keeps every product order when no item names the contract', () => {
 			expect(getContractProductOrders(placedOrders, 7, 34353392)).toEqual(
 				[legacyOrder, currentOrder]

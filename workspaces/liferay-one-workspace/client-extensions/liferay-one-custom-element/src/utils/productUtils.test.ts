@@ -22,10 +22,10 @@ import {
 	getProductType,
 	getSelfServiceTrialOrderType,
 	getSkuByOptionValueKey,
+	isAIHubTokensPurchase,
 	isContactSalesProduct,
 	isDXPFreeTierProduct,
 	isLDPProduct,
-	isLRTokensProduct,
 	isSEOStudioProduct,
 	isSelfServiceTrialProduct,
 	isTrialSKU,
@@ -457,15 +457,34 @@ describe('[MOD-PRODUCTUTILS] productUtils', () => {
 		});
 	});
 
-	describe('isLRTokensProduct', () => {
-		it('matches only the lr-tokens solution type', () => {
+	describe('isAIHubTokensPurchase', () => {
+		it('matches only the AI Hub product opened with the aiHubTokens parameter', () => {
+			const searchParams = new URLSearchParams('productId=1&aiHubTokens');
+
 			expect(
-				isLRTokensProduct(toProduct([['solution-type', 'lr-tokens']]))
+				isAIHubTokensPurchase(
+					toProduct([['solution-type', 'ai-hub']]),
+					searchParams
+				)
 			).toBe(true);
 			expect(
-				isLRTokensProduct(toProduct([['solution-type', 'ai-hub']]))
+				isAIHubTokensPurchase(
+					toProduct([['solution-type', 'dsr']]),
+					searchParams
+				)
 			).toBe(false);
-			expect(isLRTokensProduct(toProduct([]))).toBe(false);
+			expect(isAIHubTokensPurchase(toProduct([]), searchParams)).toBe(
+				false
+			);
+		});
+
+		it('does not match the AI Hub product opened without the parameter', () => {
+			expect(
+				isAIHubTokensPurchase(
+					toProduct([['solution-type', 'ai-hub']]),
+					new URLSearchParams('productId=1')
+				)
+			).toBe(false);
 		});
 	});
 

@@ -91,6 +91,43 @@ describe('[MOD-MYACCOUNT-PROJECTS-PROJECTITEMSUTILS] projectItemsUtils', () => {
 		expect(itemsByType.product.size).toBe(0);
 	});
 
+	it('takes the status of a product from its own order, not from a newer token order', () => {
+		const {product: products} = toProjectItemsByType(
+			[
+				toOrder(
+					{
+						id: 2,
+						orderStatusInfo: {
+							code: 1,
+							label: 'Pending',
+							label_i18n: '',
+						},
+						orderTypeExternalReferenceCode: 'AI_HUB_TOKEN',
+					},
+					[2]
+				),
+				toOrder({id: 1}, [2]),
+			],
+			productsByProductId
+		);
+
+		expect(products.get('PRDCT-DXP')?.status).toBe('active');
+	});
+
+	it('lists no product that only a token order holds', () => {
+		const {product: products} = toProjectItemsByType(
+			[
+				toOrder(
+					{id: 2, orderTypeExternalReferenceCode: 'AI_HUB_TOKEN'},
+					[2]
+				),
+			],
+			productsByProductId
+		);
+
+		expect(products.size).toBe(0);
+	});
+
 	it('keeps the first order per product external reference code', () => {
 		const itemsByType = toProjectItemsByType(
 			[

@@ -6,8 +6,8 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import HeadlessCommerceAdminAccount from '~/services/headless/HeadlessCommerceAdminAccount';
 import HeadlessCommerceDeliveryCart from '~/services/headless/HeadlessCommerceDeliveryCart';
-import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
 import {Liferay} from '~/services/liferay/liferay';
+import Environments from '~/services/objects/Environments';
 
 import {ProductPurchaseAIHubToken} from './ProductPurchaseAIHubToken';
 
@@ -36,30 +36,18 @@ vi.mock('~/services/liferay/Analytics', () => ({
 	Analytics: {track: vi.fn()},
 }));
 
-vi.mock('~/services/headless/HeadlessCommerceDeliveryOrder', () => ({
-	default: {getPlacedOrders: vi.fn()},
+vi.mock('~/services/objects/Environments', () => ({
+	default: {getEnvironments: vi.fn()},
 }));
 
-const account = {id: 1} as Account;
+const account = {externalReferenceCode: 'ACCNT-1', id: 1} as Account;
 
 const product = {
 	id: 10,
-	name: 'AI Hub Token',
+	name: 'AI Hub',
 	productId: 20,
 	skus: [{id: 30}],
 } as DeliveryProduct;
-
-function aiHubOrder(
-	code: number,
-	label: string,
-	metadata: Record<string, unknown>
-) {
-	return {
-		customFields: {'order-metadata': JSON.stringify(metadata)},
-		orderStatusInfo: {code, label},
-		orderTypeExternalReferenceCode: 'AI_HUB',
-	};
-}
 
 function getOrderMetadata() {
 	const cart = vi.mocked(HeadlessCommerceDeliveryCart.createCart).mock
@@ -86,6 +74,17 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBTOKEN] ProductPurchaseAIHubToken'
 		vi.mocked(HeadlessCommerceDeliveryCart.createCart).mockResolvedValue({
 			id: 5,
 		} as Cart);
+		vi.mocked(Environments.getEnvironments).mockResolvedValue({
+			items: [
+				{
+					externalEnvironmentId: '444',
+					externalReferenceCode: 'AI-HUB-PRJCT-1',
+					id: 7,
+					r_contractToEnvironment_c_contractERC: 'CONTRACT-1',
+					r_contractToEnvironment_c_contractId: 3,
+				},
+			],
+		} as never);
 	});
 
 	afterEach(() => {
@@ -94,46 +93,36 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBTOKEN] ProductPurchaseAIHubToken'
 		vi.clearAllMocks();
 	});
 
-	beforeEach(() => {
-		vi.mocked(
-			HeadlessCommerceDeliveryOrder.getPlacedOrders
-		).mockResolvedValue({
-			items: [
-				aiHubOrder(1, 'Pending', {
-					contractEntityId: 1,
-					salesforceContractId: 'CONTRACT-PENDING',
-					salesforceProjectId: 'PRJCT-1',
-				}),
-				aiHubOrder(0, 'Completed', {
-					contractEntityId: 2,
-					salesforceContractId: 'CONTRACT-2',
-					salesforceProjectId: 'PRJCT-2',
-				}),
-				aiHubOrder(0, 'Completed', {
-					contractEntityId: 3,
-					salesforceContractId: 'CONTRACT-1',
-					salesforceProjectId: 'PRJCT-1',
-				}),
-			],
-		} as never);
+	it('asks for the one AI Hub environment of the project and the account', async () => {
+		await new ProductPurchaseAIHubToken(
+			account,
+			product,
+			'PRJCT-1'
+		).createOrder({} as Cart);
+
+		const [searchParams] = vi.mocked(Environments.getEnvironments).mock
+			.calls[0];
+
+		expect(Object.fromEntries(searchParams as URLSearchParams)).toEqual({
+			filter: "externalReferenceCode eq 'AI-HUB-PRJCT-1' and r_accountEntryToEnvironment_accountEntryId eq '1'",
+			pageSize: '1',
+		});
 	});
 
-	it('queries the placed AI_HUB orders with the filter and sort', async () => {
+	it('asks for the AI Hub environment of the account when no project is given', async () => {
 		await new ProductPurchaseAIHubToken(account, product).createOrder(
 			{} as Cart
 		);
 
-		const [channelId, accountId, searchParams] = vi.mocked(
-			HeadlessCommerceDeliveryOrder.getPlacedOrders
-		).mock.calls[0];
+		const [searchParams] = vi.mocked(Environments.getEnvironments).mock
+			.calls[0];
 
-		expect(channelId).toBe('99');
-		expect(accountId).toBe(1);
-		expect(Object.fromEntries(searchParams as URLSearchParams)).toEqual({
-			filter: "orderTypeExternalReferenceCode eq 'AI_HUB'",
-			nestedFields: 'customFields',
-			pageSize: '100',
-			sort: 'createDate:desc',
+		expect((searchParams as URLSearchParams).get('filter')).toBe(
+			"externalReferenceCode eq 'AI-HUB-ACCNT-1' and r_accountEntryToEnvironment_accountEntryId eq '1'"
+		);
+		expect(getOrderMetadata()).toEqual({
+			contractEntityId: 3,
+			salesforceContractId: 'CONTRACT-1',
 		});
 	});
 
@@ -149,7 +138,7 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBTOKEN] ProductPurchaseAIHubToken'
 		).resolves.toBe('https://pay.example.com');
 	});
 
-	it('takes the contract metadata from the completed order matching the project ERC', async () => {
+	it('takes the project from the purchase and the contract from the AI Hub environment', async () => {
 		await new ProductPurchaseAIHubToken(
 			account,
 			product,
@@ -166,26 +155,86 @@ describe('[CLIENT-COMMERCE-PRODUCTPURCHASEAIHUBTOKEN] ProductPurchaseAIHubToken'
 		).toMatchObject({orderTypeExternalReferenceCode: 'AI_HUB_TOKEN'});
 	});
 
-	it('throws when no completed order matches the project', async () => {
+	it('buys tokens for an AI Hub environment that has no contract', async () => {
+		vi.mocked(Environments.getEnvironments).mockResolvedValue({
+			items: [
+				{
+					externalEnvironmentId: '444',
+					externalReferenceCode: 'AI-HUB-PRJCT-1',
+					id: 7,
+				},
+			],
+		} as never);
+
+		await new ProductPurchaseAIHubToken(
+			account,
+			product,
+			'PRJCT-1'
+		).createOrder({} as Cart);
+
+		expect(getOrderMetadata()).toEqual({salesforceProjectId: 'PRJCT-1'});
+	});
+
+	it('doubles a quote of the project so that it stays inside the filter value', async () => {
+		await expect(
+			new ProductPurchaseAIHubToken(
+				account,
+				product,
+				"X' or id gt '0"
+			).createOrder({} as Cart)
+		).resolves.toBeDefined();
+
+		const [searchParams] = vi.mocked(Environments.getEnvironments).mock
+			.calls[0];
+
+		expect((searchParams as URLSearchParams).get('filter')).toBe(
+			"externalReferenceCode eq 'AI-HUB-X'' or id gt ''0' and r_accountEntryToEnvironment_accountEntryId eq '1'"
+		);
+	});
+
+	it('throws when the AI Hub environment was never provisioned', async () => {
+		vi.mocked(Environments.getEnvironments).mockResolvedValue({
+			items: [{externalReferenceCode: 'AI-HUB-PRJCT-1', id: 7}],
+		} as never);
+
+		await expect(
+			new ProductPurchaseAIHubToken(
+				account,
+				product,
+				'PRJCT-1'
+			).createOrder({} as Cart)
+		).rejects.toThrow(
+			'No provisioned AI Hub environment AI-HUB-PRJCT-1 exists for account 1'
+		);
+		expect(HeadlessCommerceDeliveryCart.createCart).not.toHaveBeenCalled();
+	});
+
+	it('throws when neither a project nor an account external reference code is known', async () => {
+		await expect(
+			new ProductPurchaseAIHubToken(
+				{id: 1} as Account,
+				product
+			).createOrder({} as Cart)
+		).rejects.toThrow(
+			'Unable to resolve the AI Hub environment of account 1'
+		);
+		expect(Environments.getEnvironments).not.toHaveBeenCalled();
+	});
+
+	it('throws when the project has no AI Hub environment', async () => {
+		vi.mocked(Environments.getEnvironments).mockResolvedValue({
+			items: [],
+		} as never);
+
 		await expect(
 			new ProductPurchaseAIHubToken(
 				account,
 				product,
 				'PRJCT-3'
 			).createOrder({} as Cart)
-		).rejects.toThrow('No AI Hub order exists for project PRJCT-3');
-		expect(HeadlessCommerceDeliveryCart.createCart).not.toHaveBeenCalled();
-	});
-
-	it('uses the first completed order when no project is given', async () => {
-		await new ProductPurchaseAIHubToken(account, product).createOrder(
-			{} as Cart
+		).rejects.toThrow(
+			'No provisioned AI Hub environment AI-HUB-PRJCT-3 exists for account 1'
 		);
-
-		expect(getOrderMetadata()).toEqual({
-			contractEntityId: 2,
-			salesforceContractId: 'CONTRACT-2',
-			salesforceProjectId: 'PRJCT-2',
-		});
+		expect(HeadlessCommerceDeliveryCart.createCart).not.toHaveBeenCalled();
 	});
 });
