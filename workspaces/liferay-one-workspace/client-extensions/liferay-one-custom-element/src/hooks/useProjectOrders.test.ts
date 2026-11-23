@@ -16,6 +16,7 @@ import {
 	getProductVirtualItems,
 	getProjectExternalReferenceCode,
 	getProjectName,
+	hasActiveProductOrder,
 	hasProject,
 	isProjectOrder,
 	useProjectOrders,
@@ -576,5 +577,105 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 			)
 		).toEqual([]);
 		expect(getProductVirtualItems([], 7)).toEqual([]);
+	});
+});
+
+describe('[HOOK-USEPROJECTORDERS] hasActiveProductOrder', () => {
+	const completed = {code: 0, label: 'Completed', label_i18n: ''};
+
+	const pending = {code: 1, label: 'Pending', label_i18n: ''};
+
+	function item(customFields: Record<string, string> = {}) {
+		return {customFields, productId: 7};
+	}
+
+	beforeEach(() => {
+		vi.useFakeTimers();
+		vi.setSystemTime(new Date('2026-11-23T12:00:00Z'));
+	});
+
+	afterEach(() => {
+		vi.useRealTimers();
+	});
+
+	it('finds the completed order behind a newer order that is not completed', () => {
+		expect(
+			hasActiveProductOrder(
+				[
+					placedOrder({
+						orderStatusInfo: pending,
+						placedOrderItems: [item()],
+					}),
+					placedOrder({
+						orderStatusInfo: completed,
+						placedOrderItems: [
+							item({
+								endDate: '2027-12-31T00:00:00Z',
+								startDate: '2026-10-01T00:00:00Z',
+							}),
+						],
+					}),
+				],
+				7
+			)
+		).toBe(true);
+	});
+
+	it('counts a completed order without term dates as active', () => {
+		expect(
+			hasActiveProductOrder(
+				[
+					placedOrder({
+						orderStatusInfo: completed,
+						placedOrderItems: [item()],
+					}),
+				],
+				7
+			)
+		).toBe(true);
+	});
+
+	it('refuses an order that is not completed, expired, not started, canceled, or on hold', () => {
+		for (const order of [
+			{orderStatusInfo: pending, placedOrderItems: [item()]},
+			{
+				orderStatusInfo: completed,
+				placedOrderItems: [item({endDate: '2026-10-31T00:00:00Z'})],
+			},
+			{
+				orderStatusInfo: completed,
+				placedOrderItems: [item({startDate: '2027-01-01T00:00:00Z'})],
+			},
+			{
+				orderStatusInfo: completed,
+				placedOrderItems: [item({customStatus: 'Canceled'})],
+			},
+			{
+				orderStatusInfo: completed,
+				placedOrderItems: [item({customStatus: 'On Hold'})],
+			},
+		]) {
+			expect(hasActiveProductOrder([placedOrder(order)], 7)).toBe(false);
+		}
+	});
+
+	it('ignores a token order and an order of another product', () => {
+		expect(
+			hasActiveProductOrder(
+				[
+					placedOrder({
+						orderStatusInfo: completed,
+						orderTypeExternalReferenceCode: 'AI_HUB_TOKEN',
+						placedOrderItems: [item()],
+					}),
+					placedOrder({
+						orderStatusInfo: completed,
+						placedOrderItems: [{productId: 9}],
+					}),
+				],
+				7
+			)
+		).toBe(false);
+		expect(hasActiveProductOrder([], 7)).toBe(false);
 	});
 });
