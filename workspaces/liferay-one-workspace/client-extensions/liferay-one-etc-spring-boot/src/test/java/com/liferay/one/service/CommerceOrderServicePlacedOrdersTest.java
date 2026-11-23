@@ -21,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.web.util.UriUtils;
 
 /**
  * @author Wellington Barbosa
@@ -86,17 +87,38 @@ public class CommerceOrderServicePlacedOrdersTest {
 	}
 
 	@Test
+	public void testGetAccountPlacedOrdersFiltersByOrderType()
+		throws Exception {
+
+		TestCommerceOrderService testCommerceOrderService =
+			new TestCommerceOrderService();
+
+		testCommerceOrderService.getAccountPlacedOrders(
+			7L, 3L, "AI'HUB", 1, 20, null);
+
+		MultiValueMap<String, String> queryParams = _getQueryParams(
+			testCommerceOrderService.uris.get(0));
+
+		Assertions.assertEquals(
+			"orderTypeExternalReferenceCode eq 'AI''HUB'",
+			UriUtils.decode(
+				queryParams.getFirst("filter"), StandardCharsets.UTF_8));
+	}
+
+	@Test
 	public void testGetAccountPlacedOrdersOmitsBlankRestrictFields()
 		throws Exception {
 
 		TestCommerceOrderService testCommerceOrderService =
 			new TestCommerceOrderService();
 
-		testCommerceOrderService.getAccountPlacedOrders(7L, 3L, 1, 20, "");
+		testCommerceOrderService.getAccountPlacedOrders(
+			7L, 3L, null, 1, 20, "");
 
 		MultiValueMap<String, String> queryParams = _getQueryParams(
 			testCommerceOrderService.uris.get(0));
 
+		Assertions.assertFalse(queryParams.containsKey("filter"));
 		Assertions.assertFalse(queryParams.containsKey("restrictFields"));
 	}
 
@@ -110,7 +132,7 @@ public class CommerceOrderServicePlacedOrdersTest {
 		Assertions.assertEquals(
 			_PLACED_ORDERS,
 			testCommerceOrderService.getAccountPlacedOrders(
-				7L, 3L, 2, 50, "account,name"));
+				7L, 3L, null, 2, 50, "account,name"));
 
 		Assertions.assertEquals(
 			List.of("Bearer test"), testCommerceOrderService.authorizations);

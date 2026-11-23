@@ -190,6 +190,28 @@ test.describe('[AUTH-ORGANIZATION-LINKED-ACCOUNT-READS] organization linked acco
 		expect(items.map(({id}) => id)).toContain(linkedOrderId);
 	});
 
+	test('[AUTH-ORGANIZATION-LINKED-ACCOUNT-READS] [REST-GET-ACCOUNTS-EXTERNALREFERENCECODE-PLACED-ORDERS] the member reads only the orders of one order type, and an invalid order type answers 400', async () => {
+		const response = await sendSpringBoot(
+			`/accounts/${LINKED_ACCOUNT_ERC}/placed-orders?channelId=${channelId}&orderTypeExternalReferenceCode=AI_HUB_TOKEN`
+		);
+
+		expect(response.status(), await response.text()).toBe(200);
+
+		const {items} = (await response.json()) as HeadlessPage<{
+			orderTypeExternalReferenceCode: string;
+		}>;
+
+		for (const {orderTypeExternalReferenceCode} of items) {
+			expect(orderTypeExternalReferenceCode).toBe('AI_HUB_TOKEN');
+		}
+
+		const invalidResponse = await sendSpringBoot(
+			`/accounts/${LINKED_ACCOUNT_ERC}/placed-orders?channelId=${channelId}&orderTypeExternalReferenceCode=${encodeURIComponent("AI_HUB' or 1 eq 1")}`
+		);
+
+		expect(invalidResponse.status()).toBe(400);
+	});
+
 	test('[AUTH-ORGANIZATION-LINKED-ACCOUNT-READS] [REST-GET-ACCOUNTS-EXTERNALREFERENCECODE-PLACED-ORDERS-PLACEDORDERID] the member reads one order of the linked account and no order of another account', async () => {
 		const linkedOrderResponse = await sendSpringBoot(
 			`/accounts/${LINKED_ACCOUNT_ERC}/placed-orders/${linkedOrderId}`

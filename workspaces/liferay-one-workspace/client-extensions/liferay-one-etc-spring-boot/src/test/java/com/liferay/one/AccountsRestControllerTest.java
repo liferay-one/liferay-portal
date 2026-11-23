@@ -745,7 +745,7 @@ public class AccountsRestControllerTest {
 		Assertions.assertThrows(
 			PrincipalException.class,
 			() -> accountsRestController.getPlacedOrders(
-				null, _EXTERNAL_REFERENCE_CODE, 3L, 1, 20, null));
+				null, _EXTERNAL_REFERENCE_CODE, 3L, null, 1, 20, null));
 
 		Mockito.verifyNoInteractions(_commerceOrderService);
 	}
@@ -761,13 +761,32 @@ public class AccountsRestControllerTest {
 		);
 
 		accountsRestController.getPlacedOrders(
-			null, _EXTERNAL_REFERENCE_CODE, 3L, 0, 5000, null);
+			null, _EXTERNAL_REFERENCE_CODE, 3L, null, 0, 5000, null);
 
 		Mockito.verify(
 			_commerceOrderService
 		).getAccountPlacedOrders(
-			_ACCOUNT_ID, 3L, 1, 200, null
+			_ACCOUNT_ID, 3L, null, 1, 200, null
 		);
+	}
+
+	@Test
+	public void testGetPlacedOrdersRejectsAnInvalidOrderType()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> accountsRestController.getPlacedOrders(
+					null, _EXTERNAL_REFERENCE_CODE, 3L, "AI_HUB' or 1 eq 1", 1,
+					20, null));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseStatusException.getStatusCode());
+
+		Mockito.verifyNoInteractions(_commerceOrderService);
 	}
 
 	@Test
@@ -786,14 +805,15 @@ public class AccountsRestControllerTest {
 
 		Mockito.when(
 			_commerceOrderService.getAccountPlacedOrders(
-				_ACCOUNT_ID, 3L, 2, 50, "account,name")
+				_ACCOUNT_ID, 3L, "AI_HUB_TOKEN", 2, 50, "account,name")
 		).thenReturn(
 			placedOrders
 		);
 
 		ResponseEntity<String> responseEntity =
 			accountsRestController.getPlacedOrders(
-				null, _EXTERNAL_REFERENCE_CODE, 3L, 2, 50, "account,name");
+				null, _EXTERNAL_REFERENCE_CODE, 3L, "AI_HUB_TOKEN", 2, 50,
+				"account,name");
 
 		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
 		Assertions.assertEquals(placedOrders, responseEntity.getBody());
