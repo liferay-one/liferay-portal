@@ -15,12 +15,15 @@ import {
 	useProjectCommerce,
 	useProjectProducts,
 } from '~/hooks/useProjectCommerce';
+import {useProjectEnvironments} from '~/hooks/useProjectEnvironments';
 import {useProjectItems} from '~/hooks/useProjectItems';
 import {
 	getProductEnvironmentOrderItems,
 	getProductOrder,
 	getProductOrderInfo,
 	getProductVirtualItems,
+	hasActiveProductOrder,
+	hasProject,
 	useProjectOrders,
 } from '~/hooks/useProjectOrders';
 import i18n, {Word} from '~/i18n';
@@ -45,9 +48,10 @@ import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassigned
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
 import {Liferay} from '~/services/liferay/liferay';
 import {
-	getContractProductOrders,
-	getOrderStatusToken,
-} from '~/utils/orderUtils';
+	getAIHubEnvironmentExternalReferenceCode,
+	isProvisionedAIHubEnvironment,
+} from '~/utils/aiHubEnvironmentUtils';
+import {getContractProductOrders} from '~/utils/orderUtils';
 import {
 	getProductPublisherName,
 	getProductSpecificationValue,
@@ -63,7 +67,7 @@ type ProjectItemDetailsProps = {
 export default function ProjectItemDetails({
 	itemType,
 }: ProjectItemDetailsProps) {
-	const {applicationERC, productERC} = useParams();
+	const {accountERC, applicationERC, productERC} = useParams();
 	const {project, projectId, selectedContractERC} = useProject();
 
 	const itemERC = productERC ?? applicationERC ?? '';
@@ -102,6 +106,8 @@ export default function ProjectItemDetails({
 
 	const {loading: ordersLoading, placedOrders} =
 		useProjectOrders(orderProject);
+
+	const {environments} = useProjectEnvironments();
 
 	const renderMessage = (word: Word) => (
 		<ProjectDetailTabs
@@ -231,15 +237,30 @@ export default function ProjectItemDetails({
 
 	const isAIHub = environmentProfile === 'ai-hub';
 
-	const isProductOrderCompleted =
-		!!productOrder && getOrderStatusToken(productOrder) === 'completed';
-
 	return (
 		<ProjectDetailTabs
 			header={
 				<DetailHeader
 					actions={
-						isAIHub && isProductOrderCompleted ? (
+						isAIHub &&
+						environments.some(
+							(environment) =>
+								environment.externalReferenceCode ===
+									getAIHubEnvironmentExternalReferenceCode(
+										(isUnassignedProject(projectId)
+											? accountERC
+											: projectId) ?? ''
+									) &&
+								isProvisionedAIHubEnvironment(environment)
+						) &&
+						hasActiveProductOrder(
+							isUnassignedProject(projectId)
+								? productOrders.filter(
+										(order) => !hasProject(order)
+									)
+								: productOrders,
+							product.productId
+						) ? (
 							<Button
 								displayType="primary"
 								onClick={() =>

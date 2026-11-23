@@ -17,7 +17,9 @@ import {
 	getEarliestPlacedOrderItemStartDate,
 	getOrderStatusToken,
 	getPlacedOrderItemContractId,
+	getProductStatusToken,
 	getProjectItemStatusToken,
+	isClosedWonOrder,
 } from '~/utils/orderUtils';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
@@ -273,6 +275,30 @@ export function getProductOrder(
 				(item) => item.productId === productId
 			)
 	);
+}
+
+export function hasActiveProductOrder(
+	placedOrders: PlacedOrder[],
+	productId: number
+): boolean {
+	return placedOrders.some((placedOrder) => {
+		if (
+			placedOrder.orderTypeExternalReferenceCode ===
+			OrderTypes.AI_HUB_TOKEN
+		) {
+			return false;
+		}
+
+		const placedOrderItems = (placedOrder.placedOrderItems ?? []).filter(
+			(placedOrderItem) => placedOrderItem.productId === productId
+		);
+
+		return (
+			!!placedOrderItems.length &&
+			isClosedWonOrder({placedOrderItems}) &&
+			getProductStatusToken(placedOrder, placedOrderItems) === 'active'
+		);
+	});
 }
 
 function getProductOrderItems(
