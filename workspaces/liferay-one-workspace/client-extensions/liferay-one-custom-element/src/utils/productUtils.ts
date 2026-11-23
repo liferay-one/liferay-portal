@@ -309,12 +309,16 @@ export function isSelfServiceTrialProduct(product: DeliveryProduct) {
 	return !!getSelfServiceTrialOrderType(product);
 }
 
-export function isLRTokensProduct(product: DeliveryProduct) {
+export function isAIHubTokensPurchase(
+	product: DeliveryProduct,
+	searchParams: URLSearchParams
+) {
 	return (
+		searchParams.has('aiHubTokens') &&
 		getProductSpecificationValue(
 			ProductSpecificationKey.SOLUTION_TYPE,
 			product
-		) === SolutionTypes.LR_TOKENS
+		) === SolutionTypes.AI_HUB
 	);
 }
 

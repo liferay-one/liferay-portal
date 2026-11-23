@@ -132,6 +132,10 @@ export function toProjectItemsByType(
 			contractId
 		);
 
+		if (!contractOrders.length) {
+			continue;
+		}
+
 		items.set(
 			product.externalReferenceCode,
 			toProjectProduct(

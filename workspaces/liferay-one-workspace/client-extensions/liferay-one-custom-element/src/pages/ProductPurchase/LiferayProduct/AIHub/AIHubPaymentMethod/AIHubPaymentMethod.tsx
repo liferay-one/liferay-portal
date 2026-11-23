@@ -73,10 +73,10 @@ export default function AIHubPaymentMethod() {
 	const addresses = (addressResponse?.items ?? []).filter(isBillingAddress);
 
 	useEffect(() => {
-		if (!licenseType) {
+		if (!licenseType || !productPurchaseCart.cartItems.length) {
 			navigate('/');
 		}
-	}, [licenseType, navigate]);
+	}, [licenseType, navigate, productPurchaseCart.cartItems.length]);
 
 	useEffect(() => {
 		setPaymentMethodType(PaymentMethodType.PAY_NOW);

@@ -20,7 +20,6 @@ export type ProductEditionOption =
 	(typeof ProductEditionOption)[keyof typeof ProductEditionOption];
 
 export const ProductExternalReferenceCode = {
-	LR_TOKENS: 'salesforce-product-lr-tokens',
 	PAAS_EXPERIENCE: 'salesforce-product-liferay-paas-experience',
 	SAAS_EXPERIENCE: 'salesforce-product-liferay-saas-experience',
 } as const;
@@ -218,7 +217,6 @@ export const SolutionTypes = {
 	DSR_TRIAL: 'dsr-trial',
 	DXP: 'dxp',
 	LIFERAY_DATA_PLATFORM: 'liferay-data-platform',
-	LR_TOKENS: 'lr-tokens',
 	PRE_BUILT_TRIAL: 'pre-built-trial',
 	SEO_STUDIO: 'seo-studio',
 } as const;

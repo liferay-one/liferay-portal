@@ -69,7 +69,6 @@ const SolutionTypes = {
 	AI_HUB: 'ai-hub',
 	ANALYTICS: 'analytics',
 	LIFERAY_DATA_PLATFORM: 'liferay-data-platform',
-	LR_TOKENS: 'lr-tokens',
 } as const;
 
 type SolutionTypes = (typeof SolutionTypes)[keyof typeof SolutionTypes];
@@ -338,7 +337,10 @@ function NextStepsPage() {
 		return <LDPNextSteps data={data} error={error} isLoading={isLoading} />;
 	}
 
-	if (solutionTypeSpecificationValue === SolutionTypes.LR_TOKENS) {
+	if (
+		data?.placedOrder?.orderTypeExternalReferenceCode ===
+		OrderTypes.AI_HUB_TOKEN
+	) {
 		return (
 			<AIHubTokenNextSteps
 				data={data}
@@ -352,19 +354,6 @@ function NextStepsPage() {
 		productTypeCategory === ProductTypeVocabulary.LIFERAY_PRODUCT &&
 		solutionTypeSpecificationValue === SolutionTypes.AI_HUB
 	) {
-		if (
-			data?.placedOrder?.orderTypeExternalReferenceCode ===
-			OrderTypes.AI_HUB_TOKEN
-		) {
-			return (
-				<AIHubTokenNextSteps
-					data={data}
-					error={error}
-					isLoading={isLoading}
-				/>
-			);
-		}
-
 		return (
 			<AIHubNextSteps data={data} error={error} isLoading={isLoading} />
 		);

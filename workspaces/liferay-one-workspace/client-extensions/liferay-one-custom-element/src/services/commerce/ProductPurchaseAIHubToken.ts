@@ -4,10 +4,13 @@
  */
 
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
-import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
-import {Liferay} from '~/services/liferay/liferay';
-import {OrderCustomFields, getOrderStatusToken} from '~/utils/orderUtils';
-import {safeJSONParse} from '~/utils/safeJSONParse';
+import Environments from '~/services/objects/Environments';
+import {
+	getAIHubEnvironmentExternalReferenceCode,
+	isProvisionedAIHubEnvironment,
+} from '~/utils/aiHubEnvironmentUtils';
+import {escapeODataString} from '~/utils/escapeODataString';
+import {OrderCustomFields} from '~/utils/orderUtils';
 
 import ProductPurchase from './ProductPurchase';
 
@@ -75,51 +78,52 @@ export class ProductPurchaseAIHubToken extends ProductPurchase {
 	}
 
 	private async resolveAIHubOrderMetadata() {
-		const response = await HeadlessCommerceDeliveryOrder.getPlacedOrders(
-			Liferay.CommerceContext.commerceChannelId,
-			this.account?.id,
+		const ownerExternalReferenceCode =
+			this.projectExternalReferenceCode ||
+			this.account.externalReferenceCode;
+
+		if (!ownerExternalReferenceCode) {
+			throw new Error(
+				`Unable to resolve the AI Hub environment of account ${this.account.id}`
+			);
+		}
+
+		const environmentExternalReferenceCode =
+			getAIHubEnvironmentExternalReferenceCode(
+				ownerExternalReferenceCode
+			);
+
+		const response = await Environments.getEnvironments(
 			new URLSearchParams({
-				filter: SearchBuilder.eq(
-					'orderTypeExternalReferenceCode',
-					'AI_HUB'
-				),
-				nestedFields: 'customFields',
-				pageSize: '100',
-				sort: 'createDate:desc',
+				filter: new SearchBuilder()
+					.eq(
+						'externalReferenceCode',
+						escapeODataString(environmentExternalReferenceCode)
+					)
+					.and()
+					.eq(
+						'r_accountEntryToEnvironment_accountEntryId',
+						this.account.id
+					)
+					.build(),
+				pageSize: '1',
 			})
 		);
 
-		const orderMetadatas = (response?.items ?? [])
-			.filter(
-				(aiHubOrder) => getOrderStatusToken(aiHubOrder) === 'completed'
-			)
-			.map((aiHubOrder) =>
-				safeJSONParse<AIHubOrderMetadata>(
-					aiHubOrder?.customFields?.[
-						OrderCustomFields.ORDER_METADATA
-					] as string,
-					{}
-				)
-			);
+		const environment = response?.items?.[0];
 
-		const orderMetadata = this.projectExternalReferenceCode
-			? orderMetadatas.find(
-					({salesforceProjectId}) =>
-						salesforceProjectId ===
-						this.projectExternalReferenceCode
-				)
-			: orderMetadatas[0];
-
-		if (this.projectExternalReferenceCode && !orderMetadata) {
+		if (!isProvisionedAIHubEnvironment(environment)) {
 			throw new Error(
-				`No AI Hub order exists for project ${this.projectExternalReferenceCode}`
+				`No provisioned AI Hub environment ${environmentExternalReferenceCode} exists for account ${this.account.id}`
 			);
 		}
 
 		this.aiHubOrderMetadata = {
-			contractEntityId: orderMetadata?.contractEntityId,
-			salesforceContractId: orderMetadata?.salesforceContractId,
-			salesforceProjectId: orderMetadata?.salesforceProjectId,
+			contractEntityId:
+				environment.r_contractToEnvironment_c_contractId || undefined,
+			salesforceContractId:
+				environment.r_contractToEnvironment_c_contractERC || undefined,
+			salesforceProjectId: this.projectExternalReferenceCode || undefined,
 		};
 	}
 }

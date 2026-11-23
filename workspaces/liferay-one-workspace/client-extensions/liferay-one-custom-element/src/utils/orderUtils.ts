@@ -4,17 +4,13 @@
  */
 
 import {startOfToday} from 'date-fns';
+import {OrderTypes} from '~/types/orders';
 import {formatUTCShortDate, toUTCCalendarDate} from '~/utils/dateUtils';
 import {formatCurrency} from '~/utils/formatCurrency';
 import {safeJSONParse} from '~/utils/safeJSONParse';
 
 import type {ProjectItemType} from '~/pages/MyAccount/Projects/types';
-import type {
-	Order,
-	OrderTypes,
-	PlacedOrder,
-	PlacedOrderItems,
-} from '~/types/orders';
+import type {Order, PlacedOrder, PlacedOrderItems} from '~/types/orders';
 
 type NumericKeys<T> = {
 	[K in keyof T]: T[K] extends number | undefined ? K : never;
@@ -287,10 +283,13 @@ export function getContractProductOrders(
 	productId: number,
 	contractId?: number
 ): PlacedOrder[] {
-	const productOrders = placedOrders.filter((placedOrder) =>
-		(placedOrder.placedOrderItems ?? []).some(
-			(placedOrderItem) => placedOrderItem.productId === productId
-		)
+	const productOrders = placedOrders.filter(
+		(placedOrder) =>
+			placedOrder.orderTypeExternalReferenceCode !==
+				OrderTypes.AI_HUB_TOKEN &&
+			(placedOrder.placedOrderItems ?? []).some(
+				(placedOrderItem) => placedOrderItem.productId === productId
+			)
 	);
 
 	if (!contractId) {
