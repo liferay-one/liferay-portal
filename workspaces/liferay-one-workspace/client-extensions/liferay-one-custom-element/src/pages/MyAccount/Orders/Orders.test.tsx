@@ -6,14 +6,21 @@
 import {render, screen} from '@testing-library/react';
 import {MemoryRouter} from 'react-router';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {useOneContext} from '~/context/OneContextProvider';
+import {useDataQuery} from '~/hooks/useDataQuery';
 import {useFetch} from '~/hooks/useFetch';
 import {useOrderDates} from '~/hooks/useOrderDates';
+import {useOrganizationAccess} from '~/hooks/useOrganizationAccess';
 import {Liferay} from '~/services/liferay/liferay';
 
 import Orders from './Orders';
 
 vi.mock('~/context/OneContextProvider', () => ({
-	useOneContext: () => ({}),
+	useOneContext: vi.fn(),
+}));
+
+vi.mock('~/hooks/useDataQuery', () => ({
+	useDataQuery: vi.fn(),
 }));
 
 vi.mock('~/hooks/useFetch', () => ({
@@ -22,6 +29,10 @@ vi.mock('~/hooks/useFetch', () => ({
 
 vi.mock('~/hooks/useOrderDates', () => ({
 	useOrderDates: vi.fn(),
+}));
+
+vi.mock('~/hooks/useOrganizationAccess', () => ({
+	useOrganizationAccess: vi.fn(),
 }));
 
 function renderOrders() {
@@ -56,6 +67,22 @@ describe('[ROUTE-MY-ACCOUNT-ORDERS] Orders', () => {
 			loading: false,
 			orderDates: new Map(),
 		});
+
+		vi.mocked(useDataQuery).mockReturnValue({
+			data: undefined,
+			error: undefined,
+			isLoading: false,
+		} as ReturnType<typeof useDataQuery>);
+
+		vi.mocked(useOneContext).mockReturnValue(
+			{} as ReturnType<typeof useOneContext>
+		);
+
+		vi.mocked(useOrganizationAccess).mockReturnValue({
+			accountExternalReferenceCode: undefined,
+			loading: false,
+			organizationAccess: false,
+		});
 	});
 
 	afterEach(() => {
@@ -77,6 +104,56 @@ describe('[ROUTE-MY-ACCOUNT-ORDERS] Orders', () => {
 		);
 		expect(screen.getByText('1001')).toBeInTheDocument();
 		expect(screen.getByText('Alpha')).toBeInTheDocument();
+	});
+
+	it('lists the orders through Spring Boot for a member of an organization linked to the account who holds no account role', () => {
+		vi.mocked(useOneContext).mockReturnValue({
+			myUserAccount: {id: 1},
+			userAccountModel: {hasAccountRoleName: () => false},
+		} as unknown as ReturnType<typeof useOneContext>);
+
+		vi.mocked(useOrganizationAccess).mockReturnValue({
+			accountExternalReferenceCode: 'ACCNT-7',
+			loading: false,
+			organizationAccess: true,
+		});
+
+		vi.mocked(useDataQuery).mockReturnValue({
+			data: {
+				items: [
+					{
+						createDate: '2026-03-15T12:00:00Z',
+						customFields: {projectName: 'Gamma'},
+						id: 2001,
+					},
+				],
+			},
+			error: undefined,
+			isLoading: false,
+		} as ReturnType<typeof useDataQuery>);
+
+		renderOrders();
+
+		expect(useFetch).toHaveBeenLastCalledWith(null, expect.anything());
+		expect(vi.mocked(useDataQuery).mock.lastCall?.[0].key).toContain(
+			'/placed-orders/ACCNT-7/'
+		);
+		expect(screen.getByText('2001')).toBeInTheDocument();
+		expect(screen.getByText('Gamma')).toBeInTheDocument();
+		expect(
+			screen.queryByText('you-do-not-have-access-to-this-page')
+		).not.toBeInTheDocument();
+	});
+
+	it('denies the orders to a user with no account role and no organization access', () => {
+		vi.mocked(useOneContext).mockReturnValue({
+			myUserAccount: {id: 1},
+			userAccountModel: {hasAccountRoleName: () => false},
+		} as unknown as ReturnType<typeof useOneContext>);
+
+		renderOrders();
+
+		expect(screen.queryByText('1001')).not.toBeInTheDocument();
 	});
 
 	it('lists the orders by order date, newest first', () => {

@@ -661,6 +661,151 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testGetPlacedOrdersByPlacedOrderId() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createAccount()
+		);
+
+		String placedOrder = "{\"accountId\":" + _ACCOUNT_ID + ",\"id\":5}";
+
+		Mockito.when(
+			_commerceOrderService.fetchAccountPlacedOrder(_ACCOUNT_ID, 5L)
+		).thenReturn(
+			placedOrder
+		);
+
+		ResponseEntity<String> responseEntity =
+			accountsRestController.getPlacedOrdersByPlacedOrderId(
+				null, _EXTERNAL_REFERENCE_CODE, 5L);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+		Assertions.assertEquals(placedOrder, responseEntity.getBody());
+	}
+
+	@Test
+	public void testGetPlacedOrdersByPlacedOrderIdChecksViewPermission()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.getPlacedOrdersByPlacedOrderId(
+				null, _EXTERNAL_REFERENCE_CODE, 5L));
+
+		Mockito.verifyNoInteractions(_commerceOrderService);
+	}
+
+	@Test
+	public void testGetPlacedOrdersByPlacedOrderIdWhenTheOrderIsNotOfTheAccount()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createAccount()
+		);
+
+		ResponseStatusException responseStatusException =
+			Assertions.assertThrows(
+				ResponseStatusException.class,
+				() -> accountsRestController.getPlacedOrdersByPlacedOrderId(
+					null, _EXTERNAL_REFERENCE_CODE, 5L));
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseStatusException.getStatusCode());
+	}
+
+	@Test
+	public void testGetPlacedOrdersChecksViewPermission() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.doThrow(
+			new PrincipalException()
+		).when(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null
+		);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> accountsRestController.getPlacedOrders(
+				null, _EXTERNAL_REFERENCE_CODE, 3L, 1, 20, null));
+
+		Mockito.verifyNoInteractions(_commerceOrderService);
+	}
+
+	@Test
+	public void testGetPlacedOrdersLimitsThePageSize() throws Exception {
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createAccount()
+		);
+
+		accountsRestController.getPlacedOrders(
+			null, _EXTERNAL_REFERENCE_CODE, 3L, 0, 5000, null);
+
+		Mockito.verify(
+			_commerceOrderService
+		).getAccountPlacedOrders(
+			_ACCOUNT_ID, 3L, 1, 200, null
+		);
+	}
+
+	@Test
+	public void testGetPlacedOrdersReturnsThePlacedOrdersOfTheAccount()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		Mockito.when(
+			_accountService.getAccount(_EXTERNAL_REFERENCE_CODE, null)
+		).thenReturn(
+			_createAccount()
+		);
+
+		String placedOrders = "{\"items\":[{\"id\":1}],\"totalCount\":1}";
+
+		Mockito.when(
+			_commerceOrderService.getAccountPlacedOrders(
+				_ACCOUNT_ID, 3L, 2, 50, "account,name")
+		).thenReturn(
+			placedOrders
+		);
+
+		ResponseEntity<String> responseEntity =
+			accountsRestController.getPlacedOrders(
+				null, _EXTERNAL_REFERENCE_CODE, 3L, 2, 50, "account,name");
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+		Assertions.assertEquals(placedOrders, responseEntity.getBody());
+
+		Mockito.verify(
+			_accountPermission
+		).check(
+			_EXTERNAL_REFERENCE_CODE, ActionKeys.VIEW, null
+		);
+	}
+
+	@Test
 	public void testGetProductUsage() throws Exception {
 		AccountsRestController accountsRestController = _createController();
 

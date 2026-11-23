@@ -5,6 +5,7 @@
 
 import {renderHook} from '@testing-library/react';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import {useOrganizationAccess} from '~/hooks/useOrganizationAccess';
 import {ONE_TIME_PURCHASES} from '~/pages/MyAccount/Projects/utils/constants';
 import {Liferay} from '~/services/liferay/liferay';
 import {getOrderStatusToken} from '~/utils/orderUtils';
@@ -23,6 +24,10 @@ import {
 
 import type {PlacedOrder} from '~/types/orders';
 
+vi.mock('~/hooks/useOrganizationAccess', () => ({
+	useOrganizationAccess: vi.fn(),
+}));
+
 vi.mock('./usePlacedOrder', async (importOriginal) => ({
 	...(await importOriginal<typeof import('./usePlacedOrder')>()),
 	usePlacedOrders: vi.fn(),
@@ -30,6 +35,17 @@ vi.mock('./usePlacedOrder', async (importOriginal) => ({
 
 function placedOrder(order: Record<string, unknown>) {
 	return order as unknown as PlacedOrder;
+}
+
+function mockOrganizationAccess({
+	accountExternalReferenceCode = undefined as string | undefined,
+	loading = false,
+} = {}) {
+	vi.mocked(useOrganizationAccess).mockReturnValue({
+		accountExternalReferenceCode,
+		loading,
+		organizationAccess: Boolean(accountExternalReferenceCode),
+	});
 }
 
 function mockPlacedOrders(items?: PlacedOrder[]) {
@@ -60,6 +76,8 @@ const betaProject = {externalReferenceCode: 'PRJCT-BETA', name: 'Beta'};
 describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 	beforeEach(() => {
 		Liferay.CommerceContext.account = {accountId: 7, accountName: 'Acme'};
+
+		mockOrganizationAccess();
 	});
 
 	afterEach(() => {
@@ -189,6 +207,44 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 
 		expect(usePlacedOrders).toHaveBeenLastCalledWith(
 			expect.objectContaining({accountId: -1, shouldFetch: false})
+		);
+	});
+
+	it('reads the orders from the portal without organization access', () => {
+		mockPlacedOrders([]);
+
+		renderHook(() => useProjectOrders());
+
+		expect(usePlacedOrders).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				accountExternalReferenceCode: undefined,
+				shouldFetch: true,
+			})
+		);
+	});
+
+	it('reads the orders through Spring Boot for a member of an organization linked to the account', () => {
+		mockOrganizationAccess({accountExternalReferenceCode: 'ACCNT-7'});
+		mockPlacedOrders([]);
+
+		renderHook(() => useProjectOrders());
+
+		expect(usePlacedOrders).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				accountExternalReferenceCode: 'ACCNT-7',
+				shouldFetch: true,
+			})
+		);
+	});
+
+	it('waits for the organization access before it requests the orders', () => {
+		mockOrganizationAccess({loading: true});
+		mockPlacedOrders([]);
+
+		renderHook(() => useProjectOrders());
+
+		expect(usePlacedOrders).toHaveBeenLastCalledWith(
+			expect.objectContaining({shouldFetch: false})
 		);
 	});
 

@@ -3,11 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {act, renderHook} from '@testing-library/react';
+import {act, renderHook, waitFor} from '@testing-library/react';
 import {ReactNode} from 'react';
 import {SWRConfig} from 'swr';
 import {afterEach, describe, expect, it, vi} from 'vitest';
 import HeadlessCommerceDeliveryOrder from '~/services/headless/HeadlessCommerceDeliveryOrder';
+import Accounts from '~/services/spring-boot/Accounts';
 
 import {
 	placedOrdersQuery,
@@ -46,6 +47,46 @@ function wrapper({children}: {children: ReactNode}) {
 describe('[HOOK-USEPLACEDORDER] usePlacedOrder', () => {
 	afterEach(() => {
 		vi.restoreAllMocks();
+	});
+
+	it('pulls every page of an account external reference code through Spring Boot', async () => {
+		const getPlacedOrders = vi
+			.spyOn(Accounts, 'getPlacedOrders')
+			.mockImplementation((_accountExternalReferenceCode, params) =>
+				Promise.resolve({
+					items: [{id: Number(params?.get('page'))}],
+					totalCount: 2,
+				} as never)
+			);
+		const headlessGetPlacedOrders = mockPages(0, () => []);
+
+		const query = placedOrdersQuery({
+			accountExternalReferenceCode: 'ACCNT-7',
+			accountId: 7,
+			fetchAllPages: true,
+			page: 1,
+			pageSize: 1,
+			restrictFields: 'account,name',
+		});
+
+		const response = await query.fetcher();
+
+		expect(headlessGetPlacedOrders).not.toHaveBeenCalled();
+		expect(
+			getPlacedOrders.mock.calls.map(
+				([accountExternalReferenceCode, params]) => [
+					accountExternalReferenceCode,
+					params?.get('page'),
+					params?.get('pageSize'),
+					params?.get('restrictFields'),
+				]
+			)
+		).toEqual([
+			['ACCNT-7', '1', '1', 'account,name'],
+			['ACCNT-7', '2', '1', 'account,name'],
+		]);
+		expect(response.items.map(({id}) => id)).toEqual([1, 2]);
+		expect(query.key).toContain('/placed-orders/ACCNT-7/');
 	});
 
 	it('fetches only the requested page without fetchAllPages', async () => {
@@ -240,6 +281,29 @@ describe('[HOOK-USEPLACEDORDER] usePlacedOrder', () => {
 
 		expect(result.current.data).toBeUndefined();
 		expect(getPlacedOrders).not.toHaveBeenCalled();
+	});
+
+	it('reads one order through Spring Boot from usePlacedOrder with an account external reference code', async () => {
+		const getPlacedOrder = vi.spyOn(
+			HeadlessCommerceDeliveryOrder,
+			'getPlacedOrder'
+		);
+		const getPlacedOrdersByPlacedOrderId = vi
+			.spyOn(Accounts, 'getPlacedOrdersByPlacedOrderId')
+			.mockResolvedValue({id: 5} as never);
+
+		const {result} = renderHook(
+			() => usePlacedOrder(5, undefined, 'ACCNT-7'),
+			{wrapper}
+		);
+
+		await waitFor(() => expect(result.current.data).toEqual({id: 5}));
+
+		expect(getPlacedOrdersByPlacedOrderId).toHaveBeenCalledWith(
+			'ACCNT-7',
+			5
+		);
+		expect(getPlacedOrder).not.toHaveBeenCalled();
 	});
 
 	it('sends no request from usePlacedOrder without an order ID', async () => {

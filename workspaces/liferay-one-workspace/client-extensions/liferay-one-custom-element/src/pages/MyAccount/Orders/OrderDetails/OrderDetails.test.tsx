@@ -7,11 +7,15 @@ import {render, screen} from '@testing-library/react';
 import {MemoryRouter, Route, Routes} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useOrderDates} from '~/hooks/useOrderDates';
+import {useOrganizationAccess} from '~/hooks/useOrganizationAccess';
 import {usePlacedOrder} from '~/hooks/usePlacedOrder';
 
 import OrderDetails from './OrderDetails';
 
 vi.mock('~/hooks/useOrderDates', () => ({useOrderDates: vi.fn()}));
+vi.mock('~/hooks/useOrganizationAccess', () => ({
+	useOrganizationAccess: vi.fn(),
+}));
 vi.mock('~/hooks/usePlacedOrder', () => ({usePlacedOrder: vi.fn()}));
 
 function mockPlacedOrder(options: object[]) {
@@ -54,6 +58,61 @@ describe('[ROUTE-MY-ACCOUNT-ORDERID] OrderDetails', () => {
 			loading: false,
 			orderDates: new Map(),
 		});
+
+		vi.mocked(useOrganizationAccess).mockReturnValue({
+			accountExternalReferenceCode: undefined,
+			loading: false,
+			organizationAccess: false,
+		});
+	});
+
+	it('reads the order from the portal without organization access', () => {
+		mockPlacedOrder([]);
+
+		renderOrderDetails();
+
+		expect(usePlacedOrder).toHaveBeenLastCalledWith(
+			'57942',
+			undefined,
+			undefined
+		);
+	});
+
+	it('reads the order through Spring Boot for a member of an organization linked to the account', () => {
+		mockPlacedOrder([]);
+
+		vi.mocked(useOrganizationAccess).mockReturnValue({
+			accountExternalReferenceCode: 'ACCNT-7',
+			loading: false,
+			organizationAccess: true,
+		});
+
+		renderOrderDetails();
+
+		expect(usePlacedOrder).toHaveBeenLastCalledWith(
+			'57942',
+			undefined,
+			'ACCNT-7'
+		);
+		expect(screen.getByText('57942')).toBeInTheDocument();
+	});
+
+	it('does not request the order while the organization access loads', () => {
+		mockPlacedOrder([]);
+
+		vi.mocked(useOrganizationAccess).mockReturnValue({
+			accountExternalReferenceCode: undefined,
+			loading: true,
+			organizationAccess: false,
+		});
+
+		renderOrderDetails();
+
+		expect(usePlacedOrder).toHaveBeenLastCalledWith(
+			'',
+			undefined,
+			undefined
+		);
 	});
 
 	it('shows the order date of the order, not its create date', () => {
