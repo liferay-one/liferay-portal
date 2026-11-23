@@ -4,7 +4,7 @@
  */
 
 import ClayIcon from '@clayui/icon';
-import {useEffect, useMemo, useState} from 'react';
+import {useEffect, useMemo, useRef, useState} from 'react';
 import Loading from '~/components/Loading/Loading';
 import ProductPurchase from '~/components/ProductPurchase/ProductPurchase';
 import RadioCardList, {
@@ -108,6 +108,8 @@ const AIHubTokenSelection = () => {
 
 	const [hasCleanedCart, setHasCleanedCart] = useState(false);
 
+	const isSelectingTokenRef = useRef(false);
+
 	useEffect(() => {
 		if (isCartLoading) {
 			return;
@@ -157,23 +159,34 @@ const AIHubTokenSelection = () => {
 		const tokenValue = token?.value;
 		const newSkuId = tokenValue?.id;
 
-		if (!newSkuId || selectedSkuId === newSkuId) {
+		if (
+			!newSkuId ||
+			selectedSkuId === newSkuId ||
+			isSelectingTokenRef.current
+		) {
 			return;
 		}
 
+		isSelectingTokenRef.current = true;
+
 		let activeCart = productPurchaseCart.cart;
 
-		if (!activeCart.id) {
-			const createdCart = await productPurchaseCart.addCart(
-				product.productId ?? product.id,
-				newSkuId
-			);
+		try {
+			if (!activeCart.id) {
+				const createdCart = await productPurchaseCart.addCart(
+					product.productId ?? product.id,
+					newSkuId
+				);
 
-			if (createdCart) {
-				activeCart = createdCart as Cart;
+				if (createdCart) {
+					activeCart = createdCart as Cart;
 
-				setCart(createdCart as Cart);
+					setCart(createdCart as Cart);
+				}
 			}
+		}
+		finally {
+			isSelectingTokenRef.current = false;
 		}
 
 		const tokenSkuIds = aiHubTokens.map((token) => token.id);

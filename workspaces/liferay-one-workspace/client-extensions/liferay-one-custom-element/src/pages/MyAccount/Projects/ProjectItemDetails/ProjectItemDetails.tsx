@@ -9,8 +9,6 @@ import aiHubIconUrl from '~/assets/icons/ai_hub_icon.svg';
 import Button from '~/components/Button/Button';
 import Loading from '~/components/Loading/Loading';
 import {useProject} from '~/context/ProjectContext';
-import {ProductExternalReferenceCode} from '~/enums/Product';
-import {useDeliveryProductByExternalReferenceCode} from '~/hooks/useDeliveryProductByExternalReferenceCode';
 import {
 	useActiveSkuExternalReferenceCodes,
 	useHasActiveExperienceOffering,
@@ -44,7 +42,6 @@ import {PROJECT_TAB_LABELS} from '~/pages/MyAccount/Projects/utils/constants';
 import {getLogoColor} from '~/pages/MyAccount/Projects/utils/getLogoColor';
 import {getProductIcon} from '~/pages/MyAccount/Projects/utils/getProductIcon';
 import {isUnassignedProject} from '~/pages/MyAccount/Projects/utils/isUnassignedProject';
-import {resolveEnvironmentProfile} from '~/pages/MyAccount/Projects/utils/resolveEnvironmentProfile';
 import {resolveProductTabConfig} from '~/pages/MyAccount/Projects/utils/resolveProductTabConfig';
 import {Liferay} from '~/services/liferay/liferay';
 import {
@@ -105,11 +102,6 @@ export default function ProjectItemDetails({
 
 	const {loading: ordersLoading, placedOrders} =
 		useProjectOrders(orderProject);
-	const {data: lrTokensProduct} = useDeliveryProductByExternalReferenceCode(
-		product && resolveEnvironmentProfile(product) === 'ai-hub'
-			? ProductExternalReferenceCode.LR_TOKENS
-			: undefined
-	);
 
 	const renderMessage = (word: Word) => (
 		<ProjectDetailTabs
@@ -239,8 +231,6 @@ export default function ProjectItemDetails({
 
 	const isAIHub = environmentProfile === 'ai-hub';
 
-	const lrTokensProductId = lrTokensProduct?.productId;
-
 	const isProductOrderCompleted =
 		!!productOrder && getOrderStatusToken(productOrder) === 'completed';
 
@@ -249,14 +239,12 @@ export default function ProjectItemDetails({
 			header={
 				<DetailHeader
 					actions={
-						isAIHub &&
-						lrTokensProductId &&
-						isProductOrderCompleted ? (
+						isAIHub && isProductOrderCompleted ? (
 							<Button
 								displayType="primary"
 								onClick={() =>
 									Liferay.Util.navigate(
-										`${getSiteURL()}/product-purchase?productId=${lrTokensProductId}${isUnassignedProject(projectId) ? '' : `&projectExternalReferenceCode=${encodeURIComponent(projectId)}`}#/`
+										`${getSiteURL()}/product-purchase?productId=${product.productId}${isUnassignedProject(projectId) ? '' : `&projectExternalReferenceCode=${encodeURIComponent(projectId)}`}&aiHubTokens#/`
 									)
 								}
 							>

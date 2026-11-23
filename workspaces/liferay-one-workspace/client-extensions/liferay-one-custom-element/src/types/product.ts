@@ -308,6 +308,5 @@ export type SolutionTypes =
 	| 'dsr'
 	| 'dxp'
 	| 'liferay-data-platform'
-	| 'lr-tokens'
 	| 'pre-built-trial'
 	| 'seo-studio';

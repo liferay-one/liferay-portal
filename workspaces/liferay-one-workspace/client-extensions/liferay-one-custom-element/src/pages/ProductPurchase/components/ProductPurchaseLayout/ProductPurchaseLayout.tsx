@@ -20,7 +20,6 @@ import {
 	getLicenseTagText,
 	getProductPriceModel,
 	isLDPProduct,
-	isLRTokensProduct,
 } from '~/utils/productUtils';
 
 import {useAppPurchaseContext} from '../../context/AppPurchaseContext';
@@ -38,6 +37,7 @@ import type {BillingAddress, Cart} from '~/types/orders';
 import type {DeliveryProduct} from '~/types/product';
 
 type ProductPurchaseLayoutProps = {
+	isAIHubTokens?: boolean;
 	product: DeliveryProduct;
 	steps: ProductPurchaseStepItem[];
 };
@@ -71,6 +71,7 @@ export type ProductPurchaseLayoutContext = {
 };
 
 const ProductPurchaseLayout = ({
+	isAIHubTokens = false,
 	product,
 	steps: stepItems,
 }: ProductPurchaseLayoutProps) => {
@@ -89,8 +90,6 @@ const ProductPurchaseLayout = ({
 
 	const {salesforceProject} = useAppPurchaseContext();
 
-	const isAiHubTokens = isLRTokensProduct(product);
-
 	const {isFreeApp, isPaidApp} = getProductPriceModel(product);
 
 	const skuRef = useRef<string | undefined>(
@@ -98,7 +97,7 @@ const ProductPurchaseLayout = ({
 			product.skus?.[0]?.externalReferenceCode
 	);
 
-	const aiHubTierSKU = isAiHubTokens
+	const aiHubTierSKU = isAIHubTokens
 		? undefined
 		: getAiHubTierSKU(product, skuRef.current);
 
@@ -148,7 +147,7 @@ const ProductPurchaseLayout = ({
 		accountCurrency,
 		selectedAccount?.id,
 		payment.billingAddress?.id,
-		isAiHubTokens
+		isAIHubTokens
 			? 'AI_HUB_TOKEN'
 			: ProductPurchaseApp.getOrderTypeExternalReferenceCode(product),
 		product
@@ -188,7 +187,7 @@ const ProductPurchaseLayout = ({
 
 	const priceLabel = isFreeApp
 		? i18n.translate('free')
-		: (isCartPriceStep && cartPrice) ||
+		: ((isAIHubTokens || isCartPriceStep) && cartPrice) ||
 			activeSku?.price?.priceFormatted ||
 			aiHubTierSKU?.price?.priceFormatted ||
 			productPurchaseCart.cart?.summary?.totalFormatted ||
@@ -365,9 +364,11 @@ const ProductPurchaseLayout = ({
 								{priceLabel}
 							</span>
 
-							<span className="badge badge-primary m-0">
-								{getLicenseTagText(product)}
-							</span>
+							{!isAIHubTokens && (
+								<span className="badge badge-primary m-0">
+									{getLicenseTagText(product)}
+								</span>
+							)}
 						</div>
 					</div>
 				}

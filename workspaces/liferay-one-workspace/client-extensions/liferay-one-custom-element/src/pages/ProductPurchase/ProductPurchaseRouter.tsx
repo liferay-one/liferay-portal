@@ -12,6 +12,7 @@ import useRequireSignIn from '~/hooks/useRequireSignIn';
 import i18n from '~/i18n';
 import {
 	getProductPriceModel,
+	isAIHubTokensPurchase,
 	isContactSalesProduct,
 	isDXPFreeTierProduct,
 	isLDPProduct,
@@ -42,7 +43,13 @@ const PurchaseCompleted = lazy(
 
 const ProductPurchaseRoutes = ({product}: {product: DeliveryProduct}) => {
 	const {isPaidApp} = getProductPriceModel(product);
+	const isAIHubTokens = isAIHubTokensPurchase(
+		product,
+		new URLSearchParams(window.location.search)
+	);
+
 	const steps = getProductPurchaseSteps({
+		isAIHubTokens,
 		isDXPFreeOnly:
 			isDXPFreeTierProduct(product) || isSelfServiceTrialProduct(product),
 		isLDP: isLDPProduct(product),
@@ -55,6 +62,7 @@ const ProductPurchaseRoutes = ({product}: {product: DeliveryProduct}) => {
 			children: toStepRoutes(steps),
 			element: (
 				<ProductPurchaseLayout
+					isAIHubTokens={isAIHubTokens}
 					product={product}
 					steps={toStepItems(steps)}
 				/>
