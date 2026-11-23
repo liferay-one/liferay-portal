@@ -568,9 +568,9 @@ Liferay system object `AccountEntry`.
 | `accountCode` | Text | custom field |
 | `AccountType` | Text | custom field |
 | `accountTier` | Text | custom field |
-| `allowComplimentary` | Boolean | custom field |
-| `allowPermanentLicenses` | Boolean | custom field |
-| `allowSelfProvisioning` | Boolean | custom field |
+| `allowComplimentary` | Boolean | custom field, no longer read (see `C_PROJECT`) |
+| `allowPermanentLicenses` | Boolean | custom field, no longer read (see `C_PROJECT`) |
+| `allowSelfProvisioning` | Boolean | custom field, no longer read (see `C_PROJECT`) |
 | `contactEmail` | Text | custom field |
 | `industry` | Text | custom field |
 | `oktaSSO` | Text | custom field |
@@ -631,6 +631,9 @@ Object name `Project`. REST `/o/c/projects`. Title field `name`. Account restric
 | Field | Type | Notes |
 | --- | --- | --- |
 | `aiHubAccountName` | Text | |
+| `allowComplimentary` | Boolean | allows one complimentary key |
+| `allowPermanentLicenses` | Boolean | keys from a production entry do not expire |
+| `allowSelfProvisioning` | Boolean | the project's own users manage its keys |
 | `allowedEmailDomains` | Text | |
 | `dataCenterLocation` | Text | |
 | `friendlyWorkspaceURL` | Text | |
