@@ -254,10 +254,10 @@ The 76 scope 3 grants go to 42 site role grants, 32 account role grants, and 2 o
 | Documentation Administrator | site | Web content, categories, pages, page templates, and SEO | L446 to L1251 (14 grants) |
 | Marketplace Account Administrator | account | The account and order grants of Account Administrator, without `VIEW_ORGANIZATIONS` and the grants on OAuth2DxpAuthorization and TicketAttachment: account update, users, addresses, channel defaults, and roles, and the 13 order actions of Account Administrator, from `ADD_COMMERCE_ORDER` to `MANAGE_COMMERCE_ORDERS` and `MANAGE_COMMERCE_ORDER_PAYMENT_STATUSES` | L475, L611, L818 |
 | Organization User | organization | `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment | L991, L1027 |
-| Partner Account Admin | account | Account update, users, addresses, and account roles | L323, L419 |
-| Partner Manager | account | Account users and roles, and the account's orders | L339, L428, L572 |
-| Partner Marketing User, Partner Sales User, Partner Technical User | account | `VIEW`, `VIEW_USERS` on the account | L351, L371, L381 |
-| Partner Member | account | `VIEW`, `VIEW_USERS` on the account, and the account's orders | L361, L582 |
+| Partner Account Admin | account | Account update, users, addresses, and account roles. `ADD_COMMERCE_ORDER`, `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. | L493, L620, L839 |
+| Partner Manager | account | Account users and roles. `ADD_COMMERCE_ORDER`, `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. | L509, L629, L850 |
+| Partner Marketing User, Partner Sales User, Partner Technical User | account | `VIEW`, `VIEW_USERS` on the account. `ADD_COMMERCE_ORDER`, `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. | L521, L541, L551, L861, L883, L894 |
+| Partner Member | account | `VIEW`, `VIEW_USERS` on the account. `ADD_COMMERCE_ORDER`, `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. | L531, L872 |
 | Project Admin | account | `ASSIGN_USERS`, `VIEW`, `VIEW_USERS` on the account. `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment. | L391, L1000, L1036 |
 | Project Requester | account | `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment | L1009, L1045 |
 | Site Content Reviewer | site | Documents, web content, categories, tags, and templates, with `PERMISSIONS` | L455 to L1261 (22 grants) |
