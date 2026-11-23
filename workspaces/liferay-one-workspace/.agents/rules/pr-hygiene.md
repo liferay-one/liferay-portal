@@ -79,6 +79,8 @@ done
 
 To split a mixed commit, reset it with `git reset --soft HEAD~1`. Unstage every file that is not code, and commit the code with the original message. Then stage the test files and commit them. Do the same for the doc files, and then for the agent files. Stage files by name, not with `git add -A`, because the working tree can hold edits that do not belong to any of these commits.
 
+A rebase can mix kinds in a commit that was clean. A `fixup` or `squash` in the todo list merges one commit into the commit above it, whatever kind each holds. On LPD-115566, a fixup merged an agent commit into the docs commit. Run the check again after every rebase that squashes a commit.
+
 ## Keep the Visuals Current
 
 The pages in `tools/visuals/` are built from the code, and some of their input is written by hand: object domains, audit findings, the order to entitlement narrative, and the endpoints flagged by the audit. A change to the code can make that input wrong. `yarn viz:check` finds each place.
