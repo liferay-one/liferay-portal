@@ -8,6 +8,7 @@ import {useParams} from 'react-router';
 import aiHubIconUrl from '~/assets/icons/ai_hub_icon.svg';
 import Button from '~/components/Button/Button';
 import Loading from '~/components/Loading/Loading';
+import {useAccount} from '~/context/AccountContext';
 import {useProject} from '~/context/ProjectContext';
 import {
 	useActiveSkuExternalReferenceCodes,
@@ -67,7 +68,8 @@ type ProjectItemDetailsProps = {
 export default function ProjectItemDetails({
 	itemType,
 }: ProjectItemDetailsProps) {
-	const {accountERC, applicationERC, productERC} = useParams();
+	const {applicationERC, productERC} = useParams();
+	const {account, loading: accountLoading} = useAccount();
 	const {project, projectId, selectedContractERC} = useProject();
 
 	const itemERC = productERC ?? applicationERC ?? '';
@@ -107,7 +109,9 @@ export default function ProjectItemDetails({
 	const {loading: ordersLoading, placedOrders} =
 		useProjectOrders(orderProject);
 
-	const {environments} = useProjectEnvironments();
+	const {environments, loading: environmentsLoading} = useProjectEnvironments(
+		account?.id
+	);
 
 	const renderMessage = (word: Word) => (
 		<ProjectDetailTabs
@@ -117,8 +121,10 @@ export default function ProjectItemDetails({
 	);
 
 	if (
+		accountLoading ||
 		activeProductsLoading ||
 		contractLoading ||
+		environmentsLoading ||
 		experienceOfferingLoading ||
 		isLoading ||
 		itemsLoading ||
@@ -237,30 +243,36 @@ export default function ProjectItemDetails({
 
 	const isAIHub = environmentProfile === 'ai-hub';
 
+	const aiHubEnvironmentExternalReferenceCode =
+		getAIHubEnvironmentExternalReferenceCode(
+			(isUnassignedProject(projectId)
+				? account?.externalReferenceCode
+				: projectId) ?? ''
+		);
+
+	const hasProvisionedAIHubEnvironment = environments.some(
+		(environment) =>
+			environment.externalReferenceCode ===
+				aiHubEnvironmentExternalReferenceCode &&
+			isProvisionedAIHubEnvironment(environment)
+	);
+
+	const canBuyLiferayTokens =
+		isAIHub &&
+		hasProvisionedAIHubEnvironment &&
+		hasActiveProductOrder(
+			isUnassignedProject(projectId)
+				? productOrders.filter((order) => !hasProject(order))
+				: productOrders,
+			product.productId
+		);
+
 	return (
 		<ProjectDetailTabs
 			header={
 				<DetailHeader
 					actions={
-						isAIHub &&
-						environments.some(
-							(environment) =>
-								environment.externalReferenceCode ===
-									getAIHubEnvironmentExternalReferenceCode(
-										(isUnassignedProject(projectId)
-											? accountERC
-											: projectId) ?? ''
-									) &&
-								isProvisionedAIHubEnvironment(environment)
-						) &&
-						hasActiveProductOrder(
-							isUnassignedProject(projectId)
-								? productOrders.filter(
-										(order) => !hasProject(order)
-									)
-								: productOrders,
-							product.productId
-						) ? (
+						canBuyLiferayTokens ? (
 							<Button
 								displayType="primary"
 								onClick={() =>
