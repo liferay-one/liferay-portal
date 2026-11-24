@@ -12,6 +12,15 @@ import {
 } from './subscriptionUpgradeRoutes';
 
 describe('subscriptionUpgradeRoutes', () => {
+	it('gives the CMP add-on a single summary step', () => {
+		const steps = getSubscriptionUpgradeSteps(
+			SubscriptionUpgradeType.CMP_ADD_ON
+		);
+
+		expect(steps).toHaveLength(1);
+		expect(steps[0].index).toBe(true);
+	});
+
 	it('gives no steps to an upgrade type without a registered flow', () => {
 		expect(
 			getSubscriptionUpgradeSteps(SubscriptionUpgradeType.AI_HUB_TIER)

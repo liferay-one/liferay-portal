@@ -433,6 +433,7 @@ export default {
 	'copy-this-token-to-your-liferay-dxp-instance':
 		'Copy this token to your Liferay DXP Instance',
 	'cost': 'Cost',
+	'cost-breakdown': 'Cost Breakdown',
 	'could-not-find-ssa-account': 'Could not find SSA account',
 	'could-not-upload-the-file-a-package-with-this-filename-already-exists':
 		'Could not upload the file. A package with this filename already exists.',
@@ -462,6 +463,8 @@ export default {
 	'critical-incident-contacts': 'Critical Incident Contacts',
 	'crm': 'CRM',
 	'currency-code': 'Currency Code',
+	'current-contract-ends-x-the-contract-end-date-remains-unchanged':
+		'Current contract ends {0}. The contract end date remains unchanged.',
 	'current-usage-could-not-be-loaded-the-limits-shown-come-from-your-entitlements':
 		'Current usage could not be loaded. The limits shown come from your entitlements.',
 	'current-version': 'Current Version',
@@ -940,6 +943,7 @@ export default {
 	'ip-addresses': 'IP Addresses',
 	'it-looks-like-this-project-does-not-have-any-contracts-yet-please-contact-your-administrator-or-liferay-sales-to-set-one-up-before-purchasing':
 		'It looks like this project does not have any contracts yet. Please contact your administrator or Liferay sales to set one up before purchasing.',
+	'item': 'Item',
 	'items': 'Items',
 	'jira-issue-key': 'Jira Issue Key',
 	'job-title': 'Job Title',
@@ -1606,6 +1610,7 @@ export default {
 	'related-records': 'Related Records',
 	'relationship-tree': 'Relationship Tree',
 	'reload': 'Reload',
+	'remaining-term': 'Remaining Term',
 	'remove': 'Remove',
 	'remove-all-roles': 'Remove all roles',
 	'remove-member': 'Remove Member',
@@ -2140,6 +2145,7 @@ export default {
 	'topic': 'Topic',
 	'topics': 'Topics',
 	'total': 'Total',
+	'total-excl-taxes': 'Total (excl. taxes)',
 	'total-ram': 'Total RAM',
 	'total-storage': 'Total Storage',
 	'total-vcpu': 'Total vCPU',
@@ -2197,6 +2203,7 @@ export default {
 	'under-review': 'Under Review',
 	'uninstall': 'Uninstall',
 	'unit': 'Unit',
+	'unit-price': 'Unit Price',
 	'unknown-member': 'Unknown member',
 	'unlimited': 'Unlimited',
 	'unlock-exclusive-benefits-with-a-business-account':
@@ -2353,6 +2360,7 @@ export default {
 	'x-of-x': '{0} of {1}',
 	'x-of-x-available': '{0} of {1} available',
 	'x-of-x-invitations-were-sent': '{0} of {1} invitations were sent.',
+	'x-of-x-months': '{0} of {1} months',
 	'x-previously-selected-subscriptions-are-no-longer-entitled-and-were-removed':
 		'{0} previously selected subscriptions are no longer entitled and were removed.',
 	'x-records-were-synced-from-salesforce':
