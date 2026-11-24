@@ -6,6 +6,7 @@
 import {useOneContext} from '~/context/OneContextProvider';
 import {useCurrentAccount} from '~/hooks/useAccounts';
 import {useDataQuery} from '~/hooks/useDataQuery';
+import {useOrganizationAccess} from '~/hooks/useOrganizationAccess';
 import {canViewAllAccountProjects} from '~/pages/MyAccount/AccountMembers/accountRoles';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {queryGraphQL, toGraphQLString} from '~/services/graphql/GraphQL';
@@ -79,6 +80,8 @@ export function useUserProjects(): {
 
 	const {data: currentAccount} = useCurrentAccount();
 
+	const {loading: organizationAccessLoading} = useOrganizationAccess();
+
 	const showAllAccountProjects =
 		canViewAllAccountProjects(userAccountModel) ||
 		Boolean(
@@ -129,7 +132,8 @@ export function useUserProjects(): {
 	return {
 		accountProjects,
 		hasAccountProjects: !!accountProjects.length,
-		loading: membershipsLoading || projectsLoading,
+		loading:
+			membershipsLoading || organizationAccessLoading || projectsLoading,
 		projects,
 	};
 }

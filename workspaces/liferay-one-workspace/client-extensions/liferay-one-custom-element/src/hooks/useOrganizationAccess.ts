@@ -5,14 +5,22 @@
 
 import {useOneContext} from '~/context/OneContextProvider';
 import {useCurrentAccount} from '~/hooks/useAccounts';
+import {Liferay} from '~/services/liferay/liferay';
 
 export function useOrganizationAccess() {
-	const {userAccountModel} = useOneContext();
+	const {myUserAccount, userAccountModel} = useOneContext();
 
-	const {data: currentAccount, isLoading: loading} = useCurrentAccount();
+	const {data: currentAccount, isLoading: currentAccountLoading} =
+		useCurrentAccount();
+
+	const myUserAccountLoading =
+		Liferay.ThemeDisplay.isSignedIn() && !myUserAccount;
+
+	const loading = currentAccountLoading || myUserAccountLoading;
 
 	const organizationAccess = Boolean(
-		currentAccount &&
+		!loading &&
+			currentAccount &&
 			!userAccountModel?.isAccountMember &&
 			userAccountModel?.isOrganizationMember(
 				currentAccount.organizationIds

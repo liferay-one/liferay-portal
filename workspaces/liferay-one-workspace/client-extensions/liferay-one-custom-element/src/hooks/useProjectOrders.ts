@@ -274,7 +274,12 @@ export function useProjectOrders(project?: OrderProject, productId?: number) {
 		[placedOrders]
 	);
 
-	return {error, loading: isLoading, orders, placedOrders};
+	return {
+		error,
+		loading: isLoading || organizationAccessLoading,
+		orders,
+		placedOrders,
+	};
 }
 
 export function getProductOrder(
