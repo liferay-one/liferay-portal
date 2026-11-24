@@ -14,7 +14,7 @@ import React, {
 	useState,
 } from 'react';
 import {useSearchParams} from 'react-router';
-import {KeyedMutator} from 'swr';
+import useSWR, {KeyedMutator} from 'swr';
 import EmptyState from '~/components/EmptyState/EmptyState';
 import ListViewContextProvider, {
 	AppActions,
@@ -61,6 +61,8 @@ export type ListViewProps<T extends Record<string, unknown>> = {
 
 	emptyStateProps?: ComponentProps<typeof EmptyState>;
 
+	fetcher?: (params: URLSearchParams) => Promise<APIResponse<T>>;
+
 	id: string;
 
 	initialContext?: ListViewContextProviderProps;
@@ -84,7 +86,7 @@ export type ListViewProps<T extends Record<string, unknown>> = {
 
 	refreshInterval?: number;
 
-	resource: string;
+	resource?: string;
 
 	tableProps: Omit<
 		TableProps<T>,
@@ -110,6 +112,8 @@ const ListViewBase = <T extends Record<string, unknown>>({
 	children,
 	defaultFilters,
 	emptyStateProps,
+	fetcher,
+	id,
 	managementToolbarProps: {
 		columnsVisible = false,
 		visible: managementToolbarVisible = false,
@@ -236,19 +240,33 @@ const ListViewBase = <T extends Record<string, unknown>>({
 		]
 	);
 
+	const portalFetch = useFetch(
+		fetcher ? null : resource ?? null,
+		{
+			params: getURLSearchParams(),
+		},
+		refreshInterval
+	);
+
+	const fetcherSearchParams = new URLSearchParams(
+		Object.entries(getURLSearchParams())
+			.filter(([, value]) => value)
+			.map(([key, value]) => [key, String(value)])
+	).toString();
+
+	const fetcherFetch = useSWR(
+		fetcher ? `/list-view/${id}?${fetcherSearchParams}` : null,
+		() => fetcher!(new URLSearchParams(fetcherSearchParams)),
+		{refreshInterval}
+	);
+
 	const {
 		data: response,
 		error,
 		isLoading: loading,
 		isValidating,
 		mutate,
-	} = useFetch(
-		resource,
-		{
-			params: getURLSearchParams(),
-		},
-		refreshInterval
-	);
+	} = fetcher ? (fetcherFetch as typeof portalFetch) : portalFetch;
 
 	const {
 		items = [],

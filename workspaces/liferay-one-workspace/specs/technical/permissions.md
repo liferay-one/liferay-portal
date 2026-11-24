@@ -130,7 +130,7 @@ The Salesforce contact role is the `Contact_Role__c` value, matched to an accoun
 | --- | --- | --- |
 | Administrator | regular | Every service check (`RoleConstants.NAME_ADMINISTRATOR`) and every page gate. Liferay skips permission checks for it. |
 | Guest | regular | 3 grants (`L163`, `L744`, `L753`), the Become a Publisher page, and the commerce channel (`commerce-channel.model-resource-permissions.json`) |
-| Organization User | organization | 2 scope 3 grants (`L991`, `L1027`) |
+| Organization User | organization | 4 scope 3 grants (`L493`, `L1354`, `L1408`, `L1474`) |
 | Site Member | site | Page permissions in 4 `page.json` files |
 | User | regular | 10 grants, and the commerce channel. Every signed in user has it. |
 
@@ -253,7 +253,7 @@ The 76 scope 3 grants go to 42 site role grants, 32 account role grants, and 2 o
 | Article Administrator | site | Web content and folders, and Site Administration | L629 to L1209 (6 grants) |
 | Documentation Administrator | site | Web content, categories, pages, page templates, and SEO | L446 to L1251 (14 grants) |
 | Marketplace Account Administrator | account | The account and order grants of Account Administrator, without `VIEW_ORGANIZATIONS` and the grants on OAuth2DxpAuthorization and TicketAttachment: account update, users, addresses, channel defaults, and roles, and the 13 order actions of Account Administrator, from `ADD_COMMERCE_ORDER` to `MANAGE_COMMERCE_ORDERS` and `MANAGE_COMMERCE_ORDER_PAYMENT_STATUSES` | L475, L611, L818 |
-| Organization User | organization | `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment | L991, L1027 |
+| Organization User | organization | `VIEW`, `VIEW_USERS` on each account linked to the organization. `MANAGE_ACCOUNTS` on the organization, which lets Liferay list the linked accounts for the user. `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment. These are the grants of the Organization User role in customer-workspace. | L493, L1354, L1408, L1474 |
 | Partner Account Admin | account | Account update, users, addresses, and account roles | L323, L419 |
 | Partner Manager | account | Account users and roles, and the account's orders | L339, L428, L572 |
 | Partner Marketing User, Partner Sales User, Partner Technical User | account | `VIEW`, `VIEW_USERS` on the account | L351, L371, L381 |

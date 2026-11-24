@@ -212,6 +212,30 @@ describe('[CLIENT-MODELS-USERACCOUNTMODEL] UserAccountModel', () => {
 		).toBe(true);
 	});
 
+	it.each([
+		[[7], true],
+		[[8, 7], true],
+		[[8], false],
+		[[], false],
+		[undefined, false],
+	])(
+		'reads whether an account linked to the organizations %j is linked to an organization of the user',
+		(organizationIds, organizationMember) => {
+			expect(
+				createModel({
+					organizationBriefs: [{id: 7, name: 'FLS'}],
+					roleBriefs: [],
+				}).isOrganizationMember(organizationIds)
+			).toBe(organizationMember);
+		}
+	);
+
+	it('is not an organization member when the user has no organization briefs', () => {
+		expect(createModel({roleBriefs: []}).isOrganizationMember([7])).toBe(
+			false
+		);
+	});
+
 	it('returns empty defaults when the account briefs are missing', () => {
 		setCommerceAccountId(1);
 

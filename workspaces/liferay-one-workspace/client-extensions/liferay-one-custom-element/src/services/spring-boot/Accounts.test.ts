@@ -124,12 +124,17 @@ describe('[CLIENT-SPRING-BOOT-ACCOUNTS] Accounts', () => {
 		expect(postalAddress.streetAddressLine2).toBe('Suite 200');
 	});
 
-	it('uses fixed paths for invitations, products, user accounts, roles, and the JSM sync', async () => {
+	it('uses fixed paths for invitations, placed orders, products, user accounts, roles, and the JSM sync', async () => {
 		oAuth2Fetch.mockImplementation(() => Promise.resolve(jsonResponse([])));
 
 		await Accounts.deleteInvitations('ACCNT-1', 5);
 		await Accounts.deleteUserAccounts('ACCNT-1', 6);
 		await Accounts.getInvitations('ACCNT-1');
+		await Accounts.getPlacedOrders(
+			'ACCNT-1',
+			new URLSearchParams({channelId: '3', page: '2'})
+		);
+		await Accounts.getPlacedOrdersByPlacedOrderId('ACCNT-1', 4);
 		await Accounts.getProducts('ACCNT-1');
 		await Accounts.postInvitations('ACCNT-1', {
 			emailAddress: 'user@acme.com',
@@ -145,6 +150,8 @@ describe('[CLIENT-SPRING-BOOT-ACCOUNTS] Accounts', () => {
 			['/accounts/ACCNT-1/invitations/5', {method: 'DELETE'}],
 			['/accounts/ACCNT-1/user-accounts/6', {method: 'DELETE'}],
 			['/accounts/ACCNT-1/invitations', undefined],
+			['/accounts/ACCNT-1/placed-orders?channelId=3&page=2', undefined],
+			['/accounts/ACCNT-1/placed-orders/4', undefined],
 			['/accounts/ACCNT-1/products', undefined],
 			[
 				'/accounts/ACCNT-1/invitations',

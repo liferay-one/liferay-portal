@@ -72,6 +72,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -241,6 +242,86 @@ public class AccountsRestController extends OneBaseRestController {
 				_licenseKeyService.getLicenseKeysByAccountEntryId(
 					account.getId()))
 		);
+	}
+
+	@GetMapping("/{externalReferenceCode}/placed-orders")
+	public ResponseEntity<String> getPlacedOrders(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@RequestParam("channelId") long channelId,
+			@RequestParam(
+				required = false, value = "orderTypeExternalReferenceCode"
+			)
+			String orderTypeExternalReferenceCode,
+			@RequestParam(defaultValue = "1", value = "page") int page,
+			@RequestParam(defaultValue = "20", value = "pageSize") int pageSize,
+			@RequestParam(required = false, value = "restrictFields") String
+				restrictFields)
+		throws Exception {
+
+		// The order type goes into an OData filter, so only an external
+		// reference code made of letters, digits, hyphens, and underscores is
+		// accepted
+
+		if ((orderTypeExternalReferenceCode != null) &&
+			!_orderTypeExternalReferenceCodePattern.matcher(
+				orderTypeExternalReferenceCode
+			).matches()) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST,
+				"Invalid order type external reference code");
+		}
+
+		// The restricted fields go into the query string of a request that
+		// uses the service authorization, so only field names separated by
+		// commas are accepted
+
+		if (Validator.isNotNull(restrictFields) &&
+			!_restrictFieldsPattern.matcher(
+				restrictFields
+			).matches()) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "Invalid restricted fields");
+		}
+
+		_accountPermission.check(externalReferenceCode, ActionKeys.VIEW, jwt);
+
+		Account account = _accountService.getAccount(
+			externalReferenceCode, jwt);
+
+		return new ResponseEntity<>(
+			_commerceOrderService.getAccountPlacedOrders(
+				account.getId(), channelId, orderTypeExternalReferenceCode,
+				Math.max(page, 1),
+				Math.min(Math.max(pageSize, 1), _PLACED_ORDERS_PAGE_SIZE_MAX),
+				restrictFields),
+			HttpStatus.OK);
+	}
+
+	@GetMapping("/{externalReferenceCode}/placed-orders/{placedOrderId}")
+	public ResponseEntity<String> getPlacedOrdersByPlacedOrderId(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode,
+			@PathVariable("placedOrderId") long placedOrderId)
+		throws Exception {
+
+		_accountPermission.check(externalReferenceCode, ActionKeys.VIEW, jwt);
+
+		Account account = _accountService.getAccount(
+			externalReferenceCode, jwt);
+
+		String placedOrder = _commerceOrderService.fetchAccountPlacedOrder(
+			account.getId(), placedOrderId);
+
+		if (placedOrder == null) {
+			throw new ResponseStatusException(
+				HttpStatus.NOT_FOUND,
+				"Unable to find placed order " + placedOrderId);
+		}
+
+		return new ResponseEntity<>(placedOrder, HttpStatus.OK);
 	}
 
 	@GetMapping("/{accountKey}/products/{productExternalReferenceCode}/usage")
@@ -1192,8 +1273,15 @@ public class AccountsRestController extends OneBaseRestController {
 	private static final MediaType _CONTENT_TYPE_CSV = MediaType.parseMediaType(
 		"text/csv");
 
+	private static final int _PLACED_ORDERS_PAGE_SIZE_MAX = 200;
+
 	private static final Log _log = LogFactory.getLog(
 		AccountsRestController.class);
+
+	private static final Pattern _orderTypeExternalReferenceCodePattern =
+		Pattern.compile("[A-Za-z0-9_-]+");
+	private static final Pattern _restrictFieldsPattern = Pattern.compile(
+		"[A-Za-z0-9_.,]+");
 
 	@Autowired
 	private AccountAssetService _accountAssetService;

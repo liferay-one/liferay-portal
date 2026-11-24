@@ -16,7 +16,6 @@ import EmptyState from '~/components/EmptyState/EmptyState';
 import Page from '~/components/Page/Page';
 import RowActionsMenu from '~/components/RowActionsMenu/RowActionsMenu';
 import {useOneContext} from '~/context/OneContextProvider';
-import {useFetch} from '~/hooks/useFetch';
 import {useOrderDates} from '~/hooks/useOrderDates';
 import {
 	getProjectExternalReferenceCode,
@@ -24,13 +23,12 @@ import {
 } from '~/hooks/useProjectOrders';
 import i18n, {Word, translate} from '~/i18n';
 import {canAccessOrders} from '~/pages/MyAccount/AccountMembers/accountRoles';
+import {useAccountPlacedOrders} from '~/pages/MyAccount/Orders/hooks/useAccountPlacedOrders';
 import {getStatusColor} from '~/pages/MyAccount/Projects/utils/getStatusColor';
-import {Liferay} from '~/services/liferay/liferay';
 import {formatOrderDate, getOrderStatusToken} from '~/utils/orderUtils';
 
 import './Orders.css';
 
-import type {APIResponse} from '~/types/api';
 import type {PlacedOrder} from '~/types/orders';
 
 const PAGE_SIZE_OPTIONS = [10, 20, 30, 50];
@@ -136,9 +134,6 @@ function FilterSubPanel({
 }
 
 export default function Orders() {
-	const accountId = Liferay.CommerceContext?.account?.accountId;
-	const channelId = Liferay.CommerceContext?.commerceChannelId;
-
 	const navigate = useNavigate();
 
 	const {myUserAccount, userAccountModel} = useOneContext();
@@ -160,17 +155,9 @@ export default function Orders() {
 		data,
 		error,
 		isLoading: loading,
-	} = useFetch<APIResponse<PlacedOrder>>(
-		accountId && channelId
-			? `/o/headless-commerce-delivery-order/v1.0/channels/${channelId}/accounts/${accountId}/placed-orders`
-			: null,
-		{
-			params: {
-				pageSize: 100,
-				sort: 'createDate:desc',
-			},
-		}
-	);
+		organizationAccess,
+		organizationAccessLoading,
+	} = useAccountPlacedOrders();
 
 	const loadedOrders = useMemo(() => data?.items ?? [], [data]);
 
@@ -319,7 +306,12 @@ export default function Orders() {
 		setFilterCategory(null);
 	};
 
-	if (myUserAccount && !canAccessOrders(userAccountModel)) {
+	if (
+		myUserAccount &&
+		!organizationAccessLoading &&
+		!organizationAccess &&
+		!canAccessOrders(userAccountModel)
+	) {
 		return (
 			<Page>
 				<EmptyState

@@ -18,6 +18,7 @@ export type Account = {
 	logoURL?: string;
 	name: string;
 	numberOfUsers: number;
+	organizationIds?: number[];
 	status: number;
 	taxId: string;
 	type: string;
@@ -78,6 +79,11 @@ export type AccountRoleType =
 	| 'SSA User'
 	| 'Account Solution Publisher';
 
+export type OrganizationBrief = {
+	id: number;
+	name: string;
+};
+
 export type RegularRoleType =
 	| 'Administrator'
 	| 'Finance Administrator'
@@ -107,6 +113,7 @@ export type UserAccount = {
 	logoURL: string;
 	name: string;
 	newsSubscription: boolean;
+	organizationBriefs?: OrganizationBrief[];
 	password: string;
 	roleBriefs: RoleBrief[];
 	status?: number;

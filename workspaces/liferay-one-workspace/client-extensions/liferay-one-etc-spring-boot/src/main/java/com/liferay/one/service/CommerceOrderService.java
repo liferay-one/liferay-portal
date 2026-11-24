@@ -79,9 +79,12 @@ import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.util.UriComponentsBuilder;
 
 /**
  * @author Felipe Veloso
@@ -414,6 +417,45 @@ public class CommerceOrderService extends OneBaseService {
 		completeSettledOrder(order);
 	}
 
+	public String fetchAccountPlacedOrder(long accountId, long placedOrderId)
+		throws Exception {
+
+		String response = null;
+
+		try {
+			response = get(
+				getAuthorization(),
+				UriComponentsBuilder.fromPath(
+					"/o/headless-commerce-delivery-order/v1.0/placed-orders" +
+						"/{placedOrderId}"
+				).queryParam(
+					"nestedFields", "placedOrderItems"
+				).queryParam(
+					"placedOrderItems.pageSize", -1
+				).buildAndExpand(
+					placedOrderId
+				).toUri());
+		}
+		catch (WebClientResponseException webClientResponseException) {
+			int statusCode = webClientResponseException.getStatusCode(
+			).value();
+
+			if (statusCode == HttpStatus.NOT_FOUND.value()) {
+				return null;
+			}
+
+			throw webClientResponseException;
+		}
+
+		JSONObject jsonObject = new JSONObject(response);
+
+		if (jsonObject.optLong("accountId") != accountId) {
+			return null;
+		}
+
+		return response;
+	}
+
 	public Order fetchCommerceOrder(long commerceOrderId) throws Exception {
 		OrderResource orderResource = _buildOrderResource();
 
@@ -556,6 +598,49 @@ public class CommerceOrderService extends OneBaseService {
 		}
 
 		return orders;
+	}
+
+	public String getAccountPlacedOrders(
+			long accountId, long channelId,
+			String orderTypeExternalReferenceCode, int page, int pageSize,
+			String restrictFields)
+		throws Exception {
+
+		UriComponentsBuilder uriComponentsBuilder =
+			UriComponentsBuilder.fromPath(
+				"/o/headless-commerce-delivery-order/v1.0/channels" +
+					"/{channelId}/accounts/{accountId}/placed-orders"
+			).queryParam(
+				"nestedFields", "placedOrderItems"
+			).queryParam(
+				"page", page
+			).queryParam(
+				"pageSize", pageSize
+			).queryParam(
+				"placedOrderItems.pageSize", -1
+			).queryParam(
+				"sort", "createDate:desc"
+			);
+
+		// The caller sends only the order type, never an OData filter, so the
+		// filter stays on the account's orders of that one type
+
+		if (Validator.isNotNull(orderTypeExternalReferenceCode)) {
+			uriComponentsBuilder.queryParam(
+				"filter",
+				"orderTypeExternalReferenceCode eq '" +
+					escapeODataString(orderTypeExternalReferenceCode) + "'");
+		}
+
+		if (Validator.isNotNull(restrictFields)) {
+			uriComponentsBuilder.queryParam("restrictFields", restrictFields);
+		}
+
+		return get(
+			getAuthorization(),
+			uriComponentsBuilder.buildAndExpand(
+				channelId, accountId
+			).toUri());
 	}
 
 	public AccountSupportInfo getAccountSupportInfo(

@@ -3,7 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {useAccountProducts} from '~/hooks/useProjectCommerce';
+import {
+	useAccountProducts,
+	useActiveSkuExternalReferenceCodes,
+} from '~/hooks/useProjectCommerce';
 import {
 	MANAGEABLE_ACCOUNT_ROLES,
 	PARTNER_ACCOUNT_ROLES,
@@ -15,6 +18,7 @@ import {getProductSpecificationValue} from '~/utils/productUtils';
 const PARTNER_PRODUCT_SPECIFICATION_KEY = 'partner-product';
 
 type AccountType = {
+	hasActivePartnerSubscription: boolean;
 	isHybrid: boolean;
 	isPartner: boolean;
 	loading: boolean;
@@ -26,13 +30,26 @@ export function useAccountType(): AccountType {
 
 	const {loading: productsLoading, products} = useAccountProducts();
 
-	const isPartner = products.some(
+	const {
+		activeSkuExternalReferenceCodesByProduct,
+		loading: activeSkusLoading,
+	} = useActiveSkuExternalReferenceCodes();
+
+	const partnerProducts = products.filter(
 		(product) =>
 			getProductSpecificationValue(
 				PARTNER_PRODUCT_SPECIFICATION_KEY,
 				product
 			) === 'true'
 	);
+
+	const hasActivePartnerSubscription = partnerProducts.some((product) =>
+		activeSkuExternalReferenceCodesByProduct.has(
+			product.externalReferenceCode
+		)
+	);
+
+	const isPartner = Boolean(partnerProducts.length);
 
 	const isHybrid = isPartner && hasProject;
 
@@ -46,9 +63,10 @@ export function useAccountType(): AccountType {
 	}
 
 	return {
+		hasActivePartnerSubscription,
 		isHybrid,
 		isPartner,
-		loading: productsLoading || projectsLoading,
+		loading: activeSkusLoading || productsLoading || projectsLoading,
 		roleNames,
 	};
 }

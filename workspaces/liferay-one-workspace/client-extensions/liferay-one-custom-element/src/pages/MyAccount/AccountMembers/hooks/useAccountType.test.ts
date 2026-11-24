@@ -15,24 +15,32 @@ import {useAccountType} from './useAccountType';
 
 const mocks = vi.hoisted(() => ({
 	useAccountProducts: vi.fn(),
+	useActiveSkuExternalReferenceCodes: vi.fn(),
 	useHasProject: vi.fn(),
 }));
 
 vi.mock('~/hooks/useProjectCommerce', () => ({
 	useAccountProducts: mocks.useAccountProducts,
+	useActiveSkuExternalReferenceCodes:
+		mocks.useActiveSkuExternalReferenceCodes,
 }));
 
 vi.mock('~/pages/MyAccount/Projects/hooks/useHasProject', () => ({
 	useHasProject: mocks.useHasProject,
 }));
 
+const PARTNER_PRODUCT_EXTERNAL_REFERENCE_CODE = 'PRDCT-PARTNER';
+
 function partnerProduct(value: string) {
 	return {
+		externalReferenceCode: PARTNER_PRODUCT_EXTERNAL_REFERENCE_CODE,
 		productSpecifications: [{specificationKey: 'partner-product', value}],
 	};
 }
 
 function setUp({
+	activeProductExternalReferenceCodes = [] as string[],
+	activeSkusLoading = false,
 	hasProject = false,
 	products = [] as object[],
 	productsLoading = false,
@@ -46,11 +54,21 @@ function setUp({
 		loading: productsLoading,
 		products,
 	});
+	mocks.useActiveSkuExternalReferenceCodes.mockReturnValue({
+		activeSkuExternalReferenceCodesByProduct: new Map(
+			activeProductExternalReferenceCodes.map((externalReferenceCode) => [
+				externalReferenceCode,
+				['SKU-1'],
+			])
+		),
+		loading: activeSkusLoading,
+	});
 }
 
 describe('[HOOK-MYACCOUNT-ACCOUNTMEMBERS-USEACCOUNTTYPE] useAccountType', () => {
 	beforeEach(() => {
 		mocks.useAccountProducts.mockReset();
+		mocks.useActiveSkuExternalReferenceCodes.mockReset();
 		mocks.useHasProject.mockReset();
 	});
 
@@ -60,6 +78,7 @@ describe('[HOOK-MYACCOUNT-ACCOUNTMEMBERS-USEACCOUNTTYPE] useAccountType', () => 
 		const {result} = renderHook(() => useAccountType());
 
 		expect(result.current).toEqual({
+			hasActivePartnerSubscription: false,
 			isHybrid: false,
 			isPartner: false,
 			loading: false,
@@ -73,6 +92,7 @@ describe('[HOOK-MYACCOUNT-ACCOUNTMEMBERS-USEACCOUNTTYPE] useAccountType', () => 
 		const {result} = renderHook(() => useAccountType());
 
 		expect(result.current).toEqual({
+			hasActivePartnerSubscription: false,
 			isHybrid: false,
 			isPartner: true,
 			loading: false,
@@ -86,6 +106,7 @@ describe('[HOOK-MYACCOUNT-ACCOUNTMEMBERS-USEACCOUNTTYPE] useAccountType', () => 
 		const {result} = renderHook(() => useAccountType());
 
 		expect(result.current).toEqual({
+			hasActivePartnerSubscription: false,
 			isHybrid: true,
 			isPartner: true,
 			loading: false,
@@ -93,13 +114,50 @@ describe('[HOOK-MYACCOUNT-ACCOUNTMEMBERS-USEACCOUNTTYPE] useAccountType', () => 
 		});
 	});
 
+	it('has an active partner subscription when the partner product has an active SKU', () => {
+		setUp({
+			activeProductExternalReferenceCodes: [
+				PARTNER_PRODUCT_EXTERNAL_REFERENCE_CODE,
+			],
+			products: [partnerProduct('true')],
+		});
+
+		const {result} = renderHook(() => useAccountType());
+
+		expect(result.current.hasActivePartnerSubscription).toBe(true);
+		expect(result.current.isPartner).toBe(true);
+	});
+
+	it('has no active partner subscription when the partner product has no active SKU', () => {
+		setUp({products: [partnerProduct('true')]});
+
+		const {result} = renderHook(() => useAccountType());
+
+		expect(result.current.hasActivePartnerSubscription).toBe(false);
+		expect(result.current.isPartner).toBe(true);
+	});
+
+	it('has no active partner subscription when only a product that is not a partner product is active', () => {
+		setUp({
+			activeProductExternalReferenceCodes: [
+				PARTNER_PRODUCT_EXTERNAL_REFERENCE_CODE,
+			],
+			products: [partnerProduct('false')],
+		});
+
+		const {result} = renderHook(() => useAccountType());
+
+		expect(result.current.hasActivePartnerSubscription).toBe(false);
+	});
+
 	it.each([
-		[true, false],
-		[false, true],
+		[true, false, false],
+		[false, true, false],
+		[false, false, true],
 	])(
-		'combines the loading state when products loading is %s and projects loading is %s',
-		(productsLoading, projectsLoading) => {
-			setUp({productsLoading, projectsLoading});
+		'combines the loading state when products loading is %s, projects loading is %s, and active SKUs loading is %s',
+		(productsLoading, projectsLoading, activeSkusLoading) => {
+			setUp({activeSkusLoading, productsLoading, projectsLoading});
 
 			const {result} = renderHook(() => useAccountType());
 
