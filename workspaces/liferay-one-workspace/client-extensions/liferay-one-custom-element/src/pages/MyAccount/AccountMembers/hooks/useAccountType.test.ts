@@ -35,14 +35,18 @@ function partnerProduct(value: string) {
 function setUp({
 	hasProject = false,
 	products = [] as object[],
+	productsError = undefined as Error | undefined,
 	productsLoading = false,
+	projectsError = undefined as Error | undefined,
 	projectsLoading = false,
 }) {
 	mocks.useHasProject.mockReturnValue({
+		error: projectsError,
 		hasProject,
 		loading: projectsLoading,
 	});
 	mocks.useAccountProducts.mockReturnValue({
+		error: productsError,
 		loading: productsLoading,
 		products,
 	});
@@ -62,6 +66,7 @@ describe('[HOOK-MYACCOUNT-ACCOUNTMEMBERS-USEACCOUNTTYPE] useAccountType', () => 
 		expect(result.current).toEqual({
 			isHybrid: false,
 			isPartner: false,
+			isRestricted: false,
 			loading: false,
 			roleNames: STANDARD_ACCOUNT_ROLES,
 		});
@@ -75,6 +80,7 @@ describe('[HOOK-MYACCOUNT-ACCOUNTMEMBERS-USEACCOUNTTYPE] useAccountType', () => 
 		expect(result.current).toEqual({
 			isHybrid: false,
 			isPartner: true,
+			isRestricted: false,
 			loading: false,
 			roleNames: PARTNER_ACCOUNT_ROLES,
 		});
@@ -88,10 +94,34 @@ describe('[HOOK-MYACCOUNT-ACCOUNTMEMBERS-USEACCOUNTTYPE] useAccountType', () => 
 		expect(result.current).toEqual({
 			isHybrid: true,
 			isPartner: true,
+			isRestricted: false,
 			loading: false,
 			roleNames: MANAGEABLE_ACCOUNT_ROLES,
 		});
 	});
+
+	it('is restricted when the account has no project and no partner product', () => {
+		setUp({products: [partnerProduct('false')]});
+
+		const {result} = renderHook(() => useAccountType());
+
+		expect(result.current.isRestricted).toBe(true);
+	});
+
+	it.each([
+		['products', {productsError: new Error('products')}],
+		['projects', {projectsError: new Error('projects')}],
+	])(
+		'reports the error and is not restricted when the %s request fails',
+		(_, errors) => {
+			setUp(errors);
+
+			const {result} = renderHook(() => useAccountType());
+
+			expect(result.current.error).toBeInstanceOf(Error);
+			expect(result.current.isRestricted).toBe(false);
+		}
+	);
 
 	it.each([
 		[true, false],
