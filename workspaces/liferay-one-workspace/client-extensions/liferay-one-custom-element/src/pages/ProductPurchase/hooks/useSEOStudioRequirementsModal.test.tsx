@@ -69,7 +69,7 @@ describe('[HOOK-PRODUCTPURCHASE-USESEOSTUDIOREQUIREMENTSMODAL] useSEOStudioRequi
 
 		expect(onOpenModal).toHaveBeenCalledWith(
 			expect.objectContaining({
-				header: 'SEO&AEO Studio Beta Requirements',
+				header: 'AEO and SEO Studio Requirements',
 				size: 'md',
 				status: 'info',
 			})

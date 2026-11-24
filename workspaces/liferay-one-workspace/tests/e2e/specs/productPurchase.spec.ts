@@ -1046,7 +1046,7 @@ test.describe('[FLOW-PRODUCT-PURCHASE-ENTRY] product specific steps', () => {
 		const modal = page.getByRole('dialog');
 
 		await expect(
-			modal.getByText('SEO&AEO Studio Beta Requirements')
+			modal.getByText('AEO and SEO Studio Requirements')
 		).toBeVisible();
 
 		await expect(
