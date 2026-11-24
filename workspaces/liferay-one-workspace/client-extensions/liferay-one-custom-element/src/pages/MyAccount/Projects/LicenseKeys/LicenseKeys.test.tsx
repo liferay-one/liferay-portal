@@ -3,10 +3,11 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {render, screen, within} from '@testing-library/react';
+import {cleanup, render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter, Route, Routes, useLocation} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {Liferay} from '~/services/liferay/liferay';
 
 import LicenseKeys from './LicenseKeys';
 
@@ -202,6 +203,8 @@ function renderLicenseKeys(initialEntry = '/activation') {
 		</MemoryRouter>
 	);
 }
+
+Liferay.Util.SessionStorage = sessionStorage;
 
 describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 	beforeEach(() => {
@@ -536,6 +539,8 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 				loading: false,
 				revalidate: vi.fn(),
 			});
+
+			sessionStorage.clear();
 		});
 
 		it('applies the filters of the URL on the first render', () => {
@@ -601,6 +606,34 @@ describe('[ROUTE-MY-ACCOUNT-ACTIVATION] LicenseKeys', () => {
 			expect(getLocationSearch().getAll('status')).toEqual(['active']);
 			expect(screen.getByText('DXP Environment')).toBeInTheDocument();
 			expect(screen.queryByText('Portal Environment')).toBeNull();
+		});
+
+		it('shows the label of a status filter while the keys load', () => {
+			mocks.useProjectActivationKeys.mockReturnValue({
+				activationKeys: [],
+				loading: true,
+				revalidate: vi.fn(),
+			});
+
+			renderLicenseKeys('/activation?status=expired');
+
+			expect(screen.getByText('Status: Expired')).toBeInTheDocument();
+		});
+
+		it('restores the filters and the page size when the user returns to the activation page', () => {
+			renderLicenseKeys('/activation?pageSize=20&status=expired');
+
+			cleanup();
+
+			renderLicenseKeys();
+
+			const searchParams = getLocationSearch();
+
+			expect(searchParams.get('pageSize')).toBe('20');
+			expect(searchParams.getAll('status')).toEqual(['expired']);
+			expect(screen.getByText('Status: Expired')).toBeInTheDocument();
+			expect(screen.getByText('Portal Environment')).toBeInTheDocument();
+			expect(screen.queryByText('DXP Environment')).toBeNull();
 		});
 	});
 });
