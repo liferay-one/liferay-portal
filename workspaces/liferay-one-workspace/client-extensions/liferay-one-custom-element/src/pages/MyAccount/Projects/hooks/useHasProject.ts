@@ -12,10 +12,14 @@ type ProjectAPIItem = {
 	id: number;
 };
 
-export function useHasProject(): {hasProject: boolean; loading: boolean} {
+export function useHasProject(): {
+	error?: Error;
+	hasProject: boolean;
+	loading: boolean;
+} {
 	const accountId = Liferay.CommerceContext?.account?.accountId;
 
-	const {data, isLoading} = useFetch<APIResponse<ProjectAPIItem>>(
+	const {data, error, isLoading} = useFetch<APIResponse<ProjectAPIItem>>(
 		accountId ? '/o/c/projects' : null,
 		{
 			params: {
@@ -26,5 +30,9 @@ export function useHasProject(): {hasProject: boolean; loading: boolean} {
 		}
 	);
 
-	return {hasProject: (data?.totalCount ?? 0) > 0, loading: isLoading};
+	return {
+		error,
+		hasProject: (data?.totalCount ?? 0) > 0,
+		loading: isLoading,
+	};
 }

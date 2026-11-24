@@ -15,16 +15,26 @@ import {getProductSpecificationValue} from '~/utils/productUtils';
 const PARTNER_PRODUCT_SPECIFICATION_KEY = 'partner-product';
 
 type AccountType = {
+	error?: Error;
 	isHybrid: boolean;
 	isPartner: boolean;
+	isRestricted: boolean;
 	loading: boolean;
 	roleNames: string[];
 };
 
 export function useAccountType(): AccountType {
-	const {hasProject, loading: projectsLoading} = useHasProject();
+	const {
+		error: projectsError,
+		hasProject,
+		loading: projectsLoading,
+	} = useHasProject();
 
-	const {loading: productsLoading, products} = useAccountProducts();
+	const {
+		error: productsError,
+		loading: productsLoading,
+		products,
+	} = useAccountProducts();
 
 	const isPartner = products.some(
 		(product) =>
@@ -36,6 +46,10 @@ export function useAccountType(): AccountType {
 
 	const isHybrid = isPartner && hasProject;
 
+	const error = projectsError ?? productsError;
+
+	const isRestricted = !error && !hasProject && !isPartner;
+
 	let roleNames = STANDARD_ACCOUNT_ROLES;
 
 	if (isHybrid) {
@@ -46,8 +60,10 @@ export function useAccountType(): AccountType {
 	}
 
 	return {
+		error,
 		isHybrid,
 		isPartner,
+		isRestricted,
 		loading: productsLoading || projectsLoading,
 		roleNames,
 	};

@@ -747,11 +747,17 @@ export function useUnassignedCommerce(enabled = true) {
 }
 
 export function useAccountProducts() {
-	const {data: contractsData, isLoading: contractsLoading} =
-		useAccountContractsWithEntitlements();
+	const {
+		data: contractsData,
+		error: contractsError,
+		isLoading: contractsLoading,
+	} = useAccountContractsWithEntitlements();
 
-	const {data: productsData, isLoading: productsLoading} =
-		useProjectProducts();
+	const {
+		data: productsData,
+		error: productsError,
+		isLoading: productsLoading,
+	} = useProjectProducts();
 
 	const products = useMemo<DeliveryProduct[]>(() => {
 		const productsBySkuExternalReferenceCode =
@@ -779,7 +785,11 @@ export function useAccountProducts() {
 		return [...accountProducts.values()];
 	}, [contractsData, productsData]);
 
-	return {loading: contractsLoading || productsLoading, products};
+	return {
+		error: contractsError ?? productsError,
+		loading: contractsLoading || productsLoading,
+		products,
+	};
 }
 
 export function useActiveSkuExternalReferenceCodes() {
