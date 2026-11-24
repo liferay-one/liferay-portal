@@ -7,6 +7,7 @@ import {fireEvent, render, screen} from '@testing-library/react';
 import {ReactNode} from 'react';
 import {useParams} from 'react-router';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {useAccount} from '~/context/AccountContext';
 import {useProject} from '~/context/ProjectContext';
 import {
 	useActiveSkuExternalReferenceCodes,
@@ -28,6 +29,8 @@ import {Liferay} from '~/services/liferay/liferay';
 import ProjectItemDetails from './ProjectItemDetails';
 
 vi.mock('react-router', () => ({useParams: vi.fn()}));
+
+vi.mock('~/context/AccountContext', () => ({useAccount: vi.fn()}));
 
 vi.mock('~/context/ProjectContext', () => ({useProject: vi.fn()}));
 
@@ -77,6 +80,11 @@ describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 			accountERC: 'ACCNT-1',
 			productERC: 'PRDCT-1',
 		});
+
+		vi.mocked(useAccount).mockReturnValue({
+			account: {externalReferenceCode: 'ACCNT-1', id: 7},
+			loading: false,
+		} as unknown as ReturnType<typeof useAccount>);
 
 		vi.mocked(useProjectEnvironments).mockReturnValue({
 			environments: [
@@ -137,6 +145,34 @@ describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 		vi.mocked(resolveProductTabConfig).mockReturnValue({
 			tabKeys: [],
 		} as unknown as ReturnType<typeof resolveProductTabConfig>);
+	});
+
+	it('reads the environments of the account of the route', () => {
+		render(<ProjectItemDetails itemType="product" />);
+
+		expect(useProjectEnvironments).toHaveBeenCalledWith(7);
+	});
+
+	it('waits for the account and its environments before it renders the header', () => {
+		for (const loading of [
+			{accountLoading: true, environmentsLoading: false},
+			{accountLoading: false, environmentsLoading: true},
+		]) {
+			vi.mocked(useAccount).mockReturnValue({
+				account: {externalReferenceCode: 'ACCNT-1', id: 7},
+				loading: loading.accountLoading,
+			} as unknown as ReturnType<typeof useAccount>);
+			vi.mocked(useProjectEnvironments).mockReturnValue({
+				environments: [],
+				loading: loading.environmentsLoading,
+			} as unknown as ReturnType<typeof useProjectEnvironments>);
+
+			const {unmount} = render(<ProjectItemDetails itemType="product" />);
+
+			expect(screen.queryByText('Liferay DXP')).toBeNull();
+
+			unmount();
+		}
 	});
 
 	it('shows the product name and omits the product description in the header', () => {
