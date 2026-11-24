@@ -23,7 +23,6 @@ import {
 import {useAccountMemberActions} from '~/pages/MyAccount/AccountMembers/hooks/useAccountMemberActions';
 import {useAccountMembers} from '~/pages/MyAccount/AccountMembers/hooks/useAccountMembers';
 import {useAccountType} from '~/pages/MyAccount/AccountMembers/hooks/useAccountType';
-import {useHasProject} from '~/pages/MyAccount/Projects/hooks/useHasProject';
 
 import './AccountMembers.css';
 
@@ -73,9 +72,12 @@ function UserAvatar({image, name}: {image?: string; name: string}) {
 export default function AccountMembers() {
 	const {myUserAccount, userAccountModel} = useOneContext();
 
-	const {hasProject, loading: projectsLoading} = useHasProject();
-
-	const {loading: accountTypeLoading, roleNames} = useAccountType();
+	const {
+		error: accountTypeError,
+		isRestricted,
+		loading: accountTypeLoading,
+		roleNames,
+	} = useAccountType();
 
 	const [keywords, setKeywords] = useState('');
 	const [page, setPage] = useState(1);
@@ -179,7 +181,7 @@ export default function AccountMembers() {
 		);
 	}
 
-	if (!projectsLoading && !hasProject) {
+	if (!accountTypeLoading && isRestricted) {
 		return (
 			<Page
 				description={i18n.translate(
@@ -197,8 +199,8 @@ export default function AccountMembers() {
 				'invite-manage-roles-designate-incident-contacts'
 			)}
 			pageRendererProps={{
-				error,
-				isLoading: accountTypeLoading || loading || projectsLoading,
+				error: accountTypeError ?? error,
+				isLoading: accountTypeLoading || loading,
 			}}
 		>
 			<div className="account-members-card mt-3">
