@@ -1361,8 +1361,8 @@ export default {
 	'request-a-marketplace-publisher-account':
 		'Solicitar una cuenta de publicador de Marketplace',
 	'request-access': 'Solicitar acceso',
-	'request-access-to-seo-and-aeo-studio-beta':
-		'Solicitar acceso a la versión beta de SEO&AEO Studio',
+	'request-access-to-aeo-and-seo-studio':
+		'Solicitar acceso a AEO and SEO Studio',
 	'request-account': 'Solicitar cuenta',
 	'request-description': 'Descripción de la solicitud',
 	'request-details': 'Detalles de la petición',
@@ -1464,7 +1464,7 @@ export default {
 	'self-service-portal': 'Portal de autoservicio',
 	'send-invitation': 'Enviar invitación',
 	'send-request': 'Enviar solicitud',
-	'seo-studio-requirements': 'Requisitos de SEO&AEO Studio Beta',
+	'seo-studio-requirements': 'Requisitos de AEO and SEO Studio',
 	'set-the-users-role-ssa-users-can-create-trials-while-ssa-admins-can-manage-users-roles-and-trials':
 		'Establece el rol del usuario: los usuarios de SSA pueden crear pruebas, mientras que los administradores de SSA pueden gestionar usuarios, roles y pruebas.',
 	'set-up-analytics-cloud': 'Configurar Analytics Cloud',

@@ -1622,8 +1622,8 @@ export default {
 	'request-a-marketplace-publisher-account':
 		'Request a Marketplace Publisher Account',
 	'request-access': 'Request Access',
-	'request-access-to-seo-and-aeo-studio-beta':
-		'Request Access to SEO&AEO Studio Beta',
+	'request-access-to-aeo-and-seo-studio':
+		'Request Access to AEO and SEO Studio',
 	'request-account': 'Request Account',
 	'request-description': 'Request Description',
 	'request-details': 'Request Details',
@@ -1741,12 +1741,12 @@ export default {
 	'self-service-portal': 'Self-Service Portal',
 	'send-invitation': 'Send Invitation',
 	'send-request': 'Send Request',
-	'seo-studio': 'SEO&AEO Studio Beta',
-	'seo-studio-account-details': 'SEO&AEO Studio Beta Account Details',
-	'seo-studio-information': 'SEO&AEO Studio Beta Information',
+	'seo-studio': 'AEO and SEO Studio',
+	'seo-studio-account-details': 'AEO and SEO Studio Account Details',
+	'seo-studio-information': 'AEO and SEO Studio Information',
 	'seo-studio-is-available-only-for-ai-hub-customers':
-		'SEO&AEO Studio Beta Is Available Only for AI Hub Customers',
-	'seo-studio-requirements': 'SEO&AEO Studio Beta Requirements',
+		'AEO and SEO Studio Is Available Only for AI Hub Customers',
+	'seo-studio-requirements': 'AEO and SEO Studio Requirements',
 	'set-the-users-role-ssa-users-can-create-trials-while-ssa-admins-can-manage-users-roles-and-trials':
 		'Set the user’s role: SSA Users can create trials, while SSA Admins can manage users, roles, and trials.',
 	'set-this-environment-to-active-after-its-workspace-is-provisioned':

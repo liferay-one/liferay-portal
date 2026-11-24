@@ -183,7 +183,7 @@ const SEOStudioForm = () => {
 	return (
 		<ProductPurchase.Shell
 			className="liferay-seo-studio-form"
-			title={i18n.translate('request-access-to-seo-and-aeo-studio-beta')}
+			title={i18n.translate('request-access-to-aeo-and-seo-studio')}
 		>
 			<p className="mb-6 text-black-50">
 				{i18n.translate(
@@ -423,8 +423,8 @@ const SEOStudioForm = () => {
 					</a>
 
 					<span>
-						carefully before accessing or in any way using the
-						SEO&AEO Studio Beta experience.
+						carefully before accessing or in any way using the AEO
+						and SEO Studio experience.
 					</span>
 				</p>
 

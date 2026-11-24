@@ -29,7 +29,7 @@ const SEOStudioNotEligible = () => {
 				description={
 					<>
 						<p className="px-2">
-							SEO&AEO Studio Beta is an add-on for Liferay AI Hub,
+							AEO and SEO Studio is an add-on for Liferay AI Hub,
 							and the account{' '}
 							<strong>{selectedAccount?.name}</strong> does not
 							have an AI Hub purchase yet. Please select another
