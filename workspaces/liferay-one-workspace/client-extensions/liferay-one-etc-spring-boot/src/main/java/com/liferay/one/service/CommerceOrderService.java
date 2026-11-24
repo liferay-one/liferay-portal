@@ -685,7 +685,7 @@ public class CommerceOrderService extends OneBaseService {
 
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Unable to provision SEO&AEO Studio Beta for order " +
+						"Unable to provision AEO and SEO Studio for order " +
 							orderId,
 						seoStudioEligibilityException);
 				}
@@ -712,9 +712,9 @@ public class CommerceOrderService extends OneBaseService {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
 						StringBundler.concat(
-							"Unable to provision SEO&AEO Studio Beta for ",
-							"order ", orderId, " so it stays pending until ",
-							"the next run"));
+							"Unable to provision AEO and SEO Studio for order ",
+							orderId,
+							" so it stays pending until the next run"));
 				}
 
 				return;

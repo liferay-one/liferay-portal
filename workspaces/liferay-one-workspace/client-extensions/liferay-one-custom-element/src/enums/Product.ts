@@ -276,7 +276,7 @@ export const SolutionTypeLabels = {
 	[SolutionTypes.DXP]: 'DXP',
 	[SolutionTypes.LIFERAY_DATA_PLATFORM]: 'Liferay Data Platform',
 	[SolutionTypes.PRE_BUILT_TRIAL]: 'Pre-Built Trial',
-	[SolutionTypes.SEO_STUDIO]: 'SEO&AEO Studio Beta',
+	[SolutionTypes.SEO_STUDIO]: 'AEO and SEO Studio',
 } as const;
 
 export const ProductTypeLicenseOptions: Record<
