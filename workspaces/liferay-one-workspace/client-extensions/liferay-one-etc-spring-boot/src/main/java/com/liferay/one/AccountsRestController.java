@@ -273,6 +273,19 @@ public class AccountsRestController extends OneBaseRestController {
 				"Invalid order type external reference code");
 		}
 
+		// The restricted fields go into the query string of a request that
+		// uses the service authorization, so only field names separated by
+		// commas are accepted
+
+		if (Validator.isNotNull(restrictFields) &&
+			!_restrictFieldsPattern.matcher(
+				restrictFields
+			).matches()) {
+
+			throw new ResponseStatusException(
+				HttpStatus.BAD_REQUEST, "Invalid restricted fields");
+		}
+
 		_accountPermission.check(externalReferenceCode, ActionKeys.VIEW, jwt);
 
 		Account account = _accountService.getAccount(
@@ -1267,6 +1280,8 @@ public class AccountsRestController extends OneBaseRestController {
 
 	private static final Pattern _orderTypeExternalReferenceCodePattern =
 		Pattern.compile("[A-Za-z0-9_-]+");
+	private static final Pattern _restrictFieldsPattern = Pattern.compile(
+		"[A-Za-z0-9_.,]+");
 
 	@Autowired
 	private AccountAssetService _accountAssetService;
