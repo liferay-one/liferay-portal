@@ -296,6 +296,8 @@ export default {
 	'by': 'by',
 	'by-checking-this-box-and-clicking-next-below-i-as-an-authorized-representative-of-x-acknowledge-that-x-accepts-the-x-terms-and-conditions-and-privacy-policy-x-these-terms-will-govern-x-s-use-of-liferay-analytics-cloud-unless-x-has-entered-into-a-separate-agreement-with-liferay-that-governs-x-s-use-of-liferay-analytics-cloud':
 		"By checking this box and clicking “Next”, below, I, as an authorized representative of {0}, acknowledge that {0} accepts the {1} Terms and Conditions and Privacy Policy. {2} These terms will govern {0}'s use of Liferay Analytics Cloud unless {0} has entered into a separate agreement with Liferay that governs {0}'s use of Liferay Analytics Cloud.",
+	'by-confirming-you-will-receive-a-sales-order-to-review-and-sign-your-order-will-be-processed-and-the-payment-charged-under-your-payment-agreements-once-we-receive-the-signed-document':
+		'By confirming, you will receive a sales order to review and sign. Your order will be processed, and the payment charged under your payment agreements, once we receive the signed document.',
 	'by-requesting-a-publisher-account-you-agree-to-the':
 		'By requesting a Publisher account, you agree to the',
 	'by-x': 'By {0}',
@@ -386,6 +388,7 @@ export default {
 	'confirm-deletion': 'Confirm Deletion',
 	'confirm-uninstall': 'Confirm & Uninstall',
 	'confirm-uninstall-terms': 'Confirm Uninstall Terms',
+	'confirm-your-purchase': 'Confirm Your Purchase',
 	'confirmation-terms': 'Confirmation Terms',
 	'congratulations': 'Congratulations',
 	'connect': 'Connect',
@@ -542,6 +545,7 @@ export default {
 	'developer-licenses-are-limited-to-5-unique-addresses-and-should-not-be-used-for-full-scale-production-deployments':
 		'Developer licenses are limited to 5 unique addresses and should not be used for full-scale production deployments.',
 	'development-framework': 'Development Framework',
+	'didn-t-receive-the-email': "Didn't receive the email?",
 	'differences': 'Differences',
 	'differs-from-salesforce': 'Differs From Salesforce',
 	'digital-sales-room': 'Digital Sales Room',
@@ -798,6 +802,7 @@ export default {
 	'getting-started-with-liferay-enterprise-search-article':
 		'Getting Started with Liferay Enterprise Search article.',
 	'github-username': 'GitHub Username',
+	'go-back': 'Go Back',
 	'go-back-to-marketplace': 'Go Back to Marketplace',
 	'go-live': 'Go Live',
 	'go-to-account': 'Go to Account',
@@ -1364,6 +1369,7 @@ export default {
 	'pay-with-invoice': 'Pay with Invoice',
 	'payload': 'Payload',
 	'payment': 'Payment',
+	'payment-agreement': 'Payment Agreement',
 	'payment-failed': 'Payment Failed',
 	'payment-method': 'Payment Method',
 	'payment-methods': 'Payment Methods',
@@ -1425,6 +1431,8 @@ export default {
 		'Please review before submitting. Once sent, you will not be able to edit any information until this submission is fully reviewed by Liferay.',
 	'please-review-the-order-summary-below-and-flag-the-checkbox-to-complete-your-purchase':
 		'Please review the order summary below and flag the checkbox to complete your purchase',
+	'please-review-the-order-summary-below-to-complete-your-purchase':
+		'Please review the order summary below to complete your purchase.',
 	'please-select-a-user-for-every-new-member':
 		'Please select a user for every new member.',
 	'please-select-an-actual-event-date-that-has-already-occurred-or-is-today':
@@ -1897,6 +1905,8 @@ export default {
 	'thank-you-for-your-order-we-have-registered-your-request-and-will-send-you-the-invoice-by-email-with-all-the-details-to-complete-your-payment-check-your-spam-or-promotions-folder-if-you-dont-see-it-in-your-inbox-your-order-is-currently-pending-payment':
 		"Thank you for your order. We have registered your request and will send you the invoice by email with all the details to complete your payment. Check your Spam or Promotions folder if you don't see it in your inbox. Your order is currently pending payment.",
 	'thank-you-for-your-purchase': 'Thank You for Your Purchase!',
+	'thank-you-for-your-purchase-of-x-an-order-form-will-be-sent-to-your-email-via-docusign-please-review-sign-and-return-it-to-confirm-your-subscription':
+		'Thank you for your purchase of {0}. An order form will be sent to your email via DocuSign. Please review, sign, and return it to confirm your subscription. If the message does not appear in your inbox, please check your Spam or Promotions folder.',
 	'thank-you-for-your-request': 'Thank You for Your Request!',
 	'the-account-already-matches-salesforce':
 		'The account already matches Salesforce.',
@@ -2020,6 +2030,8 @@ export default {
 		'There was an unexpected error while attempting to deactivate the key. Please try again in a few moments.',
 	'this-account-has-already-started-a-trial-of-this-product':
 		'This account has already started a trial of this product.',
+	'this-account-has-no-billing-address-add-one-in-the-account-details-to-continue':
+		'This account has no billing address. Add one in the account details to continue.',
 	'this-account-has-no-default-billing-address-so-a-connected-dxp-cannot-install-products-for-it':
 		'This account has no default billing address, so a connected DXP cannot install products for it.',
 	'this-action-cannot-be-undone': 'This action cannot be undone.',
@@ -2090,6 +2102,10 @@ export default {
 	'this-table-allows-you-to-create-manage-and-track-your-business-events-please-note-that-business-events-closed-for-more-than-a-year-will-not-be-displayed-here':
 		'This table allows you to create, manage, and track your business events. Please note that business events closed for more than a year will not be displayed here.',
 	'this-ticket-has-been-closed': 'This ticket has been closed',
+	'this-transaction-will-be-processed-according-to-your-active-billing-and-payment-agreement':
+		'This transaction will be processed according to your active billing and payment agreement.',
+	'this-upgrade-is-not-available-for-the-selected-project':
+		'This upgrade is not available for the selected project.',
 	'this-user-is-already-a-member-of-the-project':
 		'This user is already a member of the project.',
 	'ticket': 'Ticket',
@@ -2190,6 +2206,7 @@ export default {
 	'unused-specifications': 'Unused Specifications',
 	'unused-usage-definitions': 'Unused Usage Definitions',
 	'upgrade': 'Upgrade',
+	'upgrade-unavailable': 'Upgrade Unavailable',
 	'upload': 'Upload',
 	'upload-at-least-one-image-or-add-a-video-url':
 		'Upload at least one image, or add a video URL',

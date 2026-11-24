@@ -21,6 +21,7 @@ import {
 import {AppRoute, toRouteObjects} from '~/utils/routeUtils';
 
 import ContactSales from './ContactSales/ContactSales';
+import {isSubscriptionUpgradeType} from './SubscriptionUpgrade/subscriptionUpgradeRoutes';
 import ProductPurchaseLayout from './components/ProductPurchaseLayout/ProductPurchaseLayout';
 import {AppPurchaseProvider} from './context/AppPurchaseContext';
 import {CartProvider} from './context/CartContext';
@@ -39,6 +40,9 @@ const BankTransferCompleted = lazy(
 );
 const PurchaseCompleted = lazy(
 	() => import('./PurchaseCompleted/PurchaseCompleted')
+);
+const SubscriptionUpgradeRouter = lazy(
+	() => import('./SubscriptionUpgrade/SubscriptionUpgradeRouter')
 );
 
 const ProductPurchaseRoutes = ({product}: {product: DeliveryProduct}) => {
@@ -86,6 +90,8 @@ const ProductPurchaseRouter = () => {
 
 	const productId = searchParams.get('productId') ?? '';
 
+	const upgradeType = searchParams.get('upgradeType');
+
 	const isSignedIn = useRequireSignIn();
 
 	const {data: product, isLoading} = useDeliveryProduct(
@@ -109,6 +115,21 @@ const ProductPurchaseRouter = () => {
 				title={i18n.translate('product-unavailable')}
 				type="NOT_FOUND"
 			/>
+		);
+	}
+
+	if (isSubscriptionUpgradeType(upgradeType)) {
+		return (
+			<HashRouter>
+				<div className="my-7 product-purchase">
+					<Suspense fallback={null}>
+						<SubscriptionUpgradeRouter
+							product={product}
+							type={upgradeType}
+						/>
+					</Suspense>
+				</div>
+			</HashRouter>
 		);
 	}
 
