@@ -16,9 +16,10 @@ vi.mock('~/hooks/useFetch', () => ({
 
 const mockedUseFetch = vi.mocked(useFetch);
 
-function mockFetch(data: unknown, isLoading = false) {
+function mockFetch(data: unknown, isLoading = false, error?: Error) {
 	mockedUseFetch.mockReturnValue({
 		data,
+		error,
 		isLoading,
 	} as unknown as ReturnType<typeof useFetch>);
 }
@@ -67,6 +68,20 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEHASPROJECT] useHasProject', () => {
 		const {result} = renderHook(() => useHasProject());
 
 		expect(result.current).toEqual({hasProject: false, loading: true});
+	});
+
+	it('returns the error when the projects request fails', () => {
+		const error = new Error('projects');
+
+		mockFetch(undefined, false, error);
+
+		const {result} = renderHook(() => useHasProject());
+
+		expect(result.current).toEqual({
+			error,
+			hasProject: false,
+			loading: false,
+		});
 	});
 
 	it('sends no request without an account ID', () => {
