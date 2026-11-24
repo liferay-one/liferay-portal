@@ -132,7 +132,7 @@ describe('[FLOW-SEO-STUDIO-SIGNUP] SEOStudioForm AI Hub eligibility gate', () =>
 		await submitForm();
 
 		expect(await screen.findByTestId('not-eligible')).toHaveTextContent(
-			'SEO&AEO Studio Beta Is Available Only for AI Hub Customers'
+			'AEO and SEO Studio Is Available Only for AI Hub Customers'
 		);
 		expect(
 			screen.queryByRole('button', {name: 'Send Request'})
