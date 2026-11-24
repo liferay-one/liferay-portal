@@ -197,6 +197,8 @@ public class CommerceOrderItemService extends OneBaseService {
 			).toArray(
 				new OrderItem[0]
 			));
+
+		_patchOrderItemMachineTypes(order, salesforceOpportunityLineItems);
 	}
 
 	private OrderItemResource _buildOrderItemResource() {
@@ -335,6 +337,50 @@ public class CommerceOrderItemService extends OneBaseService {
 		order.setOrderItems(updatedOrder::getOrderItems);
 	}
 
+	private void _patchOrderItemMachineTypes(
+			Order order,
+			List<SalesforceOpportunityLineItem> salesforceOpportunityLineItems)
+		throws Exception {
+
+		boolean patched = false;
+
+		for (SalesforceOpportunityLineItem salesforceOpportunityLineItem :
+				salesforceOpportunityLineItems) {
+
+			if (Validator.isNull(
+					salesforceOpportunityLineItem.getMachineType())) {
+
+				continue;
+			}
+
+			String machineType = StringUtil.toLowerCase(
+				salesforceOpportunityLineItem.getMachineType(), Locale.ROOT);
+
+			OrderItem orderItem = CommerceOrderItemUtil.fetchOrderItem(
+				salesforceOpportunityLineItem.getId(), order);
+
+			Map<String, String> productOptions =
+				CommerceOrderItemUtil.getProductOptions(orderItem);
+
+			if (machineType.equals(productOptions.get("machinetype"))) {
+				continue;
+			}
+
+			String options = CommerceOrderItemUtil.toOptionsJSON(
+				"machinetype", orderItem, machineType);
+
+			orderItem.setOptions(() -> options);
+
+			patched = true;
+		}
+
+		if (!patched) {
+			return;
+		}
+
+		patchOrderItems(order, order.getOrderItems());
+	}
+
 	private CustomField[] _toCustomFields(Map<String, ?> customFieldValues) {
 		CustomField[] customFields = new CustomField[customFieldValues.size()];
 
@@ -397,18 +443,6 @@ public class CommerceOrderItemService extends OneBaseService {
 				salesforceOpportunityLineItem.getTotalPrice());
 
 			orderItem.setFinalPrice(() -> finalPrice);
-		}
-
-		if (Validator.isNotNull(
-				salesforceOpportunityLineItem.getMachineType())) {
-
-			String options = CommerceOrderItemUtil.toOptionsJSON(
-				"machinetype",
-				StringUtil.toLowerCase(
-					salesforceOpportunityLineItem.getMachineType(),
-					Locale.ROOT));
-
-			orderItem.setOptions(() -> options);
 		}
 
 		Map<String, Object> customFieldValues = _getCustomFieldValues(
