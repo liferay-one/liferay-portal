@@ -10,10 +10,20 @@ import ClayIcon from '@clayui/icon';
 import {ClayPaginationBarWithBasicItems} from '@clayui/pagination-bar';
 import ClayTable from '@clayui/table';
 import classNames from 'classnames';
-import {ReactNode, useCallback, useMemo, useState} from 'react';
-import {useSearchParams} from 'react-router';
+import {
+	ReactNode,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from 'react';
+import {useLocation, useSearchParams} from 'react-router';
 import Button from '~/components/Button/Button';
 import {Word, translate} from '~/i18n';
+import MarketplaceStorage, {
+	STORAGE_KEYS,
+} from '~/services/liferay/MarketplaceStorage';
 
 import './FilterableListCard.css';
 
@@ -23,7 +33,15 @@ const DATE_BOUND_PATTERN = /^(after|before):\d{4}-\d{2}-\d{2}$/;
 
 const FILTER_SEARCH_MIN_OPTIONS = 10;
 
+const PAGE_PARAMETER = 'page';
+
+const PAGE_SIZE_PARAMETER = 'pageSize';
+
+export const RESET_LIST_STATE = {resetList: true};
+
 const SEARCH_PARAMETER = 'search';
+
+const SORT_PARAMETER = 'sort';
 
 export type FilterOption = {label: string; value: string};
 
@@ -64,6 +82,7 @@ type FilterableListCardProps<T> = {
 	loading?: boolean;
 	matchesSearch?: (item: T, search: string) => boolean;
 	onItemClick?: (item: T) => void;
+	persistKey?: string;
 	rowKey: (item: T) => string;
 	title?: Word;
 };
@@ -95,6 +114,94 @@ function getBoundValue(values: string[], bound: string): string {
 	const match = values.find((value) => value.startsWith(`${bound}:`));
 
 	return match ? match.slice(bound.length + 1) : '';
+}
+
+function getOwnedSearchParams(
+	ownedKeys: string[],
+	searchParams: URLSearchParams
+): URLSearchParams {
+	const ownedSearchParams = new URLSearchParams();
+
+	searchParams.forEach((value, key) => {
+		if (ownedKeys.includes(key)) {
+			ownedSearchParams.append(key, value);
+		}
+	});
+
+	return ownedSearchParams;
+}
+
+function getPage(searchParams: URLSearchParams): number {
+	const page = Number(searchParams.get(PAGE_PARAMETER));
+
+	return Number.isInteger(page) && page > 0 ? page : 1;
+}
+
+function getPageSize(
+	defaultPageSize: number,
+	searchParams: URLSearchParams
+): number {
+	const pageSize = Number(searchParams.get(PAGE_SIZE_PARAMETER));
+
+	return PAGE_SIZE_OPTIONS.includes(pageSize) ? pageSize : defaultPageSize;
+}
+
+function getSort<T>(
+	columns: ListColumn<T>[],
+	searchParams: URLSearchParams
+): ListSort | null {
+	const [key, direction] = (searchParams.get(SORT_PARAMETER) ?? '').split(
+		':'
+	);
+
+	if (
+		(direction !== 'asc' && direction !== 'desc') ||
+		!columns.some((column) => column.key === key && column.sortValue)
+	) {
+		return null;
+	}
+
+	return {ascending: direction === 'asc', key};
+}
+
+function getStorageKey(pathname: string, persistKey: string): STORAGE_KEYS {
+	return `${STORAGE_KEYS.FILTERABLE_LIST_CARD}${persistKey}:${pathname}` as STORAGE_KEYS;
+}
+
+function isResetListState(state: unknown): boolean {
+	return Boolean(
+		state &&
+			typeof state === 'object' &&
+			(state as {resetList?: boolean}).resetList
+	);
+}
+
+function readStoredSearch(storageKey: STORAGE_KEYS): string | null {
+	try {
+		return (
+			MarketplaceStorage.getInstance()
+				.getStorage('temporary')
+				.getItem(storageKey) || null
+		);
+	}
+	catch {
+		return null;
+	}
+}
+
+function writeStoredSearch(search: string, storageKey: STORAGE_KEYS) {
+	try {
+		const storage =
+			MarketplaceStorage.getInstance().getStorage('temporary');
+
+		if (search) {
+			storage.setItem(storageKey, search);
+		}
+		else {
+			storage.removeItem(storageKey);
+		}
+	}
+	catch {}
 }
 
 function FilterSubPanel({
@@ -217,7 +324,7 @@ function FilterSubPanel({
 	);
 }
 
-export default function FilterableListCard<T>({
+function FilterableListCardContent<T>({
 	action,
 	className,
 	columns,
@@ -230,19 +337,60 @@ export default function FilterableListCard<T>({
 	loading = false,
 	matchesSearch,
 	onItemClick,
+	persistKey,
 	rowKey,
 	title,
 }: FilterableListCardProps<T>) {
+	const {pathname} = useLocation();
 	const [searchParams, setSearchParams] = useSearchParams();
-	const [page, setPage] = useState(1);
-	const [pageSize, setPageSize] = useState(defaultPageSize);
 	const [filterActive, setFilterActive] = useState(false);
-	const [sort, setSort] = useState<ListSort | null>(null);
 	const [activeFilterKey, setActiveFilterKey] = useState<string | null>(null);
 
 	const [keywords, setKeywords] = useState(
 		() => searchParams.get(SEARCH_PARAMETER) ?? ''
 	);
+
+	const page = getPage(searchParams);
+	const pageSize = getPageSize(defaultPageSize, searchParams);
+
+	const sort = useMemo(
+		() => getSort(columns, searchParams),
+		[columns, searchParams]
+	);
+
+	const ownedKeys = useMemo(
+		() => [
+			PAGE_PARAMETER,
+			PAGE_SIZE_PARAMETER,
+			SEARCH_PARAMETER,
+			SORT_PARAMETER,
+			...filters.map((filter) => filter.key),
+		],
+		[filters]
+	);
+
+	const ownedSearch = useMemo(
+		() => getOwnedSearchParams(ownedKeys, searchParams).toString(),
+		[ownedKeys, searchParams]
+	);
+
+	const [initialOwnedSearch] = useState(ownedSearch);
+	const ownedSearchChangedRef = useRef(false);
+
+	useEffect(() => {
+		if (ownedSearch !== initialOwnedSearch) {
+			ownedSearchChangedRef.current = true;
+		}
+
+		if (
+			!persistKey ||
+			(!ownedSearchChangedRef.current && (loading || !ownedSearch))
+		) {
+			return;
+		}
+
+		writeStoredSearch(ownedSearch, getStorageKey(pathname, persistKey));
+	}, [initialOwnedSearch, loading, ownedSearch, pathname, persistKey]);
 
 	const selectedFilters = useMemo(
 		() =>
@@ -261,27 +409,35 @@ export default function FilterableListCard<T>({
 		[filters, searchParams]
 	);
 
-	const setParameterValues = useCallback(
-		(key: string, values: string[]) => {
+	const updateParameters = useCallback(
+		(parameters: Record<string, string[]>) => {
 			setSearchParams(
 				(previousSearchParams) => {
 					const nextSearchParams = new URLSearchParams(
 						previousSearchParams
 					);
 
-					nextSearchParams.delete(key);
+					Object.entries(parameters).forEach(([key, values]) => {
+						nextSearchParams.delete(key);
 
-					values.forEach((value) =>
-						nextSearchParams.append(key, value)
-					);
+						values.forEach((value) =>
+							nextSearchParams.append(key, value)
+						);
+					});
 
 					return nextSearchParams;
 				},
 				{replace: true}
 			);
-			setPage(1);
 		},
 		[setSearchParams]
+	);
+
+	const setParameterValues = useCallback(
+		(key: string, values: string[]) => {
+			updateParameters({[PAGE_PARAMETER]: [], [key]: values});
+		},
+		[updateParameters]
 	);
 
 	const filteredItems = useMemo(() => {
@@ -317,11 +473,16 @@ export default function FilterableListCard<T>({
 		});
 	}, [columns, filteredItems, sort]);
 
+	const activePage = Math.min(
+		page,
+		Math.max(1, Math.ceil(sortedItems.length / pageSize))
+	);
+
 	const paginatedItems = useMemo(() => {
-		const start = (page - 1) * pageSize;
+		const start = (activePage - 1) * pageSize;
 
 		return sortedItems.slice(start, start + pageSize);
-	}, [page, pageSize, sortedItems]);
+	}, [activePage, pageSize, sortedItems]);
 
 	const activeFilters = useMemo(() => {
 		const active: {
@@ -366,16 +527,21 @@ export default function FilterableListCard<T>({
 		setActiveFilterKey(null);
 	};
 
+	const menuFilters = filters.filter(
+		(filter) => filter.variant || filter.options?.length
+	);
+
 	const activeFilter = filters.find(
 		(filter) => filter.key === activeFilterKey
 	);
 
 	const changeSort = (key: string) => {
-		setSort((previous) => ({
-			ascending: previous?.key === key ? !previous.ascending : true,
-			key,
-		}));
-		setPage(1);
+		const ascending = sort?.key === key ? !sort.ascending : true;
+
+		updateParameters({
+			[PAGE_PARAMETER]: [],
+			[SORT_PARAMETER]: [`${key}:${ascending ? 'asc' : 'desc'}`],
+		});
 	};
 
 	const getSortSymbol = (key: string) => {
@@ -483,7 +649,7 @@ export default function FilterableListCard<T>({
 									{translate('filters')}
 								</div>
 
-								{filters.map((filter) => (
+								{menuFilters.map((filter) => (
 									<button
 										className="align-items-center d-flex justify-content-between list-card-filter-category"
 										key={filter.key}
@@ -624,7 +790,7 @@ export default function FilterableListCard<T>({
 					<div className="list-card-pagination">
 						<ClayPaginationBarWithBasicItems
 							activeDelta={pageSize}
-							activePage={page}
+							activePage={activePage}
 							deltas={PAGE_SIZE_OPTIONS.map((label) => ({
 								label,
 							}))}
@@ -635,11 +801,21 @@ export default function FilterableListCard<T>({
 								perPageItems: translate('x-items'),
 								selectPerPageItems: translate('x-items'),
 							}}
-							onDeltaChange={(delta) => {
-								setPage(1);
-								setPageSize(delta);
-							}}
-							onPageChange={setPage}
+							onDeltaChange={(delta) =>
+								updateParameters({
+									[PAGE_PARAMETER]: [],
+									[PAGE_SIZE_PARAMETER]:
+										delta === defaultPageSize
+											? []
+											: [String(delta)],
+								})
+							}
+							onPageChange={(nextPage) =>
+								updateParameters({
+									[PAGE_PARAMETER]:
+										nextPage > 1 ? [String(nextPage)] : [],
+								})
+							}
 							totalItems={sortedItems.length}
 						/>
 					</div>
@@ -651,4 +827,47 @@ export default function FilterableListCard<T>({
 			)}
 		</div>
 	);
+}
+
+export default function FilterableListCard<T>(
+	props: FilterableListCardProps<T>
+) {
+	const {persistKey} = props;
+
+	const {pathname, search, state} = useLocation();
+	const [, setSearchParams] = useSearchParams();
+
+	const resetList = isResetListState(state);
+
+	const [storedSearch, setStoredSearch] = useState(() =>
+		persistKey && !resetList && !search
+			? readStoredSearch(getStorageKey(pathname, persistKey))
+			: null
+	);
+
+	useEffect(() => {
+		if (persistKey && resetList) {
+			writeStoredSearch('', getStorageKey(pathname, persistKey));
+		}
+	}, [pathname, persistKey, resetList]);
+
+	useEffect(() => {
+		if (storedSearch === null) {
+			return;
+		}
+
+		if (search) {
+			setStoredSearch(null);
+
+			return;
+		}
+
+		setSearchParams(new URLSearchParams(storedSearch), {replace: true});
+	}, [search, setSearchParams, storedSearch]);
+
+	if (storedSearch !== null) {
+		return null;
+	}
+
+	return <FilterableListCardContent {...props} />;
 }

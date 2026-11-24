@@ -27,6 +27,7 @@ import Projects from '~/services/spring-boot/Projects';
 import {scrollToTop} from '~/utils/browserUtils';
 import {toISODate, toUTCDateString} from '~/utils/dateUtils';
 
+import {RESET_LIST_STATE} from '../../components/FilterableListCard/FilterableListCard';
 import {useHasLicenseKeyPermission} from '../../hooks/useHasActivationPermission';
 import {useActivationKeyScope} from '../hooks/useActivationKeyScope';
 import ActivationCodesStep from './ActivationCodesStep/ActivationCodesStep';
@@ -478,6 +479,16 @@ export default function GenerateActivationKey() {
 		navigate('..');
 	}
 
+	function returnToList() {
+		if (dxpOfflineEnvironmentId || modifyEnvironmentId) {
+			navigate('..');
+
+			return;
+		}
+
+		navigate('..', {state: RESET_LIST_STATE});
+	}
+
 	async function onClickContinueOfflineToken() {
 		setOfflineTokenError(null);
 		setSubmitError('');
@@ -590,7 +601,7 @@ export default function GenerateActivationKey() {
 				return;
 			}
 
-			navigate('..');
+			returnToList();
 		}
 		finally {
 			setSubmitting(false);
@@ -611,7 +622,7 @@ export default function GenerateActivationKey() {
 				values.version
 			);
 
-			navigate('..');
+			returnToList();
 		}
 		catch (error) {
 			setSubmitError(
@@ -674,7 +685,7 @@ export default function GenerateActivationKey() {
 				version: appLicense ? undefined : values.version,
 			});
 
-			navigate('..');
+			returnToList();
 		}
 		catch (error) {
 			setSubmitError(_toSubmitError(error));
@@ -769,7 +780,7 @@ export default function GenerateActivationKey() {
 				`${values.environmentName}.xml`
 			);
 
-			navigate('..');
+			returnToList();
 		}
 		catch (error) {
 			setSubmitError(
@@ -931,7 +942,7 @@ export default function GenerateActivationKey() {
 							keyType={keyType}
 							onClickBack={() => goTo('subscription')}
 							onClickCancel={onClickCancel}
-							onClickFinish={() => navigate('..')}
+							onClickFinish={returnToList}
 							onClickOffline={onClickOfflineActivation}
 						/>
 					)}
@@ -941,7 +952,7 @@ export default function GenerateActivationKey() {
 							keyType={keyType}
 							onClickBack={() => goTo('add-ons')}
 							onClickCancel={onClickCancel}
-							onClickFinish={() => navigate('..')}
+							onClickFinish={returnToList}
 							onClickOffline={onClickDXPOfflineActivation}
 						/>
 					)}
@@ -1006,7 +1017,7 @@ export default function GenerateActivationKey() {
 								)
 							}
 							onClickCancel={onClickCancel}
-							onClickDone={() => navigate('..')}
+							onClickDone={returnToList}
 							onClickGenerate={onClickGenerate}
 							renewing={renewing}
 							submitting={submitting}

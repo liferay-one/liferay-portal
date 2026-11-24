@@ -736,6 +736,7 @@ export default function LicenseKeys() {
 				options: toOptions(rows.map((row) => row.productName)),
 			},
 			{
+				formatValue: (value) => translate(value as Word),
 				key: 'type',
 				label: 'type',
 				matches: (row, values) => values.includes(row.type),
@@ -761,6 +762,7 @@ export default function LicenseKeys() {
 				variant: 'date-range',
 			},
 			{
+				formatValue: (value) => translate(value as Word),
 				key: 'status',
 				label: 'status',
 				matches: (row, values) => values.includes(row.status),
@@ -777,14 +779,6 @@ export default function LicenseKeys() {
 			},
 		],
 		[rows]
-	);
-
-	const visibleFilters = useMemo(
-		() =>
-			filters.filter(
-				(filter) => filter.variant || filter.options?.length
-			),
-		[filters]
 	);
 
 	return (
@@ -824,10 +818,11 @@ export default function LicenseKeys() {
 				columns={columns}
 				emptyLabel="no-activation-keys"
 				filterIconOnly
-				filters={visibleFilters}
+				filters={filters}
 				items={rows}
 				loading={loading || loadingEnvironments}
 				matchesSearch={matchesSearch}
+				persistKey="activation-keys"
 				rowKey={(row) => row.id}
 			/>
 		</Page>
