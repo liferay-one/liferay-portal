@@ -790,6 +790,28 @@ public class AccountsRestControllerTest {
 	}
 
 	@Test
+	public void testGetPlacedOrdersRejectsInvalidRestrictedFields()
+		throws Exception {
+
+		AccountsRestController accountsRestController = _createController();
+
+		for (String restrictFields : List.of("{x}", "id&filter=x")) {
+			ResponseStatusException responseStatusException =
+				Assertions.assertThrows(
+					ResponseStatusException.class,
+					() -> accountsRestController.getPlacedOrders(
+						null, _EXTERNAL_REFERENCE_CODE, 3L, null, 1, 20,
+						restrictFields));
+
+			Assertions.assertEquals(
+				HttpStatus.BAD_REQUEST,
+				responseStatusException.getStatusCode());
+		}
+
+		Mockito.verifyNoInteractions(_commerceOrderService);
+	}
+
+	@Test
 	public void testGetPlacedOrdersReturnsThePlacedOrdersOfTheAccount()
 		throws Exception {
 

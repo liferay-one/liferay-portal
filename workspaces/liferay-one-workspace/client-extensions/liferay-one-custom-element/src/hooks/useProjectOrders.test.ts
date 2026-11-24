@@ -237,15 +237,16 @@ describe('[HOOK-USEPROJECTORDERS] useProjectOrders', () => {
 		);
 	});
 
-	it('waits for the organization access before it requests the orders', () => {
+	it('waits for the organization access before it requests the orders, and reports loading meanwhile', () => {
 		mockOrganizationAccess({loading: true});
 		mockPlacedOrders([]);
 
-		renderHook(() => useProjectOrders());
+		const {result} = renderHook(() => useProjectOrders());
 
 		expect(usePlacedOrders).toHaveBeenLastCalledWith(
 			expect.objectContaining({shouldFetch: false})
 		);
+		expect(result.current.loading).toBe(true);
 	});
 
 	it('maps every order when no project name is given, without the order total', () => {

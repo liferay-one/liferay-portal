@@ -8,6 +8,7 @@ import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {useOneContext} from '~/context/OneContextProvider';
 import {useCurrentAccount} from '~/hooks/useAccounts';
 import {useDataQuery} from '~/hooks/useDataQuery';
+import {useOrganizationAccess} from '~/hooks/useOrganizationAccess';
 import {Liferay} from '~/services/liferay/liferay';
 
 import {useUserProjects} from './useUserProjects';
@@ -18,6 +19,10 @@ vi.mock('~/context/OneContextProvider', () => ({
 
 vi.mock('~/hooks/useAccounts', () => ({
 	useCurrentAccount: vi.fn(),
+}));
+
+vi.mock('~/hooks/useOrganizationAccess', () => ({
+	useOrganizationAccess: vi.fn(),
 }));
 
 vi.mock('~/hooks/useDataQuery', () => ({
@@ -43,6 +48,7 @@ vi.mock('~/services/liferay/liferay', () => ({
 const mockedUseCurrentAccount = vi.mocked(useCurrentAccount);
 const mockedUseDataQuery = vi.mocked(useDataQuery);
 const mockedUseOneContext = vi.mocked(useOneContext);
+const mockedUseOrganizationAccess = vi.mocked(useOrganizationAccess);
 
 const projectItems = [
 	{
@@ -113,6 +119,11 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 		} as unknown as ReturnType<typeof useCurrentAccount>);
 		mockedUseDataQuery.mockReset();
 		mockedUseOneContext.mockReset();
+		mockedUseOrganizationAccess.mockReturnValue({
+			accountExternalReferenceCode: undefined,
+			loading: false,
+			organizationAccess: false,
+		});
 		Liferay.CommerceContext.account = {
 			accountId: 100,
 			accountName: 'Account',
@@ -224,6 +235,20 @@ describe('[HOOK-MYACCOUNT-PROJECTS-USEUSERPROJECTS] useUserProjects', () => {
 
 		expect(result.current.projects).toEqual([]);
 		expect(result.current.hasAccountProjects).toBe(true);
+	});
+
+	it('reports loading while the organization access loads', () => {
+		mockUserAccountModel({});
+		mockQueries({});
+		mockedUseOrganizationAccess.mockReturnValue({
+			accountExternalReferenceCode: undefined,
+			loading: true,
+			organizationAccess: false,
+		});
+
+		const {result} = renderHook(() => useUserProjects());
+
+		expect(result.current.loading).toBe(true);
 	});
 
 	it('reports no account projects when the account has none', () => {

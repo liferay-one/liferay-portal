@@ -18,9 +18,14 @@ vi.mock('~/hooks/useAccounts', () => ({
 	useCurrentAccount: vi.fn(),
 }));
 
+vi.mock('~/services/liferay/liferay', () => ({
+	Liferay: {ThemeDisplay: {isSignedIn: () => true}},
+}));
+
 function setUp({
 	currentAccountLoading = false,
 	isAccountMember = false,
+	myUserAccountLoading = false,
 	organizationIds = [9],
 } = {}) {
 	vi.mocked(useCurrentAccount).mockReturnValue({
@@ -31,6 +36,7 @@ function setUp({
 	} as ReturnType<typeof useCurrentAccount>);
 
 	vi.mocked(useOneContext).mockReturnValue({
+		myUserAccount: myUserAccountLoading ? undefined : {id: 1},
 		userAccountModel: {
 			isAccountMember,
 			isOrganizationMember: (ids: number[] = []) => ids.includes(9),
@@ -70,6 +76,18 @@ describe('[HOOK-USEORGANIZATIONACCESS] useOrganizationAccess', () => {
 		const {result} = renderHook(() => useOrganizationAccess());
 
 		expect(result.current.organizationAccess).toBe(false);
+	});
+
+	it('gives no organization access while the signed in user account loads', () => {
+		setUp({myUserAccountLoading: true});
+
+		const {result} = renderHook(() => useOrganizationAccess());
+
+		expect(result.current).toEqual({
+			accountExternalReferenceCode: undefined,
+			loading: true,
+			organizationAccess: false,
+		});
 	});
 
 	it('gives no organization access while the current account loads', () => {
