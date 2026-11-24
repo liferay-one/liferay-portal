@@ -39,7 +39,6 @@ import com.liferay.one.service.EnvironmentService;
 import com.liferay.one.service.ProductVersionService;
 import com.liferay.one.util.CloudNativeSignatureValidator;
 import com.liferay.one.util.KeyedLock;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.ee.license.shared.LicenseConstants;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 
@@ -460,9 +459,9 @@ public class CloudRestControllerTest {
 			_createEnvironment(EnvironmentConstants.TYPE_NONPRODUCTION));
 
 		_verifyDXPLicenseXML(
-			"DXP Development", "DXP Development",
-			LicenseConstants.TYPE_DEVELOPER, 5, "DXP Development",
-			StringPool.BLANK);
+			"Cloud Native", "DXP Non-Production (Virtual Cluster)",
+			LicenseConstants.TYPE_VIRTUAL_CLUSTER, 0, "DXP Non-Production",
+			"Sizing 4");
 
 		Mockito.clearInvocations(_licenseKeyExporter);
 
