@@ -156,6 +156,14 @@ function _add_exit_command {
 # failed mint exits the whole script rather than just a _curl subshell, and so
 # the token is set before any command-substitution _curl runs. A no-op in basic
 # auth mode or when a token was supplied through LIFERAY_OAUTH_TOKEN.
+#
+# A token expires after the expires_in seconds of the token response. _curl
+# mints a new token 60 seconds before that, so a script that runs longer than
+# the lifetime of one token does not fail with 401. A _curl in a command
+# substitution runs in a subshell, so the parent does not keep the token that
+# the subshell mints. The parent mints its own token on its next _curl.
+
+_OAUTH_TOKEN_EXPIRATION_TIME=0
 
 function _acquire_oauth_token {
 	[[ ${LIFERAY_AUTH_MODE} == "basic" ]] && return 0
@@ -189,6 +197,12 @@ function _acquire_oauth_token {
 
 		exit 1
 	fi
+
+	local expires_in
+
+	expires_in=$(echo "${response}" | _json_field "expires_in")
+
+	_OAUTH_TOKEN_EXPIRATION_TIME=$(($(date +%s) + ${expires_in:-600} - 60))
 }
 
 function _curl {
@@ -200,6 +214,13 @@ function _curl {
 			"${@}"
 
 		return
+	fi
+
+	if [[ -z ${LIFERAY_OAUTH_TOKEN:-} ]] &&
+	   [[ ${_OAUTH_TOKEN_EXPIRATION_TIME} -gt 0 ]] &&
+	   [[ $(date +%s) -ge ${_OAUTH_TOKEN_EXPIRATION_TIME} ]]
+	then
+		_acquire_oauth_token
 	fi
 
 	curl \
