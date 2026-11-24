@@ -232,7 +232,7 @@ The order item is written by `service/CommerceOrderItemService.java:91`. A new i
 | `End_Date__c` | `yyyy-MM-dd` to midnight UTC | `CommerceOrderItem.endDate` (expando) | No | Keeps | `service/CommerceOrderItemService.java:215` |
 | `End_Date__c` | Plus 30 days of grace. On an existing item, only when the end date changed, or when a trimmed date moves earlier. | `CommerceOrderItem.effectiveEndDate` (expando) | No | Keeps | `service/CommerceOrderItemService.java:230`, `:365`, `util/CommerceOrderItemUtil.java:169` |
 | `Id` | As is | `CommerceOrderItem.externalReferenceCode` | Yes | Item cannot be matched on a later run | `service/CommerceOrderItemService.java:99` |
-| `Machine_Type__c` | Lowercase, as the option `machinetype` | `CommerceOrderItem.options` | No | Keeps | `service/CommerceOrderItemService.java:134` |
+| `Machine_Type__c` | Lowercase, as the option `machinetype`. The item keeps its other options, and the new `machinetype` replaces an earlier one. | `CommerceOrderItem.options` | No | Keeps | `CommerceOrderItemService._patchOrderItemMachineTypes`, `CommerceOrderItemUtil.toOptionsJSON` |
 | `Number_of_Pods__c` | Number | `CommerceOrderItem.sizing` (expando, integer) | No | Keeps | `service/CommerceOrderItemService.java:235` |
 | `Product2.Name` | As is, locale `en_US` | `CommerceOrderItem.name`. Also selects cloud native, Analytics Cloud, and subdomain work. | No | Keeps | `service/CommerceOrderItemService.java:104` |
 | `Product2Id` | As is. The item is skipped with a warning when no SKU has this ERC. | `CommerceOrderItem.skuExternalReferenceCode` | Yes | Item skipped | `service/CommerceOrderItemService.java:101`, `salesforce/pubsub/SalesforceOpportunityPubsubSubscriber.java:575` |
