@@ -69,9 +69,9 @@ type EnvironmentNode = {
 	workspaceName?: string;
 };
 
-export function useProjectEnvironments() {
-	const accountId = Liferay.CommerceContext.account?.accountId;
-
+export function useProjectEnvironments(
+	accountId = Liferay.CommerceContext.account?.accountId
+) {
 	const {
 		data,
 		error,
