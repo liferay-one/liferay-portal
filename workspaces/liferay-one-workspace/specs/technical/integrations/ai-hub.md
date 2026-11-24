@@ -1,6 +1,6 @@
 # AI Hub Integration
 
-This file is the contract between Liferay One and AI Hub. Liferay One creates an AI Hub account for an AI Hub order, adds the SEO&AEO Studio Beta add on to an AI Hub account, and buys prepaid token quota blocks for a token order. A change on either side to an endpoint, a request field, a response field, or the OAuth2 application breaks these rules. The feature rules that use this integration belong to [Purchasing and Orders](../../business/purchasing-and-orders.md) and [Usage and Utilization](../../business/usage-and-utilization.md), and this file cites them by ID.
+This file is the contract between Liferay One and AI Hub. Liferay One creates an AI Hub account for an AI Hub order, adds the AEO and SEO Studio add on to an AI Hub account, and buys prepaid token quota blocks for a token order. A change on either side to an endpoint, a request field, a response field, or the OAuth2 application breaks these rules. The feature rules that use this integration belong to [Purchasing and Orders](../../business/purchasing-and-orders.md) and [Usage and Utilization](../../business/usage-and-utilization.md), and this file cites them by ID.
 
 The systems are AI Hub, which is a Liferay DXP, and the Liferay One Spring Boot service. The actors are the order completion flow of the service, the nightly job that completes settled orders, and the buyer who sends the AI Hub form.
 
@@ -31,7 +31,7 @@ Terms used in this file:
 | TECH-AIHUB-013 | AI Hub returns JSON with `accountEntryId`. Liferay One writes it to `aiHubAccountEntryId` in the order metadata. It also writes an AI Hub environment with a `PUT` by external reference code. The code is `AI-HUB-` plus the Salesforce project ID, or `AI-HUB-` plus the account external reference code when the order has no project. The environment holds the AI Hub account ID in `externalEnvironmentId` and the base URL of TECH-AIHUB-001 in `aiHubURL`. | P0 | LPD-102570, LPD-108750 | `SVC-AIHUBSERVICE`, `SVC-COMMERCEORDERSERVICE` |
 | TECH-AIHUB-014 | Liferay One provisions the AI Hub account after it marks the order completed. When AI Hub returns an HTTP error, Liferay One logs the response body and changes nothing more. The order stays completed with no AI Hub account, and nothing tries again. | P0 | LPD-102570 | `SVC-AIHUBSERVICE` |
 
-## SEO&AEO Studio Beta
+## AEO and SEO Studio
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
