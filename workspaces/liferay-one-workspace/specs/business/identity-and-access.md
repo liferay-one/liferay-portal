@@ -130,8 +130,8 @@ Terms used in this file:
 
 | ID | Requirement | Priority | Tickets | Verified By |
 | --- | --- | --- | --- | --- |
-| REQ-ACCESS-090 | When the current account has no project, the account members and project members pages show a restricted feature message instead of their content. | P1 | LPD-92707 | `HOOK-MYACCOUNT-PROJECTS-USEHASPROJECT`, `FLOW-RESTRICTED-PAGE` |
-| REQ-ACCESS-091 | Every page that needs a project uses one shared condition: the account has at least one project. The condition counts the projects of the account, not the memberships of the user. | P1 | LPD-92706, LPD-92707 | `HOOK-MYACCOUNT-PROJECTS-USEHASPROJECT`, `FLOW-RESTRICTED-PAGE` |
+| REQ-ACCESS-090 | When the current account has no project, the project members page shows a restricted feature message instead of its content. The account members page shows the message only when the account also has no partner product, so a partner account with no project can manage its members. When a request that the condition reads fails, the account members page shows the error, not the message. | P1 | LPD-92707, LPD-117497 | `HOOK-MYACCOUNT-PROJECTS-USEHASPROJECT`, `HOOK-MYACCOUNT-ACCOUNTMEMBERS-USEACCOUNTTYPE`, `FLOW-RESTRICTED-PAGE` |
+| REQ-ACCESS-091 | Every page that needs a project uses one shared condition: the account has at least one project. The condition counts the projects of the account, not the memberships of the user. The account members page adds one exception: a partner account opens it with no project. | P1 | LPD-92706, LPD-92707, LPD-117497 | `HOOK-MYACCOUNT-PROJECTS-USEHASPROJECT`, `FLOW-RESTRICTED-PAGE` |
 | REQ-ACCESS-092 | A route that the role of the user cannot access does not exist for that user. Its address goes back to the start, and the navigation does not show it. | P0 | LPD-107296 | `MOD-ROUTEUTILS`, `FLOW-RESTRICTED-PAGE`, `FLOW-ADMIN-ROUTE-GATING` |
 
 ## Guest Access
