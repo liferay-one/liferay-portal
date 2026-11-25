@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import java.security.Principal;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -242,6 +243,19 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		_checkPermission(
 			ActionKeys.UPDATE, jwt, ticketAttachment.getProjectKey());
 
+		JiraSupportIssue jiraSupportIssue = _fetchJiraSupportIssue(
+			ticketAttachment);
+
+		if (jiraSupportIssue == null) {
+			return new ResponseEntity<>(
+				"INVALID_TICKET_NUMBER", HttpStatus.NOT_FOUND);
+		}
+
+		if (jiraSupportIssue.isClosed()) {
+			return new ResponseEntity<>(
+				"TICKET_IS_CLOSED", HttpStatus.BAD_REQUEST);
+		}
+
 		ticketAttachment = _ticketAttachmentService.approveTicketAttachment(
 			"Bearer " + jwt.getTokenValue(), ticketAttachmentId);
 
@@ -422,6 +436,22 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 
 		for (TicketAttachment ticketAttachment : ticketAttachments) {
 			try {
+				if (!_isAccountProjectTicket(ticketAttachment)) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							"Unable to post the draft comment of ticket " +
+								"attachment " +
+									ticketAttachment.getTicketAttachmentId());
+					}
+
+					_ticketAttachmentService.
+						updateTicketAttachmentDraftCommentBody(
+							_getAuthorization(), StringPool.BLANK,
+							ticketAttachment.getTicketAttachmentId());
+
+					continue;
+				}
+
 				_jiraIssueService.addComment(
 					ticketAttachment.getDraftCommentBody(),
 					ticketAttachment.getJiraIssueKey());
@@ -580,6 +610,37 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		}
 	}
 
+	private JiraSupportIssue _fetchJiraSupportIssue(
+			TicketAttachment ticketAttachment)
+		throws Exception {
+
+		if (!_jiraIssueService.isJiraSupportIssueKey(
+				ticketAttachment.getJiraIssueKey())) {
+
+			return null;
+		}
+
+		JiraSupportIssue jiraSupportIssue =
+			_jiraIssueService.getJiraSupportIssue(
+				ticketAttachment.getJiraIssueKey());
+
+		if (jiraSupportIssue == null) {
+			return null;
+		}
+
+		JiraOrganization jiraOrganization =
+			jiraSupportIssue.getJiraOrganization();
+
+		if (!Objects.equals(
+				jiraOrganization.getExternalKey(),
+				ticketAttachment.getProjectKey())) {
+
+			return null;
+		}
+
+		return jiraSupportIssue;
+	}
+
 	private String _getAuthorization() {
 		return _liferayOAuth2AccessTokenManager.getAuthorization(
 			"liferay-one-etc-spring-boot-oahs");
@@ -688,6 +749,27 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 				ticketAttachment.getGCSBucketName(),
 				ticketAttachment.getGCSObjectName()),
 			HttpStatus.OK);
+	}
+
+	private boolean _isAccountProjectTicket(TicketAttachment ticketAttachment)
+		throws Exception {
+
+		if (_fetchJiraSupportIssue(ticketAttachment) == null) {
+			return false;
+		}
+
+		Project project = _projectService.fetchProject(
+			ticketAttachment.getProjectKey());
+
+		if ((project == null) ||
+			!Objects.equals(
+				project.getAccountExternalReferenceCode(),
+				ticketAttachment.getAccountExternalReferenceCode())) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	private static final String _URL_REGEX =

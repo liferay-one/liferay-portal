@@ -21,6 +21,8 @@ public final class TicketAttachment {
 	public static final String STORAGE_PROVIDER_GCS = "gcs";
 
 	public TicketAttachment(JSONObject jsonObject) {
+		_accountExternalReferenceCode = jsonObject.optString(
+			"r_accountEntryToTicketAttachment_accountEntryERC");
 		_accountKey = jsonObject.getString("accountKey");
 		_draftCommentBody = jsonObject.optString("draftCommentBody");
 		_fileName = jsonObject.getString("fileName");
@@ -41,6 +43,10 @@ public final class TicketAttachment {
 		JSONObject creatorJSONObject = jsonObject.getJSONObject("creator");
 
 		_userId = creatorJSONObject.getLong("id");
+	}
+
+	public String getAccountExternalReferenceCode() {
+		return _accountExternalReferenceCode;
 	}
 
 	public String getAccountKey() {
@@ -116,6 +122,7 @@ public final class TicketAttachment {
 		return false;
 	}
 
+	private final String _accountExternalReferenceCode;
 	private final String _accountKey;
 	private final String _draftCommentBody;
 	private final String _fileName;
