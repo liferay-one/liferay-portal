@@ -1382,6 +1382,15 @@
 			"ADD_OBJECT_ENTRY"
 		],
 		"primKey": "0",
+		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:PublisherAccountRequest$]",
+		"roleName": "User",
+		"scope": "1"
+	},
+	{
+		"actionIds": [
+			"ADD_OBJECT_ENTRY"
+		],
+		"primKey": "0",
 		"resourceName": "com.liferay.object#[$OBJECT_DEFINITION_ID:PublisherAsset$]",
 		"roleName": "Account App Publisher",
 		"scope": "3"
