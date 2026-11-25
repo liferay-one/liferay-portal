@@ -192,25 +192,6 @@ public class EnvironmentQuotaServiceTest {
 	}
 
 	@Test
-	public void testGetEnvironmentQuotaWithoutCloudNativeEntitlementIsUnavailable()
-		throws Exception {
-
-		_whenProject(
-			Arrays.asList(
-				_createEntitlement(
-					10L, null, 1.0,
-					EntitlementConstants.NAME_CLOUD_NATIVE_PRODUCTION)),
-			List.of());
-
-		EnvironmentQuota environmentQuota =
-			_environmentQuotaService.getEnvironmentQuota(
-				"PRJCT-1", EnvironmentConstants.TYPE_PRODUCTION);
-
-		Assertions.assertEquals(0, environmentQuota.getTotalCount());
-		Assertions.assertFalse(environmentQuota.isAvailable());
-	}
-
-	@Test
 	public void testGetEnvironmentQuotaWithUnlimitedGrantIsAvailable()
 		throws Exception {
 
@@ -234,6 +215,25 @@ public class EnvironmentQuotaServiceTest {
 		Assertions.assertTrue(environmentQuota.isAvailable());
 		Assertions.assertTrue(environmentQuota.isUnlimited());
 		Assertions.assertEquals(1, environmentQuota.getUsedCount());
+	}
+
+	@Test
+	public void testGetEnvironmentQuotaWithoutCloudNativeEntitlementIsUnavailable()
+		throws Exception {
+
+		_whenProject(
+			Arrays.asList(
+				_createEntitlement(
+					10L, null, 1.0,
+					EntitlementConstants.NAME_CLOUD_NATIVE_PRODUCTION)),
+			List.of());
+
+		EnvironmentQuota environmentQuota =
+			_environmentQuotaService.getEnvironmentQuota(
+				"PRJCT-1", EnvironmentConstants.TYPE_PRODUCTION);
+
+		Assertions.assertEquals(0, environmentQuota.getTotalCount());
+		Assertions.assertFalse(environmentQuota.isAvailable());
 	}
 
 	@Test
@@ -334,6 +334,22 @@ public class EnvironmentQuotaServiceTest {
 			));
 	}
 
+	private void _whenDXPProject(List<Entitlement> entitlements)
+		throws Exception {
+
+		Mockito.when(
+			_entitlementService.getActiveEntitlements("PRJCT-1")
+		).thenReturn(
+			entitlements
+		);
+
+		Mockito.when(
+			_environmentService.getDXPEnvironments("PRJCT-1")
+		).thenReturn(
+			List.of()
+		);
+	}
+
 	private void _whenProject(
 			List<Entitlement> entitlements, List<Environment> environments)
 		throws Exception {
@@ -348,22 +364,6 @@ public class EnvironmentQuotaServiceTest {
 			_environmentService.getCloudNativeEnvironments("PRJCT-1")
 		).thenReturn(
 			environments
-		);
-	}
-
-	private void _whenDXPProject(List<Entitlement> entitlements)
-		throws Exception {
-
-		Mockito.when(
-			_entitlementService.getActiveEntitlements("PRJCT-1")
-		).thenReturn(
-			entitlements
-		);
-
-		Mockito.when(
-			_environmentService.getDXPEnvironments("PRJCT-1")
-		).thenReturn(
-			List.of()
 		);
 	}
 

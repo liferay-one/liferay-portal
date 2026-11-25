@@ -54,7 +54,9 @@ describe('DXPOfflinePackageStep', () => {
 		render(<Wrapper onClickDownload={onClickDownload} />);
 
 		fireEvent.change(screen.getByLabelText('Activation Token'), {
-			target: {value: 'eyJhbGciOiJSUzI1NiJ9.eyJpbnN0YWxsYXRpb25JZCI6IkMifQ.c2lnbmF0dXJl'},
+			target: {
+				value: 'eyJhbGciOiJSUzI1NiJ9.eyJpbnN0YWxsYXRpb25JZCI6IkMifQ.c2lnbmF0dXJl',
+			},
 		});
 
 		const downloadButton = screen.getByRole('button', {name: 'Download'});
@@ -80,7 +82,9 @@ describe('DXPOfflinePackageStep', () => {
 		render(<Wrapper version="" />);
 
 		fireEvent.change(screen.getByLabelText('Activation Token'), {
-			target: {value: 'eyJhbGciOiJSUzI1NiJ9.eyJpbnN0YWxsYXRpb25JZCI6IkMifQ.c2lnbmF0dXJl'},
+			target: {
+				value: 'eyJhbGciOiJSUzI1NiJ9.eyJpbnN0YWxsYXRpb25JZCI6IkMifQ.c2lnbmF0dXJl',
+			},
 		});
 
 		expect(screen.getByRole('button', {name: 'Download'})).toBeDisabled();

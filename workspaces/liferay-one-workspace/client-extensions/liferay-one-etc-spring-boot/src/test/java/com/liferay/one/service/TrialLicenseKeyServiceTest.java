@@ -73,6 +73,19 @@ public class TrialLicenseKeyServiceTest {
 	}
 
 	@Test
+	public void testGetDXPTrialLicenseKeyXMLUsesProductVersion()
+		throws Exception {
+
+		String xml = _trialLicenseKeyService.getDXPTrialLicenseKeyXML(
+			_LICENSE_LIFETIME, _OWNER, "2026.Q2", _START_TIME);
+
+		Assertions.assertTrue(
+			xml.contains("<product-version>2026.Q2</product-version>"));
+		Assertions.assertTrue(
+			xml.contains("<license-version>6</license-version>"));
+	}
+
+	@Test
 	public void testGetDXPTrialLicenseKeyXMLUsesQuarterOfStartDate()
 		throws Exception {
 
@@ -91,19 +104,6 @@ public class TrialLicenseKeyServiceTest {
 
 		Assertions.assertTrue(
 			xml.contains("<product-version>2026.Q4</product-version>"));
-	}
-
-	@Test
-	public void testGetDXPTrialLicenseKeyXMLUsesProductVersion()
-		throws Exception {
-
-		String xml = _trialLicenseKeyService.getDXPTrialLicenseKeyXML(
-			_LICENSE_LIFETIME, _OWNER, "2026.Q2", _START_TIME);
-
-		Assertions.assertTrue(
-			xml.contains("<product-version>2026.Q2</product-version>"));
-		Assertions.assertTrue(
-			xml.contains("<license-version>6</license-version>"));
 	}
 
 	private String _read(String fileName) throws Exception {

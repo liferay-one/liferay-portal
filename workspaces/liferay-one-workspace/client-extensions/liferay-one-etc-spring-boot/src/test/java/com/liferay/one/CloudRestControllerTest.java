@@ -2452,26 +2452,6 @@ public class CloudRestControllerTest {
 		);
 	}
 
-	private String _createActivationCodeJSON(String type) {
-		JSONObject jsonObject = new JSONObject(
-		).put(
-			"type", type
-		);
-
-		return jsonObject.toString();
-	}
-
-	private String _createActivationRequestJSON(String environmentProfile) {
-		JSONObject jsonObject = new JSONObject(
-		).put(
-			"environmentProfile", environmentProfile
-		).put(
-			"projectExternalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
-		);
-
-		return jsonObject.toString();
-	}
-
 	private Environment _createActivatedEnvironment(
 		String activationCode, String activationMode, String publicKey) {
 
@@ -2496,6 +2476,26 @@ public class CloudRestControllerTest {
 				"r_projectToEnvironment_c_projectERC",
 				_PROJECT_EXTERNAL_REFERENCE_CODE
 			));
+	}
+
+	private String _createActivationCodeJSON(String type) {
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"type", type
+		);
+
+		return jsonObject.toString();
+	}
+
+	private String _createActivationRequestJSON(String environmentProfile) {
+		JSONObject jsonObject = new JSONObject(
+		).put(
+			"environmentProfile", environmentProfile
+		).put(
+			"projectExternalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
+		);
+
+		return jsonObject.toString();
 	}
 
 	private String _createActivationToken() throws Exception {
@@ -2972,7 +2972,6 @@ public class CloudRestControllerTest {
 	private AccountService _accountService;
 	private AdminPermission _adminPermission;
 	private CloudActivationRequestService _cloudActivationRequestService;
-	private JWTSignatureValidator _jwtSignatureValidator;
 	private CloudRestController _cloudRestController;
 	private CommerceProductService _commerceProductService;
 	private CommerceProductVirtualSettingsService
@@ -2983,6 +2982,7 @@ public class CloudRestControllerTest {
 	private EnvironmentActivationPermission _environmentActivationPermission;
 	private EnvironmentQuotaService _environmentQuotaService;
 	private EnvironmentService _environmentService;
+	private JWTSignatureValidator _jwtSignatureValidator;
 	private LicenseKeyExporter _licenseKeyExporter;
 	private LicenseKeyGenerator _licenseKeyGenerator;
 	private ProductVersionService _productVersionService;

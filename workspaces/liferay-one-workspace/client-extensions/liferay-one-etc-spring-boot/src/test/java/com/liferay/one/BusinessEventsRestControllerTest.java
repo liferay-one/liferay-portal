@@ -131,20 +131,6 @@ public class BusinessEventsRestControllerTest {
 	}
 
 	@Test
-	public void testDeleteProjectsBusinessEventsWithoutPermission()
-		throws Exception {
-
-		_denyPermission(ActionKeys.UPDATE);
-
-		Assertions.assertThrows(
-			PrincipalException.class,
-			() -> _businessEventsRestController.deleteProjectsBusinessEvents(
-				null, _PROJECT_ERC, "42"));
-
-		Mockito.verifyNoInteractions(_jiraBusinessEventService);
-	}
-
-	@Test
 	public void testDeleteProjectsBusinessEventsWithProvisioningWorkerRole()
 		throws Exception {
 
@@ -162,6 +148,20 @@ public class BusinessEventsRestControllerTest {
 		).deleteJiraBusinessEvent(
 			"42"
 		);
+	}
+
+	@Test
+	public void testDeleteProjectsBusinessEventsWithoutPermission()
+		throws Exception {
+
+		_denyPermission(ActionKeys.UPDATE);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _businessEventsRestController.deleteProjectsBusinessEvents(
+				null, _PROJECT_ERC, "42"));
+
+		Mockito.verifyNoInteractions(_jiraBusinessEventService);
 	}
 
 	@Test

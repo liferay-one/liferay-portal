@@ -30,18 +30,6 @@ public class ImpersonationInterceptorTest {
 	}
 
 	@Test
-	public void testPreHandleAllowsReadRequestWhileImpersonating()
-		throws Exception {
-
-		ReflectionTestUtils.setField(
-			_impersonationInterceptor, "_writeEnabled", false);
-
-		for (String method : new String[] {"GET", "HEAD", "OPTIONS"}) {
-			_assertAllowed(method, "/trial/provisioning/1", "200");
-		}
-	}
-
-	@Test
 	public void testPreHandleAllowsErrorDispatchWhileImpersonating()
 		throws Exception {
 
@@ -61,6 +49,18 @@ public class ImpersonationInterceptorTest {
 				mockHttpServletRequest, mockHttpServletResponse, null));
 		Assertions.assertEquals(
 			HttpServletResponse.SC_OK, mockHttpServletResponse.getStatus());
+	}
+
+	@Test
+	public void testPreHandleAllowsReadRequestWhileImpersonating()
+		throws Exception {
+
+		ReflectionTestUtils.setField(
+			_impersonationInterceptor, "_writeEnabled", false);
+
+		for (String method : new String[] {"GET", "HEAD", "OPTIONS"}) {
+			_assertAllowed(method, "/trial/provisioning/1", "200");
+		}
 	}
 
 	@Test
