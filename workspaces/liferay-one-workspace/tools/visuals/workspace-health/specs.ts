@@ -26,6 +26,7 @@ import {
 	WORKSPACE_ROOT,
 	inputFile,
 	listFiles,
+	objectRESTContextPath,
 	readJSON,
 	relative,
 } from '../lib.ts';
@@ -95,7 +96,7 @@ export function readSpecs() {
 	const objectPaths = new Set(
 		readJSON<{items: any[]}>(
 			path.join(BATCH_DIR, '03-object-definition.batch-engine-data.json')
-		).items.map((definition) => definition.restContextPath)
+		).items.map(objectRESTContextPath)
 	);
 
 	for (const file of listFiles(
