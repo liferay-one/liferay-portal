@@ -23,17 +23,19 @@ const DASHBOARD_PROFILES: UtilizationProfile[] = [
 
 type UtilizationTabProps = {
 	productExternalReferenceCode: string;
+	productId?: number;
 	profile?: UtilizationProfile;
 	projectExternalReferenceCode: string;
 };
 
 export default function UtilizationTab({
 	productExternalReferenceCode,
+	productId,
 	profile,
 	projectExternalReferenceCode,
 }: UtilizationTabProps) {
 	if (profile === 'ai-hub') {
-		return <AIHubUtilization />;
+		return <AIHubUtilization productId={productId} />;
 	}
 
 	if (profile === 'legacy') {
