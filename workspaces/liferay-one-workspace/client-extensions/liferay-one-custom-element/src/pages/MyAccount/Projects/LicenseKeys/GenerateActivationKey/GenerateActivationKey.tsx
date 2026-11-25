@@ -480,13 +480,9 @@ export default function GenerateActivationKey() {
 	}
 
 	function returnToList() {
-		if (dxpOfflineEnvironmentId || modifyEnvironmentId) {
-			navigate('..');
+		const addsKey = !dxpOfflineEnvironmentId && !modifyEnvironmentId;
 
-			return;
-		}
-
-		navigate('..', {state: RESET_LIST_STATE});
+		navigate('..', addsKey ? {state: RESET_LIST_STATE} : undefined);
 	}
 
 	async function onClickContinueOfflineToken() {

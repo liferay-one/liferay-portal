@@ -169,10 +169,11 @@ function getStorageKey(pathname: string, persistKey: string): STORAGE_KEYS {
 }
 
 function isResetListState(state: unknown): boolean {
-	return Boolean(
-		state &&
-			typeof state === 'object' &&
-			(state as {resetList?: boolean}).resetList
+	return (
+		typeof state === 'object' &&
+		state !== null &&
+		'resetList' in state &&
+		state.resetList === true
 	);
 }
 
@@ -382,10 +383,10 @@ function FilterableListCardContent<T>({
 			ownedSearchChangedRef.current = true;
 		}
 
-		if (
-			!persistKey ||
-			(!ownedSearchChangedRef.current && (loading || !ownedSearch))
-		) {
+		const userChangedSearch = ownedSearchChangedRef.current;
+		const initialSearchNotReady = loading || !ownedSearch;
+
+		if (!persistKey || (!userChangedSearch && initialSearchNotReady)) {
 			return;
 		}
 
@@ -534,6 +535,20 @@ function FilterableListCardContent<T>({
 	const activeFilter = filters.find(
 		(filter) => filter.key === activeFilterKey
 	);
+
+	const changePage = (nextPage: number) => {
+		updateParameters({
+			[PAGE_PARAMETER]: nextPage > 1 ? [String(nextPage)] : [],
+		});
+	};
+
+	const changePageSize = (nextPageSize: number) => {
+		updateParameters({
+			[PAGE_PARAMETER]: [],
+			[PAGE_SIZE_PARAMETER]:
+				nextPageSize === defaultPageSize ? [] : [String(nextPageSize)],
+		});
+	};
 
 	const changeSort = (key: string) => {
 		const ascending = sort?.key === key ? !sort.ascending : true;
@@ -801,21 +816,8 @@ function FilterableListCardContent<T>({
 								perPageItems: translate('x-items'),
 								selectPerPageItems: translate('x-items'),
 							}}
-							onDeltaChange={(delta) =>
-								updateParameters({
-									[PAGE_PARAMETER]: [],
-									[PAGE_SIZE_PARAMETER]:
-										delta === defaultPageSize
-											? []
-											: [String(delta)],
-								})
-							}
-							onPageChange={(nextPage) =>
-								updateParameters({
-									[PAGE_PARAMETER]:
-										nextPage > 1 ? [String(nextPage)] : [],
-								})
-							}
+							onDeltaChange={changePageSize}
+							onPageChange={changePage}
 							totalItems={sortedItems.length}
 						/>
 					</div>
