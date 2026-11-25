@@ -253,9 +253,19 @@ The `Closed` transition requires `resolution` and `customfield_10979` (Cross Cut
 
 ```json
 {
-	"customfield_10979": [{"value": "None"}],
-	"fixVersions": [{"name": "Master"}],
-	"resolution": {"name": "Fixed"}
+	"customfield_10979": [
+		{
+			"value": "None"
+		}
+	],
+	"fixVersions": [
+		{
+			"name": "Master"
+		}
+	],
+	"resolution": {
+		"name": "Fixed"
+	}
 }
 ```
 

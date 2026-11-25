@@ -145,6 +145,20 @@ Prefer a shared helper in `~/utils/dateUtils.ts` over re-deriving this per file.
 
 All the CSS in the custom element goes into one stylesheet, so a bare `.dropdown-menu` rule in a page file applies to every page. `ProvideAppBuildPage.css` sets `.dropdown-menu { max-width: none !important; }`, and a menu that needs a maximum width must override it with `!important`. Scope a new menu rule to a class of its own.
 
+## Marketo Errors Render Inside the Field Wrap
+
+Marketo adds a validation error as a `.mktoError` element inside `.mktoFieldWrap`, after the label and the field. Both Marketo stylesheets (`MarketoForm.css` in the custom element and `marketo-form/index.css` in the site initializer) give it `width: 100%` in the normal flow. When a rule makes a field wrap `display: flex`, also set `flex-wrap: wrap`. Without it, the error sits in the same row as the field and pushes the label into a narrow column.
+
+```css
+.mktoForm .mktoFieldWrap:has(> .mktoCheckboxList > input:only-of-type) {
+	align-items: flex-start;
+	display: flex;
+	flex-wrap: wrap;
+}
+```
+
+Test a change to the field layout with the error shown: leave a required field empty and submit the form. Both stylesheets hold the same rules, so make each change in both files.
+
 ## Java Code Ordering
 
 In Java classes, declare resource clients before the objects that use them:

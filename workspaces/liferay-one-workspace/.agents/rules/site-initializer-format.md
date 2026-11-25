@@ -435,6 +435,8 @@ A second form, `"[#KEY#]"`, replaces the token **together with its surrounding J
 
 Context tokens: `[$COMPANY_ID$]`, `[$GROUP_ID$]`, `[$GROUP_KEY$]`, `[$GROUP_FRIENDLY_URL$]`, `[$PORTAL_URL$]`.
 
+`[$PORTAL_URL$]` is the portal URL of the company, not of the site. The provision writes it into the content once, and the content does not change when the domain changes. On the local environment it resolves to `http://localhost:8080`, not to the One site's virtual host `http://one.localhost:8080`. `[$GROUP_KEY$]` resolves to `One`, with a capital letter. When the Spring Boot sidecar sends a notification template and passes `PORTAL_URL`, use the runtime term `[%PORTAL_URL%]` in that template, so that the links and the images use the same host.
+
 Entity tokens are keyed by the entity's name or ERC, and are registered by the handler that creates the entity — so they generally resolve only for entities created by an **earlier** handler in the order above. **Object definition tokens are the exception**: they are registered across the company for every published object, including ones created outside the tree — see "Object Definition Tokens Are the Exception" below before concluding a token will not resolve.
 
 | Token | Resolves To |
