@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import java.security.Principal;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -242,6 +243,14 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		_checkPermission(
 			ActionKeys.UPDATE, jwt, ticketAttachment.getProjectKey());
 
+		Boolean accountProjectTicket = _isAccountProjectTicket(
+			ticketAttachment);
+
+		if (Boolean.FALSE.equals(accountProjectTicket)) {
+			return new ResponseEntity<>(
+				"INVALID_TICKET_NUMBER", HttpStatus.NOT_FOUND);
+		}
+
 		ticketAttachment = _ticketAttachmentService.approveTicketAttachment(
 			"Bearer " + jwt.getTokenValue(), ticketAttachmentId);
 
@@ -250,22 +259,24 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		String jiraIssueCommentBody = _buildJiraIssueCommentBody(
 			jsonObject.optString("commentBody"), jwt, ticketAttachment);
 
-		try {
-			_jiraIssueService.addComment(
-				jiraIssueCommentBody, ticketAttachment.getJiraIssueKey());
+		if (Boolean.TRUE.equals(accountProjectTicket)) {
+			try {
+				_jiraIssueService.addComment(
+					jiraIssueCommentBody, ticketAttachment.getJiraIssueKey());
 
-			return new ResponseEntity<>(HttpStatus.OK);
+				return new ResponseEntity<>(HttpStatus.OK);
+			}
+			catch (Exception exception) {
+				_log.error(exception);
+			}
 		}
-		catch (Exception exception) {
-			_log.error(exception);
 
-			_ticketAttachmentService.updateTicketAttachmentDraftCommentBody(
-				"Bearer " + jwt.getTokenValue(), jiraIssueCommentBody,
-				ticketAttachmentId);
+		_ticketAttachmentService.updateTicketAttachmentDraftCommentBody(
+			"Bearer " + jwt.getTokenValue(), jiraIssueCommentBody,
+			ticketAttachmentId);
 
-			return new ResponseEntity<>(
-				"COMMENT_POST_FAILED_RETRYING", HttpStatus.ACCEPTED);
-		}
+		return new ResponseEntity<>(
+			"COMMENT_POST_FAILED_RETRYING", HttpStatus.ACCEPTED);
 	}
 
 	@PostMapping("/initiate-upload")
@@ -422,6 +433,37 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 
 		for (TicketAttachment ticketAttachment : ticketAttachments) {
 			try {
+				Boolean accountProjectTicket = _isAccountProjectTicket(
+					ticketAttachment);
+
+				if (accountProjectTicket == null) {
+					continue;
+				}
+
+				if (!accountProjectTicket) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							StringBundler.concat(
+								"Unable to post the draft comment of ticket ",
+								"attachment ",
+								ticketAttachment.getTicketAttachmentId(),
+								" because Jira issue ",
+								ticketAttachment.getJiraIssueKey(),
+								" does not belong to project ",
+								ticketAttachment.getProjectKey(),
+								" of account ",
+								ticketAttachment.
+									getAccountExternalReferenceCode()));
+					}
+
+					_ticketAttachmentService.
+						updateTicketAttachmentDraftCommentBody(
+							_getAuthorization(), StringPool.BLANK,
+							ticketAttachment.getTicketAttachmentId());
+
+					continue;
+				}
+
 				_jiraIssueService.addComment(
 					ticketAttachment.getDraftCommentBody(),
 					ticketAttachment.getJiraIssueKey());
@@ -688,6 +730,64 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 				ticketAttachment.getGCSBucketName(),
 				ticketAttachment.getGCSObjectName()),
 			HttpStatus.OK);
+	}
+
+	private Boolean _isAccountProjectTicket(TicketAttachment ticketAttachment)
+		throws Exception {
+
+		if (!_jiraIssueService.isJiraSupportIssueKey(
+				ticketAttachment.getJiraIssueKey())) {
+
+			return false;
+		}
+
+		JiraSupportIssue jiraSupportIssue = null;
+
+		try {
+			jiraSupportIssue = _jiraIssueService.getJiraSupportIssue(
+				ticketAttachment.getJiraIssueKey());
+		}
+		catch (OrganizationNotFoundException organizationNotFoundException) {
+			if (organizationNotFoundException.getCause() == null) {
+				return false;
+			}
+
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to get the organization of Jira issue " +
+						ticketAttachment.getJiraIssueKey(),
+					organizationNotFoundException);
+			}
+
+			return null;
+		}
+
+		if (jiraSupportIssue == null) {
+			return null;
+		}
+
+		JiraOrganization jiraOrganization =
+			jiraSupportIssue.getJiraOrganization();
+
+		if (!Objects.equals(
+				jiraOrganization.getExternalKey(),
+				ticketAttachment.getProjectKey())) {
+
+			return false;
+		}
+
+		Project project = _projectService.fetchProject(
+			ticketAttachment.getProjectKey());
+
+		if ((project == null) ||
+			!Objects.equals(
+				project.getAccountExternalReferenceCode(),
+				ticketAttachment.getAccountExternalReferenceCode())) {
+
+			return false;
+		}
+
+		return true;
 	}
 
 	private static final String _URL_REGEX =

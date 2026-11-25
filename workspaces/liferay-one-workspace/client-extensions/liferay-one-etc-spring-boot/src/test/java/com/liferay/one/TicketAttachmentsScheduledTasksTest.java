@@ -6,11 +6,15 @@
 package com.liferay.one;
 
 import com.liferay.client.extension.util.spring.boot3.client.LiferayOAuth2AccessTokenManager;
+import com.liferay.one.jira.exception.OrganizationNotFoundException;
+import com.liferay.one.jira.model.JiraOrganization;
 import com.liferay.one.jira.model.JiraSupportIssue;
 import com.liferay.one.jira.service.JiraIssueService;
+import com.liferay.one.model.Project;
 import com.liferay.one.model.TicketAttachment;
 import com.liferay.one.service.GoogleCloudStorageService;
 import com.liferay.one.service.NotificationQueueEntryService;
+import com.liferay.one.service.ProjectService;
 import com.liferay.one.service.TicketAttachmentService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -48,7 +52,30 @@ public class TicketAttachmentsScheduledTasksTest {
 		_jiraIssueService = Mockito.mock(JiraIssueService.class);
 		_notificationQueueEntryService = Mockito.mock(
 			NotificationQueueEntryService.class);
+		_projectService = Mockito.mock(ProjectService.class);
 		_ticketAttachmentService = Mockito.mock(TicketAttachmentService.class);
+
+		Mockito.when(
+			_jiraIssueService.isJiraSupportIssueKey(
+				ArgumentMatchers.anyString())
+		).thenReturn(
+			true
+		);
+
+		_mockJiraSupportIssue(_PROJECT_EXTERNAL_REFERENCE_CODE);
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			new Project(
+				new JSONObject(
+				).put(
+					"externalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
+				).put(
+					"r_accountEntryToProject_accountEntryERC",
+					_ACCOUNT_EXTERNAL_REFERENCE_CODE
+				))
+		);
 
 		LiferayOAuth2AccessTokenManager liferayOAuth2AccessTokenManager =
 			Mockito.mock(LiferayOAuth2AccessTokenManager.class);
@@ -80,6 +107,9 @@ public class TicketAttachmentsScheduledTasksTest {
 		ReflectionTestUtils.setField(
 			_ticketAttachmentsRestController, "_notificationQueueEntryService",
 			_notificationQueueEntryService);
+		ReflectionTestUtils.setField(
+			_ticketAttachmentsRestController, "_projectService",
+			_projectService);
 		ReflectionTestUtils.setField(
 			_ticketAttachmentsRestController, "_ticketAttachmentService",
 			_ticketAttachmentService);
@@ -256,6 +286,23 @@ public class TicketAttachmentsScheduledTasksTest {
 	}
 
 	@Test
+	public void testScheduledUpdateTicketAttachmentDraftCommentBodyClearsDraftWhenJiraIssueHasNoOrganization()
+		throws Exception {
+
+		Mockito.when(
+			_jiraIssueService.getJiraSupportIssue("LRP-1")
+		).thenThrow(
+			new OrganizationNotFoundException()
+		);
+
+		_mockSearch(
+			_DRAFT_COMMENT_BODY_FILTER,
+			_createTicketAttachment("Comment 1", "LRP-1", 1L));
+
+		_assertDraftCommentClearedAndNotPosted();
+	}
+
+	@Test
 	public void testScheduledUpdateTicketAttachmentDraftCommentBodyContinuesAfterFailure()
 		throws Exception {
 
@@ -297,6 +344,39 @@ public class TicketAttachmentsScheduledTasksTest {
 	}
 
 	@Test
+	public void testScheduledUpdateTicketAttachmentDraftCommentBodyKeepsDraftWhenJiraIssueIsUnavailable()
+		throws Exception {
+
+		Mockito.when(
+			_jiraIssueService.getJiraSupportIssue("LRP-1")
+		).thenReturn(
+			null
+		);
+
+		_mockSearch(
+			_DRAFT_COMMENT_BODY_FILTER,
+			_createTicketAttachment("Comment 1", "LRP-1", 1L));
+
+		_ticketAttachmentsRestController.
+			scheduledUpdateTicketAttachmentDraftCommentBody();
+
+		Mockito.verify(
+			_jiraIssueService, Mockito.never()
+		).addComment(
+			ArgumentMatchers.anyString(), ArgumentMatchers.anyString()
+		);
+
+		Mockito.verify(
+			_ticketAttachmentService, Mockito.never()
+		).updateTicketAttachmentDraftCommentBody(
+			ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
+			ArgumentMatchers.anyLong()
+		);
+
+		Mockito.verifyNoInteractions(_notificationQueueEntryService);
+	}
+
+	@Test
 	public void testScheduledUpdateTicketAttachmentDraftCommentBodyPostsAndClearsDraft()
 		throws Exception {
 
@@ -322,13 +402,62 @@ public class TicketAttachmentsScheduledTasksTest {
 		Mockito.verifyNoInteractions(_notificationQueueEntryService);
 	}
 
+	@Test
+	public void testScheduledUpdateTicketAttachmentDraftCommentBodySkipsTicketAttachmentOfAnotherAccount()
+		throws Exception {
+
+		_mockSearch(
+			_DRAFT_COMMENT_BODY_FILTER,
+			_createTicketAttachment("ACCNT-002", "Comment 1", "LRP-1", 1L));
+
+		_assertDraftCommentClearedAndNotPosted();
+	}
+
+	@Test
+	public void testScheduledUpdateTicketAttachmentDraftCommentBodySkipsTicketOfAnotherProject()
+		throws Exception {
+
+		_mockJiraSupportIssue("PRJCT-002");
+		_mockSearch(
+			_DRAFT_COMMENT_BODY_FILTER,
+			_createTicketAttachment("Comment 1", "LRP-1", 1L));
+
+		_assertDraftCommentClearedAndNotPosted();
+	}
+
+	private void _assertDraftCommentClearedAndNotPosted() throws Exception {
+		_ticketAttachmentsRestController.
+			scheduledUpdateTicketAttachmentDraftCommentBody();
+
+		Mockito.verify(
+			_jiraIssueService, Mockito.never()
+		).addComment(
+			ArgumentMatchers.anyString(), ArgumentMatchers.anyString()
+		);
+
+		Mockito.verify(
+			_ticketAttachmentService
+		).updateTicketAttachmentDraftCommentBody(
+			_AUTHORIZATION, StringPool.BLANK, 1L
+		);
+	}
+
 	private TicketAttachment _createTicketAttachment(
 		String draftCommentBody, String jiraIssueKey, long ticketAttachmentId) {
+
+		return _createTicketAttachment(
+			_ACCOUNT_EXTERNAL_REFERENCE_CODE, draftCommentBody, jiraIssueKey,
+			ticketAttachmentId);
+	}
+
+	private TicketAttachment _createTicketAttachment(
+		String accountExternalReferenceCode, String draftCommentBody,
+		String jiraIssueKey, long ticketAttachmentId) {
 
 		return new TicketAttachment(
 			new JSONObject(
 			).put(
-				"accountKey", "ACCOUNT"
+				"accountKey", accountExternalReferenceCode
 			).put(
 				"creator",
 				new JSONObject(
@@ -348,6 +477,11 @@ public class TicketAttachmentsScheduledTasksTest {
 			).put(
 				"jiraIssueKey", jiraIssueKey
 			).put(
+				"projectKey", _PROJECT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"r_accountEntryToTicketAttachment_accountEntryERC",
+				accountExternalReferenceCode
+			).put(
 				"status",
 				new JSONObject(
 				).put(
@@ -356,6 +490,31 @@ public class TicketAttachmentsScheduledTasksTest {
 			).put(
 				"storageProvider", TicketAttachment.STORAGE_PROVIDER_GCS
 			));
+	}
+
+	private void _mockJiraSupportIssue(String projectExternalReferenceCode)
+		throws Exception {
+
+		Mockito.when(
+			_jiraIssueService.getJiraSupportIssue(ArgumentMatchers.anyString())
+		).thenReturn(
+			new JiraSupportIssue(
+				new JSONObject(
+				).put(
+					"fields",
+					new JSONObject(
+					).put(
+						"status",
+						new JSONObject(
+						).put(
+							"name", "Open"
+						)
+					)
+				).put(
+					"key", "LRP-1"
+				),
+				new JiraOrganization(projectExternalReferenceCode, "1", "Acme"))
+		);
 	}
 
 	private void _mockSearch(
@@ -370,6 +529,8 @@ public class TicketAttachmentsScheduledTasksTest {
 		);
 	}
 
+	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE = "ACCNT-001";
+
 	private static final String _AUTHORIZATION = "Bearer token";
 
 	private static final String _BUCKET_NAME = "bucket";
@@ -378,9 +539,12 @@ public class TicketAttachmentsScheduledTasksTest {
 		"draftCommentBody ne null and draftCommentBody ne '' and (state eq 0 " +
 			"or state eq null) and status/any(s:s eq 0)";
 
+	private static final String _PROJECT_EXTERNAL_REFERENCE_CODE = "PRJCT-001";
+
 	private GoogleCloudStorageService _googleCloudStorageService;
 	private JiraIssueService _jiraIssueService;
 	private NotificationQueueEntryService _notificationQueueEntryService;
+	private ProjectService _projectService;
 	private TicketAttachmentService _ticketAttachmentService;
 	private TicketAttachmentsRestController _ticketAttachmentsRestController;
 
