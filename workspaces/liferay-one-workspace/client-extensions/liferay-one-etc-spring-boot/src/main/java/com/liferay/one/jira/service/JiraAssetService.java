@@ -646,6 +646,47 @@ public class JiraAssetService {
 		return converter.getObjectTypeName() + "#" + externalKey;
 	}
 
+	private JiraAssetObject _getMatchingJiraAssetObject(
+		BaseJiraAssetObjectConverter converter, String externalKey,
+		Consumer<AQLUtil.Builder> matchConsumer) {
+
+		List<JiraAssetObject> jiraAssetObjects = getJiraAssetObjects(
+			converter,
+			aqlBuilder -> aqlBuilder.andEquals(
+				externalKey, converter.getExternalKeyAttributeName()));
+
+		if (!jiraAssetObjects.isEmpty()) {
+			return jiraAssetObjects.get(0);
+		}
+
+		if (matchConsumer == null) {
+			return null;
+		}
+
+		jiraAssetObjects = getJiraAssetObjects(
+			converter,
+			aqlBuilder -> {
+				matchConsumer.accept(aqlBuilder);
+
+				aqlBuilder.orderByDescending("Updated");
+			});
+
+		if (jiraAssetObjects.isEmpty()) {
+			return null;
+		}
+
+		for (JiraAssetObject jiraAssetObject : jiraAssetObjects) {
+			if (!GetterUtil.getBoolean(
+					jiraAssetObject.getAttributeValue(
+						converter.getDeletedAttributeName()))) {
+
+				return jiraAssetObject;
+			}
+		}
+
+		return jiraAssetObjects.get(0);
+	}
+
 	private boolean _isSyncDisabled(
 		BaseJiraAssetObjectConverter converter, String externalKey,
 		String operation) {
@@ -776,47 +817,6 @@ public class JiraAssetService {
 
 		_jiraAssetPersistence.updateObject(
 			existingJiraAssetObject.getObjectId(), patchJiraAssetObject);
-	}
-
-	private JiraAssetObject _getMatchingJiraAssetObject(
-		BaseJiraAssetObjectConverter converter, String externalKey,
-		Consumer<AQLUtil.Builder> matchConsumer) {
-
-		List<JiraAssetObject> jiraAssetObjects = getJiraAssetObjects(
-			converter,
-			aqlBuilder -> aqlBuilder.andEquals(
-				externalKey, converter.getExternalKeyAttributeName()));
-
-		if (!jiraAssetObjects.isEmpty()) {
-			return jiraAssetObjects.get(0);
-		}
-
-		if (matchConsumer == null) {
-			return null;
-		}
-
-		jiraAssetObjects = getJiraAssetObjects(
-			converter,
-			aqlBuilder -> {
-				matchConsumer.accept(aqlBuilder);
-
-				aqlBuilder.orderByDescending("Updated");
-			});
-
-		if (jiraAssetObjects.isEmpty()) {
-			return null;
-		}
-
-		for (JiraAssetObject jiraAssetObject : jiraAssetObjects) {
-			if (!GetterUtil.getBoolean(
-					jiraAssetObject.getAttributeValue(
-						converter.getDeletedAttributeName()))) {
-
-				return jiraAssetObject;
-			}
-		}
-
-		return jiraAssetObjects.get(0);
 	}
 
 	private void _upsert(

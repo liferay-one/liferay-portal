@@ -64,7 +64,10 @@ type ILiferay = {
 		Cookie?: ILiferayCookie;
 		LocalStorage: LiferayStorage;
 		SessionStorage: LiferayStorage;
-		fetch: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>;
+		fetch: (
+			input: RequestInfo | URL,
+			init?: RequestInit
+		) => Promise<Response>;
 		navigate: (path: string) => void;
 		openModal: (options?: {}) => void;
 		openToast: (options?: {

@@ -51,26 +51,6 @@ public class LicenseKeyGenerator {
 		String productVersion, String owner, int maxClusterNodes,
 		int maxServers, int maxHttpSessions, long maxConcurrentUsers,
 		long maxUsers, String sizing, String description, String domains,
-		String hostNames, String installationId, String ipAddresses,
-		String macAddresses, String serverIds, Date startDate,
-		Date expirationDate) {
-
-		return KeyGenerator.getProperties(
-			accountName, description, StringUtil.split(domains), expirationDate,
-			StringUtil.split(hostNames), installationId, sizing,
-			StringUtil.split(ipAddresses), licenseEntryName, licenseType,
-			String.valueOf(licenseVersion), StringUtil.split(macAddresses),
-			maxClusterNodes, maxConcurrentUsers, maxHttpSessions, maxServers,
-			maxUsers, owner, productName, productId, productVersion,
-			new String[] {serverIds}, startDate);
-	}
-
-	public Map<String, String> getProperties(
-		String accountName, String licenseEntryName, String licenseType,
-		int licenseVersion, String productName, String productId,
-		String productVersion, String owner, int maxClusterNodes,
-		int maxServers, int maxHttpSessions, long maxConcurrentUsers,
-		long maxUsers, String sizing, String description, String domains,
 		String hostNames, String ipAddresses, String macAddresses,
 		String serverIds, Date startDate, Date expirationDate) {
 
@@ -128,6 +108,26 @@ public class LicenseKeyGenerator {
 		}
 
 		return properties;
+	}
+
+	public Map<String, String> getProperties(
+		String accountName, String licenseEntryName, String licenseType,
+		int licenseVersion, String productName, String productId,
+		String productVersion, String owner, int maxClusterNodes,
+		int maxServers, int maxHttpSessions, long maxConcurrentUsers,
+		long maxUsers, String sizing, String description, String domains,
+		String hostNames, String installationId, String ipAddresses,
+		String macAddresses, String serverIds, Date startDate,
+		Date expirationDate) {
+
+		return KeyGenerator.getProperties(
+			accountName, description, StringUtil.split(domains), expirationDate,
+			StringUtil.split(hostNames), installationId, sizing,
+			StringUtil.split(ipAddresses), licenseEntryName, licenseType,
+			String.valueOf(licenseVersion), StringUtil.split(macAddresses),
+			maxClusterNodes, maxConcurrentUsers, maxHttpSessions, maxServers,
+			maxUsers, owner, productName, productId, productVersion,
+			new String[] {serverIds}, startDate);
 	}
 
 }

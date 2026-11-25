@@ -579,7 +579,6 @@
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_ACTIVATION_KEY",
 			"enableCategorization": false,
-			"enableComments": false,
 			"enableObjectEntryHistory": true,
 			"externalReferenceCode": "C_ACTIVATION_KEY",
 			"friendlyURLSeparator": "l",
@@ -744,14 +743,12 @@
 				"en_US": "Activation Keys"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/activationkeys",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "id"
 		},
 		{
@@ -2962,8 +2959,6 @@
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_ENTITLEMENT_DEFINITION_SKU",
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_ENTITLEMENT_DEFINITION_SKU",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -3025,14 +3020,12 @@
 				"en_US": "Entitlement Definition SKUs"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/entitlementdefinitionskus",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "skuExternalReferenceCode"
 		},
 		{
@@ -3691,22 +3684,18 @@
 				"en_US": "Environments"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/environments",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "hostName"
 		},
 		{
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_ENVIRONMENT_ADMIN",
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_ENVIRONMENT_ADMIN",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -3843,21 +3832,17 @@
 				"en_US": "Environment Admins"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/environmentadmins",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "emailAddress"
 		},
 		{
 			"active": true,
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_GET_APP_INFORMATION",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -4019,21 +4004,18 @@
 				"en_US": "Get App Information"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/getappinformations",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "orderId"
 		},
 		{
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_LICENSE_KEY",
 			"enableCategorization": false,
-			"enableComments": false,
 			"enableObjectEntryHistory": true,
 			"externalReferenceCode": "C_LICENSE_KEY",
 			"friendlyURLSeparator": "l",
@@ -4710,21 +4692,17 @@
 				"en_US": "License Keys"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/licensekeys",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "name"
 		},
 		{
 			"active": true,
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_OAUTH2_DXP_AUTHORIZATION",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -4786,21 +4764,17 @@
 				"en_US": "OAuth2 DXP Authorizations"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/oauth2dxpauthorizations",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "connectionSource"
 		},
 		{
 			"active": true,
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_PRODUCT_FEEDBACK",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -5088,22 +5062,18 @@
 				"en_US": "Product Feedbacks"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/productfeedbacks",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "fullName"
 		},
 		{
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_PRODUCT_VERSION",
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_PRODUCT_VERSION",
 			"label": {
 				"en_US": "Product Version"
@@ -5336,22 +5306,18 @@
 				"en_US": "Product Versions"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/productversions",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "productVersion"
 		},
 		{
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_PROJECT",
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_PROJECT",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -5575,22 +5541,18 @@
 				"en_US": "Projects"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/projects",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "name"
 		},
 		{
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_PROJECT_MEMBERSHIP",
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_PROJECT_MEMBERSHIP",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -5674,22 +5636,18 @@
 				"en_US": "Project Memberships"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/projectmemberships",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "roleExternalReferenceCode"
 		},
 		{
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_PROPERTY",
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_PROPERTY",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -5876,21 +5834,17 @@
 				"en_US": "Properties"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/properties",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "name"
 		},
 		{
 			"active": true,
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_PUBLISHER_ACCOUNT_REQUEST",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -6127,21 +6081,17 @@
 				"en_US": "Publisher Account Requests"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/publisheraccountrequests",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "emailAddress"
 		},
 		{
 			"active": true,
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_PUBLISHER_ASSET",
 			"label": {
 				"en_US": "Publisher Asset"
@@ -6202,21 +6152,17 @@
 				"en_US": "Publisher Assets"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/publisherassets",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "version"
 		},
 		{
 			"active": true,
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_PUBLISHER_ASSET_ATTACHMENT",
 			"label": {
 				"en_US": "Publisher Asset Attachment"
@@ -6362,21 +6308,17 @@
 				"en_US": "Publisher Asset Attachments"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/publisherassetattachments",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "name"
 		},
 		{
 			"active": true,
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_PUBLISHER_DETAILS",
 			"label": {
 				"en_US": "Publisher Detail"
@@ -6707,21 +6649,17 @@
 				"en_US": "Publisher Details"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/publisherdetails",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "catalogExternalId"
 		},
 		{
 			"active": true,
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_PUBLISHER_SALES_SUMMARY",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -6884,21 +6822,17 @@
 				"en_US": "Publisher Sales Summaries"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/publishersalessummaries",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "publisherName"
 		},
 		{
 			"active": true,
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_REPORT",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -6985,21 +6919,17 @@
 				"en_US": "Reports"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/reports",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "name"
 		},
 		{
 			"active": true,
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_SALES_REQUEST",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -7147,22 +7077,18 @@
 				"en_US": "Sales Requests"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/salesrequests",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "email"
 		},
 		{
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_SUBSCRIPTION_ENTRY",
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_SUBSCRIPTION_ENTRY",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -7274,23 +7200,19 @@
 				"en_US": "Subscription Entries"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/subscriptionentries",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "classPK"
 		},
 		{
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_TICKET_ATTACHMENT",
 			"enableCategorization": false,
-			"enableComments": false,
 			"enableObjectEntryDraft": true,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_TICKET_ATTACHMENT",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -7560,21 +7482,17 @@
 				"en_US": "Ticket Attachments"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/ticketattachments",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "fileName"
 		},
 		{
 			"active": true,
 			"enableCategorization": false,
-			"enableComments": false,
-			"enableObjectEntryHistory": false,
 			"externalReferenceCode": "C_TRIAL_EXTENSION_REQUEST",
 			"friendlyURLSeparator": "l",
 			"label": {
@@ -7712,21 +7630,18 @@
 				"en_US": "Trial Extension Requests"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/trialextensionrequests",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "projectId"
 		},
 		{
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_USAGE_DEFINITION",
 			"enableCategorization": true,
-			"enableComments": false,
 			"enableObjectEntryHistory": true,
 			"externalReferenceCode": "C_USAGE_DEFINITION",
 			"friendlyURLSeparator": "cpud",
@@ -7911,21 +7826,18 @@
 				"en_US": "UsageDefinitions"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/usagedefinitions",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "unit"
 		},
 		{
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_USAGE_EVENT",
 			"enableCategorization": true,
-			"enableComments": false,
 			"enableObjectEntryHistory": true,
 			"externalReferenceCode": "C_USAGE_EVENT",
 			"friendlyURLSeparator": "cpue",
@@ -8042,21 +7954,18 @@
 				"en_US": "UsageEvents"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/usageevents",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "dedupeKey"
 		},
 		{
 			"active": true,
 			"className": "com.liferay.object.model.ObjectDefinition#C_USAGE_REPORT",
 			"enableCategorization": true,
-			"enableComments": false,
 			"enableObjectEntryHistory": true,
 			"externalReferenceCode": "C_USAGE_REPORT",
 			"friendlyURLSeparator": "cpur",
@@ -8574,14 +8483,12 @@
 				"en_US": "Usage Reports"
 			},
 			"portlet": true,
-			"restContextPath": "/o/c/usagereports",
 			"scope": "company",
 			"status": {
 				"code": 0,
 				"label": "approved",
 				"label_i18n": "Approved"
 			},
-			"system": false,
 			"titleObjectFieldName": "generatorClassName"
 		}
 	]

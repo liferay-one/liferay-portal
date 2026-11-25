@@ -309,14 +309,16 @@ public class UserAssignmentService {
 			String roleExternalReferenceCode =
 				projectMembership.getRoleExternalReferenceCode();
 
-			if (_projectMembershipService.deleteProjectMembership(
+			if (!_projectMembershipService.deleteProjectMembership(
 					project.getExternalReferenceCode(),
 					roleExternalReferenceCode, userId)) {
 
-				runnables.add(
-					() -> _syncProjectMembershipToJSM(
-						false, project, roleExternalReferenceCode, userId));
+				continue;
 			}
+
+			runnables.add(
+				() -> _syncProjectMembershipToJSM(
+					false, project, roleExternalReferenceCode, userId));
 		}
 
 		_accountService.removeAccountUserAccount(account.getId(), userId);

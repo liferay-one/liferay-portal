@@ -117,6 +117,37 @@ public class EnvironmentQuotaService {
 		return iterator.next();
 	}
 
+	private int _getCurrentTermTotalCount(List<Entitlement> entitlements) {
+		Instant latestEndDateInstant = null;
+
+		for (Entitlement entitlement : entitlements) {
+			Instant endDateInstant = _getEndDateInstant(entitlement);
+
+			if ((latestEndDateInstant != null) &&
+				!endDateInstant.isAfter(latestEndDateInstant)) {
+
+				continue;
+			}
+
+			latestEndDateInstant = endDateInstant;
+		}
+
+		int totalCount = 0;
+
+		for (Entitlement entitlement : entitlements) {
+			if (!Objects.equals(
+					latestEndDateInstant, _getEndDateInstant(entitlement))) {
+
+				continue;
+			}
+
+			totalCount += LicenseKeyGenerateFormService.getTotalCount(
+				entitlement);
+		}
+
+		return totalCount;
+	}
+
 	private EnvironmentQuota _getDXPEnvironmentQuota(
 		List<Entitlement> entitlements, List<Environment> environments,
 		String type) {
@@ -170,33 +201,6 @@ public class EnvironmentQuotaService {
 		return _toEnvironmentQuota(
 			_getContractId(contractIds), entitlements, environments, totalCount,
 			type, unlimited);
-	}
-
-	private int _getCurrentTermTotalCount(List<Entitlement> entitlements) {
-		Instant latestEndDateInstant = null;
-
-		for (Entitlement entitlement : entitlements) {
-			Instant endDateInstant = _getEndDateInstant(entitlement);
-
-			if ((latestEndDateInstant == null) ||
-				endDateInstant.isAfter(latestEndDateInstant)) {
-
-				latestEndDateInstant = endDateInstant;
-			}
-		}
-
-		int totalCount = 0;
-
-		for (Entitlement entitlement : entitlements) {
-			if (Objects.equals(
-					latestEndDateInstant, _getEndDateInstant(entitlement))) {
-
-				totalCount += LicenseKeyGenerateFormService.getTotalCount(
-					entitlement);
-			}
-		}
-
-		return totalCount;
 	}
 
 	private Instant _getEndDateInstant(Entitlement entitlement) {
@@ -297,11 +301,13 @@ public class EnvironmentQuotaService {
 
 			typeEnvironments.add(environment);
 
-			if (_usedActivationStatuses.contains(
+			if (!_usedActivationStatuses.contains(
 					environment.getActivationStatus())) {
 
-				usedCount++;
+				continue;
 			}
+
+			usedCount++;
 		}
 
 		return new EnvironmentQuota(

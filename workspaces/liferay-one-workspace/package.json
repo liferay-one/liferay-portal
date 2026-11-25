@@ -31,6 +31,7 @@
 		"plan:report": "yarn workspace @liferay/liferay-one-workspace-tests plan:report",
 		"plan:scaffold": "yarn workspace @liferay/liferay-one-workspace-tests plan:scaffold",
 		"prelint": "yarn build:plugin && yarn install --check-files",
+		"prelint:fix": "yarn build:plugin && yarn install --check-files",
 		"test:all": "yarn workspace @liferay/liferay-one-workspace-tests test:all",
 		"test:e2e": "yarn workspace @liferay/liferay-one-workspace-tests test:e2e",
 		"test:integration": "yarn workspace @liferay/liferay-one-workspace-tests test:integration",
