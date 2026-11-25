@@ -6,6 +6,7 @@
 package com.liferay.one;
 
 import com.liferay.client.extension.util.spring.boot3.client.LiferayOAuth2AccessTokenManager;
+import com.liferay.one.jira.exception.OrganizationNotFoundException;
 import com.liferay.one.jira.model.JiraOrganization;
 import com.liferay.one.jira.model.JiraSupportIssue;
 import com.liferay.one.jira.service.JiraIssueService;
@@ -285,6 +286,23 @@ public class TicketAttachmentsScheduledTasksTest {
 	}
 
 	@Test
+	public void testScheduledUpdateTicketAttachmentDraftCommentBodyClearsDraftWhenJiraIssueHasNoOrganization()
+		throws Exception {
+
+		Mockito.when(
+			_jiraIssueService.getJiraSupportIssue("LRP-1")
+		).thenThrow(
+			new OrganizationNotFoundException()
+		);
+
+		_mockSearch(
+			_DRAFT_COMMENT_BODY_FILTER,
+			_createTicketAttachment("Comment 1", "LRP-1", 1L));
+
+		_assertDraftCommentClearedAndNotPosted();
+	}
+
+	@Test
 	public void testScheduledUpdateTicketAttachmentDraftCommentBodyContinuesAfterFailure()
 		throws Exception {
 
@@ -323,6 +341,39 @@ public class TicketAttachmentsScheduledTasksTest {
 		).updateTicketAttachmentDraftCommentBody(
 			_AUTHORIZATION, StringPool.BLANK, 2L
 		);
+	}
+
+	@Test
+	public void testScheduledUpdateTicketAttachmentDraftCommentBodyKeepsDraftWhenJiraIssueIsUnavailable()
+		throws Exception {
+
+		Mockito.when(
+			_jiraIssueService.getJiraSupportIssue("LRP-1")
+		).thenReturn(
+			null
+		);
+
+		_mockSearch(
+			_DRAFT_COMMENT_BODY_FILTER,
+			_createTicketAttachment("Comment 1", "LRP-1", 1L));
+
+		_ticketAttachmentsRestController.
+			scheduledUpdateTicketAttachmentDraftCommentBody();
+
+		Mockito.verify(
+			_jiraIssueService, Mockito.never()
+		).addComment(
+			ArgumentMatchers.anyString(), ArgumentMatchers.anyString()
+		);
+
+		Mockito.verify(
+			_ticketAttachmentService, Mockito.never()
+		).updateTicketAttachmentDraftCommentBody(
+			ArgumentMatchers.anyString(), ArgumentMatchers.anyString(),
+			ArgumentMatchers.anyLong()
+		);
+
+		Mockito.verifyNoInteractions(_notificationQueueEntryService);
 	}
 
 	@Test

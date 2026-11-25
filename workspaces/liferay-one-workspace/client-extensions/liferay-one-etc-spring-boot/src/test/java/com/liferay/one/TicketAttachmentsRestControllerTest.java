@@ -101,17 +101,25 @@ public class TicketAttachmentsRestControllerTest {
 			_UPLOAD_SESSION_URL
 		);
 
+		Project project = new Project(
+			new JSONObject(
+			).put(
+				"externalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"r_accountEntryToProject_accountEntryERC",
+				_ACCOUNT_EXTERNAL_REFERENCE_CODE
+			));
+
+		Mockito.when(
+			_projectService.fetchProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
+		).thenReturn(
+			project
+		);
+
 		Mockito.when(
 			_projectService.getProject(_PROJECT_EXTERNAL_REFERENCE_CODE)
 		).thenReturn(
-			new Project(
-				new JSONObject(
-				).put(
-					"externalReferenceCode", _PROJECT_EXTERNAL_REFERENCE_CODE
-				).put(
-					"r_accountEntryToProject_accountEntryERC",
-					_ACCOUNT_EXTERNAL_REFERENCE_CODE
-				))
+			project
 		);
 
 		Mockito.when(
@@ -376,24 +384,6 @@ public class TicketAttachmentsRestControllerTest {
 	}
 
 	@Test
-	public void testPostCompleteUploadReturnsBadRequestWhenTicketIsClosed()
-		throws Exception {
-
-		_mockGetTicketAttachment();
-		_mockTicketStatus(IssueConstants.STATUS_CLOSED);
-
-		ResponseEntity<String> responseEntity =
-			_ticketAttachmentsRestController.postCompleteUpload(
-				_jwt, _createCommentJSON(), _TICKET_ATTACHMENT_ID);
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-		Assertions.assertEquals("TICKET_IS_CLOSED", responseEntity.getBody());
-
-		_assertNotApprovedAndNoComment();
-	}
-
-	@Test
 	public void testPostCompleteUploadReturnsNotFoundWhenTicketIsOfAnotherProject()
 		throws Exception {
 
@@ -409,7 +399,17 @@ public class TicketAttachmentsRestControllerTest {
 		Assertions.assertEquals(
 			"INVALID_TICKET_NUMBER", responseEntity.getBody());
 
-		_assertNotApprovedAndNoComment();
+		Mockito.verify(
+			_ticketAttachmentService, Mockito.never()
+		).approveTicketAttachment(
+			Mockito.anyString(), Mockito.anyLong()
+		);
+
+		Mockito.verify(
+			_jiraIssueService, Mockito.never()
+		).addComment(
+			Mockito.anyString(), Mockito.anyString()
+		);
 	}
 
 	@Test
@@ -435,6 +435,42 @@ public class TicketAttachmentsRestControllerTest {
 			HttpStatus.ACCEPTED, responseEntity.getStatusCode());
 		Assertions.assertEquals(
 			"COMMENT_POST_FAILED_RETRYING", responseEntity.getBody());
+
+		Mockito.verify(
+			_ticketAttachmentService
+		).updateTicketAttachmentDraftCommentBody(
+			Mockito.eq(_AUTHORIZATION), Mockito.contains("Jane Doe"),
+			Mockito.eq(_TICKET_ATTACHMENT_ID)
+		);
+	}
+
+	@Test
+	public void testPostCompleteUploadSavesDraftCommentWhenJiraIssueIsUnavailable()
+		throws Exception {
+
+		_mockGetTicketAttachment();
+		_mockApproveTicketAttachment();
+
+		Mockito.when(
+			_jiraIssueService.getJiraSupportIssue(_TICKET_ID)
+		).thenReturn(
+			null
+		);
+
+		ResponseEntity<String> responseEntity =
+			_ticketAttachmentsRestController.postCompleteUpload(
+				_jwt, _createCommentJSON(), _TICKET_ATTACHMENT_ID);
+
+		Assertions.assertEquals(
+			HttpStatus.ACCEPTED, responseEntity.getStatusCode());
+		Assertions.assertEquals(
+			"COMMENT_POST_FAILED_RETRYING", responseEntity.getBody());
+
+		Mockito.verify(
+			_jiraIssueService, Mockito.never()
+		).addComment(
+			Mockito.anyString(), Mockito.anyString()
+		);
 
 		Mockito.verify(
 			_ticketAttachmentService
@@ -694,20 +730,6 @@ public class TicketAttachmentsRestControllerTest {
 		Mockito.verifyNoInteractions(_googleCloudStorageService);
 	}
 
-	private void _assertNotApprovedAndNoComment() throws Exception {
-		Mockito.verify(
-			_ticketAttachmentService, Mockito.never()
-		).approveTicketAttachment(
-			Mockito.anyString(), Mockito.anyLong()
-		);
-
-		Mockito.verify(
-			_jiraIssueService, Mockito.never()
-		).addComment(
-			Mockito.anyString(), Mockito.anyString()
-		);
-	}
-
 	private String _createCommentJSON() {
 		return new JSONObject(
 		).put(
@@ -751,6 +773,9 @@ public class TicketAttachmentsRestControllerTest {
 				"jiraIssueKey", _TICKET_ID
 			).put(
 				"projectKey", _PROJECT_EXTERNAL_REFERENCE_CODE
+			).put(
+				"r_accountEntryToTicketAttachment_accountEntryERC",
+				_ACCOUNT_EXTERNAL_REFERENCE_CODE
 			).put(
 				"status",
 				new JSONObject(
