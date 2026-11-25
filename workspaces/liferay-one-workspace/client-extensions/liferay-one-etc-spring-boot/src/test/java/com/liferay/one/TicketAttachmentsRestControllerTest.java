@@ -376,6 +376,43 @@ public class TicketAttachmentsRestControllerTest {
 	}
 
 	@Test
+	public void testPostCompleteUploadReturnsBadRequestWhenTicketIsClosed()
+		throws Exception {
+
+		_mockGetTicketAttachment();
+		_mockTicketStatus(IssueConstants.STATUS_CLOSED);
+
+		ResponseEntity<String> responseEntity =
+			_ticketAttachmentsRestController.postCompleteUpload(
+				_jwt, _createCommentJSON(), _TICKET_ATTACHMENT_ID);
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+		Assertions.assertEquals("TICKET_IS_CLOSED", responseEntity.getBody());
+
+		_assertNotApprovedAndNoComment();
+	}
+
+	@Test
+	public void testPostCompleteUploadReturnsNotFoundWhenTicketIsOfAnotherProject()
+		throws Exception {
+
+		_mockGetTicketAttachment();
+		_mockJiraSupportIssue("PRJCT-002", "Open");
+
+		ResponseEntity<String> responseEntity =
+			_ticketAttachmentsRestController.postCompleteUpload(
+				_jwt, _createCommentJSON(), _TICKET_ATTACHMENT_ID);
+
+		Assertions.assertEquals(
+			HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
+		Assertions.assertEquals(
+			"INVALID_TICKET_NUMBER", responseEntity.getBody());
+
+		_assertNotApprovedAndNoComment();
+	}
+
+	@Test
 	public void testPostCompleteUploadSavesDraftCommentWhenJiraCommentFails()
 		throws Exception {
 
@@ -657,6 +694,20 @@ public class TicketAttachmentsRestControllerTest {
 		Mockito.verifyNoInteractions(_googleCloudStorageService);
 	}
 
+	private void _assertNotApprovedAndNoComment() throws Exception {
+		Mockito.verify(
+			_ticketAttachmentService, Mockito.never()
+		).approveTicketAttachment(
+			Mockito.anyString(), Mockito.anyLong()
+		);
+
+		Mockito.verify(
+			_jiraIssueService, Mockito.never()
+		).addComment(
+			Mockito.anyString(), Mockito.anyString()
+		);
+	}
+
 	private String _createCommentJSON() {
 		return new JSONObject(
 		).put(
@@ -759,6 +810,32 @@ public class TicketAttachmentsRestControllerTest {
 		return ticketAttachment;
 	}
 
+	private void _mockJiraSupportIssue(
+			String projectExternalReferenceCode, String status)
+		throws Exception {
+
+		Mockito.when(
+			_jiraIssueService.getJiraSupportIssue(_TICKET_ID)
+		).thenReturn(
+			new JiraSupportIssue(
+				new JSONObject(
+				).put(
+					"fields",
+					new JSONObject(
+					).put(
+						"status",
+						new JSONObject(
+						).put(
+							"name", status
+						)
+					)
+				).put(
+					"key", _TICKET_ID
+				),
+				new JiraOrganization(projectExternalReferenceCode, "1", "Acme"))
+		);
+	}
+
 	private void _mockPermissionDenied(String actionId) throws Exception {
 		Mockito.doThrow(
 			new PrincipalException()
@@ -792,27 +869,7 @@ public class TicketAttachmentsRestControllerTest {
 	}
 
 	private void _mockTicketStatus(String status) throws Exception {
-		Mockito.when(
-			_jiraIssueService.getJiraSupportIssue(_TICKET_ID)
-		).thenReturn(
-			new JiraSupportIssue(
-				new JSONObject(
-				).put(
-					"fields",
-					new JSONObject(
-					).put(
-						"status",
-						new JSONObject(
-						).put(
-							"name", status
-						)
-					)
-				).put(
-					"key", _TICKET_ID
-				),
-				new JiraOrganization(
-					_PROJECT_EXTERNAL_REFERENCE_CODE, "1", "Acme"))
-		);
+		_mockJiraSupportIssue(_PROJECT_EXTERNAL_REFERENCE_CODE, status);
 	}
 
 	private static final String _ACCOUNT_EXTERNAL_REFERENCE_CODE = "ACCNT-001";
