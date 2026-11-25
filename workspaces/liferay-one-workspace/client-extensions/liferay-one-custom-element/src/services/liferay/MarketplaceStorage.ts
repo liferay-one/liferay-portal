@@ -13,6 +13,7 @@ export enum CONSENT_TYPE {
 }
 
 export enum STORAGE_KEYS {
+	FILTERABLE_LIST_CARD = '@marketplace/filterable-list-card-',
 	LIST_VIEW_COLUMNS = '@marketplace/listview-columns-',
 	SWR_CACHE = '@marketplace/swr-cache',
 }
