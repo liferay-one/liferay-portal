@@ -17,27 +17,21 @@ import {Liferay} from '~/services/liferay/liferay';
 import phones from '~/utils/phones';
 import {getSiteURL} from '~/utils/siteUtils';
 
-import {PUBLISHER_TYPE_TOOLTIPS, getPublisherTypeEntries} from '../../utils';
+import {PUBLISHER_TYPE_ENTRIES, PUBLISHER_TYPE_TOOLTIPS} from '../../utils';
 import {PublisherForm, RequestAccountStep} from '../RequestAccount';
-
-import type {ListTypeDefinition} from '~/types/listTypeDefinition';
 
 type RequestAccountFormProps = {
 	form: UseFormReturn<PublisherForm>;
-	listTypeDefinition?: ListTypeDefinition;
 	setStep: React.Dispatch<React.SetStateAction<RequestAccountStep>>;
 };
 
 const RequestAccountForm: React.FC<RequestAccountFormProps> = ({
 	form,
-	listTypeDefinition,
 	setStep,
 }) => {
 	const phone = form.watch('phone');
 	const publisherType = form.watch('publisherType') || [];
 	const navigate = useNavigate();
-
-	const listTypeEntries = getPublisherTypeEntries(listTypeDefinition);
 
 	const inputProps = {
 		errors: form.formState.errors,
@@ -179,30 +173,30 @@ const RequestAccountForm: React.FC<RequestAccountFormProps> = ({
 							)}
 						</label>
 
-						{listTypeEntries.map((listTypeEntry, index) => (
+						{PUBLISHER_TYPE_ENTRIES.map((publisherTypeEntry) => (
 							<div
 								className="custom-checkbox custom-control custom-control-outside"
-								key={index}
+								key={publisherTypeEntry.key}
 							>
 								<label>
 									<input
-										aria-label={listTypeEntry.name}
+										aria-label={publisherTypeEntry.name}
 										checked={publisherType.includes(
-											listTypeEntry.key
+											publisherTypeEntry.key
 										)}
 										className="custom-control-input"
 										type="checkbox"
-										value={listTypeEntry.key}
+										value={publisherTypeEntry.key}
 										{...form.register('publisherType')}
 									/>
 
 									<span className="custom-control-label">
 										<span className="custom-control-label-text">
 											<div className="d-flex justify-content-between w-25">
-												{listTypeEntry.name}
+												{publisherTypeEntry.name}
 
 												{PUBLISHER_TYPE_TOOLTIPS[
-													listTypeEntry.key
+													publisherTypeEntry.key
 												] && (
 													<Tooltip
 														showTooltipBackground={
@@ -210,7 +204,7 @@ const RequestAccountForm: React.FC<RequestAccountFormProps> = ({
 														}
 														tooltip={
 															PUBLISHER_TYPE_TOOLTIPS[
-																listTypeEntry
+																publisherTypeEntry
 																	.key
 															]
 														}

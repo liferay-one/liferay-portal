@@ -8,7 +8,6 @@ import {useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {z} from 'zod';
 import {useOneContext} from '~/context/OneContextProvider';
-import useListTypeDefinition from '~/hooks/useListTypeDefinition';
 import i18n from '~/i18n';
 import publishingSchemas from '~/schemas/publishingSchemas';
 import fetcher from '~/services/fetcher/fetcher';
@@ -71,8 +70,6 @@ const RequestAccount = () => {
 
 	const userInfo = form.watch();
 
-	const {data} = useListTypeDefinition('LT_PUBLISHER_TYPE');
-
 	const submit = async (formValues: PublisherForm) => {
 		const {phone, ...restFormValues} = formValues;
 		const formData = {
@@ -97,13 +94,7 @@ const RequestAccount = () => {
 
 	const StepsAccount = {
 		[RequestAccountStep.FORM]: {
-			component: (
-				<RequestAccountForm
-					form={form}
-					listTypeDefinition={data}
-					setStep={setStep}
-				/>
-			),
+			component: <RequestAccountForm form={form} setStep={setStep} />,
 		},
 		[RequestAccountStep.SUMMARY]: {
 			component: (
@@ -121,8 +112,7 @@ const RequestAccount = () => {
 									flag: userInfo?.phone?.flag ?? '',
 								},
 								publisherType: getPublisherTypeNames(
-									userInfo.publisherType,
-									data
+									userInfo.publisherType
 								),
 							}}
 						/>
