@@ -30,6 +30,7 @@
 	},
 	"referenceObjects": {
 		"EntitlementDefinition": "Product catalog data that every signed in user reads.",
+		"EntitlementDefinitionSku": "SKU links of the entitlement definitions that every signed in user reads.",
 		"ProductVersion": "The list of Liferay releases that every signed in user reads.",
 		"PublisherDetail": "Public marketplace publisher profiles.",
 		"UsageDefinition": "Metering definitions shared by every account."
