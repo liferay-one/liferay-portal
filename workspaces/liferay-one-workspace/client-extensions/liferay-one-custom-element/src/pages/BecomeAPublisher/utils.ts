@@ -5,14 +5,12 @@
 
 import i18n from '~/i18n';
 
-import type {ListTypeDefinition} from '~/types/listTypeDefinition';
-
 export type PublisherTypeEntry = {
 	key: string;
 	name: string;
 };
 
-export const DEFAULT_PUBLISHER_TYPE_ENTRIES: PublisherTypeEntry[] = [
+export const PUBLISHER_TYPE_ENTRIES: PublisherTypeEntry[] = [
 	{key: 'appPublisher', name: i18n.translate('app-publisher')},
 	{key: 'solutionPublisher', name: i18n.translate('solution-publisher')},
 ];
@@ -26,29 +24,10 @@ export const PUBLISHER_TYPE_TOOLTIPS: Record<string, string> = {
 	),
 };
 
-export function getPublisherTypeEntries(
-	listTypeDefinition?: ListTypeDefinition
-): PublisherTypeEntry[] {
-	const entries = listTypeDefinition?.listTypeEntries;
-
-	if (entries && !!entries.length) {
-		return entries.map(({key, name}) => ({key, name}));
-	}
-
-	return DEFAULT_PUBLISHER_TYPE_ENTRIES;
-}
-
-export function getPublisherTypeNames(
-	keys: string[],
-	listTypeDefinition?: ListTypeDefinition
-): string[] {
-	const entries = getPublisherTypeEntries(listTypeDefinition);
-
-	return keys.map((key) => {
-		const entry =
-			entries.find((entry) => entry.key === key) ??
-			DEFAULT_PUBLISHER_TYPE_ENTRIES.find((entry) => entry.key === key);
-
-		return entry?.name ?? key;
-	});
+export function getPublisherTypeNames(keys: string[]): string[] {
+	return keys.map(
+		(key) =>
+			PUBLISHER_TYPE_ENTRIES.find((entry) => entry.key === key)?.name ??
+			key
+	);
 }

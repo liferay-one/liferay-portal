@@ -26,15 +26,17 @@ async function applyMyAccountVisibility() {
 			return;
 		}
 
-		const response = await getAccounts(
-			new URLSearchParams({
-				page: 1,
-				pageSize: 1,
-			})
-		);
+		if (Liferay.ThemeDisplay.isSignedIn()) {
+			const response = await getAccounts(
+				new URLSearchParams({
+					page: 1,
+					pageSize: 1,
+				})
+			);
 
-		if ((response?.items?.length || 0) > 0) {
-			return;
+			if ((response?.items?.length || 0) > 0) {
+				return;
+			}
 		}
 
 		fragmentElement
