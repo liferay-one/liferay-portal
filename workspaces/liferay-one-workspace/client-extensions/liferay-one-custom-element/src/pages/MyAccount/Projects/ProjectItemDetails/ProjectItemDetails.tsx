@@ -229,6 +229,7 @@ export default function ProjectItemDetails({
 		'utilization': () => (
 			<UtilizationTab
 				productExternalReferenceCode={itemERC}
+				productId={product.productId}
 				profile={utilizationProfile}
 				projectExternalReferenceCode={projectId}
 			/>

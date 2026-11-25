@@ -3,10 +3,12 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
+import {useMemo} from 'react';
 import {DetailedCard} from '~/components/DetailedCard/DetailedCard';
 import ListView from '~/components/ListView/ListView';
 import OrderStatus from '~/components/OrderStatus/OrderStatus';
 import {useAITokenBlockSizes} from '~/hooks/useAITokenBlockSizes';
+import {useDeliveryProduct} from '~/hooks/useDeliveryProduct';
 import i18n from '~/i18n';
 import SearchBuilder from '~/services/fetcher/SearchBuilder';
 import {Liferay} from '~/services/liferay/liferay';
@@ -14,11 +16,26 @@ import {formatUTCShortDate} from '~/utils/dateUtils';
 
 import type {PlacedOrder} from '~/types/orders';
 
-const AIHubUtilization = () => {
+const AIHubUtilization = ({productId}: {productId?: number}) => {
 	const accountId = Liferay.CommerceContext.account?.accountId;
 
 	const {isLoading: tokenBlockSizesLoading, tokenBlockSizes} =
 		useAITokenBlockSizes();
+
+	const {data: product, isLoading: productLoading} = useDeliveryProduct(
+		productId ? String(productId) : ''
+	);
+
+	const skuExternalReferenceCodes = useMemo(
+		() =>
+			new Map(
+				(product?.skus ?? []).map((sku) => [
+					sku.id,
+					sku.externalReferenceCode,
+				])
+			),
+		[product]
+	);
 
 	if (!accountId) {
 		return null;
@@ -57,11 +74,18 @@ const AIHubUtilization = () => {
 							render: (placedOrderItems) => {
 								const item = placedOrderItems?.[0];
 
-								const tokenBlockSize = item
-									? tokenBlockSizes.get(item.sku)
+								const skuExternalReferenceCode = item
+									? skuExternalReferenceCodes.get(item.skuId)
+									: undefined;
+
+								const tokenBlockSize = skuExternalReferenceCode
+									? tokenBlockSizes.get(
+											skuExternalReferenceCode
+										)
 									: undefined;
 
 								if (
+									productLoading ||
 									tokenBlockSizesLoading ||
 									!item ||
 									!tokenBlockSize
