@@ -243,17 +243,12 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		_checkPermission(
 			ActionKeys.UPDATE, jwt, ticketAttachment.getProjectKey());
 
-		JiraSupportIssue jiraSupportIssue = _fetchJiraSupportIssue(
+		Boolean accountProjectTicket = _isAccountProjectTicket(
 			ticketAttachment);
 
-		if (jiraSupportIssue == null) {
+		if (Boolean.FALSE.equals(accountProjectTicket)) {
 			return new ResponseEntity<>(
 				"INVALID_TICKET_NUMBER", HttpStatus.NOT_FOUND);
-		}
-
-		if (jiraSupportIssue.isClosed()) {
-			return new ResponseEntity<>(
-				"TICKET_IS_CLOSED", HttpStatus.BAD_REQUEST);
 		}
 
 		ticketAttachment = _ticketAttachmentService.approveTicketAttachment(
@@ -264,22 +259,24 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		String jiraIssueCommentBody = _buildJiraIssueCommentBody(
 			jsonObject.optString("commentBody"), jwt, ticketAttachment);
 
-		try {
-			_jiraIssueService.addComment(
-				jiraIssueCommentBody, ticketAttachment.getJiraIssueKey());
+		if (Boolean.TRUE.equals(accountProjectTicket)) {
+			try {
+				_jiraIssueService.addComment(
+					jiraIssueCommentBody, ticketAttachment.getJiraIssueKey());
 
-			return new ResponseEntity<>(HttpStatus.OK);
+				return new ResponseEntity<>(HttpStatus.OK);
+			}
+			catch (Exception exception) {
+				_log.error(exception);
+			}
 		}
-		catch (Exception exception) {
-			_log.error(exception);
 
-			_ticketAttachmentService.updateTicketAttachmentDraftCommentBody(
-				"Bearer " + jwt.getTokenValue(), jiraIssueCommentBody,
-				ticketAttachmentId);
+		_ticketAttachmentService.updateTicketAttachmentDraftCommentBody(
+			"Bearer " + jwt.getTokenValue(), jiraIssueCommentBody,
+			ticketAttachmentId);
 
-			return new ResponseEntity<>(
-				"COMMENT_POST_FAILED_RETRYING", HttpStatus.ACCEPTED);
-		}
+		return new ResponseEntity<>(
+			"COMMENT_POST_FAILED_RETRYING", HttpStatus.ACCEPTED);
 	}
 
 	@PostMapping("/initiate-upload")
@@ -436,12 +433,27 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 
 		for (TicketAttachment ticketAttachment : ticketAttachments) {
 			try {
-				if (!_isAccountProjectTicket(ticketAttachment)) {
+				Boolean accountProjectTicket = _isAccountProjectTicket(
+					ticketAttachment);
+
+				if (accountProjectTicket == null) {
+					continue;
+				}
+
+				if (!accountProjectTicket) {
 					if (_log.isWarnEnabled()) {
 						_log.warn(
-							"Unable to post the draft comment of ticket " +
-								"attachment " +
-									ticketAttachment.getTicketAttachmentId());
+							StringBundler.concat(
+								"Unable to post the draft comment of ticket ",
+								"attachment ",
+								ticketAttachment.getTicketAttachmentId(),
+								" because Jira issue ",
+								ticketAttachment.getJiraIssueKey(),
+								" does not belong to project ",
+								ticketAttachment.getProjectKey(),
+								" of account ",
+								ticketAttachment.
+									getAccountExternalReferenceCode()));
 					}
 
 					_ticketAttachmentService.
@@ -610,37 +622,6 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 		}
 	}
 
-	private JiraSupportIssue _fetchJiraSupportIssue(
-			TicketAttachment ticketAttachment)
-		throws Exception {
-
-		if (!_jiraIssueService.isJiraSupportIssueKey(
-				ticketAttachment.getJiraIssueKey())) {
-
-			return null;
-		}
-
-		JiraSupportIssue jiraSupportIssue =
-			_jiraIssueService.getJiraSupportIssue(
-				ticketAttachment.getJiraIssueKey());
-
-		if (jiraSupportIssue == null) {
-			return null;
-		}
-
-		JiraOrganization jiraOrganization =
-			jiraSupportIssue.getJiraOrganization();
-
-		if (!Objects.equals(
-				jiraOrganization.getExternalKey(),
-				ticketAttachment.getProjectKey())) {
-
-			return null;
-		}
-
-		return jiraSupportIssue;
-	}
-
 	private String _getAuthorization() {
 		return _liferayOAuth2AccessTokenManager.getAuthorization(
 			"liferay-one-etc-spring-boot-oahs");
@@ -751,10 +732,47 @@ public class TicketAttachmentsRestController extends OneBaseRestController {
 			HttpStatus.OK);
 	}
 
-	private boolean _isAccountProjectTicket(TicketAttachment ticketAttachment)
+	private Boolean _isAccountProjectTicket(TicketAttachment ticketAttachment)
 		throws Exception {
 
-		if (_fetchJiraSupportIssue(ticketAttachment) == null) {
+		if (!_jiraIssueService.isJiraSupportIssueKey(
+				ticketAttachment.getJiraIssueKey())) {
+
+			return false;
+		}
+
+		JiraSupportIssue jiraSupportIssue = null;
+
+		try {
+			jiraSupportIssue = _jiraIssueService.getJiraSupportIssue(
+				ticketAttachment.getJiraIssueKey());
+		}
+		catch (OrganizationNotFoundException organizationNotFoundException) {
+			if (organizationNotFoundException.getCause() == null) {
+				return false;
+			}
+
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Unable to get the organization of Jira issue " +
+						ticketAttachment.getJiraIssueKey(),
+					organizationNotFoundException);
+			}
+
+			return null;
+		}
+
+		if (jiraSupportIssue == null) {
+			return null;
+		}
+
+		JiraOrganization jiraOrganization =
+			jiraSupportIssue.getJiraOrganization();
+
+		if (!Objects.equals(
+				jiraOrganization.getExternalKey(),
+				ticketAttachment.getProjectKey())) {
+
 			return false;
 		}
 
