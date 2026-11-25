@@ -21,9 +21,9 @@ In this file, `L<n>` means line `<n>` of `resource-permissions.json`, and a scop
 | 43 | Roles in the role batch: 31 account roles, 9 regular roles, and 3 site roles |
 | 4 | Batch roles that are Liferay built in roles and keep their `L_` ERC |
 | 5 | Liferay built in roles that the trees use but do not define: Administrator, Guest, Organization User, Site Member, User |
-| 165 | Grants in `resource-permissions.json` |
-| 61 | Grants on a custom object: 50 at scope 1 and 11 at scope 3 |
-| 76 | Grants at scope 3. All of them go to site, account, or organization roles, where scope 3 is correct. None goes to a regular role. |
+| 166 | Grants in `resource-permissions.json` |
+| 62 | Grants on a custom object: 50 at scope 1 and 12 at scope 3 |
+| 77 | Grants at scope 3. All of them go to site, account, or organization roles, where scope 3 is correct. None goes to a regular role. |
 | 3 | Self `VIEW` grants on a regular role, so that the role appears in `roleBriefs` |
 | 34 | Custom objects (`C_*`) in the batch |
 | 14 | Custom objects restricted to the account |
@@ -188,7 +188,7 @@ This matrix does not show the grants that LPD-111430 added for Provisioning Work
 | Report (`C_REPORT`) | — | | | | | | | | | | |
 | SalesRequest (`C_SALES_REQUEST`) | — | | | | | | | | | | |
 | SubscriptionEntry (`C_SUBSCRIPTION_ENTRY`) | — | | | | | | | | V s1 L191 | | |
-| TicketAttachment (`C_TICKET_ATTACHMENT`) | `r_accountEntryToTicketAttachment_accountEntryId` | A s3 L1018 | | | | A s3 L1027 | A s3 L1036 | A s3 L1045 | V s1 L200 | VUD s1 L209<br>A s1 L1054 | |
+| TicketAttachment (`C_TICKET_ATTACHMENT`) | `r_accountEntryToTicketAttachment_accountEntryId` | A s3 L1018 | A s3 L1398 | | | A s3 L1027 | A s3 L1036 | A s3 L1045 | V s1 L200 | VUD s1 L209<br>A s1 L1054 | |
 | TrialExtensionRequest (`C_TRIAL_EXTENSION_REQUEST`) | `r_accountEntryToTrialExtensionRequest_accountEntryId` | | | | | | | | V s1 L220 | | |
 | UsageDefinition (`C_USAGE_DEFINITION`) | — | | | | | | | | V s1 L229 | | V s1 L238 |
 | UsageEvent (`C_USAGE_EVENT`) | — | | | | | | | | V s1 L247 | | V s1 L256 |
@@ -243,13 +243,13 @@ These are the grants at scope 1 and scope 4 that do not name a custom object.
 
 ### Grants at Scope 3
 
-The 76 scope 3 grants go to 42 site role grants, 32 account role grants, and 2 organization role grants. Each one applies in every account, site, or organization where the user holds the role.
+The 77 scope 3 grants go to 42 site role grants, 33 account role grants, and 2 organization role grants. Each one applies in every account, site, or organization where the user holds the role.
 
 | Role | Type | What the Grants Give | Lines |
 | --- | --- | --- | --- |
 | Account Administrator | account | `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment | L973, L1018 |
 | Account Buyer | account | `VIEW` on the account. `ADD_COMMERCE_ORDER`, `CHECKOUT_OPEN_COMMERCE_ORDERS`, `MANAGE_COMMERCE_ORDER_DELIVERY_TERMS`, `MANAGE_COMMERCE_ORDER_PAYMENT_METHODS`, `MANAGE_COMMERCE_ORDER_PAYMENT_TERMS`, `MANAGE_COMMERCE_ORDER_SHIPPING_OPTIONS`, `VIEW_BILLING_ADDRESS`, `VIEW_COMMERCE_ORDERS`, and `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. | L435, L770 |
-| Account Member | account | `VIEW`, `VIEW_ACCOUNT_ROLES`, `VIEW_USERS` on the account. `VIEW` on the account's roles. `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization. | L443, L579, L721, L1238 |
+| Account Member | account | `VIEW`, `VIEW_ACCOUNT_ROLES`, `VIEW_USERS` on the account. `VIEW` on the account's roles. `VIEW_COMMERCE_ORDERS`, `VIEW_OPEN_COMMERCE_ORDERS` on the account's orders. `ADD_OBJECT_ENTRY` on OAuth2DxpAuthorization and TicketAttachment. | L443, L579, L721, L1238, L1398 |
 | Article Administrator | site | Web content and folders, and Site Administration | L629 to L1209 (6 grants) |
 | Documentation Administrator | site | Web content, categories, pages, page templates, and SEO | L446 to L1251 (14 grants) |
 | Marketplace Account Administrator | account | The account and order grants of Account Administrator, without `VIEW_ORGANIZATIONS` and the grants on OAuth2DxpAuthorization and TicketAttachment: account update, users, addresses, channel defaults, and roles, and the 13 order actions of Account Administrator, from `ADD_COMMERCE_ORDER` to `MANAGE_COMMERCE_ORDERS` and `MANAGE_COMMERCE_ORDER_PAYMENT_STATUSES` | L475, L611, L818 |
@@ -536,7 +536,7 @@ Each finding names the file and line. The findings are ordered by risk.
 
 ### Medium
 
-1. **The project role grants are inert.** The 4 scope 3 grants to Project Admin and Project Requester (`L1000`, `L1009`, `L1036`, `L1045`) and the account grant to Project Admin (`L391`) apply only to a user who holds the role as a Liferay account role. The code stores project roles on `ProjectMembership` and never assigns them as account roles (`UserAssignmentService.java:194`). So a Project Admin or a Project Requester with no account role cannot record a DXP authorization (`Congratulations.tsx:47`), against REQ-ACCESS-027.
+1. **The project role grants are inert.** The 4 scope 3 grants to Project Admin and Project Requester (`L1000`, `L1009`, `L1036`, `L1045`) and the account grant to Project Admin (`L391`) apply only to a user who holds the role as a Liferay account role. The code stores project roles on `ProjectMembership` and never assigns them as account roles (`UserAssignmentService.java:194`). So a Project Admin or a Project Requester with no account role cannot record a DXP authorization (`Congratulations.tsx:47`), against REQ-ACCESS-027. TicketAttachment does not depend on these grants. Account Member holds `ADD_OBJECT_ENTRY` on it (`L1398`), so Liferay accepts the create in the user's own account, and `ProjectPermission` (`UPDATE`) in etc-spring-boot decides who can upload.
 
 1. **Pages write to objects that the user cannot add to.** `POST /o/c/trialextensionrequests` (`ExtendSSATrialModal.tsx:106`) and its `PATCH` (`ExtendRequestModal.tsx:239`) have no `ADD_OBJECT_ENTRY` or `UPDATE` grant for the SSA roles. `POST /o/c/publisheraccountrequests` (`RequestAccount.tsx:84`) has no grant for Guest or User. `POST /o/c/getappinformations` (`GetAppInformations.ts:20`) has no grant. Each call works only for an administrator.
 
