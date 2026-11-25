@@ -7,7 +7,10 @@ import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import FetcherError from '~/services/fetcher/FetcherError';
 import {Liferay} from '~/services/liferay/liferay';
 
-import OAuth2Client, {OneSpringBootOAuth2, fetchSpringBoot} from './OAuth2Client';
+import OAuth2Client, {
+	OneSpringBootOAuth2,
+	fetchSpringBoot,
+} from './OAuth2Client';
 
 const {fromUserAgentApplication, getUserAgentApplication} = vi.hoisted(() => ({
 	fromUserAgentApplication: vi.fn(),

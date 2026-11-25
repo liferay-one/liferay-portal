@@ -473,6 +473,23 @@ public class DXPEnvironmentsRestControllerTest {
 	}
 
 	@Test
+	public void testPostDXPInstallationsActivationWithAnotherInstallationId()
+		throws Exception {
+
+		_mockEnvironmentByActivationCode(_createPendingEnvironment());
+
+		ResponseEntity<?> responseEntity =
+			_dxpEnvironmentsRestController.postDXPInstallationsActivation(
+				"ANOTHER-INSTALLATION",
+				_createActivationBody(_keyPair, _keyPair));
+
+		Assertions.assertEquals(
+			HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+
+		_verifyNotActivated();
+	}
+
+	@Test
 	public void testPostDXPInstallationsActivationWithAnotherKeyPair()
 		throws Exception {
 
@@ -600,23 +617,6 @@ public class DXPEnvironmentsRestControllerTest {
 	}
 
 	@Test
-	public void testPostDXPInstallationsActivationWithAnotherInstallationId()
-		throws Exception {
-
-		_mockEnvironmentByActivationCode(_createPendingEnvironment());
-
-		ResponseEntity<?> responseEntity =
-			_dxpEnvironmentsRestController.postDXPInstallationsActivation(
-				"ANOTHER-INSTALLATION",
-				_createActivationBody(_keyPair, _keyPair));
-
-		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-
-		_verifyNotActivated();
-	}
-
-	@Test
 	public void testPostDXPInstallationsManifest() throws Exception {
 		_mockActivatedInstallation(_keyPair);
 		_mockAddOn();
@@ -698,32 +698,43 @@ public class DXPEnvironmentsRestControllerTest {
 	}
 
 	@Test
-	public void testPostDXPInstallationsManifestWithCheckInFailure()
+	public void testPostDXPInstallationsManifestWithAnotherInstallationId()
 		throws Exception {
 
 		_mockActivatedInstallation(_keyPair);
 
-		Mockito.doThrow(
-			new RuntimeException()
-		).when(
-			_environmentService
-		).updateDXPEnvironmentCheckIn(
-			ArgumentMatchers.anyLong(), ArgumentMatchers.any(),
-			ArgumentMatchers.anyString()
+		Mockito.when(
+			_environmentService.getDXPEnvironmentsByInstallationId(
+				EnvironmentConstants.ACTIVATION_MODE_ONLINE,
+				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
+				"ANOTHER-INSTALLATION")
+		).thenReturn(
+			List.of(
+				_createActiveEnvironment(
+					EnvironmentConstants.ACTIVATION_MODE_ONLINE,
+					_getPublicKey(_keyPair)))
 		);
 
 		ResponseEntity<?> responseEntity =
 			_dxpEnvironmentsRestController.postDXPInstallationsManifest(
-				_INSTALLATION_ID, _createSignedBody(_keyPair, "2027.q1.0"));
-
-		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
-
-		JSONObject jsonObject = new JSONObject(
-			(String)responseEntity.getBody());
+				"ANOTHER-INSTALLATION",
+				_createSignedBody(_keyPair, "2027.q1.0"));
 
 		Assertions.assertEquals(
-			EnvironmentConstants.MANIFEST_STATUS_ACTIVE,
-			jsonObject.getString("status"));
+			HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
+	}
+
+	@Test
+	public void testPostDXPInstallationsManifestWithAnotherKeyPair()
+		throws Exception {
+
+		_mockActivatedInstallation(_keyPair);
+
+		Assertions.assertThrows(
+			InvalidSignatureException.class,
+			() -> _dxpEnvironmentsRestController.postDXPInstallationsManifest(
+				_INSTALLATION_ID,
+				_createSignedBody(_generateKeyPair(), "2027.q1.0")));
 	}
 
 	@Test
@@ -779,43 +790,32 @@ public class DXPEnvironmentsRestControllerTest {
 	}
 
 	@Test
-	public void testPostDXPInstallationsManifestWithAnotherInstallationId()
+	public void testPostDXPInstallationsManifestWithCheckInFailure()
 		throws Exception {
 
 		_mockActivatedInstallation(_keyPair);
 
-		Mockito.when(
-			_environmentService.getDXPEnvironmentsByInstallationId(
-				EnvironmentConstants.ACTIVATION_MODE_ONLINE,
-				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE,
-				"ANOTHER-INSTALLATION")
-		).thenReturn(
-			List.of(
-				_createActiveEnvironment(
-					EnvironmentConstants.ACTIVATION_MODE_ONLINE,
-					_getPublicKey(_keyPair)))
+		Mockito.doThrow(
+			new RuntimeException()
+		).when(
+			_environmentService
+		).updateDXPEnvironmentCheckIn(
+			ArgumentMatchers.anyLong(), ArgumentMatchers.any(),
+			ArgumentMatchers.anyString()
 		);
 
 		ResponseEntity<?> responseEntity =
 			_dxpEnvironmentsRestController.postDXPInstallationsManifest(
-				"ANOTHER-INSTALLATION",
-				_createSignedBody(_keyPair, "2027.q1.0"));
+				_INSTALLATION_ID, _createSignedBody(_keyPair, "2027.q1.0"));
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONObject jsonObject = new JSONObject(
+			(String)responseEntity.getBody());
 
 		Assertions.assertEquals(
-			HttpStatus.BAD_REQUEST, responseEntity.getStatusCode());
-	}
-
-	@Test
-	public void testPostDXPInstallationsManifestWithAnotherKeyPair()
-		throws Exception {
-
-		_mockActivatedInstallation(_keyPair);
-
-		Assertions.assertThrows(
-			InvalidSignatureException.class,
-			() -> _dxpEnvironmentsRestController.postDXPInstallationsManifest(
-				_INSTALLATION_ID,
-				_createSignedBody(_generateKeyPair(), "2027.q1.0")));
+			EnvironmentConstants.MANIFEST_STATUS_ACTIVE,
+			jsonObject.getString("status"));
 	}
 
 	@Test
@@ -1296,23 +1296,6 @@ public class DXPEnvironmentsRestControllerTest {
 	}
 
 	private Environment _createActiveEnvironment(
-		String activationMode, String publicKey) {
-
-		return new Environment(
-			_createEnvironmentJSONObject(
-			).put(
-				"activationMode", activationMode
-			).put(
-				"activationStatus",
-				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE
-			).put(
-				"externalEnvironmentId", _INSTALLATION_ID
-			).put(
-				"publicKey", publicKey
-			));
-	}
-
-	private Environment _createActiveEnvironment(
 		String activationMode, KeyPair keyPair) {
 
 		return new Environment(
@@ -1329,7 +1312,7 @@ public class DXPEnvironmentsRestControllerTest {
 			));
 	}
 
-	private Environment _createDeactivatedEnvironment(
+	private Environment _createActiveEnvironment(
 		String activationMode, String publicKey) {
 
 		return new Environment(
@@ -1338,7 +1321,7 @@ public class DXPEnvironmentsRestControllerTest {
 				"activationMode", activationMode
 			).put(
 				"activationStatus",
-				EnvironmentConstants.ACTIVATION_STATUS_INACTIVE
+				EnvironmentConstants.ACTIVATION_STATUS_ACTIVE
 			).put(
 				"externalEnvironmentId", _INSTALLATION_ID
 			).put(
@@ -1374,6 +1357,23 @@ public class DXPEnvironmentsRestControllerTest {
 				"startDate", "2026-01-01T00:00:00Z"
 			).put(
 				"terminationStatus", "active"
+			));
+	}
+
+	private Environment _createDeactivatedEnvironment(
+		String activationMode, String publicKey) {
+
+		return new Environment(
+			_createEnvironmentJSONObject(
+			).put(
+				"activationMode", activationMode
+			).put(
+				"activationStatus",
+				EnvironmentConstants.ACTIVATION_STATUS_INACTIVE
+			).put(
+				"externalEnvironmentId", _INSTALLATION_ID
+			).put(
+				"publicKey", publicKey
 			));
 	}
 
@@ -1464,6 +1464,14 @@ public class DXPEnvironmentsRestControllerTest {
 		return new Date(System.currentTimeMillis() + 300000);
 	}
 
+	private String _getInstallationId(KeyPair keyPair) {
+		UUID uuid = UUID.nameUUIDFromBytes(
+			keyPair.getPublic(
+			).getEncoded());
+
+		return StringUtil.toUpperCase(uuid.toString());
+	}
+
 	private Date _getLicenseDate(String licenseXML, String elementName)
 		throws Exception {
 
@@ -1500,14 +1508,6 @@ public class DXPEnvironmentsRestControllerTest {
 		return licenseXML.substring(
 			licenseXML.lastIndexOf("<license>", index),
 			licenseXML.indexOf("</license>", index));
-	}
-
-	private String _getInstallationId(KeyPair keyPair) {
-		UUID uuid = UUID.nameUUIDFromBytes(
-			keyPair.getPublic(
-			).getEncoded());
-
-		return StringUtil.toUpperCase(uuid.toString());
 	}
 
 	private String _getPublicKey(KeyPair keyPair) {
@@ -1758,11 +1758,11 @@ public class DXPEnvironmentsRestControllerTest {
 
 	private static final long _VIRTUAL_ENTRY_ID = 6000L;
 
-	private static final Pattern _keyPattern = Pattern.compile(
-		"<key>(.*?)</key>");
-
 	private static final String _VIRTUAL_ENTRY_SRC =
 		"https://cdn.example.com/add-ons/addon-1.0.lpkg?signature=1";
+
+	private static final Pattern _keyPattern = Pattern.compile(
+		"<key>(.*?)</key>");
 
 	private AdminPermission _adminPermission;
 	private CommerceProductService _commerceProductService;

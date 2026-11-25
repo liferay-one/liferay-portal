@@ -55,22 +55,6 @@ public class LicenseKeyGeneratorTest {
 	}
 
 	@Test
-	public void testGetPropertiesBindsAVersion7ProductionLicenseToTheInstallation() {
-		Map<String, String> properties = _getVersion7Properties(
-			"", "BB86A2E5-5E43-37C8-9B3F-0A4D2D9DF3C1", "");
-
-		Assertions.assertEquals(
-			"BB86A2E5-5E43-37C8-9B3F-0A4D2D9DF3C1",
-			properties.get("installationId"));
-		Assertions.assertEquals("3", properties.get("maxClusterNodes"));
-		Assertions.assertFalse(properties.containsKey("hostNames"));
-		Assertions.assertFalse(properties.containsKey("ipAddresses"));
-		Assertions.assertFalse(properties.containsKey("macAddresses"));
-		Assertions.assertFalse(properties.containsKey("maxServers"));
-		Assertions.assertFalse(properties.containsKey("serverIds"));
-	}
-
-	@Test
 	public void testGetPropertiesBindsAVersion7ProductionLicenseToServers() {
 		Map<String, String> properties = _getVersion7Properties(
 			"host.example.com", "", "00-11-22-33-44-55");
@@ -82,6 +66,22 @@ public class LicenseKeyGeneratorTest {
 		Assertions.assertEquals("3", properties.get("maxClusterNodes"));
 		Assertions.assertFalse(properties.containsKey("installationId"));
 		Assertions.assertFalse(properties.containsKey("ipAddresses"));
+		Assertions.assertFalse(properties.containsKey("maxServers"));
+		Assertions.assertFalse(properties.containsKey("serverIds"));
+	}
+
+	@Test
+	public void testGetPropertiesBindsAVersion7ProductionLicenseToTheInstallation() {
+		Map<String, String> properties = _getVersion7Properties(
+			"", "BB86A2E5-5E43-37C8-9B3F-0A4D2D9DF3C1", "");
+
+		Assertions.assertEquals(
+			"BB86A2E5-5E43-37C8-9B3F-0A4D2D9DF3C1",
+			properties.get("installationId"));
+		Assertions.assertEquals("3", properties.get("maxClusterNodes"));
+		Assertions.assertFalse(properties.containsKey("hostNames"));
+		Assertions.assertFalse(properties.containsKey("ipAddresses"));
+		Assertions.assertFalse(properties.containsKey("macAddresses"));
 		Assertions.assertFalse(properties.containsKey("maxServers"));
 		Assertions.assertFalse(properties.containsKey("serverIds"));
 	}
