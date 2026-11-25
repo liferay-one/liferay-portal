@@ -23,6 +23,7 @@ import {
 	WORKSPACE_ROOT,
 	batchItems,
 	listFiles,
+	objectRESTContextPath,
 	relative,
 } from '../lib.ts';
 
@@ -59,7 +60,7 @@ export function readScopes(): {
 	const objectNames = new Map<string, string>(
 		batchItems('03-object-definition.batch-engine-data.json').map(
 			(definition) => [
-				definition.restContextPath.replace('/o/c/', ''),
+				objectRESTContextPath(definition).replace('/o/c/', ''),
 				definition.name,
 			]
 		)

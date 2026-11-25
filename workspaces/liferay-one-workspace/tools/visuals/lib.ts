@@ -230,6 +230,33 @@ export function batchItems<T = any>(fileName: string): T[] {
 }
 
 /**
+ * Returns the REST path of an object definition. The source formatter
+ * removes restContextPath from the batch file, because the portal sets it,
+ * so the path is made from the name as the portal makes it: lower case, then
+ * plural.
+ */
+export function objectRESTContextPath(definition: {
+	name: string;
+	restContextPath?: string;
+}): string {
+	if (definition.restContextPath) {
+		return definition.restContextPath;
+	}
+
+	const name = definition.name.toLowerCase();
+
+	if (name.endsWith('s')) {
+		return `/o/c/${name}es`;
+	}
+
+	if (name.endsWith('y') && !/[aeiou]y$/.test(name)) {
+		return `/o/c/${name.slice(0, -1)}ies`;
+	}
+
+	return `/o/c/${name}s`;
+}
+
+/**
  * Returns every relationship of the batch: the ones that a system object
  * holds in its own item, and the ones in the relationship file.
  */
