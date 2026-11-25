@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {render, screen} from '@testing-library/react';
+import {cleanup, render, screen, within} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {MemoryRouter, Route, Routes, useLocation} from 'react-router';
 import {beforeEach, describe, expect, it} from 'vitest';
@@ -64,17 +64,19 @@ function LocationSearch() {
 	return <output data-testid="location-search">{search}</output>;
 }
 
+type RenderListOptions = {
+	filters?: ListFilter<Item>[];
+	initialEntry?: string | {pathname: string; state: unknown};
+	loading?: boolean;
+	persistKey?: string;
+};
+
 function renderList({
 	filters = FILTERS,
 	initialEntry = '/list',
 	loading = false,
 	persistKey,
-}: {
-	filters?: ListFilter<Item>[];
-	initialEntry?: string | {pathname: string; state: unknown};
-	loading?: boolean;
-	persistKey?: string;
-} = {}) {
+}: RenderListOptions = {}) {
 	return render(
 		<MemoryRouter initialEntries={[initialEntry]}>
 			<Routes>
@@ -102,6 +104,16 @@ function renderList({
 			</Routes>
 		</MemoryRouter>
 	);
+}
+
+function renderSavedList(options: Omit<RenderListOptions, 'persistKey'> = {}) {
+	return renderList({...options, persistKey: 'test'});
+}
+
+function reopenList(options: Omit<RenderListOptions, 'persistKey'> = {}) {
+	cleanup();
+
+	return renderSavedList(options);
 }
 
 Liferay.Util.SessionStorage = sessionStorage;
@@ -181,8 +193,10 @@ describe('FilterableListCard', () => {
 
 			await user.click(screen.getByRole('button', {name: 'Name'}));
 
-			expect(getLocationSearch().get('page')).toBeNull();
-			expect(getLocationSearch().get('sort')).toBe('name:asc');
+			const searchParams = getLocationSearch();
+
+			expect(searchParams.get('page')).toBeNull();
+			expect(searchParams.get('sort')).toBe('name:asc');
 
 			await user.click(screen.getByRole('button', {name: 'Name'}));
 
@@ -197,22 +211,21 @@ describe('FilterableListCard', () => {
 
 			await user.type(screen.getByPlaceholderText('Search'), 'item');
 
-			expect(getLocationSearch().get('page')).toBeNull();
-			expect(getLocationSearch().get('search')).toBe('item');
+			const searchParams = getLocationSearch();
+
+			expect(searchParams.get('page')).toBeNull();
+			expect(searchParams.get('search')).toBe('item');
 		});
 	});
 
 	describe('saved state', () => {
 		it('restores the saved state when the URL has no query', () => {
-			const {unmount} = renderList({
+			renderSavedList({
 				initialEntry:
 					'/list?group=even&page=2&pageSize=20&sort=name:desc',
-				persistKey: 'test',
 			});
 
-			unmount();
-
-			renderList({persistKey: 'test'});
+			reopenList();
 
 			const searchParams = getLocationSearch();
 
@@ -226,14 +239,9 @@ describe('FilterableListCard', () => {
 		});
 
 		it('restores the saved search into the search field', () => {
-			const {unmount} = renderList({
-				initialEntry: '/list?search=item%2001',
-				persistKey: 'test',
-			});
+			renderSavedList({initialEntry: '/list?search=item%2001'});
 
-			unmount();
-
-			renderList({persistKey: 'test'});
+			reopenList();
 
 			expect(screen.getByPlaceholderText('Search')).toHaveValue(
 				'item 01'
@@ -241,14 +249,9 @@ describe('FilterableListCard', () => {
 		});
 
 		it('does not restore the saved state when the URL has a query', () => {
-			const {unmount} = renderList({
-				initialEntry: '/list?pageSize=20',
-				persistKey: 'test',
-			});
+			renderSavedList({initialEntry: '/list?pageSize=20'});
 
-			unmount();
-
-			renderList({initialEntry: '/list?group=odd', persistKey: 'test'});
+			reopenList({initialEntry: '/list?group=odd'});
 
 			const searchParams = getLocationSearch();
 
@@ -257,14 +260,9 @@ describe('FilterableListCard', () => {
 		});
 
 		it('does not save the parameters that the list does not own', () => {
-			const {unmount} = renderList({
-				initialEntry: '/list?new=KEY-1&pageSize=20',
-				persistKey: 'test',
-			});
+			renderSavedList({initialEntry: '/list?new=KEY-1&pageSize=20'});
 
-			unmount();
-
-			renderList({persistKey: 'test'});
+			reopenList();
 
 			const searchParams = getLocationSearch();
 
@@ -273,21 +271,11 @@ describe('FilterableListCard', () => {
 		});
 
 		it('keeps the saved state when the list opens with only other parameters', () => {
-			const {unmount} = renderList({
-				initialEntry: '/list?pageSize=20',
-				persistKey: 'test',
-			});
+			renderSavedList({initialEntry: '/list?pageSize=20'});
 
-			unmount();
+			reopenList({initialEntry: '/list?new=KEY-1'});
 
-			const {unmount: unmountNew} = renderList({
-				initialEntry: '/list?new=KEY-1',
-				persistKey: 'test',
-			});
-
-			unmountNew();
-
-			renderList({persistKey: 'test'});
+			reopenList();
 
 			expect(getLocationSearch().get('pageSize')).toBe('20');
 		});
@@ -297,10 +285,9 @@ describe('FilterableListCard', () => {
 
 			const filters = [{...FILTERS[0], options: []}];
 
-			const {unmount} = renderList({
+			renderSavedList({
 				filters,
 				initialEntry: '/list?group=even',
-				persistKey: 'test',
 			});
 
 			expect(
@@ -311,31 +298,21 @@ describe('FilterableListCard', () => {
 
 			expect(screen.queryByText('Type')).toBeNull();
 
-			unmount();
-
-			renderList({filters, persistKey: 'test'});
+			reopenList({filters});
 
 			expect(getLocationSearch().get('group')).toBe('even');
 		});
 
 		it('skips the restore and clears the saved state when the list opens with the reset state', () => {
-			const {unmount} = renderList({
-				initialEntry: '/list?pageSize=20',
-				persistKey: 'test',
-			});
+			renderSavedList({initialEntry: '/list?pageSize=20'});
 
-			unmount();
-
-			const {unmount: unmountReset} = renderList({
+			reopenList({
 				initialEntry: {pathname: '/list', state: RESET_LIST_STATE},
-				persistKey: 'test',
 			});
 
 			expect(getLocationSearch().toString()).toBe('');
 
-			unmountReset();
-
-			renderList({persistKey: 'test'});
+			reopenList();
 
 			expect(getLocationSearch().toString()).toBe('');
 		});
@@ -343,32 +320,24 @@ describe('FilterableListCard', () => {
 		it('clears the saved state when the user removes the last filter', async () => {
 			const user = userEvent.setup();
 
-			const {unmount} = renderList({
-				initialEntry: '/list?group=even',
-				persistKey: 'test',
-			});
+			renderSavedList({initialEntry: '/list?group=even'});
 
-			const tag = screen.getByText('Even');
+			await user.click(
+				within(screen.getByText('Even')).getByRole('button')
+			);
 
-			await user.click(tag.querySelector('button') as HTMLButtonElement);
-
-			unmount();
-
-			renderList({persistKey: 'test'});
+			reopenList();
 
 			expect(getLocationSearch().toString()).toBe('');
 		});
 
 		it('does not save the state while the list loads', () => {
-			const {unmount} = renderList({
+			renderSavedList({
 				initialEntry: '/list?pageSize=20',
 				loading: true,
-				persistKey: 'test',
 			});
 
-			unmount();
-
-			renderList({persistKey: 'test'});
+			reopenList();
 
 			expect(getLocationSearch().toString()).toBe('');
 		});
@@ -376,23 +345,19 @@ describe('FilterableListCard', () => {
 		it('saves a change that the user makes while the list loads', async () => {
 			const user = userEvent.setup();
 
-			const {unmount} = renderList({loading: true, persistKey: 'test'});
+			renderSavedList({loading: true});
 
 			await user.type(screen.getByPlaceholderText('Search'), 'item');
 
-			unmount();
-
-			renderList({persistKey: 'test'});
+			reopenList();
 
 			expect(getLocationSearch().get('search')).toBe('item');
 		});
 
 		it('does not save the state of a list that has no persist key', () => {
-			const {unmount} = renderList({initialEntry: '/list?pageSize=20'});
+			renderList({initialEntry: '/list?pageSize=20'});
 
-			unmount();
-
-			renderList({persistKey: 'test'});
+			reopenList();
 
 			expect(getLocationSearch().toString()).toBe('');
 		});
