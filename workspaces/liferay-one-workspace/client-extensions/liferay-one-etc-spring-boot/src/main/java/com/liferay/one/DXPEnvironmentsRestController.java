@@ -1007,16 +1007,14 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 		for (Entitlement entitlement : entitlements) {
 			if (!EnvironmentQuotaService.isDXPEntitlementType(
-					entitlement, type)) {
+					entitlement, type) ||
+				((dxpEntitlement != null) &&
+				 !_endsAfter(entitlement, dxpEntitlement))) {
 
 				continue;
 			}
 
-			if ((dxpEntitlement == null) ||
-				_endsAfter(entitlement, dxpEntitlement)) {
-
-				dxpEntitlement = entitlement;
-			}
+			dxpEntitlement = entitlement;
 		}
 
 		return dxpEntitlement;
@@ -1173,13 +1171,15 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		int instanceSize = 0;
 
 		for (Entitlement entitlement : entitlements) {
-			if (EnvironmentQuotaService.isDXPEntitlementType(
+			if (!EnvironmentQuotaService.isDXPEntitlementType(
 					entitlement, environmentType)) {
 
-				instanceSize = Math.max(
-					instanceSize,
-					LicenseKeyGenerateFormService.getInstanceSize(entitlement));
+				continue;
 			}
+
+			instanceSize = Math.max(
+				instanceSize,
+				LicenseKeyGenerateFormService.getInstanceSize(entitlement));
 		}
 
 		return "Sizing " + instanceSize;
@@ -1284,36 +1284,6 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 			EnvironmentConstants.ACTIVATION_STATUS_INACTIVE);
 	}
 
-	private boolean _isSignedInstallationId(
-			String installationId, JWTClaimsSet jwtClaimsSet)
-		throws Exception {
-
-		if (Validator.isNotNull(installationId) &&
-			Objects.equals(
-				installationId,
-				jwtClaimsSet.getStringClaim("installationId"))) {
-
-			return true;
-		}
-
-		return false;
-	}
-
-	private boolean _isInstallationPublicKey(
-		String installationId, String publicKey) {
-
-		if (Validator.isNull(installationId) || Validator.isNull(publicKey)) {
-			return false;
-		}
-
-		Base64.Decoder decoder = Base64.getDecoder();
-
-		UUID uuid = UUID.nameUUIDFromBytes(
-			decoder.decode(JWTSignatureValidator.toBase64PublicKey(publicKey)));
-
-		return installationId.equalsIgnoreCase(uuid.toString());
-	}
-
 	private boolean _isEntitlementVersion(String dxpVersion) {
 		String quarterlyPatchRelease =
 			ProductVersion.extractQuarterlyPatchRelease(dxpVersion);
@@ -1332,6 +1302,36 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 		}
 
 		return true;
+	}
+
+	private boolean _isInstallationPublicKey(
+		String installationId, String publicKey) {
+
+		if (Validator.isNull(installationId) || Validator.isNull(publicKey)) {
+			return false;
+		}
+
+		Base64.Decoder decoder = Base64.getDecoder();
+
+		UUID uuid = UUID.nameUUIDFromBytes(
+			decoder.decode(JWTSignatureValidator.toBase64PublicKey(publicKey)));
+
+		return installationId.equalsIgnoreCase(uuid.toString());
+	}
+
+	private boolean _isSignedInstallationId(
+			String installationId, JWTClaimsSet jwtClaimsSet)
+		throws Exception {
+
+		if (Validator.isNotNull(installationId) &&
+			Objects.equals(
+				installationId,
+				jwtClaimsSet.getStringClaim("installationId"))) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private JSONObject _toActivationCodeJSONObject(Environment environment) {
@@ -1445,9 +1445,6 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 	private AdminPermission _adminPermission;
 
 	@Autowired
-	private JWTSignatureValidator _jwtSignatureValidator;
-
-	@Autowired
 	private CommerceProductService _commerceProductService;
 
 	@Autowired
@@ -1468,6 +1465,9 @@ public class DXPEnvironmentsRestController extends OneBaseRestController {
 
 	@Autowired
 	private EnvironmentService _environmentService;
+
+	@Autowired
+	private JWTSignatureValidator _jwtSignatureValidator;
 
 	@Autowired
 	private KeyedLock _keyedLock;

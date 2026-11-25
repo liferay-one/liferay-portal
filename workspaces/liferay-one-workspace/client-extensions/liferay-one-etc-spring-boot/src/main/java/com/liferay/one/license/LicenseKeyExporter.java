@@ -150,6 +150,14 @@ public class LicenseKeyExporter {
 		return aggregateXMLs(xmls);
 	}
 
+	public String toXML(String key, Map<String, String> properties)
+		throws Exception {
+
+		Document document = toXMLVersion3_4(properties, key, false);
+
+		return document.formattedString();
+	}
+
 	public String toXML(
 			String accountName, String licenseEntryName, String licenseType,
 			int licenseVersion, String productName, String productId,
@@ -221,14 +229,6 @@ public class LicenseKeyExporter {
 		String key = _licenseKeyGenerator.encrypt(properties);
 
 		_addElement(rootElement, "key", key);
-
-		return document.formattedString();
-	}
-
-	public String toXML(String key, Map<String, String> properties)
-		throws Exception {
-
-		Document document = toXMLVersion3_4(properties, key, false);
 
 		return document.formattedString();
 	}

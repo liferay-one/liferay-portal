@@ -1004,14 +1004,16 @@ public class LicenseKeyGenerateFormService {
 		for (Map.Entry<Long, Integer> entry : licenseKeyCounts.entrySet()) {
 			String entitlementId = String.valueOf(entry.getKey());
 
-			if (!jsonObject.has(entitlementId)) {
-				jsonObject.put(
-					entitlementId,
-					new JSONObject(
-					).put(
-						"usedCount", entry.getValue()
-					));
+			if (jsonObject.has(entitlementId)) {
+				continue;
 			}
+
+			jsonObject.put(
+				entitlementId,
+				new JSONObject(
+				).put(
+					"usedCount", entry.getValue()
+				));
 		}
 
 		return jsonObject;
@@ -1236,9 +1238,11 @@ public class LicenseKeyGenerateFormService {
 		}
 
 		for (LicenseKeyType licenseKeyType : LicenseKeyType.values()) {
-			if (_licenseKeyTypeService.isAdminType(licenseKeyType)) {
-				jsonArray.put(licenseKeyType.getKey());
+			if (!_licenseKeyTypeService.isAdminType(licenseKeyType)) {
+				continue;
 			}
+
+			jsonArray.put(licenseKeyType.getKey());
 		}
 
 		return jsonArray;

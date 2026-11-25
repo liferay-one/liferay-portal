@@ -1390,16 +1390,14 @@ public class CloudRestController extends OneBaseRestController {
 		for (Entitlement entitlement : entitlements) {
 			if (!Objects.equals(
 					EntitlementConstants.NAME_CLOUD_NATIVE,
-					entitlement.getName())) {
+					entitlement.getName()) ||
+				((cloudNativeEntitlement != null) &&
+				 !_endsAfter(entitlement, cloudNativeEntitlement))) {
 
 				continue;
 			}
 
-			if ((cloudNativeEntitlement == null) ||
-				_endsAfter(entitlement, cloudNativeEntitlement)) {
-
-				cloudNativeEntitlement = entitlement;
-			}
+			cloudNativeEntitlement = entitlement;
 		}
 
 		if (cloudNativeEntitlement == null) {
@@ -1698,9 +1696,6 @@ public class CloudRestController extends OneBaseRestController {
 	private CloudActivationRequestService _cloudActivationRequestService;
 
 	@Autowired
-	private JWTSignatureValidator _jwtSignatureValidator;
-
-	@Autowired
 	private CommerceProductService _commerceProductService;
 
 	@Autowired
@@ -1724,6 +1719,9 @@ public class CloudRestController extends OneBaseRestController {
 
 	@Autowired
 	private EnvironmentService _environmentService;
+
+	@Autowired
+	private JWTSignatureValidator _jwtSignatureValidator;
 
 	@Autowired
 	private KeyedLock _keyedLock;

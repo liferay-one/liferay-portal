@@ -174,10 +174,11 @@ public class JiraAssetObject {
 			JSONArray displayValuesJSONArray =
 				_getAttributeDisplayValuesJSONArray(entry.getValue());
 
-			if (!displayValuesJSONArray.isEmpty()) {
-				attributesJSONObject.put(
-					entry.getKey(), displayValuesJSONArray);
+			if (displayValuesJSONArray.isEmpty()) {
+				continue;
 			}
+
+			attributesJSONObject.put(entry.getKey(), displayValuesJSONArray);
 		}
 
 		return new JSONObject(
@@ -205,9 +206,11 @@ public class JiraAssetObject {
 			String displayValue = attributeValueJSONObject.optString(
 				"displayValue", _getValue(attributeValueJSONObject));
 
-			if (Validator.isNotNull(displayValue)) {
-				displayValuesJSONArray.put(displayValue);
+			if (Validator.isNull(displayValue)) {
+				continue;
 			}
+
+			displayValuesJSONArray.put(displayValue);
 		}
 
 		return displayValuesJSONArray;
