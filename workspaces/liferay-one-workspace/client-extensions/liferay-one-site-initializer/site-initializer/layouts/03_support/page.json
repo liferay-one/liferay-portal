@@ -10,5 +10,11 @@
 	},
 	"private": false,
 	"system": false,
-	"type": "Content"
+	"type": "Node",
+	"typeSettings": [
+		{
+			"key": "sitemap-include",
+			"value": "0"
+		}
+	]
 }
