@@ -10,6 +10,7 @@ import i18n from '~/i18n';
 import type {Observer} from '@clayui/modal/lib/types';
 
 type ConfirmPurchaseModalProps = {
+	className?: string;
 	observer: Observer;
 	onCancel: () => void;
 	onConfirm: () => void;
@@ -17,12 +18,14 @@ type ConfirmPurchaseModalProps = {
 };
 
 const ConfirmPurchaseModal = ({
+	className,
 	observer,
 	onCancel,
 	onConfirm,
 	visible,
 }: ConfirmPurchaseModalProps) => (
 	<Modal
+		className={className}
 		last={
 			<ClayButton.Group spaced>
 				<ClayButton displayType="secondary" onClick={onCancel}>

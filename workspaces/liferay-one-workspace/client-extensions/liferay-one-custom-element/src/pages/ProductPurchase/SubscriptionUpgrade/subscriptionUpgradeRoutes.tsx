@@ -9,11 +9,30 @@ import i18n from '~/i18n';
 
 import type {ProductPurchaseStep} from '~/pages/ProductPurchase/productPurchaseRoutes';
 
+const AIHubPlanSelection = lazy(
+	() => import('./AIHubPlanSelection/AIHubPlanSelection')
+);
+const AIHubTierSummary = lazy(
+	() => import('./AIHubTierSummary/AIHubTierSummary')
+);
 const CMPAddOnSummary = lazy(() => import('./CMPAddOnSummary/CMPAddOnSummary'));
 
 const subscriptionUpgradeSteps: Partial<
 	Record<SubscriptionUpgradeType, () => ProductPurchaseStep[]>
 > = {
+	[SubscriptionUpgradeType.AI_HUB_TIER]: () => [
+		{
+			element: <AIHubPlanSelection />,
+			index: true,
+			standalone: true,
+			title: i18n.translate('plan'),
+		},
+		{
+			element: <AIHubTierSummary />,
+			path: 'summary',
+			title: i18n.translate('summary'),
+		},
+	],
 	[SubscriptionUpgradeType.CMP_ADD_ON]: () => [
 		{
 			element: <CMPAddOnSummary />,

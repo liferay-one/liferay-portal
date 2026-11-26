@@ -32,5 +32,14 @@ export type SubscriptionUpgradePricing = {
 	lineItems: SubscriptionUpgradeLineItem[];
 	remainingMonths: number;
 	termMonths: number;
+	tierChange?: SubscriptionUpgradeTierChange;
 	total: number;
+};
+
+export type SubscriptionUpgradeTierChange = {
+	creditForRemainingMonths: number;
+	currentMonthlyPrice: number;
+	monthlyPriceDifference: number;
+	newCostForRemainingMonths: number;
+	newMonthlyPrice: number;
 };

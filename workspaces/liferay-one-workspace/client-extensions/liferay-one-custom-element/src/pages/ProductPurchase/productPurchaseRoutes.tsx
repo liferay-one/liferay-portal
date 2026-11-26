@@ -61,11 +61,13 @@ export type ProductPurchaseStep = {
 	isLDPOnly?: boolean;
 	isPaidOnly?: boolean;
 	path?: string;
+	standalone?: boolean;
 	title: string;
 };
 
 export type ProductPurchaseStepItem = {
 	key: string;
+	standalone?: boolean;
 	title: string;
 };
 
@@ -256,5 +258,9 @@ export function toStepRoutes(steps: ProductPurchaseStep[]): AppRoute[] {
 export function toStepItems(
 	steps: ProductPurchaseStep[]
 ): ProductPurchaseStepItem[] {
-	return steps.map((step) => ({key: getStepKey(step), title: step.title}));
+	return steps.map((step) => ({
+		key: getStepKey(step),
+		standalone: step.standalone,
+		title: step.title,
+	}));
 }

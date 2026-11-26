@@ -22,8 +22,8 @@ const ProductPurchaseHeaderCards = ({
 	product,
 }: ProductPurchaseHeaderCardsProps) => {
 	return (
-		<div className="align-items-center d-flex justify-content-center">
-			<div className="flex-grow-1 product-purchase-banner px-4 py-3">
+		<div className="align-items-center d-flex justify-content-center product-purchase-header-cards">
+			<div className="flex-grow-1 product-purchase-banner product-purchase-header-card px-4 py-3">
 				<div className="align-items-center d-flex">
 					<img
 						alt={product.name}
@@ -51,13 +51,13 @@ const ProductPurchaseHeaderCards = ({
 				<>
 					<img
 						alt=""
-						className="mx-3"
+						className="align-self-center mx-3"
 						height="16px"
 						src={orderArrowRightIconUrl}
 						width="16px"
 					/>
 
-					<div className="flex-grow-1 product-purchase-banner px-4 py-3">
+					<div className="flex-grow-1 product-purchase-banner product-purchase-header-card px-4 py-3">
 						<div className="align-items-center d-flex">
 							<AccountAvatar
 								logoURL={account.logoURL}

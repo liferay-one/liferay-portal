@@ -45,7 +45,11 @@ const SubscriptionUpgradeRouter = ({
 				),
 			},
 			{
-				element: <OrderReceived product={product} />,
+				element: (
+					<div className={`subscription-upgrade-${type}`}>
+						<OrderReceived product={product} />
+					</div>
+				),
 				path: 'order-received',
 			},
 		])

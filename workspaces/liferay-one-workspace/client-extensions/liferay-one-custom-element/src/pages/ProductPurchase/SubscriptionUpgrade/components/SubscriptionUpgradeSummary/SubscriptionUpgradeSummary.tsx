@@ -22,6 +22,7 @@ import type {SubscriptionUpgradeOrder} from '~/types/subscriptionUpgrade';
 
 type SubscriptionUpgradeSummaryProps = {
 	children: ReactNode;
+	confirmPurchaseModalClassName?: string;
 	disabled?: boolean;
 	onConfirm: (
 		billingAddress: BillingAddress
@@ -30,6 +31,7 @@ type SubscriptionUpgradeSummaryProps = {
 
 const SubscriptionUpgradeSummary = ({
 	children,
+	confirmPurchaseModalClassName,
 	disabled,
 	onConfirm,
 }: SubscriptionUpgradeSummaryProps) => {
@@ -109,15 +111,18 @@ const SubscriptionUpgradeSummary = ({
 				</Loading.FullScreen>
 			)}
 
-			<p className="mb-4 text-muted">
+			<p className="mb-4 subscription-upgrade-summary-description text-muted">
 				{i18n.translate(
 					'please-review-the-order-summary-below-to-complete-your-purchase'
 				)}
 			</p>
 
-			<Section label={i18n.translate('billing-address')}>
+			<Section
+				className="subscription-upgrade-summary-item"
+				label={i18n.translate('billing-address')}
+			>
 				{billingAddress ? (
-					<div className="border p-3 rounded">
+					<div className="border p-3 rounded subscription-upgrade-summary-billing-address">
 						<strong className="d-block">
 							{billingAddress.name}
 						</strong>
@@ -142,8 +147,14 @@ const SubscriptionUpgradeSummary = ({
 				)}
 			</Section>
 
-			<Section label={i18n.translate('payment-agreement')}>
-				<ClayAlert className="mb-0" displayType="info">
+			<Section
+				className="subscription-upgrade-summary-item"
+				label={i18n.translate('payment-agreement')}
+			>
+				<ClayAlert
+					className="mb-0 subscription-upgrade-summary-payment-agreement"
+					displayType="info"
+				>
 					{i18n.translate(
 						'this-transaction-will-be-processed-according-to-your-active-billing-and-payment-agreement'
 					)}
@@ -153,6 +164,7 @@ const SubscriptionUpgradeSummary = ({
 			{children}
 
 			<ConfirmPurchaseModal
+				className={confirmPurchaseModalClassName}
 				observer={observer}
 				onCancel={() => onOpenChange(false)}
 				onConfirm={handleConfirm}

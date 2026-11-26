@@ -153,17 +153,35 @@ const SubscriptionUpgradeLayout = ({
 		subscriptionUpgrade,
 	};
 
-	return (
-		<>
-			<ClayButton
-				className="font-weight-semi-bold mb-4"
-				displayType="unstyled"
-				onClick={exit}
-			>
-				<ClayIcon className="mr-2" symbol="order-arrow-left" />
+	const renderGoBackButton = (className: string) => (
+		<ClayButton
+			className={`font-weight-semi-bold subscription-upgrade-go-back ${className}`}
+			displayType="unstyled"
+			onClick={exit}
+		>
+			<ClayIcon className="mr-2" symbol="order-arrow-left" />
 
-				{i18n.translate('go-back')}
-			</ClayButton>
+			{i18n.translate('go-back')}
+		</ClayButton>
+	);
+
+	if (stepItems[activeStepIndex]?.standalone) {
+		return (
+			<div className="subscription-upgrade-standalone">
+				<div className="container-fluid container-fluid-max-xl">
+					{renderGoBackButton(
+						'subscription-upgrade-standalone-go-back'
+					)}
+				</div>
+
+				<Outlet context={context} />
+			</div>
+		);
+	}
+
+	return (
+		<div className={`subscription-upgrade-${type}`}>
+			{renderGoBackButton('mb-4')}
 
 			<ProductPurchaseHeader
 				product={product}
@@ -190,15 +208,17 @@ const SubscriptionUpgradeLayout = ({
 				<hr className="mx-n4 my-4" />
 
 				<div className="align-items-center d-flex justify-content-between">
-					<span className="font-weight-semi-bold text-muted">
+					<span className="font-weight-semi-bold subscription-upgrade-header-label text-muted">
 						{i18n.translate('account-selected')}
 					</span>
 
 					<div className="align-items-center d-flex">
 						<div className="mr-3 text-right">
-							<strong className="d-block">{account.name}</strong>
+							<strong className="d-block subscription-upgrade-header-account-name">
+								{account.name}
+							</strong>
 
-							<small className="text-muted">
+							<small className="subscription-upgrade-header-account-email text-muted">
 								{Liferay.ThemeDisplay.getUserEmailAddress()}
 							</small>
 						</div>
@@ -212,21 +232,28 @@ const SubscriptionUpgradeLayout = ({
 
 				{projectName && (
 					<div className="align-items-center d-flex justify-content-between mt-3">
-						<span className="font-weight-semi-bold text-muted">
+						<span className="font-weight-semi-bold subscription-upgrade-header-label text-muted">
 							{i18n.translate('project-selected')}
 						</span>
 
-						<strong>{projectName}</strong>
+						<strong className="subscription-upgrade-header-project-name">
+							{projectName}
+						</strong>
 					</div>
 				)}
 			</ProductPurchaseHeader>
 
-			<div className="bg-white border d-flex flex-column mt-4 p-4 pt-5 rounded">
-				<ProductPurchaseSteps className="mb-4" steps={steps} />
+			<div className="bg-white border d-flex flex-column mt-4 p-4 pt-5 rounded subscription-upgrade-content">
+				<ProductPurchaseSteps
+					className="mb-4"
+					steps={steps.filter(
+						(_, index) => !stepItems[index].standalone
+					)}
+				/>
 
 				<Outlet context={context} />
 			</div>
-		</>
+		</div>
 	);
 };
 

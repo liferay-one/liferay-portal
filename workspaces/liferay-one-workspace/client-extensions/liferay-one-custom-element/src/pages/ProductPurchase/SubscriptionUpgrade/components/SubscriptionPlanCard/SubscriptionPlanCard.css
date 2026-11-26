@@ -1,0 +1,31 @@
+.subscription-plan-card {
+	background:
+		linear-gradient(#fff, #fff) padding-box,
+		linear-gradient(90deg, #e9ecff, #f4e8ff) border-box;
+	border: 2px solid transparent;
+	border-radius: 32px;
+	min-height: 704px;
+
+	&.current {
+		background: var(--color-action-primary-active-lighten);
+		border-color: var(--color-action-primary-active);
+
+		& .btn {
+			border-color: var(--color-action-primary-disabled);
+			color: var(--color-action-primary-disabled);
+			opacity: 1;
+		}
+	}
+}
+
+.subscription-plan-card-current-badge {
+	background-color: var(--color-brand-primary-lighten-6);
+	border-radius: 16px;
+	color: var(--color-brand-primary);
+	font-size: 14px;
+	font-weight: 600;
+	gap: 6px;
+	height: 32px;
+	padding: 0 12px;
+	white-space: nowrap;
+}

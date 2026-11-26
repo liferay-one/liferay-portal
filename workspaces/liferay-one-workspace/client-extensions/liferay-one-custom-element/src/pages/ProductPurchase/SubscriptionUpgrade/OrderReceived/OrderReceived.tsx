@@ -59,11 +59,11 @@ const OrderReceived = ({product}: OrderReceivedProps) => {
 				/>
 			</div>
 
-			<h1 className="mt-4 product-purchase-shell-title text-center">
+			<h1 className="mt-4 order-received-title product-purchase-shell-title text-center">
 				{i18n.translate('order-received-awaiting-signature')}
 			</h1>
 
-			<p className="mt-3 text-center text-muted">
+			<p className="mt-3 order-received-description text-center text-muted">
 				{i18n.sub(
 					'thank-you-for-your-purchase-of-x-an-order-form-will-be-sent-to-your-email-via-docusign-please-review-sign-and-return-it-to-confirm-your-subscription',
 					product.name
@@ -81,7 +81,9 @@ const OrderReceived = ({product}: OrderReceivedProps) => {
 				<ClayButton
 					displayType="secondary"
 					onClick={() =>
-						Liferay.Util.navigate(`${getSiteURL()}/products`)
+						Liferay.Util.navigate(
+							`${getSiteURL()}/marketplace/products`
+						)
 					}
 				>
 					{i18n.translate('browse-products')}
@@ -97,7 +99,7 @@ const OrderReceived = ({product}: OrderReceivedProps) => {
 				</ClayButton>
 			</div>
 
-			<p className="font-weight-semi-bold mt-4 text-center">
+			<p className="font-weight-semi-bold mt-4 order-received-support text-center">
 				{i18n.translate('didn-t-receive-the-email')}{' '}
 				<a href="mailto:support@liferay.com">support@liferay.com</a>
 			</p>
