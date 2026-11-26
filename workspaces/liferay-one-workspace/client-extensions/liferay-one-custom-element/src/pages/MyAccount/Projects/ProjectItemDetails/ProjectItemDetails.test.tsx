@@ -48,6 +48,7 @@ vi.mock('~/hooks/useProjectEnvironments', () => ({
 vi.mock('~/hooks/useProjectItems', () => ({useProjectItems: vi.fn()}));
 
 vi.mock('~/hooks/useProjectOrders', () => ({
+	getProductEnvironmentOrderItems: vi.fn(() => []),
 	getProductOrder: vi.fn(),
 	getProductOrderInfo: vi.fn(() => ({status: 'active'})),
 	getProductVirtualItems: vi.fn(() => []),
@@ -62,9 +63,48 @@ vi.mock('~/pages/MyAccount/Projects/components/AIHubAlert/AIHubAlert', () => ({
 }));
 
 vi.mock(
+	'~/pages/MyAccount/Projects/components/AIHubUpgradeCard/AIHubUpgradeCard',
+	() => ({
+		default: ({
+			children,
+			productExternalReferenceCode,
+			projectExternalReferenceCode,
+		}: {
+			children: ReactNode;
+			productExternalReferenceCode: string;
+			projectExternalReferenceCode: string;
+		}) => (
+			<div>
+				{`Upgrade card for ${productExternalReferenceCode} in ${projectExternalReferenceCode}`}
+
+				{children}
+			</div>
+		),
+	})
+);
+
+vi.mock('~/pages/MyAccount/Projects/components/DetailsTab/DetailsTab', () => ({
+	default: () => <div>Details Tab</div>,
+}));
+
+vi.mock(
 	'~/pages/MyAccount/Projects/components/ProjectDetailTabs/ProjectDetailTabs',
 	() => ({
-		default: ({header}: {header: ReactNode}) => <div>{header}</div>,
+		default: ({
+			header,
+			tabs,
+		}: {
+			header: ReactNode;
+			tabs: {content: () => ReactNode; key: string}[];
+		}) => (
+			<div>
+				{header}
+
+				{tabs.map((tab) => (
+					<div key={tab.key}>{tab.content()}</div>
+				))}
+			</div>
+		),
 	})
 );
 
@@ -307,6 +347,48 @@ describe('[FLOW-PROJECT-ITEM-HEADER] ProjectItemDetails header', () => {
 			expect(
 				screen.queryByText(i18n.translate('buy-liferay-tokens'))
 			).toBeNull();
+		});
+	});
+
+	describe('AI Hub upgrade card', () => {
+		beforeEach(() => {
+			vi.mocked(resolveProductTabConfig).mockReturnValue({
+				environmentProfile: 'ai-hub',
+				tabKeys: ['details'],
+			} as unknown as ReturnType<typeof resolveProductTabConfig>);
+		});
+
+		it('wraps the details of an AI Hub product with the upgrade card', () => {
+			render(<ProjectItemDetails itemType="product" />);
+
+			expect(
+				screen.getByText('Upgrade card for PRDCT-1 in PRJCT-1')
+			).toBeTruthy();
+			expect(screen.getByText('Details Tab')).toBeTruthy();
+		});
+
+		it('shows only the details of an AI Hub product without a project', () => {
+			vi.mocked(useProject).mockReturnValue({
+				project: undefined,
+				projectId: ONE_TIME_PURCHASES,
+				selectedContractERC: undefined,
+			} as unknown as ReturnType<typeof useProject>);
+
+			render(<ProjectItemDetails itemType="product" />);
+
+			expect(screen.queryByText(/Upgrade card for/)).toBeNull();
+			expect(screen.getByText('Details Tab')).toBeTruthy();
+		});
+
+		it('shows only the details of a product that is not AI Hub', () => {
+			vi.mocked(resolveProductTabConfig).mockReturnValue({
+				tabKeys: ['details'],
+			} as unknown as ReturnType<typeof resolveProductTabConfig>);
+
+			render(<ProjectItemDetails itemType="product" />);
+
+			expect(screen.queryByText(/Upgrade card for/)).toBeNull();
+			expect(screen.getByText('Details Tab')).toBeTruthy();
 		});
 	});
 });

@@ -18,6 +18,7 @@ import SubscriptionUpgradeLayout, {
 	useSubscriptionUpgradeLayoutContext,
 } from './SubscriptionUpgradeLayout';
 
+import type {ProductPurchaseStepItem} from '~/pages/ProductPurchase/productPurchaseRoutes';
 import type {DeliveryProduct} from '~/types/product';
 
 vi.mock('~/hooks/useSubscriptionUpgrades', () => ({
@@ -56,7 +57,9 @@ function mockSubscriptionUpgrades(data: unknown[]) {
 	} as unknown as ReturnType<typeof useSubscriptionUpgrades>);
 }
 
-function renderLayout() {
+function renderLayout(
+	steps: ProductPurchaseStepItem[] = [{key: '/', title: 'Summary'}]
+) {
 	return render(
 		<SWRConfig value={{dedupingInterval: 0, provider: () => new Map()}}>
 			<MemoryRouter>
@@ -65,7 +68,7 @@ function renderLayout() {
 						element={
 							<SubscriptionUpgradeLayout
 								product={product}
-								steps={[{key: '/', title: 'Summary'}]}
+								steps={steps}
 								type={SubscriptionUpgradeType.CMP_ADD_ON}
 							/>
 						}
@@ -159,5 +162,64 @@ describe('SubscriptionUpgradeLayout', () => {
 				'/my-account/#/project/PRJCT-1/products/PRDCT-DXP'
 			)
 		);
+	});
+
+	it('renders a standalone step without the product header and the steps', async () => {
+		const {container} = renderLayout([
+			{key: '/', standalone: true, title: 'Plan'},
+			{key: '/summary', title: 'Summary'},
+		]);
+
+		expect(await screen.findByText('cmp-add-on step')).toBeInTheDocument();
+		expect(screen.getByText('Go Back')).toBeInTheDocument();
+		expect(
+			container.querySelector('.subscription-upgrade-standalone')
+		).toBeInTheDocument();
+		expect(
+			screen.queryByText('Content Marketing Platform')
+		).not.toBeInTheDocument();
+		expect(screen.queryByText('Summary')).not.toBeInTheDocument();
+	});
+
+	it('hides a standalone step from the steps of the other steps', async () => {
+		window.history.replaceState(
+			null,
+			'',
+			'?productId=42&projectExternalReferenceCode=PRJCT-1&upgradeType=cmp-add-on'
+		);
+
+		render(
+			<SWRConfig value={{dedupingInterval: 0, provider: () => new Map()}}>
+				<MemoryRouter initialEntries={['/summary']}>
+					<Routes>
+						<Route
+							element={
+								<SubscriptionUpgradeLayout
+									product={product}
+									steps={[
+										{
+											key: '/',
+											standalone: true,
+											title: 'Plan',
+										},
+										{key: '/summary', title: 'Summary'},
+									]}
+									type={SubscriptionUpgradeType.CMP_ADD_ON}
+								/>
+							}
+						>
+							<Route element={<Step />} path="summary" />
+						</Route>
+					</Routes>
+				</MemoryRouter>
+			</SWRConfig>
+		);
+
+		expect(await screen.findByText('cmp-add-on step')).toBeInTheDocument();
+		expect(
+			screen.getByText('Content Marketing Platform')
+		).toBeInTheDocument();
+		expect(screen.getByText('Summary')).toBeInTheDocument();
+		expect(screen.queryByText('Plan')).not.toBeInTheDocument();
 	});
 });

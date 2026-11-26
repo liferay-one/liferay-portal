@@ -4,6 +4,7 @@
  */
 
 import {render, screen} from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import {MemoryRouter} from 'react-router';
 import {SWRConfig} from 'swr';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
@@ -16,6 +17,10 @@ import type {DeliveryProduct} from '~/types/product';
 
 vi.mock('~/services/headless/HeadlessAdminUser', () => ({
 	default: {getAccount: vi.fn()},
+}));
+
+vi.mock('~/utils/siteUtils', () => ({
+	getSiteURL: () => '/web/one',
 }));
 
 const product = {
@@ -38,6 +43,7 @@ describe('OrderReceived', () => {
 			accountId: 7,
 			accountName: 'El Torero Spa',
 		};
+		Liferay.Util.navigate = vi.fn();
 
 		vi.mocked(HeadlessAdminUser.getAccount).mockResolvedValue({
 			id: 7,
@@ -71,5 +77,17 @@ describe('OrderReceived', () => {
 		expect(
 			screen.queryByText('Order Received: Awaiting Signature')
 		).not.toBeInTheDocument();
+	});
+
+	it('opens the Marketplace products when the user browses products', async () => {
+		renderOrderReceived('?orderId=1458182');
+
+		await userEvent.click(
+			await screen.findByRole('button', {name: 'Browse Products'})
+		);
+
+		expect(Liferay.Util.navigate).toHaveBeenCalledWith(
+			'/web/one/marketplace/products'
+		);
 	});
 });

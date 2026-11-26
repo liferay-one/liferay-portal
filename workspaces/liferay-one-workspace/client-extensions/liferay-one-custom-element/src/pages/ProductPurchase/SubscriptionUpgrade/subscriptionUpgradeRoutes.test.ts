@@ -21,9 +21,19 @@ describe('subscriptionUpgradeRoutes', () => {
 		expect(steps[0].index).toBe(true);
 	});
 
+	it('gives the AI Hub tier upgrade a plan step and then a summary step', () => {
+		const steps = getSubscriptionUpgradeSteps(
+			SubscriptionUpgradeType.AI_HUB_TIER
+		);
+
+		expect(steps).toHaveLength(2);
+		expect(steps[0].index).toBe(true);
+		expect(steps[1].path).toBe('summary');
+	});
+
 	it('gives no steps to an upgrade type without a registered flow', () => {
 		expect(
-			getSubscriptionUpgradeSteps(SubscriptionUpgradeType.AI_HUB_TIER)
+			getSubscriptionUpgradeSteps('unknown' as SubscriptionUpgradeType)
 		).toEqual([]);
 	});
 
