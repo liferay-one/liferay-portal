@@ -589,6 +589,22 @@ public class EntitlementService extends OneBaseService {
 		return state;
 	}
 
+	public List<Entitlement> getUnexpiredEntitlements(
+			String projectExternalReferenceCode)
+		throws Exception {
+
+		Instant instant = Instant.now(
+		).truncatedTo(
+			ChronoUnit.MILLIS
+		);
+
+		return getEntitlements(
+			StringBundler.concat(
+				_getUnexpiredFilterString(instant),
+				" and (r_projectToEntitlement_c_projectERC eq '",
+				escapeODataString(projectExternalReferenceCode), "')"));
+	}
+
 	public List<Entitlement> getUsageDefinitionEntitlements(
 			Instant endInstant, Instant startInstant,
 			String usageDefinitionExternalReferenceCode)

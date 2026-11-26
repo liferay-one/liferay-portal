@@ -23,6 +23,7 @@ import com.liferay.one.model.LDPUsageStrategy;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
 import com.liferay.one.model.SaaSUsageStrategy;
+import com.liferay.one.model.SubscriptionUpgrade;
 import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.ProjectPermission;
@@ -33,6 +34,7 @@ import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectContactRoleService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
+import com.liferay.one.service.SubscriptionUpgradeService;
 import com.liferay.one.service.UsageDefinitionService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
@@ -53,6 +55,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,6 +153,27 @@ public class ProjectRestController extends OneBaseRestController {
 		return new ResponseEntity<>(
 			_accountAssetService.getAccountObjectKey(externalReferenceCode),
 			HttpStatus.OK);
+	}
+
+	@GetMapping("/{externalReferenceCode}/subscription-upgrades")
+	public ResponseEntity<String> getSubscriptionUpgrades(
+			@AuthenticationPrincipal Jwt jwt,
+			@PathVariable("externalReferenceCode") String externalReferenceCode)
+		throws Exception {
+
+		_projectPermission.check(ActionKeys.VIEW, jwt, externalReferenceCode);
+
+		JSONArray jsonArray = new JSONArray();
+
+		for (SubscriptionUpgrade subscriptionUpgrade :
+				_subscriptionUpgradeService.getSubscriptionUpgrades(
+					externalReferenceCode,
+					_userAccountService.getMyUserAccount(jwt))) {
+
+			jsonArray.put(subscriptionUpgrade.toJSONObject());
+		}
+
+		return new ResponseEntity<>(jsonArray.toString(), HttpStatus.OK);
 	}
 
 	@GetMapping("/{externalReferenceCode}/usage")
@@ -869,6 +893,9 @@ public class ProjectRestController extends OneBaseRestController {
 
 	@Autowired
 	private ProjectService _projectService;
+
+	@Autowired
+	private SubscriptionUpgradeService _subscriptionUpgradeService;
 
 	@Autowired
 	private UsageDefinitionService _usageDefinitionService;

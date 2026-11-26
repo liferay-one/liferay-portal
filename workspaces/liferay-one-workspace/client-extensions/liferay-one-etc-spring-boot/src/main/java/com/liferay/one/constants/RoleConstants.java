@@ -27,6 +27,8 @@ public class RoleConstants {
 	public static final String NAME_ACCOUNT_ADMINISTRATOR =
 		"Account Administrator";
 
+	public static final String NAME_ACCOUNT_BUYER = "Account Buyer";
+
 	public static final String NAME_ACCOUNT_MEMBER = "Account Member";
 
 	public static final String NAME_ADMINISTRATOR = "Administrator";

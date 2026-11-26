@@ -10,6 +10,10 @@ package com.liferay.one.constants;
  */
 public class SkuOptionConstants {
 
+	public static final String AI_HUB_TIER_ACTIVATE = "activate";
+
+	public static final String AI_HUB_TIER_STUDIO = "studio";
+
 	public static final String KEY_CONSUMPTION_ROLE = "consumption-role";
 
 	public static final String KEY_SUFFIX_LICENSE_USAGE_TYPE =

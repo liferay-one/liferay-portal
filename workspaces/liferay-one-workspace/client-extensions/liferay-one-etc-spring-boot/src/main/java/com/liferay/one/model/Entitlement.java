@@ -176,6 +176,34 @@ public final class Entitlement {
 		return _terminationStatus;
 	}
 
+	public boolean isActive() {
+		if (isExpired() || isTerminated() ||
+			Objects.equals(
+				getTerminationStatus(),
+				EntitlementConstants.TERMINATION_STATUS_SUSPENDED)) {
+
+			return false;
+		}
+
+		Instant startDateInstant = getStartDateInstant();
+
+		if ((startDateInstant == null) ||
+			!startDateInstant.isAfter(Instant.now())) {
+
+			return true;
+		}
+
+		return false;
+	}
+
+	public boolean isActiveOrScheduled() {
+		if (isExpired() || isTerminated()) {
+			return false;
+		}
+
+		return true;
+	}
+
 	public boolean isExpired() {
 		Instant effectiveEndDateInstant = getEffectiveEndDateInstant();
 

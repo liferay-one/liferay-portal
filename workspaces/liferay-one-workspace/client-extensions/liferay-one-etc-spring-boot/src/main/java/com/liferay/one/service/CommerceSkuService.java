@@ -175,7 +175,9 @@ public class CommerceSkuService extends OneBaseService {
 
 	private static final int _PAGE_SIZE = 500;
 
-	private static final Set<String> _aiHubTiers = Set.of("activate", "studio");
+	private static final Set<String> _aiHubTiers = Set.of(
+		SkuOptionConstants.AI_HUB_TIER_ACTIVATE,
+		SkuOptionConstants.AI_HUB_TIER_STUDIO);
 
 	@Autowired
 	@Lazy
