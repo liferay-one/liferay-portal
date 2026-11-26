@@ -182,9 +182,31 @@ public class CommerceOrderItemUtil {
 			messageEndDateInstant, getEndDateInstant(existingOrderItem));
 	}
 
-	public static String toOptionsJSON(String key, String value) {
-		return new JSONArray(
-		).put(
+	public static String toOptionsJSON(
+		String key, OrderItem orderItem, String value) {
+
+		JSONArray optionsJSONArray = new JSONArray();
+
+		String optionsJSON = orderItem.getOptions();
+
+		if (Validator.isNotNull(optionsJSON)) {
+			JSONArray existingOptionsJSONArray = new JSONArray(optionsJSON);
+
+			for (int i = 0; i < existingOptionsJSONArray.length(); i++) {
+				JSONObject optionJSONObject =
+					existingOptionsJSONArray.getJSONObject(i);
+
+				if (StringUtil.equalsIgnoreCase(
+						optionJSONObject.optString("key"), key)) {
+
+					continue;
+				}
+
+				optionsJSONArray.put(optionJSONObject);
+			}
+		}
+
+		return optionsJSONArray.put(
 			new JSONObject(
 			).put(
 				"key", key

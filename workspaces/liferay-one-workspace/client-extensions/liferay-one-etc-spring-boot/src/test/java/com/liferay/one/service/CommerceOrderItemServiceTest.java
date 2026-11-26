@@ -15,6 +15,7 @@ import com.liferay.headless.commerce.admin.order.client.resource.v1_0.OrderResou
 import com.liferay.one.constants.CommerceOrderItemConstants;
 import com.liferay.one.model.Contract;
 import com.liferay.one.salesforce.model.SalesforceOpportunityLineItem;
+import com.liferay.one.util.CommerceOrderItemUtil;
 import com.liferay.one.util.CommerceOrderUtil;
 
 import java.math.BigDecimal;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
@@ -159,6 +161,59 @@ public class CommerceOrderItemServiceTest {
 	}
 
 	@Test
+	public void testUpsertOrderItemsAddsTheMachineTypeToTheOptionsOfANewOrderItem()
+		throws Exception {
+
+		Order order = _createOrder();
+
+		Order updatedOrder = new Order();
+
+		updatedOrder.setOrderItems(
+			new OrderItem[] {
+				_createOrderItem(11L, _ERC_A, _FAMILY_OPTIONS_JSON)
+			});
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			updatedOrder
+		);
+
+		_upsertOrderItems(
+			order,
+			_createLineItemJSON(
+				_ERC_A, 1, null
+			).put(
+				"Machine_Type__c", "High"
+			));
+
+		List<Order> patchedOrders = _getPatchedOrders(2);
+
+		Assertions.assertNull(
+			patchedOrders.get(
+				0
+			).getOrderItems()[0].getOptions());
+
+		OrderItem[] patchedOrderItems = patchedOrders.get(
+			1
+		).getOrderItems();
+
+		Assertions.assertEquals(1, patchedOrderItems.length);
+		Assertions.assertEquals(
+			Map.of(
+				"machinetype", "high",
+				"paas-saas-experience-infrastructure-sizing",
+				"01tvo00000qyrkvyad"),
+			CommerceOrderItemUtil.getProductOptions(patchedOrderItems[0]));
+		Assertions.assertEquals(
+			2,
+			new JSONArray(
+				patchedOrderItems[0].getOptions()
+			).length());
+	}
+
+	@Test
 	public void testUpsertOrderItemsKeepsCanceledStatus() throws Exception {
 		OrderItem existingOrderItem = _createOrderItem(
 			11L, _ERC_A, "customStatus",
@@ -233,6 +288,59 @@ public class CommerceOrderItemServiceTest {
 	}
 
 	@Test
+	public void testUpsertOrderItemsKeepsTheOptionsOfAnExistingOrderItem()
+		throws Exception {
+
+		Order order = _createOrder(
+			_createOrderItem(11L, _ERC_A, _toOptionsJSON("standard")));
+
+		Order updatedOrder = new Order();
+
+		updatedOrder.setOrderItems(
+			new OrderItem[] {
+				_createOrderItem(11L, _ERC_A, _toOptionsJSON("standard"))
+			});
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			updatedOrder
+		);
+
+		_upsertOrderItems(
+			order,
+			_createLineItemJSON(
+				_ERC_A, 1, null
+			).put(
+				"Machine_Type__c", "High"
+			));
+
+		List<Order> patchedOrders = _getPatchedOrders(2);
+
+		Assertions.assertNull(
+			patchedOrders.get(
+				0
+			).getOrderItems()[0].getOptions());
+
+		OrderItem patchedOrderItem = patchedOrders.get(
+			1
+		).getOrderItems()[0];
+
+		Assertions.assertEquals(
+			Map.of(
+				"machinetype", "high",
+				"paas-saas-experience-infrastructure-sizing",
+				"01tvo00000qyrkvyad"),
+			CommerceOrderItemUtil.getProductOptions(patchedOrderItem));
+		Assertions.assertEquals(
+			2,
+			new JSONArray(
+				patchedOrderItem.getOptions()
+			).length());
+	}
+
+	@Test
 	public void testUpsertOrderItemsKeepsTheOrderContractWhenNotUnlinking()
 		throws Exception {
 
@@ -260,6 +368,25 @@ public class CommerceOrderItemServiceTest {
 
 		Assertions.assertNull(orderItem.getCustomFields());
 		Assertions.assertEquals(77L, CommerceOrderUtil.getContractId(order));
+	}
+
+	@Test
+	public void testUpsertOrderItemsLeavesTheOptionsOfALineItemWithoutAMachineType()
+		throws Exception {
+
+		Order order = _createOrder(
+			_createOrderItem(11L, _ERC_A, _FAMILY_OPTIONS_JSON));
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			order
+		);
+
+		_upsertOrderItems(order, _createLineItemJSON(_ERC_A, 1, null));
+
+		Assertions.assertNull(_getPatchedOrderItems()[0].getOptions());
 	}
 
 	@Test
@@ -406,6 +533,38 @@ public class CommerceOrderItemServiceTest {
 		Assertions.assertEquals(
 			_ERC_C, patchedOrderItems[2].getExternalReferenceCode());
 		Assertions.assertNull(patchedOrderItems[2].getId());
+	}
+
+	@Test
+	public void testUpsertOrderItemsPatchesOrderOnceWhenTheMachineTypeIsUnchanged()
+		throws Exception {
+
+		Order order = _createOrder(
+			_createOrderItem(11L, _ERC_A, _toOptionsJSON("high")));
+
+		Order updatedOrder = new Order();
+
+		updatedOrder.setOrderItems(
+			new OrderItem[] {
+				_createOrderItem(11L, _ERC_A, _toOptionsJSON("high"))
+			});
+
+		Mockito.when(
+			_orderResource.patchOrder(
+				ArgumentMatchers.eq(_ORDER_ID), ArgumentMatchers.any())
+		).thenReturn(
+			updatedOrder
+		);
+
+		_upsertOrderItems(
+			order,
+			_createLineItemJSON(
+				_ERC_A, 1, null
+			).put(
+				"Machine_Type__c", "High"
+			));
+
+		_getPatchedOrders(1);
 	}
 
 	@Test
@@ -568,6 +727,17 @@ public class CommerceOrderItemServiceTest {
 	}
 
 	private OrderItem _createOrderItem(
+		long id, String externalReferenceCode, String options) {
+
+		OrderItem orderItem = _createOrderItem(
+			id, externalReferenceCode, null, null);
+
+		orderItem.setOptions(options);
+
+		return orderItem;
+	}
+
+	private OrderItem _createOrderItem(
 		long id, String externalReferenceCode, String customFieldName,
 		String customFieldValue) {
 
@@ -623,6 +793,19 @@ public class CommerceOrderItemServiceTest {
 		return patchedOrder.getOrderItems();
 	}
 
+	private List<Order> _getPatchedOrders(int times) throws Exception {
+		ArgumentCaptor<Order> orderArgumentCaptor = ArgumentCaptor.forClass(
+			Order.class);
+
+		Mockito.verify(
+			_orderResource, Mockito.times(times)
+		).patchOrder(
+			ArgumentMatchers.eq(_ORDER_ID), orderArgumentCaptor.capture()
+		);
+
+		return orderArgumentCaptor.getAllValues();
+	}
+
 	private boolean _hasCustomField(OrderItem orderItem, String name) {
 		CustomField[] customFields = orderItem.getCustomFields();
 
@@ -668,6 +851,23 @@ public class CommerceOrderItemServiceTest {
 			_commerceOrderItemService.patchOrderItemCustomFields(
 				customFieldValuesMap, order);
 		}
+	}
+
+	private String _toOptionsJSON(String machineType) {
+		return new JSONArray(
+			_FAMILY_OPTIONS_JSON
+		).put(
+			new JSONObject(
+			).put(
+				"key", "machinetype"
+			).put(
+				"value",
+				new JSONArray(
+				).put(
+					machineType
+				)
+			)
+		).toString();
 	}
 
 	private void _upsertOrderItems(
@@ -718,6 +918,12 @@ public class CommerceOrderItemServiceTest {
 	private static final String _ERC_B = "00kLPD113954TEST0B";
 
 	private static final String _ERC_C = "00kLPD113954TEST0C";
+
+	private static final String _FAMILY_OPTIONS_JSON =
+		"[{\"key\":\"paas-saas-experience-infrastructure-sizing\"," +
+			"\"skuOptionName\":\"PaaS & SaaS Experience - Infrastructure & " +
+				"Sizing\",\"skuOptionValueNames\":[\"Up to 3 Production " +
+					"Pods\"],\"value\":[\"01tvo00000qyrkvyad\"]}]";
 
 	private static final long _ORDER_ID = 1001L;
 

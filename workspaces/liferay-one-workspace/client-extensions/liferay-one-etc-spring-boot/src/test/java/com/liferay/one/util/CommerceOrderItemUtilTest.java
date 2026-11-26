@@ -291,11 +291,91 @@ public class CommerceOrderItemUtilTest {
 	}
 
 	@Test
+	public void testToOptionsJSONKeepsTheOtherOptions() {
+		OrderItem orderItem = _createOrderItem();
+
+		orderItem.setOptions(_FAMILY_OPTIONS_JSON);
+
+		orderItem.setOptions(
+			CommerceOrderItemUtil.toOptionsJSON(
+				"machinetype", orderItem, "high"));
+
+		Assertions.assertEquals(
+			Map.of(
+				"machinetype", "high",
+				"paas-saas-experience-infrastructure-sizing",
+				"01tvo00000qyrkvyad"),
+			CommerceOrderItemUtil.getProductOptions(orderItem));
+
+		JSONArray optionsJSONArray = new JSONArray(orderItem.getOptions());
+
+		Assertions.assertEquals(2, optionsJSONArray.length());
+
+		JSONObject familyOptionJSONObject = optionsJSONArray.getJSONObject(0);
+
+		Assertions.assertEquals(
+			"Up to 3 Production Pods",
+			familyOptionJSONObject.getJSONArray(
+				"skuOptionValueNames"
+			).getString(
+				0
+			));
+	}
+
+	@Test
+	public void testToOptionsJSONReplacesTheKey() {
+		OrderItem orderItem = _createOrderItem();
+
+		orderItem.setOptions(
+			new JSONArray(
+				_FAMILY_OPTIONS_JSON
+			).put(
+				new JSONObject(
+				).put(
+					"key", "machineType"
+				).put(
+					"value", new JSONArray(List.of("standard"))
+				)
+			).toString());
+
+		orderItem.setOptions(
+			CommerceOrderItemUtil.toOptionsJSON(
+				"machinetype", orderItem, "high"));
+
+		JSONArray optionsJSONArray = new JSONArray(orderItem.getOptions());
+
+		Assertions.assertEquals(2, optionsJSONArray.length());
+
+		int machineTypeCount = 0;
+
+		for (int i = 0; i < optionsJSONArray.length(); i++) {
+			JSONObject optionJSONObject = optionsJSONArray.getJSONObject(i);
+
+			if (!"machinetype".equalsIgnoreCase(
+					optionJSONObject.getString("key"))) {
+
+				continue;
+			}
+
+			machineTypeCount++;
+
+			Assertions.assertEquals(
+				List.of("high"),
+				optionJSONObject.getJSONArray(
+					"value"
+				).toList());
+		}
+
+		Assertions.assertEquals(1, machineTypeCount);
+	}
+
+	@Test
 	public void testToOptionsJSONRoundTrips() {
 		OrderItem orderItem = _createOrderItem();
 
 		orderItem.setOptions(
-			CommerceOrderItemUtil.toOptionsJSON("Edition", "Enterprise"));
+			CommerceOrderItemUtil.toOptionsJSON(
+				"Edition", orderItem, "Enterprise"));
 
 		Assertions.assertEquals(
 			Map.of("edition", "Enterprise"),
@@ -343,6 +423,12 @@ public class CommerceOrderItemUtilTest {
 	private static final String _DECEMBER_31 = "2026-12-31T00:00:00Z";
 
 	private static final String _EPOCH = "1970-01-01T00:00:00Z";
+
+	private static final String _FAMILY_OPTIONS_JSON =
+		"[{\"key\":\"paas-saas-experience-infrastructure-sizing\"," +
+			"\"skuOptionName\":\"PaaS & SaaS Experience - Infrastructure & " +
+				"Sizing\",\"skuOptionValueNames\":[\"Up to 3 Production " +
+					"Pods\"],\"value\":[\"01tvo00000qyrkvyad\"]}]";
 
 	private static final String _JUNE_30 = "2026-06-30T00:00:00Z";
 
