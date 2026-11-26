@@ -132,7 +132,7 @@ The Salesforce contact role is the `Contact_Role__c` value, matched to an accoun
 | Guest | regular | 3 grants (`L163`, `L744`, `L753`), the Become a Publisher page, and the commerce channel (`commerce-channel.model-resource-permissions.json`) |
 | Organization User | organization | 2 scope 3 grants (`L991`, `L1027`) |
 | Site Member | site | Page permissions in 4 `page.json` files |
-| User | regular | 10 grants, and the commerce channel. Every signed in user has it. |
+| User | regular | 12 grants, and the commerce channel. Every signed in user has it. |
 
 ## Object Permissions
 
@@ -180,7 +180,7 @@ This matrix does not show the grants that LPD-111430 added for Provisioning Work
 | Project (`C_PROJECT`) | `r_accountEntryToProject_accountEntryId` | | | | | | | | V s1 L136 | | |
 | ProjectMembership (`C_PROJECT_MEMBERSHIP`) | `r_accountEntryToProjectMembership_accountEntryId` | | | | | | | | V s1 L145 | | |
 | Property (`C_PROPERTY`) | `r_accountEntryToProperty_accountEntryId` | | | | | | | | V s1 L154 | | |
-| PublisherAccountRequest (`C_PUBLISHER_ACCOUNT_REQUEST`) | — | | | | | | | | | | |
+| PublisherAccountRequest (`C_PUBLISHER_ACCOUNT_REQUEST`) | — | | | | | | | | | | A s1 L1380 |
 | PublisherAsset (`C_PUBLISHER_ASSET`) | `r_accountEntryToPublisherAsset_accountEntryId` | | | | | | | | | | |
 | PublisherAssetAttachment (`C_PUBLISHER_ASSET_ATTACHMENT`) | — | | | | | | | | | | |
 | PublisherDetail (`C_PUBLISHER_DETAILS`) | — | | | | V s1 L163 | | | | | | V s1 L172 |
@@ -538,7 +538,7 @@ Each finding names the file and line. The findings are ordered by risk.
 
 1. **The project role grants are inert.** The 4 scope 3 grants to Project Admin and Project Requester (`L1000`, `L1009`, `L1036`, `L1045`) and the account grant to Project Admin (`L391`) apply only to a user who holds the role as a Liferay account role. The code stores project roles on `ProjectMembership` and never assigns them as account roles (`UserAssignmentService.java:194`). So a Project Admin or a Project Requester with no account role cannot record a DXP authorization (`Congratulations.tsx:47`), against REQ-ACCESS-027.
 
-1. **Pages write to objects that the user cannot add to.** `POST /o/c/trialextensionrequests` (`ExtendSSATrialModal.tsx:106`) and its `PATCH` (`ExtendRequestModal.tsx:239`) have no `ADD_OBJECT_ENTRY` or `UPDATE` grant for the SSA roles. `POST /o/c/publisheraccountrequests` (`RequestAccount.tsx:84`) has no grant for Guest or User. `POST /o/c/getappinformations` (`GetAppInformations.ts:20`) has no grant. Each call works only for an administrator.
+1. **Pages write to objects that the user cannot add to.** `POST /o/c/trialextensionrequests` (`ExtendSSATrialModal.tsx:106`) and its `PATCH` (`ExtendRequestModal.tsx:239`) have no `ADD_OBJECT_ENTRY` or `UPDATE` grant for the SSA roles. `POST /o/c/getappinformations` (`GetAppInformations.ts:20`) has no grant. Each call works only for an administrator. `POST /o/c/publisheraccountrequests` (`RequestAccount.tsx:84`) has no grant for Guest, so a guest on the public Become a Publisher page gets an error when the guest sends the form.
 
 1. **SSA users cannot open the SSA pages.** The SSA routes live under `/admin` (`adminRoutes.tsx:142`), but the `/admin` page grants `VIEW` only to Finance Administrator and Provisioning Administrator (`05_admin/page.json`). An SSA Administrator or SSA User without one of those roles gets no page.
 
@@ -550,7 +550,7 @@ Each finding names the file and line. The findings are ordered by risk.
 
 ### Low
 
-1. **10 custom objects have no grant.** AIHubBetaPrivateAccessRequest, EntitlementDefinitionSku, EnvironmentAdmin, GetAppInformation, ProductFeedback, PublisherAccountRequest, PublisherAssetAttachment, Report, and SalesRequest are readable only by the owner and an administrator. PublisherAsset is restricted to the account, so the members of its account can read it. Confirm that only the service reads the other 9.
+1. **9 custom objects have no grant.** AIHubBetaPrivateAccessRequest, EntitlementDefinitionSku, EnvironmentAdmin, GetAppInformation, ProductFeedback, PublisherAssetAttachment, Report, and SalesRequest are readable only by the owner and an administrator. PublisherAsset is restricted to the account, so the members of its account can read it. Confirm that only the service reads the other 8.
 
 1. **`POST /accounts` has no limit.** Any signed in user can create any number of accounts and becomes the Account Administrator of each (`AccountsRestController.java:247`).
 

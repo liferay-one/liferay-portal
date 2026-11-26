@@ -171,14 +171,6 @@ test.describe('[FLOW-BECOME-A-PUBLISHER] become a publisher', () => {
 
 			await fillRequest(page, requestDescription);
 
-			test.info().annotations.push({
-				description:
-					'POST /o/c/publisheraccountrequests returns 403 for a non administrator: resource-permissions.json grants ADD_OBJECT_ENTRY on PublisherAccountRequest to no role, so the request page shows "An unexpected error occurred." to every real applicant.',
-				type: 'issue',
-			});
-
-			test.fail();
-
 			await page.getByRole('button', {name: 'Request Account'}).click();
 
 			await expect(
