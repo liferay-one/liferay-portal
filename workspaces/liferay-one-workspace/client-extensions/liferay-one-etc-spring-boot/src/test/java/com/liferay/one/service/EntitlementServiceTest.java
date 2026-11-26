@@ -1430,6 +1430,36 @@ public class EntitlementServiceTest {
 	}
 
 	@Test
+	public void testGetUnexpiredEntitlements() throws Exception {
+		Mockito.doReturn(
+			Collections.emptyList()
+		).when(
+			_entitlementService
+		).getEntitlements(
+			Mockito.anyString()
+		);
+
+		_entitlementService.getUnexpiredEntitlements("PROJECT'1");
+
+		ArgumentCaptor<String> filterArgumentCaptor = ArgumentCaptor.forClass(
+			String.class);
+
+		Mockito.verify(
+			_entitlementService
+		).getEntitlements(
+			filterArgumentCaptor.capture()
+		);
+
+		String filter = filterArgumentCaptor.getValue();
+
+		Assertions.assertTrue(filter.startsWith("((effectiveEndDate ge "));
+		Assertions.assertTrue(
+			filter.endsWith(
+				" and (r_projectToEntitlement_c_projectERC eq 'PROJECT''1')"));
+		Assertions.assertFalse(filter.contains("startDate"));
+	}
+
+	@Test
 	public void testHasUnterminatedActiveEntitlementWithSuspendedEntitlement()
 		throws Exception {
 
