@@ -388,6 +388,32 @@ The sidecar checks entitlements by machine key from `EntitlementConstants` (for 
 
 `licenseKeyFamily` comes only from the entitlement definition (`LicenseKeyGenerateFormService.getLicenseKeyFamily`). The three leading families are Cloud Native, DXP, and Portal (`…/one/constants/LicenseKeyGenerationConstants.java:53`).
 
+### Subscription Upgrades
+
+`GET /projects/{externalReferenceCode}/subscription-upgrades` (`ProjectRestController.getSubscriptionUpgrades`) lists the upgrades that a project can buy. It reads the entitlements of the project and creates nothing. The response is a JSON array that can be empty. Each item has `contractEndDate`, `currentSkuExternalReferenceCode`, `key`, `targetProduct`, `targetSkuExternalReferenceCode`, and `type`. `currentSkuExternalReferenceCode` is the SKU of the base entitlement that the upgrade applies to, and `contractEndDate` is the end date of its contract.
+
+`SubscriptionUpgradeService` applies the checks in this order:
+
+1. The controller checks `ProjectPermission` (VIEW) before it calls the service.
+
+1. The user must have Account Administrator or Account Buyer on the account of the project, or `C_PROJECT_ADMIN` on the project. Any other user gets an empty list. A portal manager passes `AccountPermission.containsAccountRole`.
+
+1. The service reads the unexpired entitlements of the project once (`EntitlementService.getUnexpiredEntitlements`). This list also holds the entitlements that start in the future.
+
+1. Each `SubscriptionUpgradeChecker` in `com.liferay.one.subscription.upgrade` decides one upgrade. A checker that fails is logged, and the other upgrades are still returned.
+
+| Upgrade (`key`) | Base entitlement | Not offered when |
+| --- | --- | --- |
+| AI Hub Activate to AI Hub Studio (`ai-hub-studio`) | Active, not suspended, not terminated (`Entitlement.isActive`), and `CommerceSkuService.fetchAIHubTier` is `activate` | An AI Hub Studio entitlement is not expired and not terminated (`Entitlement.isActiveOrScheduled`). This includes a suspended one. |
+| Add CMP to Liferay Platform (`liferay-platform-cmp`) | Active, not suspended, not terminated (`Entitlement.isActive`), and the product ERC is `salesforce-product-liferay-platform` | A CMP entitlement with a contract is not expired and not terminated (`Entitlement.isActiveOrScheduled`). This includes a suspended one. A CMP trial has no contract, so it does not block the upgrade. |
+
+A base entitlement must also pass two checks in `SubscriptionUpgradeCheckerHelper.fetchSubscriptionUpgrade`. When more than one base entitlement passes both, the helper uses the one whose contract ends last. When two contracts end on the same date, it uses the first of them:
+
+- The `salesforcePricebookId` custom field of its order is in `liferay.one.salesforce.composable.pricebook.ids`. The Salesforce opportunity subscriber writes that field (see Source 1). An order with no price book and a contract logs a warning.
+- Its contract has an end date that is in the future. The upgrade ends on that date, so the response returns it as `contractEndDate`.
+
+The target SKU of AI Hub Studio is the SKU of the same product whose tier is `studio`. The target SKU of CMP comes from `liferay.one.subscription.upgrade.cmp.sku.external.reference.code`. Trials, free tier keys, and AI Hub Enterprise are never a base, because they have no contract, no composable price book, or no `activate` tier. An order in processing does not hide an upgrade, because the checks read entitlements only. A suspended target entitlement still hides the upgrade.
+
 ## Attribution to a Project and a Contract
 
 Since LPD-92222 there is no relationship from `L_COMMERCE_ORDER` to `C_PROJECT` or `C_CONTRACT`. The batch files keep only order relationships to the Requests folder objects, AI Hub applications, license keys, and the publisher sales summary. An order points to a project through custom fields on the order. An order item points to a contract through the `contractId` custom field of the order item.

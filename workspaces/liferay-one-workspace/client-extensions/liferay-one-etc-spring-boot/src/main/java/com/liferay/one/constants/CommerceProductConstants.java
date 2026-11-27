@@ -14,6 +14,9 @@ import java.util.List;
  */
 public class CommerceProductConstants {
 
+	public static final String EXTERNAL_REFERENCE_CODE_LIFERAY_PLATFORM =
+		"salesforce-product-liferay-platform";
+
 	public static final String
 		NAME_LIFERAY_CLOUD_NATIVE_DIGITAL_ACCELERATOR_BUNDLE =
 			"Liferay Cloud Native - Digital Accelerator Bundle";

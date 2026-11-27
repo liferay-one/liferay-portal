@@ -67,6 +67,62 @@ public class EntitlementTest {
 	}
 
 	@Test
+	public void testIsActive() {
+		Assertions.assertTrue(
+			new Entitlement(
+				_createJSONObject()
+			).isActive());
+		Assertions.assertFalse(
+			new Entitlement(
+				_createJSONObject().put("startDate", _getFutureDate())
+			).isActive());
+		Assertions.assertFalse(
+			new Entitlement(
+				_createJSONObject().put(
+					"terminationStatus",
+					EntitlementConstants.TERMINATION_STATUS_SUSPENDED)
+			).isActive());
+		Assertions.assertFalse(
+			new Entitlement(
+				_createJSONObject().put(
+					"terminationStatus",
+					EntitlementConstants.TERMINATION_STATUS_TERMINATED)
+			).isActive());
+		Assertions.assertFalse(
+			new Entitlement(
+				_createJSONObject().put("endDate", "2020-01-01T00:00:00Z")
+			).isActive());
+	}
+
+	@Test
+	public void testIsActiveOrScheduled() {
+		Assertions.assertTrue(
+			new Entitlement(
+				_createJSONObject()
+			).isActiveOrScheduled());
+		Assertions.assertTrue(
+			new Entitlement(
+				_createJSONObject().put("startDate", _getFutureDate())
+			).isActiveOrScheduled());
+		Assertions.assertTrue(
+			new Entitlement(
+				_createJSONObject().put(
+					"terminationStatus",
+					EntitlementConstants.TERMINATION_STATUS_SUSPENDED)
+			).isActiveOrScheduled());
+		Assertions.assertFalse(
+			new Entitlement(
+				_createJSONObject().put(
+					"terminationStatus",
+					EntitlementConstants.TERMINATION_STATUS_TERMINATED)
+			).isActiveOrScheduled());
+		Assertions.assertFalse(
+			new Entitlement(
+				_createJSONObject().put("endDate", "2020-01-01T00:00:00Z")
+			).isActiveOrScheduled());
+	}
+
+	@Test
 	public void testMissingDefinitionIsNull() {
 		Entitlement entitlement = new Entitlement(_createJSONObject());
 
@@ -144,6 +200,14 @@ public class EntitlementTest {
 		).put(
 			"id", 1
 		);
+	}
+
+	private String _getFutureDate() {
+		return String.valueOf(
+			Instant.now(
+			).plus(
+				Duration.ofDays(30)
+			));
 	}
 
 }

@@ -85,8 +85,8 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 | Account Solution Publisher | `C_ACCOUNT_SOLUTION_PUBLISHER` | account | 23 | Manual. The Publisher Dashboard lets only this role start a solution submission. |
 | Account Supplier | `L_ACCOUNT_SUPPLIER` | account | 218 | Manual. Liferay shows the catalog of a supplier account only to this role, and gives the regular role Supplier with it. |
 | Article Administrator | `C_ARTICLE_ADMIN` | site | 28 | Manual |
-| Cloud Native Contact | `C_CLOUD_NATIVE_CONTACT` | account | 33 | A project contact designation (`ProjectRestController.java:351`). Its holders get the Okta Cloud Native app (`UserAssignmentService.java:119`). |
-| Critical Incident Contact | `C_CRITICAL_INCIDENT_CONTACT` | account | 38 | A project contact designation (`ProjectRestController.java:351`) or an invitation |
+| Cloud Native Contact | `C_CLOUD_NATIVE_CONTACT` | account | 33 | A project contact designation (`ProjectRestController.java:378`). Its holders get the Okta Cloud Native app (`UserAssignmentService.java:119`). |
+| Critical Incident Contact | `C_CRITICAL_INCIDENT_CONTACT` | account | 38 | A project contact designation (`ProjectRestController.java:378`) or an invitation |
 | Customer | `C_CUSTOMER` | regular | 43 | Membership in the Customers user group (`16-user-group.batch-engine-data.json:13`). No code adds users to the group. |
 | Customer Experience Manager | `C_CUSTOMER_EXPERIENCE_MANAGER` | account | 48 | A Salesforce contact role (`ProvisioningContactService.java:118`) |
 | Dashboard Viewer | `C_DASHBOARD_VIEWER` | regular | 53 | Manual. No code reads it. |
@@ -108,7 +108,7 @@ All role sources in this table are in `client-extensions/liferay-one-batch/batch
 | Partner Technical User | `C_PARTNER_TECHNICAL_USER` | account | 133 | An account manager or an invitation |
 | Primary Contact | `C_PRIMARY_CONTACT` | account | 138 | A Salesforce contact role |
 | Privacy Breach Contact | `C_PRIVACY_BREACH_CONTACT` | account | 143 | A project contact designation |
-| Project Admin | `C_PROJECT_ADMIN` | account | 148 | A project membership (`ProjectRestController.java:319`) or an invitation. The ERC is stored on the `ProjectMembership` entry. It is not assigned as a Liferay account role. |
+| Project Admin | `C_PROJECT_ADMIN` | account | 148 | A project membership (`ProjectRestController.java:343`) or an invitation. The ERC is stored on the `ProjectMembership` entry. It is not assigned as a Liferay account role. |
 | Project Requester | `C_PROJECT_REQUESTER` | account | 153 | The same as Project Admin |
 | Project User | `C_PROJECT_USER` | account | 158 | The same as Project Admin. Every Salesforce project contact gets it (`ProvisioningContactService.java:197`). |
 | Provisioning Administrator | `C_PROVISIONING_ADMIN` | regular | 163 | Manual |
@@ -463,16 +463,17 @@ All classes are in `client-extensions/liferay-one-etc-spring-boot/src/main/java/
 | `POST /organizations/{organizationId}/sync-to-jsm` | AdminPermission | yes | `OrganizationsRestController.java:180` |
 | `DELETE /organizations/{organizationId}/user-accounts/{userId}/organization-roles` | AdminPermission | yes | `OrganizationsRestController.java:66` |
 | `POST /organizations/{organizationId}/user-accounts/{userId}/organization-roles` | AdminPermission | yes | `OrganizationsRestController.java:192` |
-| `GET /projects/{externalReferenceCode}/jira/object-key` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:143` |
-| `POST /projects/{externalReferenceCode}/sync-to-jsm` | ProjectPermission (UPDATE) | yes | `ProjectRestController.java:337` |
-| `GET /projects/{externalReferenceCode}/usage` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:156` |
-| `GET /projects/{externalReferenceCode}/usage/event-history` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:187` |
-| `GET /projects/{externalReferenceCode}/usage/event-summary` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:212` |
-| `DELETE /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:86` |
-| `POST /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:319` |
-| `PUT /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:383` |
-| `DELETE /projects/{projectId}/user-accounts/{userId}/contact-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:117` |
-| `POST /projects/{projectId}/user-accounts/{userId}/contact-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:351` |
+| `GET /projects/{externalReferenceCode}/jira/object-key` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:146` |
+| `GET /projects/{externalReferenceCode}/subscription-upgrades` | ProjectPermission (VIEW), then the account role (Account Administrator or Account Buyer) or the project role (`C_PROJECT_ADMIN`) in `SubscriptionUpgradeService`. Any other role gets an empty list. | yes | `ProjectRestController.java:159` |
+| `POST /projects/{externalReferenceCode}/sync-to-jsm` | ProjectPermission (UPDATE) | yes | `ProjectRestController.java:361` |
+| `GET /projects/{externalReferenceCode}/usage` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:180` |
+| `GET /projects/{externalReferenceCode}/usage/event-history` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:211` |
+| `GET /projects/{externalReferenceCode}/usage/event-summary` | ProjectPermission (VIEW) | yes | `ProjectRestController.java:236` |
+| `DELETE /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:89` |
+| `POST /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:343` |
+| `PUT /projects/{projectId}/user-accounts/{userId}/account-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:410` |
+| `DELETE /projects/{projectId}/user-accounts/{userId}/contact-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:120` |
+| `POST /projects/{projectId}/user-accounts/{userId}/contact-roles` | ProjectPermission (ASSIGN_MEMBERS) | yes | `ProjectRestController.java:378` |
 | `GET /ready` | None. Public path. | no | `ReadyRestController.java:21` |
 | `GET /ticket-attachments/by-external-reference-code/{externalReferenceCode}/download` | ProjectPermission (VIEW). Provisioning Worker skips it. | yes | `TicketAttachmentsRestController.java:113` |
 | `GET /ticket-attachments/by-id/{id}/download` | ProjectPermission (VIEW). Provisioning Worker skips it. | yes | `TicketAttachmentsRestController.java:125` |

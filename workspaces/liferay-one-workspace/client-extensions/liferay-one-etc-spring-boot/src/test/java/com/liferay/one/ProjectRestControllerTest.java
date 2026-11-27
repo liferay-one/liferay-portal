@@ -5,6 +5,7 @@
 
 package com.liferay.one;
 
+import com.liferay.headless.admin.user.client.dto.v1_0.UserAccount;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.Product;
 import com.liferay.headless.commerce.admin.catalog.client.dto.v1_0.ProductSpecification;
 import com.liferay.one.constants.ProductSpecificationConstants;
@@ -23,6 +24,7 @@ import com.liferay.one.model.LDPEventUsageStrategy;
 import com.liferay.one.model.LDPUsageStrategy;
 import com.liferay.one.model.Project;
 import com.liferay.one.model.ProjectMembership;
+import com.liferay.one.model.SubscriptionUpgrade;
 import com.liferay.one.model.UsageDefinition;
 import com.liferay.one.permission.EnvironmentActivationPermission;
 import com.liferay.one.permission.ProjectPermission;
@@ -33,12 +35,15 @@ import com.liferay.one.service.EntitlementService;
 import com.liferay.one.service.ProjectContactRoleService;
 import com.liferay.one.service.ProjectMembershipService;
 import com.liferay.one.service.ProjectService;
+import com.liferay.one.service.SubscriptionUpgradeService;
 import com.liferay.one.service.UsageDefinitionService;
 import com.liferay.one.service.UserAccountService;
 import com.liferay.one.service.UserAssignmentService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+
+import java.time.Instant;
 
 import java.util.Arrays;
 import java.util.List;
@@ -100,6 +105,9 @@ public class ProjectRestControllerTest {
 			_projectRestController, "_projectPermission", _projectPermission);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_projectService", _projectService);
+		ReflectionTestUtils.setField(
+			_projectRestController, "_subscriptionUpgradeService",
+			_subscriptionUpgradeService);
 		ReflectionTestUtils.setField(
 			_projectRestController, "_usageDefinitionService",
 			_usageDefinitionService);
@@ -317,6 +325,74 @@ public class ProjectRestControllerTest {
 		).check(
 			ActionKeys.VIEW, null, _PROJECT_EXTERNAL_REFERENCE_CODE
 		);
+	}
+
+	@Test
+	public void testGetSubscriptionUpgradesChecksViewPermission()
+		throws Exception {
+
+		_denyProjectPermission(ActionKeys.VIEW);
+
+		Assertions.assertThrows(
+			PrincipalException.class,
+			() -> _projectRestController.getSubscriptionUpgrades(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE));
+
+		Mockito.verifyNoInteractions(_subscriptionUpgradeService);
+	}
+
+	@Test
+	public void testGetSubscriptionUpgradesReturnsTheSubscriptionUpgrades()
+		throws Exception {
+
+		UserAccount userAccount = new UserAccount();
+
+		Mockito.when(
+			_userAccountService.getMyUserAccount(null)
+		).thenReturn(
+			userAccount
+		);
+
+		Mockito.when(
+			_subscriptionUpgradeService.getSubscriptionUpgrades(
+				_PROJECT_EXTERNAL_REFERENCE_CODE, userAccount)
+		).thenReturn(
+			List.of(
+				new SubscriptionUpgrade(
+					Instant.parse("2027-10-31T00:00:00Z"), "SKU_ACTIVATE",
+					"ai-hub-studio", "AI Hub Studio", "SKU_STUDIO", "ai-hub"))
+		);
+
+		ResponseEntity<String> responseEntity =
+			_projectRestController.getSubscriptionUpgrades(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+
+		JSONArray jsonArray = new JSONArray(responseEntity.getBody());
+
+		Assertions.assertEquals(1, jsonArray.length());
+
+		JSONObject jsonObject = jsonArray.getJSONObject(0);
+
+		Assertions.assertEquals(
+			"2027-10-31T00:00:00Z", jsonObject.getString("contractEndDate"));
+		Assertions.assertEquals("ai-hub-studio", jsonObject.getString("key"));
+		Assertions.assertEquals(
+			"SKU_STUDIO",
+			jsonObject.getString("targetSkuExternalReferenceCode"));
+	}
+
+	@Test
+	public void testGetSubscriptionUpgradesWithoutSubscriptionUpgrades()
+		throws Exception {
+
+		ResponseEntity<String> responseEntity =
+			_projectRestController.getSubscriptionUpgrades(
+				null, _PROJECT_EXTERNAL_REFERENCE_CODE);
+
+		Assertions.assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
+		Assertions.assertEquals("[]", responseEntity.getBody());
 	}
 
 	@Test
@@ -2173,6 +2249,8 @@ public class ProjectRestControllerTest {
 	private ProjectRestController _projectRestController;
 	private final ProjectService _projectService = Mockito.mock(
 		ProjectService.class);
+	private final SubscriptionUpgradeService _subscriptionUpgradeService =
+		Mockito.mock(SubscriptionUpgradeService.class);
 	private final UsageDefinitionService _usageDefinitionService = Mockito.mock(
 		UsageDefinitionService.class);
 	private final UserAccountService _userAccountService = Mockito.mock(
