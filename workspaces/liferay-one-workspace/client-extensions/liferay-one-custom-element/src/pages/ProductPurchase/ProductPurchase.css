@@ -2,6 +2,11 @@
 	margin: 0 auto;
 	max-width: 600px;
 
+	&:has(.subscription-upgrade-standalone) {
+		margin-top: 0 !important;
+		max-width: none;
+	}
+
 	& .product-purchase-account-card {
 		cursor: pointer;
 
@@ -116,5 +121,14 @@
 		&:hover {
 			background-color: #e7f0ff;
 		}
+	}
+
+	& .subscription-upgrade-go-back {
+		color: var(--color-neutral-10);
+	}
+
+	& .subscription-upgrade-standalone-go-back {
+		margin-bottom: 40px;
+		margin-top: 16px;
 	}
 }

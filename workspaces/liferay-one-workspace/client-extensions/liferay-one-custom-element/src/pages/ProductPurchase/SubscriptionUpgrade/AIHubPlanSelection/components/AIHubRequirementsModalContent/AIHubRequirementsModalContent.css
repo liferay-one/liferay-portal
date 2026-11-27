@@ -1,0 +1,16 @@
+.ai-hub-requirements-modal-content-description {
+	color: var(--color-state-neutral-darken-1);
+	font-size: 16px;
+	font-weight: 400;
+}
+
+.ai-hub-requirements-modal-content-eyebrow {
+	color: var(--color-state-info);
+	font-size: 14px;
+}
+
+.ai-hub-requirements-modal-content-title {
+	font-size: 32px;
+	font-weight: 700;
+	padding-top: 12px;
+}

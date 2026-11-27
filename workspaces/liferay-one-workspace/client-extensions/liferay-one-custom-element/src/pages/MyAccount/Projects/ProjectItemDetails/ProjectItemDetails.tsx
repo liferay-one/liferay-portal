@@ -29,6 +29,7 @@ import {
 } from '~/hooks/useProjectOrders';
 import i18n, {Word} from '~/i18n';
 import AIHubAlert from '~/pages/MyAccount/Projects/components/AIHubAlert/AIHubAlert';
+import AIHubUpgradeCard from '~/pages/MyAccount/Projects/components/AIHubUpgradeCard/AIHubUpgradeCard';
 import ActivationTab from '~/pages/MyAccount/Projects/components/ActivationTab/ActivationTab';
 import DetailHeader from '~/pages/MyAccount/Projects/components/DetailHeader/DetailHeader';
 import DetailsTab from '~/pages/MyAccount/Projects/components/DetailsTab/DetailsTab';
@@ -180,6 +181,8 @@ export default function ProjectItemDetails({
 		product,
 	});
 
+	const isAIHub = environmentProfile === 'ai-hub';
+
 	const tabContent: Record<ProjectTabKey, () => ReactNode> = {
 		'activation': () => (
 			<ActivationTab
@@ -195,7 +198,7 @@ export default function ProjectItemDetails({
 				return <SEOStudioDetails placedOrder={productOrder} />;
 			}
 
-			return (
+			const detailsTab = (
 				<DetailsTab
 					contract={contract}
 					itemType={itemType}
@@ -207,6 +210,19 @@ export default function ProjectItemDetails({
 					productName={product.name}
 					profile={detailsProfile}
 				/>
+			);
+
+			if (!isAIHub || isUnassignedProject(projectId)) {
+				return detailsTab;
+			}
+
+			return (
+				<AIHubUpgradeCard
+					productExternalReferenceCode={itemERC}
+					projectExternalReferenceCode={projectId}
+				>
+					{detailsTab}
+				</AIHubUpgradeCard>
 			);
 		},
 		'download': () => (
@@ -241,8 +257,6 @@ export default function ProjectItemDetails({
 		key: tabKey,
 		label: PROJECT_TAB_LABELS[tabKey],
 	}));
-
-	const isAIHub = environmentProfile === 'ai-hub';
 
 	const aiHubEnvironmentExternalReferenceCode =
 		getAIHubEnvironmentExternalReferenceCode(

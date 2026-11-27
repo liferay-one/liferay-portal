@@ -1,0 +1,21 @@
+.ai-hub-plan-selection {
+	margin: 0 auto;
+	max-width: 808px;
+}
+
+.ai-hub-plan-selection-cards {
+	display: grid;
+	gap: 24px;
+	grid-template-columns: repeat(2, minmax(0, 392px));
+	justify-content: center;
+
+	@media (max-width: 768px) {
+		grid-template-columns: minmax(0, 392px);
+	}
+}
+
+.ai-hub-plan-selection-title {
+	font-size: 48px;
+	font-weight: 300;
+	margin-bottom: 40px;
+}

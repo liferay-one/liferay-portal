@@ -8,8 +8,14 @@ import {Liferay} from '~/services/liferay/liferay';
 export default {
 	'1-data-source': '1 Data Source',
 	'1-ticket': '1 Ticket',
+	'1gb-data-source-capacity-2500-20000-pages':
+		'1GB Data Source Capacity (≈2,500–20,000 Pages)',
 	'7-days-trials': '7 Days Trials',
+	'10-simultaneous-agent-requests': '10 Simultaneous Agent Requests',
+	'25-simultaneous-agent-requests': '25 Simultaneous Agent Requests',
 	'30-day-trial': '30-day Trial',
+	'200mb-data-source-capacity-500-4000-pages':
+		'200MB Data Source Capacity (≈500–4,000 Pages)',
 	'a-project-qualifies-for-the-jsm-sync-when-x':
 		'A project qualifies for the JSM sync when it has an active entitlement named one of {0}, when the account has an active partner entitlement, or when the account has an active entitlement with one of those names that is not assigned to a project. An active entitlement has started, has not ended, and is not terminated. The server also syncs a project that already exists in JSM.',
 	'a-request-will-be-sent-to-deactivate-the-selected-activation-key-from-now-on-it-will-be-hidden-and-no-longer-visible':
@@ -116,8 +122,13 @@ export default {
 	'ai-hub': 'AI Hub',
 	'ai-hub-account-details': 'AI Hub Account Details',
 	'ai-hub-account-name': 'AI Hub Account Name',
+	'ai-hub-activate-plan-description':
+		'Deploy ready made Liferay agents into your existing sites, content, and commerce.',
 	'ai-hub-details': 'AI Hub Details',
 	'ai-hub-information': 'AI Hub Information',
+	'ai-hub-requirements': 'AI Hub Requirements',
+	'ai-hub-studio-plan-description':
+		'Build and own your own AI agents, powered by the language model of your choice.',
 	'ai-hub-url': 'AI Hub URL',
 	'all': 'All',
 	'all-commerce-modules-are-enabled-by-default':
@@ -241,6 +252,7 @@ export default {
 	'attributes': 'Attributes',
 	'audit-every-product-its-specifications-skus-and-entitlement-definitions-and-the-problems-found-in-them':
 		'Audit every product, its specifications, SKUs, and entitlement definitions, and the problems found in them.',
+	'audit-trail-6-months': 'Audit Trail (6 Months)',
 	'authenticated-logins-malus': 'Authenticated Logins (MALUs)',
 	'automation': 'Automation',
 	'available': 'Available',
@@ -262,6 +274,8 @@ export default {
 	'back-to-the-list': 'Back to the list',
 	'backup': 'Backup',
 	'banking': 'Banking',
+	'basic-access-control-standard-liferay-roles':
+		'Basic Access Control (Standard Liferay Roles)',
 	'batch': 'Batch',
 	'becoming-a-liferay-marketplace-publisher':
 		'Becoming a Liferay Marketplace publisher',
@@ -273,6 +287,7 @@ export default {
 	'billing-period': 'Billing Period',
 	'branding': 'Branding',
 	'breadcrumb': 'Breadcrumb',
+	'bring-your-own-llm': 'Bring Your Own LLM',
 	'broken-links': 'Broken Links',
 	'browse-catalog': 'Browse Catalog',
 	'browse-products': 'Browse Products',
@@ -296,6 +311,8 @@ export default {
 	'by': 'by',
 	'by-checking-this-box-and-clicking-next-below-i-as-an-authorized-representative-of-x-acknowledge-that-x-accepts-the-x-terms-and-conditions-and-privacy-policy-x-these-terms-will-govern-x-s-use-of-liferay-analytics-cloud-unless-x-has-entered-into-a-separate-agreement-with-liferay-that-governs-x-s-use-of-liferay-analytics-cloud':
 		"By checking this box and clicking “Next”, below, I, as an authorized representative of {0}, acknowledge that {0} accepts the {1} Terms and Conditions and Privacy Policy. {2} These terms will govern {0}'s use of Liferay Analytics Cloud unless {0} has entered into a separate agreement with Liferay that governs {0}'s use of Liferay Analytics Cloud.",
+	'by-confirming-you-will-receive-a-sales-order-to-review-and-sign-your-order-will-be-processed-and-the-payment-charged-under-your-payment-agreements-once-we-receive-the-signed-document':
+		'By confirming, you will receive a sales order to review and sign. Your order will be processed, and the payment charged under your payment agreements, once we receive the signed document.',
 	'by-requesting-a-publisher-account-you-agree-to-the':
 		'By requesting a Publisher account, you agree to the',
 	'by-x': 'By {0}',
@@ -325,6 +342,8 @@ export default {
 		'Choose the Marketplace category that most accurately describes what your app does. Users looking for specific types of apps will often browse categories by searching for a specific category name on the main Marketplace home page. Having your app listed under the appropriate category will help them find it.',
 	'choose-the-marketplace-category-that-most-accurately-describes-what-your-solution-does-users-looking-for-specific-types-of-solutions-will-often-browse-categories-by-searching-for-a-specific-category-name-on-the-main-marketplace-home-page-having-your-solution-listed-under-the-appropriate-category-will-help-them-find-it':
 		'Choose the Marketplace category that most accurately describes what your solution does. Users looking for specific types of solutions will often browse categories by searching for a specific category name on the main Marketplace home page. Having your solution listed under the appropriate category will help them find it.',
+	'choose-the-perfect-plan-for-your-needs':
+		'Choose the Perfect Plan for Your Needs',
 	'citizen-portal': 'Citizen Portal',
 	'city': 'City',
 	'class-name': 'Class Name',
@@ -386,6 +405,7 @@ export default {
 	'confirm-deletion': 'Confirm Deletion',
 	'confirm-uninstall': 'Confirm & Uninstall',
 	'confirm-uninstall-terms': 'Confirm Uninstall Terms',
+	'confirm-your-purchase': 'Confirm Your Purchase',
 	'confirmation-terms': 'Confirmation Terms',
 	'congratulations': 'Congratulations',
 	'connect': 'Connect',
@@ -395,6 +415,8 @@ export default {
 	'connection-date': 'Connection Date',
 	'connection-source': 'Connection Source',
 	'connectors': 'Connectors',
+	'connectors-to-external-systems-10-included':
+		'Connectors to External Systems (10 Included)',
 	'consumer-products': 'Consumer Products',
 	'contact': 'Contact',
 	'contact-publisher': 'Contact Publisher',
@@ -430,6 +452,7 @@ export default {
 	'copy-this-token-to-your-liferay-dxp-instance':
 		'Copy this token to your Liferay DXP Instance',
 	'cost': 'Cost',
+	'cost-breakdown': 'Cost Breakdown',
 	'could-not-find-ssa-account': 'Could not find SSA account',
 	'could-not-upload-the-file-a-package-with-this-filename-already-exists':
 		'Could not upload the file. A package with this filename already exists.',
@@ -456,9 +479,14 @@ export default {
 	'create-trial': 'Create Trial',
 	'created-at': 'Created At',
 	'created-by': 'Created By',
+	'credit-x-months-remaining': 'Credit ({0} Months Remaining)',
 	'critical-incident-contacts': 'Critical Incident Contacts',
 	'crm': 'CRM',
 	'currency-code': 'Currency Code',
+	'current-contract-ends-x-the-contract-end-date-remains-unchanged':
+		'Current contract ends {0}. The contract end date remains unchanged.',
+	'current-plan': 'Current Plan',
+	'current-subscription': 'Current Subscription',
 	'current-usage-could-not-be-loaded-the-limits-shown-come-from-your-entitlements':
 		'Current usage could not be loaded. The limits shown come from your entitlements.',
 	'current-version': 'Current Version',
@@ -542,6 +570,7 @@ export default {
 	'developer-licenses-are-limited-to-5-unique-addresses-and-should-not-be-used-for-full-scale-production-deployments':
 		'Developer licenses are limited to 5 unique addresses and should not be used for full-scale production deployments.',
 	'development-framework': 'Development Framework',
+	'didn-t-receive-the-email': "Didn't receive the email?",
 	'differences': 'Differences',
 	'differs-from-salesforce': 'Differs From Salesforce',
 	'digital-sales-room': 'Digital Sales Room',
@@ -705,6 +734,7 @@ export default {
 		'Every {0} activation code is in use. Each activation code activates one environment.',
 	'every-x-activation-code-is-in-use-each-activation-code-activates-one-installation':
 		'Every {0} activation code is in use. Each activation code activates one installation.',
+	'everything-in-activate-plus': 'Everything in Activate, Plus:',
 	'exact-match': 'Exact Match',
 	'exclude': 'Exclude',
 	'excluding-vat': 'Excluding VAT',
@@ -798,6 +828,7 @@ export default {
 	'getting-started-with-liferay-enterprise-search-article':
 		'Getting Started with Liferay Enterprise Search article.',
 	'github-username': 'GitHub Username',
+	'go-back': 'Go Back',
 	'go-back-to-marketplace': 'Go Back to Marketplace',
 	'go-live': 'Go Live',
 	'go-to-account': 'Go to Account',
@@ -935,6 +966,7 @@ export default {
 	'ip-addresses': 'IP Addresses',
 	'it-looks-like-this-project-does-not-have-any-contracts-yet-please-contact-your-administrator-or-liferay-sales-to-set-one-up-before-purchasing':
 		'It looks like this project does not have any contracts yet. Please contact your administrator or Liferay sales to set one up before purchasing.',
+	'item': 'Item',
 	'items': 'Items',
 	'jira-issue-key': 'Jira Issue Key',
 	'job-title': 'Job Title',
@@ -993,6 +1025,7 @@ export default {
 	'licensing-settings-description':
 		'Each project of this account has its own licensing settings. A project gets one complimentary key each time Complimentary Key is on, and generating the key turns it off.',
 	'life-sciences': 'Life Sciences',
+	'liferay-ai-hub': 'Liferay AI Hub',
 	'liferay-dsr-eula-disclaimer-prefix':
 		'This release of the Digital Sales Room (DSR) is a Beta. You acknowledge that Liferay is not obligated to provide support services while in Beta. For clarity, the Subscription benefits of any active Subscriptions you may have for Liferay Software shall not extend to cover the Beta release of the DSR and participation in the Beta does not grant access to any future GA version of the product. Use of DSR is subject to the Liferay Enterprise Services Agreement (ESA), applicable Appendix, and the Liferay Data Processing Addendum, each as available at',
 	'liferay-dsr-eula-disclaimer-suffix':
@@ -1133,6 +1166,7 @@ export default {
 	'most-purchased-products': 'Most Purchased Products',
 	'move-down': 'Move Down',
 	'move-to-bottom': 'Move to Bottom',
+	'move-to-studio': 'Move to Studio',
 	'move-to-top': 'Move to Top',
 	'move-up': 'Move Up',
 	'mp-commission': 'MP Commission',
@@ -1171,6 +1205,8 @@ export default {
 	'new-projects-using-marketplace-apps':
 		'New Projects Using Marketplace Apps',
 	'new-solution-template': 'New Solution Template',
+	'new-subscription-cost-x-months': 'New Subscription Cost ({0} Months)',
+	'new-subscription-x': 'New Subscription ({0})',
 	'new-trial': 'New Trial',
 	'new-version': 'New Version',
 	'next': 'Next',
@@ -1181,6 +1217,7 @@ export default {
 	'no-apps-yet': 'No Apps Yet',
 	'no-bundles-yet': 'No Bundles Yet',
 	'no-business-events-were-found': 'No business events were found.',
+	'no-change': 'No Change',
 	'no-cloud-native-environments-are-available-for-this-project':
 		'No Cloud Native environments are available for this project.',
 	'no-cloud-native-environments-yet': 'No cloud native environments yet.',
@@ -1333,6 +1370,7 @@ export default {
 	'orphaned-entitlement-definitions': 'Orphaned Entitlement Definitions',
 	'orphans': 'Orphans',
 	'osaka-japan': 'Osaka, Japan',
+	'otb-liferay-agents': 'Out of the Box Liferay Agents',
 	'other': 'Other',
 	'other-event': 'Other Event',
 	'other-please-specify': 'Other, please specify',
@@ -1364,6 +1402,7 @@ export default {
 	'pay-with-invoice': 'Pay with Invoice',
 	'payload': 'Payload',
 	'payment': 'Payment',
+	'payment-agreement': 'Payment Agreement',
 	'payment-failed': 'Payment Failed',
 	'payment-method': 'Payment Method',
 	'payment-methods': 'Payment Methods',
@@ -1375,6 +1414,7 @@ export default {
 		'Peak usage exceeded your entitlements',
 	'pending': 'Pending',
 	'pending-payment': 'Pending Payment',
+	'per-month': 'per Month',
 	'performance-management': 'Performance Management',
 	'period': 'Period',
 	'permanent-licenses': 'Permanent Licenses',
@@ -1391,6 +1431,7 @@ export default {
 	'phone-number': 'Phone Number',
 	'pick-one-of-the-following-three-options-to-immediately-obtain-extra-tokens-to-foster-your-ai-hub-capabilities':
 		'Pick one of the following three options to immediately obtain extra tokens to foster your AI Hub capabilities.',
+	'plan': 'Plan',
 	'planned-event-date': 'Planned Event Date',
 	'please-be-aware-that-since-you-are-adding-a-new-version-of-the-app-the-only-section-visible-is-the-build':
 		'Please be aware that since you are adding a new version of the app, the only section visible is the "Build".',
@@ -1425,6 +1466,8 @@ export default {
 		'Please review before submitting. Once sent, you will not be able to edit any information until this submission is fully reviewed by Liferay.',
 	'please-review-the-order-summary-below-and-flag-the-checkbox-to-complete-your-purchase':
 		'Please review the order summary below and flag the checkbox to complete your purchase',
+	'please-review-the-order-summary-below-to-complete-your-purchase':
+		'Please review the order summary below to complete your purchase.',
 	'please-select-a-user-for-every-new-member':
 		'Please select a user for every new member.',
 	'please-select-an-actual-event-date-that-has-already-occurred-or-is-today':
@@ -1433,6 +1476,7 @@ export default {
 		'Please select the account you wish to link to your Liferay DXP below.',
 	'please-select-the-tickets-that-are-impacting-this-event':
 		'Please select the tickets that are impacting this event.',
+	'plus-usage-based-tokens': 'Plus Usage Based Tokens',
 	'postal-code': 'Postal Code',
 	'price': 'Price',
 	'price-model-free-description':
@@ -1598,6 +1642,7 @@ export default {
 	'related-records': 'Related Records',
 	'relationship-tree': 'Relationship Tree',
 	'reload': 'Reload',
+	'remaining-term': 'Remaining Term',
 	'remove': 'Remove',
 	'remove-all-roles': 'Remove all roles',
 	'remove-member': 'Remove Member',
@@ -1831,6 +1876,7 @@ export default {
 	'storage': 'Storage',
 	'storefront': 'Storefront',
 	'street-address': 'Street Address',
+	'studio': 'Studio',
 	'submit': 'Submit',
 	'submit-solution': 'Submit Solution',
 	'submit-your-request-to-getting-started-with-ai-hub-after-submission-you-will-receive-a-docusign-email-with-an-order-form-to-be-signed':
@@ -1869,6 +1915,8 @@ export default {
 		'Tags help to describe your app in the Marketplace. Select the tags most relevant to your app. They can be changed if needed.',
 	'tags-help-to-describe-your-solution-in-the-marketplace-select-the-tags-most-relevant-to-your-solution-they-can-be-changed-if-needed':
 		'Tags help to describe your solution in the Marketplace. Select the tags most relevant to your solution. They can be changed if needed.',
+	'take-full-control-of-your-ai-capabilities-build-custom-agents-and-connect-your-own-llm-models':
+		'Take full control of your AI capabilities. Build custom agents and connect your own LLM models.',
 	'tax-id': 'Tax ID',
 	'tax-vat-id': 'Tax/VAT ID',
 	'tax-vat-number': 'Tax/VAT Number',
@@ -1897,6 +1945,8 @@ export default {
 	'thank-you-for-your-order-we-have-registered-your-request-and-will-send-you-the-invoice-by-email-with-all-the-details-to-complete-your-payment-check-your-spam-or-promotions-folder-if-you-dont-see-it-in-your-inbox-your-order-is-currently-pending-payment':
 		"Thank you for your order. We have registered your request and will send you the invoice by email with all the details to complete your payment. Check your Spam or Promotions folder if you don't see it in your inbox. Your order is currently pending payment.",
 	'thank-you-for-your-purchase': 'Thank You for Your Purchase!',
+	'thank-you-for-your-purchase-of-x-an-order-form-will-be-sent-to-your-email-via-docusign-please-review-sign-and-return-it-to-confirm-your-subscription':
+		'Thank you for your purchase of {0}. An order form will be sent to your email via DocuSign. Please review, sign, and return it to confirm your subscription. If the message does not appear in your inbox, please check your Spam or Promotions folder.',
 	'thank-you-for-your-request': 'Thank You for Your Request!',
 	'the-account-already-matches-salesforce':
 		'The account already matches Salesforce.',
@@ -1960,6 +2010,8 @@ export default {
 		'The installation process is ongoing and may take some time... Navigating to other sections will not cancel the process.',
 	'the-installation-process-is-underway-and-should-be-completed-shortly':
 		'The installation process is underway and should be completed shortly...',
+	'the-liferay-ai-hub-requires-the-2026-q1-release-of-dxp-or-above-to-run':
+		'The Liferay AI Hub requires the 2026.Q1 release of DXP or above to run.',
 	'the-liferay-marketplace-gives-you-the-opportunity-to-monetize-your-app-or-solutions-from-a-single-use-case-to-many-while-engaging-with-new-customer-opportunities-and-generating-ongoing-revenue':
 		'The Liferay Marketplace gives you the opportunity to monetize your app or solutions from a single use case to many, while engaging with new customer opportunities and generating ongoing revenue.',
 	'the-liferay-marketplace-is-the-premier-place-for-liferay-customers-to-find-pre-built-pre-approved-app-extensions-to-quickly-extend-the-liferay-platform-to-new-and-legacy-technologies':
@@ -2020,6 +2072,8 @@ export default {
 		'There was an unexpected error while attempting to deactivate the key. Please try again in a few moments.',
 	'this-account-has-already-started-a-trial-of-this-product':
 		'This account has already started a trial of this product.',
+	'this-account-has-no-billing-address-add-one-in-the-account-details-to-continue':
+		'This account has no billing address. Add one in the account details to continue.',
 	'this-account-has-no-default-billing-address-so-a-connected-dxp-cannot-install-products-for-it':
 		'This account has no default billing address, so a connected DXP cannot install products for it.',
 	'this-action-cannot-be-undone': 'This action cannot be undone.',
@@ -2090,6 +2144,10 @@ export default {
 	'this-table-allows-you-to-create-manage-and-track-your-business-events-please-note-that-business-events-closed-for-more-than-a-year-will-not-be-displayed-here':
 		'This table allows you to create, manage, and track your business events. Please note that business events closed for more than a year will not be displayed here.',
 	'this-ticket-has-been-closed': 'This ticket has been closed',
+	'this-transaction-will-be-processed-according-to-your-active-billing-and-payment-agreement':
+		'This transaction will be processed according to your active billing and payment agreement.',
+	'this-upgrade-is-not-available-for-the-selected-project':
+		'This upgrade is not available for the selected project.',
 	'this-user-is-already-a-member-of-the-project':
 		'This user is already a member of the project.',
 	'ticket': 'Ticket',
@@ -2124,6 +2182,7 @@ export default {
 	'topic': 'Topic',
 	'topics': 'Topics',
 	'total': 'Total',
+	'total-excl-taxes': 'Total (excl. taxes)',
 	'total-ram': 'Total RAM',
 	'total-storage': 'Total Storage',
 	'total-vcpu': 'Total vCPU',
@@ -2181,6 +2240,7 @@ export default {
 	'under-review': 'Under Review',
 	'uninstall': 'Uninstall',
 	'unit': 'Unit',
+	'unit-price': 'Unit Price',
 	'unknown-member': 'Unknown member',
 	'unlimited': 'Unlimited',
 	'unlock-exclusive-benefits-with-a-business-account':
@@ -2189,7 +2249,13 @@ export default {
 	'unpublished': 'Unpublished',
 	'unused-specifications': 'Unused Specifications',
 	'unused-usage-definitions': 'Unused Usage Definitions',
+	'up-to-5-customized-agents-modified-otb':
+		'Up to 5 Customized Agents (Modified Out of the Box)',
+	'up-to-25-custom-agents-built-from-scratch':
+		'Up to 25 Custom Agents, Built from Scratch',
 	'upgrade': 'Upgrade',
+	'upgrade-now': 'Upgrade Now',
+	'upgrade-unavailable': 'Upgrade Unavailable',
 	'upload': 'Upload',
 	'upload-at-least-one-image-or-add-a-video-url':
 		'Upload at least one image, or add a video URL',
@@ -2298,6 +2364,7 @@ export default {
 		'We’ve sent the order form to your email via DocuSign. Please review, sign, and return it to confirm your subscription — once received, we’ll provision your AI Hub and notify you by email.',
 	'what-features-would-you-like-in-the-final-release':
 		'What features would you like in the final release?',
+	'whats-included': 'What Is Included:',
 	'when-adding-app-versions-you-can-use-your-own-numbering-system-but-be-sure-it-is-consistent-and-understandable-by-the-customer':
 		'When adding app versions, you can use your own numbering system, but be sure it is consistent and understandable by the customer.',
 	'workflow-action': 'Workflow Action',
@@ -2336,6 +2403,8 @@ export default {
 	'x-of-x': '{0} of {1}',
 	'x-of-x-available': '{0} of {1} available',
 	'x-of-x-invitations-were-sent': '{0} of {1} invitations were sent.',
+	'x-of-x-months': '{0} of {1} months',
+	'x-per-month': '{0} per Month',
 	'x-previously-selected-subscriptions-are-no-longer-entitled-and-were-removed':
 		'{0} previously selected subscriptions are no longer entitled and were removed.',
 	'x-records-were-synced-from-salesforce':

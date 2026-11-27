@@ -1,0 +1,93 @@
+.ai-hub-confirm-purchase-modal {
+	& .modal-body {
+		border-top-width: 0;
+		color: var(--color-neutral-7);
+	}
+
+	& .modal-footer {
+		border-top-width: 0;
+	}
+
+	& .modal-header {
+		border-bottom-width: 0;
+		height: auto;
+		padding-bottom: 16px;
+		padding-top: 24px;
+	}
+
+	& .modal-title {
+		font-size: 28px;
+	}
+}
+
+.subscription-upgrade-ai-hub-tier {
+	& .product-purchase-completed .order-received-description {
+		color: var(--color-state-neutral-darken-2) !important;
+		font-size: 16px;
+	}
+
+	& .product-purchase-completed .order-received-support {
+		font-size: 13px;
+	}
+
+	& .product-purchase-completed .order-received-title {
+		font-size: 28px;
+	}
+
+	& .product-purchase-header-card {
+		align-items: center;
+		display: flex;
+		flex: 1 1 0;
+		min-width: 0;
+	}
+
+	& .product-purchase-header-cards {
+		align-items: stretch !important;
+	}
+
+	& .subscription-upgrade-content {
+		margin-top: 40px !important;
+		padding-top: 32px !important;
+	}
+
+	& .subscription-upgrade-header-account-email {
+		display: block;
+		font-size: 11px;
+		line-height: 14px;
+	}
+
+	& .subscription-upgrade-header-account-name {
+		font-size: 14px;
+		line-height: 20px;
+	}
+
+	& .subscription-upgrade-header-label {
+		color: var(--color-state-neutral-darken-2) !important;
+		font-size: 16px;
+	}
+
+	& .subscription-upgrade-header-project-name {
+		font-size: 14px;
+	}
+
+	& .subscription-upgrade-summary-billing-address {
+		border-color: var(--color-state-neutral-lighten-1) !important;
+		border-radius: 10px !important;
+	}
+
+	& .subscription-upgrade-summary-description {
+		color: var(--color-state-neutral-darken-2) !important;
+		font-size: 14px;
+	}
+
+	& .subscription-upgrade-summary-item > label {
+		border-bottom: 1px solid var(--color-neutral-2);
+		color: var(--color-neutral-9);
+		margin-bottom: 16px !important;
+		padding-bottom: 12px;
+	}
+
+	& .subscription-upgrade-summary-payment-agreement {
+		font-size: 13px;
+	}
+}
